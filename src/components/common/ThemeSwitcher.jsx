@@ -4,7 +4,7 @@ import { IconButton } from "@mui/material";
 import { motion } from "framer-motion";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
-import { glowEffects, colors } from "@/styleSystem";
+import { glowEffects, colors } from "@/StyleSystem";
 
 export default function ThemeSwitcher({ onToggle }) {
   const [mode, setMode] = useState(localStorage.getItem("theme") || "light");
