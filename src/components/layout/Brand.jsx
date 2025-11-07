@@ -1,11 +1,11 @@
 import { Box, Typography } from "@mui/material";
 import { motion } from "framer-motion";
-import ScienceIcon from "@mui/icons-material/Science";
 
 export default function Brand() {
   return (
     <Box
-      component={motion.div}
+      component={motion.a}
+      href="/"
       initial={{ opacity: 0 }}
       animate={{
         opacity: 1,
@@ -26,7 +26,7 @@ export default function Brand() {
       sx={{
         display: "flex",
         alignItems: "center",
-        gap: 1,
+        gap: 1.2,
         cursor: "pointer",
         textDecoration: "none",
         padding: "6px 10px",
@@ -38,26 +38,32 @@ export default function Brand() {
         transition: { duration: 0.4 },
       }}
     >
-      <ScienceIcon
-        component={motion.svg}
+      {/* 🔵 Brand Logo Image */}
+      <motion.img
+        src="/favicon.svg"
+        alt="Science Web Lab Logo"
+        initial={{ rotate: 0 }}
         animate={{
-          scale: [1, 1.1, 1],
+          rotate: [0, 10, -10, 0],
           filter: [
             "drop-shadow(0 0 0px rgba(59,130,246,0))",
-            "drop-shadow(0 0 8px rgba(59,130,246,0.8))",
+            "drop-shadow(0 0 8px rgba(59,130,246,0.7))",
             "drop-shadow(0 0 0px rgba(59,130,246,0))",
           ],
         }}
         transition={{
-          duration: 2,
+          duration: 4,
           repeat: Infinity,
+          repeatType: "mirror",
           ease: "easeInOut",
         }}
-        sx={{
-          fontSize: 36,
-          color: "#fff",
+        style={{
+          width: 40,
+          height: 40,
         }}
       />
+
+      {/* 🔹 Brand Name */}
       <Typography
         variant="h6"
         component={motion.span}
