@@ -1,6 +1,6 @@
 // 🌈 src/theme.js
 import { createTheme } from "@mui/material/styles";
-import { colors, radius, shadows, transitions } from "@/styleSystem";
+import { colors, radius, shadows, transitions } from "@/StyleSystem";
 
 // 💡 تابع ساخت تم
 const makeTheme = (mode) => {
@@ -81,10 +81,9 @@ const makeTheme = (mode) => {
         },
       },
       "&:hover": {
-  transform: "translateY(-3px)",
-  boxShadow: shadows.glowBlue,
-},
-
+        transform: "translateY(-3px)",
+        boxShadow: shadows.glowBlue,
+      },
     },
   });
 };
