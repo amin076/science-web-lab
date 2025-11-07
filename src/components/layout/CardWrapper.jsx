@@ -1,7 +1,7 @@
 // ✅ src/components/layout/CardWrapper.jsx
 import { Paper } from "@mui/material";
 import { motion } from "framer-motion";
-import { colors, shadows, radius, transitions } from "@/styleSystem";
+import { colors, shadows, radius, transitions } from "@/StyleSystem";
 
 export default function CardWrapper({ children, sx = {} }) {
   return (

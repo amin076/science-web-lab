@@ -9,7 +9,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { colors, typography, shadows, spacing, radius } from "@/styleSystem";
+import { colors, typography, shadows, spacing, radius } from "@/StyleSystem";
 
 export default function StyleGuide() {
   const theme = useTheme();

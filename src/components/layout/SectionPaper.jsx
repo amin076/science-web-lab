@@ -1,7 +1,7 @@
 // ✅ src/components/layout/SectionPaper.jsx
 import { Paper } from "@mui/material";
 import { motion } from "framer-motion";
-import { radius, shadows, transitions } from "@/styleSystem";
+import { radius, shadows, transitions } from "@/StyleSystem";
 
 export default function SectionPaper({ children, sx = {} }) {
   return (
