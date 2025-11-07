@@ -1,35 +1,90 @@
-// src/pages/Experiments.jsx
-import { Grid, Typography, Box } from "@mui/material";
-import ScienceIcon from "@mui/icons-material/Science";
-import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
-import WavesIcon from "@mui/icons-material/Waves";
-import LightModeIcon from "@mui/icons-material/LightMode";
+// ✅ src/pages/Experiments.jsx
+import { Typography, Box } from "@mui/material";
+import { motion } from "framer-motion";
+import { experimentsData } from "@/data/experiments";
 import ExperimentCard from "@/components/experiments/ExperimentCard";
+import { useNavigate } from "react-router-dom";
 
-const experiments = [
-  { id: "mechanics", name: "Mechanics", desc: "Motion, forces, energy & momentum.", Icon: ScienceIcon, gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)" },
-  { id: "electricity", name: "Electricity", desc: "Circuits, voltage, current & resistance.", Icon: ElectricBoltIcon, gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)" },
-  { id: "waves", name: "Waves", desc: "Frequency, wavelength & interference.", Icon: WavesIcon, gradient: "linear-gradient(135deg,#34d399,#22c55e)" },
-  { id: "optics", name: "Optics", desc: "Reflection, refraction & lenses.", Icon: LightModeIcon, gradient: "linear-gradient(135deg,#f59e0b,#f97316)" },
-];
+// 🌟 Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 40 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
+};
 
 export default function Experiments() {
+  const navigate = useNavigate();
+
+  // فقط آزمایش‌های demo نمایش داده می‌شن
+  const demoExperiments = experimentsData.filter((exp) => exp.demo);
+
+  const handleStart = (id) => {
+    navigate(`/experiments/${id}`);
+  };
+
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom fontWeight={700}>
+    <Box sx={{ py: 6 }}>
+      <Typography
+        variant="h4"
+        gutterBottom
+        fontWeight={700}
+        sx={{
+          textAlign: "center",
+          mb: 1,
+          background: "linear-gradient(90deg,#2563eb,#38bdf8)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+        }}
+      >
         Physics Experiments
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+
+      <Typography
+        variant="body1"
+        color="text.secondary"
+        sx={{ mb: 5, textAlign: "center" }}
+      >
         Pick a domain to start exploring interactive labs.
       </Typography>
 
-      <Grid container spacing={3}>
-        {experiments.map((exp) => (
-          <Grid item xs={12} sm={6} md={3} key={exp.id}>
-            <ExperimentCard {...exp} />
-          </Grid>
+      {/* ✨ Animated Grid Container */}
+      <Box
+        component={motion.div}
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        sx={{
+          display: "grid",
+          gap: 3,
+          justifyContent: "center",
+          gridTemplateColumns: {
+            xs: "repeat(auto-fit, minmax(250px, 1fr))",
+          },
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}
+      >
+        {demoExperiments.map((exp) => (
+          <Box
+            key={exp.id}
+            component={motion.div}
+            variants={itemVariants}
+          >
+            <ExperimentCard {...exp} onStart={() => handleStart(exp.id)} />
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 }
