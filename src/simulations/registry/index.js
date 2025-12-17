@@ -11,7 +11,7 @@ import { lazy } from "react";
  */
 
 export const simulationRegistry = {
-  mechanics: lazy(() => import("@/simulations/physics/ProjectileMotion")),
+  mechanics: lazy(() => import("@/simulations/subjects/physics/mechanics/projectile-motion")),
 
   // ✅ example new one (you already created):
   newSimulation: lazy(() =>
