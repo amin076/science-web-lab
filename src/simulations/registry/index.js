@@ -15,6 +15,8 @@ export const simulationRegistry = {
 
   // ✅ example new one (you already created):
   newSimulation: lazy(() =>
-    import("@/components/simulations/newSimulation/NewSimulationSim")
+    import(
+      "@/simulations/subjects/physics/mechanics/new-simulation/NewSimulationSim"
+    )
   ),
 };
