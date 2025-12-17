@@ -85,4 +85,14 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#0ea5e9,#60a5fa)",
     demo: false,
   },
+  // 🧪 NEW SIMULATION (DEV)
+  {
+    id: "newSimulation",
+    subject: "Physics",
+    name: "New Physics Simulation",
+    desc: "A new interactive physics simulation under active development.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    demo: true,
+  },
 ];

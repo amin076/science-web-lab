@@ -1,11 +1,12 @@
-// ✅ src/pages/ExperimentDetail.jsx
+// src/pages/ExperimentDetail.jsx
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Typography, Button, Paper, Divider } from "@mui/material";
 import { experimentsData } from "@/data/experiments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
 import { motion } from "framer-motion";
-import ProjectileMotion from "@/simulations/physics/ProjectileMotion"; // ✅ add this import
+import { Suspense } from "react";
+import { simulationRegistry } from "@/simulations/registry";
 
 export default function ExperimentDetail() {
   const { id } = useParams();
@@ -19,7 +20,11 @@ export default function ExperimentDetail() {
         <Typography variant="h5" color="error">
           ❌ Experiment not found
         </Typography>
-        <Button variant="outlined" sx={{ mt: 3 }} onClick={() => navigate("/experiments")}>
+        <Button
+          variant="outlined"
+          sx={{ mt: 3 }}
+          onClick={() => navigate("/experiments")}
+        >
           Back to Experiments
         </Button>
       </Box>
@@ -28,10 +33,16 @@ export default function ExperimentDetail() {
 
   const { name, desc, Icon, gradient, subject } = experiment;
 
+  const SimulationComponent = simulationRegistry[id] || null;
+
   return (
     <Box sx={{ py: 6, maxWidth: 900, mx: "auto", px: 3 }}>
       {/* 🔙 Back Button */}
-      <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/experiments")} sx={{ mb: 3 }}>
+      <Button
+        startIcon={<ArrowBackIcon />}
+        onClick={() => navigate("/experiments")}
+        sx={{ mb: 3 }}
+      >
         Back to Experiments
       </Button>
 
@@ -84,8 +95,29 @@ export default function ExperimentDetail() {
       </Paper>
 
       {/* 🧪 Simulation Section */}
-      {id === "mechanics" ? (
-        <ProjectileMotion />
+      {/* 🧪 Simulation Section */}
+      {SimulationComponent ? (
+        <Suspense
+          fallback={
+            <Paper
+              sx={{
+                p: 5,
+                borderRadius: 3,
+                textAlign: "center",
+                backgroundColor: "#f9fafb",
+              }}
+            >
+              <Typography variant="h6" fontWeight={600}>
+                Loading simulation...
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Please wait a moment.
+              </Typography>
+            </Paper>
+          }
+        >
+          <SimulationComponent />
+        </Suspense>
       ) : (
         <Paper
           component={motion.div}
@@ -100,7 +132,9 @@ export default function ExperimentDetail() {
             boxShadow: "inset 0 0 10px rgba(0,0,0,0.1)",
           }}
         >
-          <PlayCircleFilledWhiteIcon sx={{ fontSize: 80, color: "#3b82f6", mb: 2 }} />
+          <PlayCircleFilledWhiteIcon
+            sx={{ fontSize: 80, color: "#3b82f6", mb: 2 }}
+          />
           <Typography variant="h6" fontWeight={600}>
             Interactive Simulation Coming Soon!
           </Typography>
