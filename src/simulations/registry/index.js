@@ -11,12 +11,16 @@ import { lazy } from "react";
  */
 
 export const simulationRegistry = {
-  mechanics: lazy(() => import("@/simulations/subjects/physics/mechanics/projectile-motion")),
+  mechanics: lazy(() =>
+    import("@/simulations/subjects/physics/mechanics/projectile-motion")
+  ),
 
-  // ✅ example new one (you already created):
   newSimulation: lazy(() =>
     import(
       "@/simulations/subjects/physics/mechanics/new-simulation/NewSimulationSim"
     )
+  ),
+  "earth-science.geology.plate-tectonics": lazy(() =>
+    import("@/simulations/subjects/earth-science/geology/plate-tectonics")
   ),
 };

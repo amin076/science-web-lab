@@ -5,8 +5,6 @@ import { experimentsData } from "@/data/experiments";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import PlayCircleFilledWhiteIcon from "@mui/icons-material/PlayCircleFilledWhite";
 import { motion } from "framer-motion";
-import { Suspense } from "react";
-import { simulationRegistry } from "@/simulations/registry";
 
 export default function ExperimentDetail() {
   const { id } = useParams();
@@ -33,92 +31,80 @@ export default function ExperimentDetail() {
 
   const { name, desc, Icon, gradient, subject } = experiment;
 
-  const SimulationComponent = simulationRegistry[id] || null;
-
   return (
-    <Box sx={{ py: 6, maxWidth: 900, mx: "auto", px: 3 }}>
-      {/* 🔙 Back Button */}
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate("/experiments")}
-        sx={{ mb: 3 }}
-      >
-        Back to Experiments
-      </Button>
-
-      {/* 🎓 Header */}
-      <Paper
-        component={motion.div}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        elevation={6}
-        sx={{
-          borderRadius: "16px",
-          overflow: "hidden",
-          background: gradient,
-          color: "#fff",
-          p: 4,
-          mb: 4,
-          textAlign: "center",
-        }}
-      >
-        <Icon sx={{ fontSize: 60, mb: 2 }} />
-        <Typography variant="h4" fontWeight={700}>
-          {name}
-        </Typography>
-        <Typography variant="h6" sx={{ mt: 1, opacity: 0.9 }}>
-          {subject}
-        </Typography>
-      </Paper>
-
-      {/* 📘 Description */}
-      <Paper
-        component={motion.div}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.6 }}
-        sx={{
-          p: 3,
-          borderRadius: 3,
-          boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
-          mb: 4,
-        }}
-      >
-        <Typography variant="h6" gutterBottom fontWeight={600}>
-          About this Experiment
-        </Typography>
-        <Divider sx={{ mb: 2 }} />
-        <Typography variant="body1" color="text.secondary">
-          {desc}
-        </Typography>
-      </Paper>
-
-      {/* 🧪 Simulation Section */}
-      {/* 🧪 Simulation Section */}
-      {SimulationComponent ? (
-        <Suspense
-          fallback={
-            <Paper
-              sx={{
-                p: 5,
-                borderRadius: 3,
-                textAlign: "center",
-                backgroundColor: "#f9fafb",
-              }}
-            >
-              <Typography variant="h6" fontWeight={600}>
-                Loading simulation...
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Please wait a moment.
-              </Typography>
-            </Paper>
-          }
+    <Box
+      sx={{
+        width: "100vw",
+        maxWidth: "100vw",
+        mx: "calc(50% - 50vw)",
+        px: { xs: 2, md: 3 },
+        py: { xs: 2, md: 3 },
+      }}
+    >
+      <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => navigate("/experiments")}
+          sx={{ mb: 2 }}
         >
-          <SimulationComponent />
-        </Suspense>
-      ) : (
+          Back to Experiments
+        </Button>
+
+        <Paper
+          component={motion.div}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          elevation={6}
+          sx={{
+            borderRadius: "16px",
+            overflow: "hidden",
+            background: gradient,
+            color: "#fff",
+            p: 4,
+            mb: 3,
+            textAlign: "center",
+          }}
+        >
+          <Icon sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h4" fontWeight={700}>
+            {name}
+          </Typography>
+          <Typography variant="h6" sx={{ mt: 1, opacity: 0.9 }}>
+            {subject}
+          </Typography>
+        </Paper>
+
+        <Paper
+          component={motion.div}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.6 }}
+          sx={{
+            p: 3,
+            borderRadius: 3,
+            boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+            mb: 3,
+          }}
+        >
+          <Typography variant="h6" gutterBottom fontWeight={600}>
+            About this Experiment
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            {desc}
+          </Typography>
+
+          {/* ✅ Fullscreen run route */}
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={() => navigate(`/experiments/${id}/run`)}
+          >
+            Launch Simulation
+          </Button>
+        </Paper>
+
         <Paper
           component={motion.div}
           initial={{ opacity: 0, y: 30 }}
@@ -136,13 +122,13 @@ export default function ExperimentDetail() {
             sx={{ fontSize: 80, color: "#3b82f6", mb: 2 }}
           />
           <Typography variant="h6" fontWeight={600}>
-            Interactive Simulation Coming Soon!
+            Fullscreen simulation opens in a new route.
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            This section will host the actual simulation for {name}.
+            Click "Launch Simulation" to run {name} in fullscreen mode.
           </Typography>
         </Paper>
-      )}
+      </Box>
     </Box>
   );
 }

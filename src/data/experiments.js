@@ -95,4 +95,13 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
     demo: true,
   },
+  {
+    id: "earth-science.geology.plate-tectonics",
+    subject: "Earth Science",
+    name: "Plate Tectonics (3D)",
+    desc: "Explore tectonic plate movements and Earth’s internal layers in an interactive 3D simulation.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#0f766e,#0ea5e9)",
+    demo: true,
+  },
 ];
