@@ -1,16 +1,10 @@
 // ✅ src/components/experiments/ExperimentCard.jsx
 import { Box, Typography, Button, Divider } from "@mui/material";
 import { motion, useAnimation } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ExperimentCard({
-  id,
-  name,
-  desc,
-  Icon,
-  gradient,
-}) {
+export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
   const controls = useAnimation();
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
@@ -39,6 +33,14 @@ export default function ExperimentCard({
       transition: { duration: 0.6, ease: "easeOut" },
     });
   };
+
+  const goToRun = useCallback(() => {
+    navigate(`/experiments/${id}/run`);
+  }, [navigate, id]);
+
+  const goToDetails = useCallback(() => {
+    navigate(`/experiments/${id}`);
+  }, [navigate, id]);
 
   return (
     <Box
@@ -119,7 +121,11 @@ export default function ExperimentCard({
             fontWeight: 600,
             borderRadius: "6px",
           }}
-          onClick={() => navigate(`/experiments/${id}`)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation(); // ✅ اگر بعداً کارت هم clickable شد
+            goToRun();
+          }}
         >
           START
         </Button>
@@ -129,7 +135,11 @@ export default function ExperimentCard({
           color="secondary"
           size="small"
           sx={{ textTransform: "none", fontWeight: 500 }}
-          onClick={() => navigate(`/experiments/${id}`)}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            goToDetails();
+          }}
         >
           DETAILS
         </Button>
