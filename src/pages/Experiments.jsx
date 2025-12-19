@@ -5,31 +5,27 @@ import { experimentsData } from "@/data/experiments";
 import ExperimentCard from "@/components/experiments/ExperimentCard";
 import { useNavigate } from "react-router-dom";
 
-// 🌟 Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.15 } },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 40 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, ease: "easeOut" },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
 export default function Experiments() {
   const navigate = useNavigate();
-
-  // فقط آزمایش‌های demo نمایش داده می‌شن
   const demoExperiments = experimentsData.filter((exp) => exp.demo);
 
+  // ✅ Start باید مستقیم شبیه‌ساز رو اجرا کنه
   const handleStart = (id) => {
+    navigate(`/experiments/${id}/run`);
+  };
+
+  // ✅ Details باید بره صفحه جزئیات
+  const handleDetails = (id) => {
     navigate(`/experiments/${id}`);
   };
 
@@ -58,7 +54,6 @@ export default function Experiments() {
         Pick a domain to start exploring interactive labs.
       </Typography>
 
-      {/* ✨ Animated Grid Container */}
       <Box
         component={motion.div}
         variants={containerVariants}
@@ -68,20 +63,19 @@ export default function Experiments() {
           display: "grid",
           gap: 3,
           justifyContent: "center",
-          gridTemplateColumns: {
-            xs: "repeat(auto-fit, minmax(250px, 1fr))",
-          },
+          gridTemplateColumns: { xs: "repeat(auto-fit, minmax(250px, 1fr))" },
           maxWidth: "1200px",
           margin: "0 auto",
         }}
       >
         {demoExperiments.map((exp) => (
-          <Box
-            key={exp.id}
-            component={motion.div}
-            variants={itemVariants}
-          >
-            <ExperimentCard {...exp} onStart={() => handleStart(exp.id)} />
+          <Box key={exp.id} component={motion.div} variants={itemVariants}>
+            {/* ✅ مهم: ExperimentCard باید onDetails هم داشته باشه */}
+            <ExperimentCard
+              {...exp}
+              onStart={() => handleStart(exp.id)}
+              onDetails={() => handleDetails(exp.id)}
+            />
           </Box>
         ))}
       </Box>
