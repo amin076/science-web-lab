@@ -1,7 +1,12 @@
 // ✅ src/App.jsx
 import { useState, useEffect } from "react";
 import { ThemeProvider, CssBaseline, Box } from "@mui/material";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+} from "react-router-dom";
 import AuthProvider from "@/context/AuthProvider";
 
 import { lightTheme, darkTheme } from "@/theme";
@@ -15,10 +20,12 @@ import ProtectedRoute from "@/components/common/ProtectedRoute";
 import TeacherDashboard from "@/pages/dashboard/TeacherDashboard";
 import StudentDashboard from "@/pages/dashboard/StudentDashboard";
 import CreateClassForm from "@/pages/dashboard/CreateClassForm";
-import ClassDetail from "@/pages/dashboard/ClassDetail";
 import StudentClassDetail from "@/pages/dashboard/StudentClassDetail";
 import StudentExperiment from "@/pages/dashboard/StudentExperiment";
-import TeacherClassDetail from "@/pages/dashboard/TeacherClassDetail"; // ✅ Added missing import
+import TeacherClassDetail from "@/pages/dashboard/TeacherClassDetail";
+
+// ▶️ Run Simulation (Fullscreen)
+import RunSimulation from "@/pages/simulations/RunSimulation";
 
 // 📄 Pages
 import Home from "@/pages/Home";
@@ -28,6 +35,26 @@ import ExperimentDetail from "@/pages/ExperimentDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import StyleGuide from "@/pages/StyleGuide";
+
+// ✅ Layout wrapper for normal pages only
+function LayoutShell({ onThemeToggle }) {
+  return (
+    <Layout>
+      <Box
+        sx={{
+          position: "fixed",
+          top: 16,
+          right: 20,
+          zIndex: 2000,
+        }}
+      >
+        <ThemeSwitcher onToggle={onThemeToggle} />
+      </Box>
+
+      <Outlet />
+    </Layout>
+  );
+}
 
 export default function App() {
   const [mode, setMode] = useState(localStorage.getItem("theme") || "light");
@@ -49,19 +76,19 @@ export default function App() {
       <CssBaseline />
       <AuthProvider>
         <Router>
-          <Layout>
-            <Box
-              sx={{
-                position: "fixed",
-                top: 16,
-                right: 20,
-                zIndex: 2000,
-              }}
-            >
-              <ThemeSwitcher onToggle={handleThemeToggle} />
-            </Box>
+          <Routes>
+            {/* ✅ Fullscreen routes OUTSIDE Layout */}
+            <Route
+              path="/experiments/:id/run"
+              element={
+                <ProtectedRoute>
+                  <RunSimulation />
+                </ProtectedRoute>
+              }
+            />
 
-            <Routes>
+            {/* ✅ Everything else INSIDE Layout */}
+            <Route element={<LayoutShell onThemeToggle={handleThemeToggle} />}>
               {/* 🔓 Public Pages */}
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
@@ -69,7 +96,7 @@ export default function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/style-guide" element={<StyleGuide />} />
 
-              {/* 🔒 Experiments (Shared) */}
+              {/* 🔒 Experiments */}
               <Route
                 path="/experiments"
                 element={
@@ -108,7 +135,7 @@ export default function App() {
                 path="/dashboard/class/:id"
                 element={
                   <ProtectedRoute>
-                    <TeacherClassDetail /> {/* ✅ Corrected here */}
+                    <TeacherClassDetail />
                   </ProtectedRoute>
                 }
               />
@@ -138,8 +165,8 @@ export default function App() {
                   </ProtectedRoute>
                 }
               />
-            </Routes>
-          </Layout>
+            </Route>
+          </Routes>
         </Router>
       </AuthProvider>
     </ThemeProvider>

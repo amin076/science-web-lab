@@ -25,6 +25,24 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)",
     demo: true,
   },
+  {
+    id: "coulomb-law-2d",
+    subject: "Physics",
+    name: "Coulomb's Law (2D)",
+    desc: "Visualize electrostatic forces, vector field, and flux lines in 2D.",
+    Icon: LocalFireDepartmentIcon,
+    gradient: "linear-gradient(135deg,#f59e0b,#fb7185)",
+    demo: true,
+  },
+  {
+    id: "coulomb-law-3d",
+    subject: "Physics",
+    name: "Coulomb's Law (3D)",
+    desc: "Explore electric field vectors and flux lines around charges in 3D.",
+    Icon: LocalFireDepartmentIcon,
+    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    demo: true,
+  },
 
   // ➗ MATHEMATICS
   {
@@ -84,5 +102,24 @@ export const experimentsData = [
     Icon: BiotechIcon,
     gradient: "linear-gradient(135deg,#0ea5e9,#60a5fa)",
     demo: false,
+  },
+  // 🧪 NEW SIMULATION (DEV)
+  {
+    id: "newSimulation",
+    subject: "Physics",
+    name: "New Physics Simulation",
+    desc: "A new interactive physics simulation under active development.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    demo: true,
+  },
+  {
+    id: "earth-science.geology.plate-tectonics",
+    subject: "Earth Science",
+    name: "Plate Tectonics (3D)",
+    desc: "Explore tectonic plate movements and Earth’s internal layers in an interactive 3D simulation.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#0f766e,#0ea5e9)",
+    demo: true,
   },
 ];

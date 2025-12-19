@@ -20,7 +20,9 @@ function Layout({ children }) {
         minHeight: "100vh",
         position: "relative",
         backgroundColor: (theme) => theme.palette.background.default,
-        overflow: "hidden",
+
+        overflowX: "hidden",
+        overflowY: "auto",
       }}
     >
       {/* 🌈 Glow Pulse Gradient Background */}
@@ -63,19 +65,19 @@ function Layout({ children }) {
       </Box>
 
       {/* 📄 محتوای اصلی */}
-      <Container
+      <Box
         component="main"
         sx={{
           flex: 1,
-          py: 4,
-          px: { xs: 2, sm: 3, md: 4 },
           width: "100%",
+          maxWidth: "100%",
           position: "relative",
           zIndex: 1,
+          overflow: "visible", // ❗ مهم
         }}
       >
         {children}
-      </Container>
+      </Box>
 
       {/* 📍 Footer */}
       <Box sx={{ position: "relative", zIndex: 1 }}>
