@@ -25,6 +25,24 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)",
     demo: true,
   },
+  {
+    id: "coulomb-law-2d",
+    subject: "Physics",
+    name: "Coulomb's Law (2D)",
+    desc: "Visualize electrostatic forces, vector field, and flux lines in 2D.",
+    Icon: LocalFireDepartmentIcon,
+    gradient: "linear-gradient(135deg,#f59e0b,#fb7185)",
+    demo: true,
+  },
+  {
+    id: "coulomb-law-3d",
+    subject: "Physics",
+    name: "Coulomb's Law (3D)",
+    desc: "Explore electric field vectors and flux lines around charges in 3D.",
+    Icon: LocalFireDepartmentIcon,
+    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    demo: true,
+  },
 
   // ➗ MATHEMATICS
   {

@@ -23,4 +23,11 @@ export const simulationRegistry = {
   "earth-science.geology.plate-tectonics": lazy(() =>
     import("@/simulations/subjects/earth-science/geology/plate-tectonics")
   ),
+  "coulomb-law-2d": lazy(() =>
+    import("@/simulations/subjects/physics/electricity/coulomb-law-2d")
+  ),
+
+  "coulomb-law-3d": lazy(() =>
+    import("@/simulations/subjects/physics/electricity/coulomb-law-3d")
+  ),
 };

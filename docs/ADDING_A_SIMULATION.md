@@ -3,39 +3,42 @@
 ## Overview
 
 Science Web Lab is a role-based educational platform (Firebase Auth + Firestore).
-All simulations are rendered through a single route:
 
-/experiments/:id
+Simulations are NOT pages.
+They are standalone visual engines rendered through a unified runtime.
 
-Simulations are dynamically loaded and rendered inside:
+There are exactly two user-facing routes:
 
-src/pages/ExperimentDetail.jsx
+- /experiments/:id → metadata, description, launch button
+- /experiments/:id/run → fullscreen simulation runtime
 
-Do NOT add new routes for simulations.
-All simulations must be registered and rendered via the simulation registry.
+Do NOT create custom routes for simulations.
 
 ---
 
-## Core Concept: Registry-Based Simulations
+## Core Architecture (Current & Final)
 
-Every simulation must be connected through exactly three places:
+Every simulation connects through four fixed layers:
 
-Simulation Folder
-→ Simulation Registry
-→ experimentsData (Library UI)
+1. Simulation Folder (implementation)
+2. Simulation Registry (runtime binding)
+3. experimentsData (library UI & metadata)
+4. RunSimulation (fullscreen runtime)
 
-If these three are consistent, the simulation will work everywhere:
+If these four are aligned, the simulation works everywhere:
 
 - Experiments page
-- Teacher adds to class
-- Student opens inside class
+- Experiment detail
+- Fullscreen run
+- Teacher → class
+- Student → class
 - Direct URL access
 
 ---
 
-## Mandatory Folder Structure
+## Mandatory Folder Structure (STRICT)
 
-All simulations must follow this structure:
+All simulations MUST follow this structure:
 
 src/simulations/
 subjects/
@@ -43,13 +46,14 @@ subjects/
 <category>/
 <simulation-id>/
 index.jsx
-<SimulationName>Sim.jsx
-physics/ (optional)
-components/ (optional)
-assets/ (optional)
-README.md (recommended)
+<SimulationName>.jsx
+components/
+physics/
+overlays/
+assets/
+README.md
 
-Real example from this project:
+Example from this project:
 
 src/simulations/subjects/physics/mechanics/projectile-motion/
 index.jsx
@@ -58,16 +62,18 @@ physics/
 
 ---
 
-## Simulation ID Rules (IMPORTANT)
+## Simulation ID Rules (CRITICAL)
 
-Simulation IDs must be stable forever.
+Simulation IDs are permanent.
+
 They are used in:
 
 - URLs
-- Firestore paths
+- Firestore documents
 - Teacher → Student navigation
+- Registry keys
 
-Recommended ID format:
+Required format:
 
 <subject>.<category>.<simulation-id>
 
@@ -77,7 +83,7 @@ Examples:
 - earth.geology.plate-tectonics
 - astronomy.solar.orbits
 
-Once published, DO NOT change IDs.
+Once published, NEVER change an ID.
 
 ---
 
@@ -85,15 +91,13 @@ Once published, DO NOT change IDs.
 
 ### Step 1 — Create Simulation Folder
 
-Example:
-
 src/simulations/subjects/physics/mechanics/pendulum/
 
 ---
 
 ### Step 2 — Create Simulation Component
 
-PendulumSim.jsx:
+PendulumSim.jsx
 
 import React from "react";
 
@@ -101,26 +105,29 @@ export default function PendulumSim() {
 return <div>Pendulum Simulation</div>;
 }
 
+Rules:
+
+- No auth
+- No Firestore
+- No routing
+- Assume fullscreen canvas environment
+
 ---
 
 ### Step 3 — Create Public Entry (index.jsx)
 
-index.jsx:
+index.jsx
 
 import PendulumSim from "./PendulumSim";
 export default PendulumSim;
 
-Rule:
-The app must import only from index.jsx, never internal files.
+The app MUST import only from index.jsx.
 
 ---
 
 ### Step 4 — Register the Simulation
 
-File:
-src/simulations/registry/index.js
-
-Add:
+File: src/simulations/registry/index.js
 
 import { lazy } from "react";
 
@@ -134,14 +141,13 @@ import("@/simulations/subjects/physics/mechanics/pendulum")
 ),
 };
 
+Registry keys MUST match IDs exactly.
+
 ---
 
-### Step 5 — Add Experiment Metadata (Library UI)
+### Step 5 — Add Experiment Metadata
 
-File:
-src/data/experiments.js
-
-Add:
+File: src/data/experiments.js
 
 {
 id: "physics.mechanics.pendulum",
@@ -153,7 +159,7 @@ gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
 demo: true
 }
 
-The id must match the registry key exactly.
+ID must match registry key.
 
 ---
 
@@ -161,11 +167,47 @@ The id must match the registry key exactly.
 
 npm run dev
 
-Then:
+Verify:
 
-- Go to /experiments
-- Click the new simulation
-- Verify it renders inside ExperimentDetail
+- /experiments
+- /experiments/:id
+- /experiments/:id/run
+
+---
+
+## Fullscreen Runtime (IMPORTANT)
+
+All simulations are rendered through:
+
+src/pages/simulations/RunSimulation.jsx
+
+This component:
+
+- Uses SimulationLayout
+- Loads from simulationRegistry
+- Handles loading & errors
+- Provides fullscreen shell
+
+Do NOT duplicate fullscreen logic inside simulations.
+
+---
+
+## Layout & Scrolling Rules
+
+- Global scrolling is handled by Layout
+- Fullscreen simulations manage their own internal scroll
+- Simulations MUST NOT touch body styles
+- Avoid position: fixed unless required
+- Canvas containers use height: 100%
+
+---
+
+## Styling Rules
+
+- Platform UI → MUI
+- Simulations → Tailwind allowed
+- No layout containers inside simulations
+- HUD / Control panels belong to simulation folder
 
 ---
 
@@ -173,15 +215,15 @@ Then:
 
 - Do not add simulation routes to App.jsx
 - Do not place simulations inside pages/
-- Do not access Firestore inside simulation components
-- Do not include auth logic inside simulations
-- Do not import internal simulation files directly
+- Do not access Firestore inside simulations
+- Do not import internal files directly
+- Do not hardcode layout assumptions
 
 ---
 
-## Backward Compatibility Rule
+## Backward Compatibility
 
-If an old simulation path exists, keep a re-export wrapper.
+If an old import path exists, keep a re-export wrapper.
 
 Example:
 
@@ -189,15 +231,14 @@ src/simulations/physics/ProjectileMotion.jsx
 
 export { default } from "@/simulations/subjects/physics/mechanics/projectile-motion";
 
-This prevents breaking legacy imports.
-
 ---
 
 ## Branching Workflow
 
 - New simulation → feature/<simulation-name>
-- Merge into → develop
-- After testing → merge into main
+- Architecture changes → feature/simulation-architecture
+- Merge into develop
+- After validation → main
 
 Never commit directly to main.
 
@@ -209,16 +250,17 @@ Never commit directly to main.
 - index.jsx exists
 - Registered in simulationRegistry
 - Added to experimentsData
-- Works at /experiments/:id
+- Works at /experiments/:id/run
 - No console errors
-- No auth or database logic inside simulation
+- No auth or DB logic inside simulation
 
 ---
 
 ## Why This Architecture Works
 
-- Scales to 50+ simulations
-- Safe for role-based access
-- Compatible with existing Firebase schema
+- Scales to many simulations
+- Clean separation of concerns
+- Safe for Firebase & roles
+- Fullscreen-ready by default
 - Easy onboarding for new developers
-- Clear separation between Platform and Simulation
+- Prevents routing & layout bugs
