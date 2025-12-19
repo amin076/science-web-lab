@@ -1,19 +1,15 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { ThemeModeProvider } from "@/context/ThemeContext"; // ✅ Context
+import { ThemeModeProvider } from "@/context/ThemeContext";
 
-// ⚙️ React render
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <ThemeModeProvider>
-      <App />
-    </ThemeModeProvider>
-  </StrictMode>
+  <ThemeModeProvider>
+    <App />
+  </ThemeModeProvider>
 );
 
-// ✅ Register Service Worker (PWA)
+// Service Worker — OK
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
