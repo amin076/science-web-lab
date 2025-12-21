@@ -10,8 +10,9 @@ export default function RunSimulation() {
 
   const SimulationComponent = simulationRegistry[id] || null;
 
+  // ✅ Per your requirement: always go back to experiments list
   const handleBack = () => {
-    navigate(`/experiments/${id}`);
+    navigate("/experiments");
   };
 
   if (!SimulationComponent) {
@@ -32,6 +33,9 @@ export default function RunSimulation() {
             </Typography>
             <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
               No simulation is registered for id: <b>{id}</b>
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
+              Please go back to the experiments list.
             </Typography>
           </Paper>
         </Box>
