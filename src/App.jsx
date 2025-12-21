@@ -1,5 +1,8 @@
 // ✅ src/App.jsx
 import { useState, useEffect } from "react";
+import AppErrorBoundary from "@/components/system/AppErrorBoundary";
+import SimulationBoundary from "@/components/system/SimulationBoundary";
+
 import { ThemeProvider, CssBaseline, Box } from "@mui/material";
 import {
   BrowserRouter as Router,
@@ -75,99 +78,105 @@ export default function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AuthProvider>
-        <Router>
-          <Routes>
-            {/* ✅ Fullscreen routes OUTSIDE Layout */}
-            <Route
-              path="/experiments/:id/run"
-              element={
-                <ProtectedRoute>
-                  <RunSimulation />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* ✅ Everything else INSIDE Layout */}
-            <Route element={<LayoutShell onThemeToggle={handleThemeToggle} />}>
-              {/* 🔓 Public Pages */}
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/style-guide" element={<StyleGuide />} />
-
-              {/* 🔒 Experiments */}
+        <AppErrorBoundary>
+          <Router>
+            <Routes>
+              {/* ✅ Fullscreen routes OUTSIDE Layout */}
               <Route
-                path="/experiments"
+                path="/experiments/:id/run"
                 element={
                   <ProtectedRoute>
-                    <Experiments />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/experiments/:id"
-                element={
-                  <ProtectedRoute>
-                    <ExperimentDetail />
+                    <SimulationBoundary>
+                      <RunSimulation />
+                    </SimulationBoundary>
                   </ProtectedRoute>
                 }
               />
 
-              {/* 🧑‍🏫 Teacher Dashboard */}
+              {/* ✅ Everything else INSIDE Layout */}
               <Route
-                path="/dashboard/teacher"
-                element={
-                  <ProtectedRoute>
-                    <TeacherDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/create-class"
-                element={
-                  <ProtectedRoute>
-                    <CreateClassForm />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/class/:id"
-                element={
-                  <ProtectedRoute>
-                    <TeacherClassDetail />
-                  </ProtectedRoute>
-                }
-              />
+                element={<LayoutShell onThemeToggle={handleThemeToggle} />}
+              >
+                {/* 🔓 Public Pages */}
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/style-guide" element={<StyleGuide />} />
 
-              {/* 👩‍🎓 Student Dashboard */}
-              <Route
-                path="/dashboard/student"
-                element={
-                  <ProtectedRoute>
-                    <StudentDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/student/class/:id"
-                element={
-                  <ProtectedRoute>
-                    <StudentClassDetail />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/dashboard/student/class/:classId/experiment/:expId"
-                element={
-                  <ProtectedRoute>
-                    <StudentExperiment />
-                  </ProtectedRoute>
-                }
-              />
-            </Route>
-          </Routes>
-        </Router>
+                {/* 🔒 Experiments */}
+                <Route
+                  path="/experiments"
+                  element={
+                    <ProtectedRoute>
+                      <Experiments />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/experiments/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ExperimentDetail />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 🧑‍🏫 Teacher Dashboard */}
+                <Route
+                  path="/dashboard/teacher"
+                  element={
+                    <ProtectedRoute>
+                      <TeacherDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/create-class"
+                  element={
+                    <ProtectedRoute>
+                      <CreateClassForm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/class/:id"
+                  element={
+                    <ProtectedRoute>
+                      <TeacherClassDetail />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 👩‍🎓 Student Dashboard */}
+                <Route
+                  path="/dashboard/student"
+                  element={
+                    <ProtectedRoute>
+                      <StudentDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/student/class/:id"
+                  element={
+                    <ProtectedRoute>
+                      <StudentClassDetail />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/student/class/:classId/experiment/:expId"
+                  element={
+                    <ProtectedRoute>
+                      <StudentExperiment />
+                    </ProtectedRoute>
+                  }
+                />
+              </Route>
+            </Routes>
+          </Router>
+        </AppErrorBoundary>
       </AuthProvider>
     </ThemeProvider>
   );
