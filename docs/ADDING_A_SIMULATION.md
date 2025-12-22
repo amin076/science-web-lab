@@ -4,7 +4,7 @@
 
 Science Web Lab is a role-based educational platform (Firebase Auth + Firestore).
 
-Simulations are NOT pages.
+Simulations are NOT pages.  
 They are standalone visual engines rendered through a unified runtime.
 
 There are exactly two user-facing routes:
@@ -60,6 +60,12 @@ index.jsx
 ProjectileMotion.jsx
 physics/
 
+Rules:
+
+- The app MUST import simulations only from index.jsx
+- <SimulationName>.jsx must export a default React component
+- No cross-imports between simulations
+
 ---
 
 ## Simulation ID Rules (CRITICAL)
@@ -110,7 +116,7 @@ Rules:
 - No auth
 - No Firestore
 - No routing
-- Assume fullscreen canvas environment
+- Assume fullscreen runtime environment
 
 ---
 
@@ -141,7 +147,7 @@ import("@/simulations/subjects/physics/mechanics/pendulum")
 ),
 };
 
-Registry keys MUST match IDs exactly.
+Registry keys MUST match simulation IDs exactly.
 
 ---
 
@@ -184,8 +190,8 @@ src/pages/simulations/RunSimulation.jsx
 This component:
 
 - Uses SimulationLayout
-- Loads from simulationRegistry
-- Handles loading & errors
+- Loads simulations from simulationRegistry
+- Handles loading and runtime errors
 - Provides fullscreen shell
 
 Do NOT duplicate fullscreen logic inside simulations.
@@ -196,9 +202,9 @@ Do NOT duplicate fullscreen logic inside simulations.
 
 - Global scrolling is handled by Layout
 - Fullscreen simulations manage their own internal scroll
-- Simulations MUST NOT touch body styles
-- Avoid position: fixed unless required
-- Canvas containers use height: 100%
+- Simulations MUST NOT touch document.body styles
+- Avoid position: fixed unless strictly required
+- Canvas containers should use height: 100%
 
 ---
 
@@ -207,7 +213,7 @@ Do NOT duplicate fullscreen logic inside simulations.
 - Platform UI → MUI
 - Simulations → Tailwind allowed
 - No layout containers inside simulations
-- HUD / Control panels belong to simulation folder
+- HUD / Control panels belong inside the simulation folder
 
 ---
 
@@ -215,8 +221,8 @@ Do NOT duplicate fullscreen logic inside simulations.
 
 - Do not add simulation routes to App.jsx
 - Do not place simulations inside pages/
-- Do not access Firestore inside simulations
-- Do not import internal files directly
+- Do not access Firestore or Auth inside simulations
+- Do not import internal simulation files directly
 - Do not hardcode layout assumptions
 
 ---
@@ -260,7 +266,7 @@ Never commit directly to main.
 
 - Scales to many simulations
 - Clean separation of concerns
-- Safe for Firebase & roles
+- Safe for Firebase & role-based access
 - Fullscreen-ready by default
 - Easy onboarding for new developers
 - Prevents routing & layout bugs
