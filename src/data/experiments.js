@@ -130,5 +130,14 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
     demo: true,
   },
+  {
+    id: "physics.mechanics.spring-mass",
+    subject: "Physics",
+    name: "SpringMass Oscillator",
+    desc: "Explore simple harmonic motion using a springmass system.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    demo: true,
+  },
 
 ];

@@ -1,8 +1,10 @@
+// src/pages/simulations/RunSimulation.jsx
 import React, { Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography } from "@mui/material";
 import SimulationLayout from "@/components/layout/SimulationLayout";
 import { simulationRegistry } from "@/simulations/registry";
+import { unlockScroll } from "@/utils/scrollLock";
 
 export default function RunSimulation() {
   const { id } = useParams();
@@ -10,8 +12,8 @@ export default function RunSimulation() {
 
   const SimulationComponent = simulationRegistry[id] || null;
 
-  // ✅ Per your requirement: always go back to experiments list
   const handleBack = () => {
+    unlockScroll(true);
     navigate("/experiments");
   };
 
@@ -33,9 +35,6 @@ export default function RunSimulation() {
             </Typography>
             <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
               No simulation is registered for id: <b>{id}</b>
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
-              Please go back to the experiments list.
             </Typography>
           </Paper>
         </Box>
