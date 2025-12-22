@@ -1,0 +1,88 @@
+import React, { useRef } from "react";
+import { useFrame, useLoader } from "@react-three/fiber";
+import { TextureLoader } from "three";
+import { Billboard, Text } from "@react-three/drei";
+import * as THREE from "three";
+
+export default function BaseMoon({
+  name,
+  data,
+  speed,
+  color,
+  texturePath, // 🆕 Added Prop
+  onPositionUpdate,
+}) {
+  const groupRef = useRef();
+
+  // Create a reusable vector to prevent memory leaks
+  const worldPos = useRef(new THREE.Vector3());
+
+  // 🆕 Load Texture if path is provided
+  // BaseMoon.jsx (فقط بخش texture)
+  const fallbackTex = "/textures/moon.jpg"; // این فایل را بذار تو public/textures/
+  const texture = useLoader(TextureLoader, texturePath || fallbackTex);
+  const hasTexture = Boolean(texturePath);
+
+  useFrame(({ clock }) => {
+    if (!data) return;
+
+    const t = clock.getElapsedTime() * speed;
+
+    // 1. Calculate Local Position
+    const period = data.period || 1;
+    const orbitProgress = (t / period) * 2 * Math.PI;
+
+    const x = data.orbitRadius * Math.cos(orbitProgress);
+    const z = data.orbitRadius * Math.sin(orbitProgress);
+
+    if (groupRef.current) {
+      // Set local position
+      groupRef.current.position.set(x, 0, z);
+
+      // 2. Calculate World Position
+      groupRef.current.getWorldPosition(worldPos.current);
+
+      // 3. Send to Parent
+      if (onPositionUpdate) {
+        onPositionUpdate([
+          worldPos.current.x,
+          worldPos.current.y,
+          worldPos.current.z,
+        ]);
+      }
+    }
+  });
+
+  if (!data) return null;
+
+  // Determine color safely (fallback if no texture)
+  const moonColor = color || data.color || "#cccccc";
+
+  return (
+    <group ref={groupRef}>
+      <mesh>
+        <sphereGeometry args={[data.radius, 16, 16]} />
+        <meshStandardMaterial
+          map={hasTexture ? texture : null}
+          color={hasTexture ? "white" : moonColor}
+          emissive={hasTexture ? "black" : moonColor}
+          emissiveIntensity={hasTexture ? 0 : 0.2}
+        />
+      </mesh>
+
+      {/* Text Label */}
+      <Billboard position={[0, data.radius + 0.2, 0]}>
+        <Text
+          fontSize={Math.max(0.3, data.radius * 1.5)}
+          color="white"
+          anchorX="center"
+          anchorY="bottom"
+          outlineWidth={0.02}
+          outlineColor="black"
+        >
+          {name}
+        </Text>
+      </Billboard>
+    </group>
+  );
+}

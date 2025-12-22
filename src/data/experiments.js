@@ -121,5 +121,14 @@ export const experimentsData = [
     Icon: ScienceIcon,
     gradient: "linear-gradient(135deg,#0f766e,#0ea5e9)",
     demo: true,
+  },  {
+    id: "astronomy.space.solar-system",
+    subject: "Astronomy",
+    name: "Solar System (3D)",
+    desc: "An interactive simulation.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    demo: true,
   },
+
 ];

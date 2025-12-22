@@ -1,50 +1,39 @@
-/**
- * lazyWithRetry(importFn, options)
- * - Wraps a dynamic import with retry logic.
- * - If the module chunk fails to load (network/dev server hiccup), it retries a few times.
- * - If it still fails, React.lazy will reject and ErrorBoundary will catch it.
- *
- * NOTE:
- * We intentionally keep the final behavior simple:
- *   - Retries automatically
- *   - If still failing -> SimulationErrorBoundary fallback -> Back to /experiments
- */
+import { lazy } from "react";
 
-export function lazyWithRetry(importFn, options = {}) {
-  const {
-    retries = 2, // total extra retries (so total attempts = retries + 1)
-    retryDelayMs = 500,
-  } = options;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-  let attempt = 0;
+const isRetryableLazyError = (err) => {
+  const msg = String(err?.message || err || "");
 
-  const load = () =>
-    new Promise((resolve, reject) => {
-      importFn()
-        .then(resolve)
-        .catch((err) => {
-          const message = String(err?.message || err || "");
-          const isChunkFail =
-            message.includes("Failed to fetch dynamically imported module") ||
-            message.includes("Loading chunk") ||
-            message.includes("ChunkLoadError") ||
-            message.includes("dynamically imported module");
+  return (
+    msg.includes("Failed to fetch dynamically imported module") ||
+    msg.includes("Importing a module script failed") ||
+    msg.includes("Loading chunk") ||
+    msg.includes("ChunkLoadError") ||
+    msg.includes("Unexpected token '<'") // معمولاً یعنی به جای JS، HTML (404) برگشته
+  );
+};
 
-          // If it's not a typical chunk/network issue, don't retry.
-          if (!isChunkFail) return reject(err);
+export default function lazyWithRetry(factory, options = {}) {
+  const retries = Number.isFinite(options.retries) ? options.retries : 2;
+  const baseDelayMs = Number.isFinite(options.delayMs) ? options.delayMs : 400;
 
-          if (attempt < retries) {
-            attempt += 1;
-            setTimeout(() => {
-              load().then(resolve).catch(reject);
-            }, retryDelayMs);
-            return;
-          }
+  return lazy(() => {
+    let attempt = 0;
 
-          reject(err);
-        });
-    });
+    const load = async () => {
+      try {
+        return await factory();
+      } catch (err) {
+        if (!isRetryableLazyError(err) || attempt >= retries) {
+          throw err;
+        }
+        attempt += 1;
+        await sleep(baseDelayMs * attempt);
+        return load();
+      }
+    };
 
-  // React.lazy expects: () => Promise<{ default: Component }>
-  return load;
+    return load();
+  });
 }
