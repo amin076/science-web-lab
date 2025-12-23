@@ -1,3 +1,4 @@
+// src/main.jsx
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
@@ -9,14 +10,12 @@ createRoot(document.getElementById("root")).render(
   </ThemeModeProvider>
 );
 
-// Service Worker — OK
-if ("serviceWorker" in navigator) {
+// ✅ Register SW only in production
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker
       .register("/service-worker.js")
-      .then((reg) =>
-        console.log("✅ Service Worker registered successfully:", reg.scope)
-      )
+      .then((reg) => console.log("✅ Service Worker registered:", reg.scope))
       .catch((err) =>
         console.error("❌ Service Worker registration failed:", err)
       );
