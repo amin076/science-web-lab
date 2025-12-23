@@ -1,16 +1,22 @@
 import React, { useEffect } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { lockScroll, unlockScroll } from "@/utils/scrollLock";
 
 export default function SimulationLayout({ children, onBack }) {
-  // Lock page scroll while simulation is running
+  // Lock page scroll while simulation overlay is mounted
   useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockScroll();
     return () => {
-      document.body.style.overflow = prevOverflow;
+      unlockScroll();
     };
   }, []);
+
+  const handleBackClick = () => {
+    // Safety: force unlock before leaving the route
+    unlockScroll(true);
+    onBack?.();
+  };
 
   return (
     <Box
@@ -36,7 +42,7 @@ export default function SimulationLayout({ children, onBack }) {
       >
         <Tooltip title="Back to Lab">
           <IconButton
-            onClick={onBack}
+            onClick={handleBackClick}
             sx={{
               color: "white",
               backgroundColor: "rgba(0,0,0,0.45)",
