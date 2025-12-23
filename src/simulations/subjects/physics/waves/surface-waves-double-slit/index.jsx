@@ -1,0 +1,2 @@
+import SurfaceWavesDoubleSlitSimulator from "./SurfaceWavesDoubleSlitSimulator";
+export default SurfaceWavesDoubleSlitSimulator;
