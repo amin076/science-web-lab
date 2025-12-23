@@ -19,9 +19,11 @@ export const simulationRegistry = {
 
   "astronomy.space.solar-system": lazyWithRetry(() =>
     import("@/simulations/subjects/astronomy/space/solar-system")
-  ), 
+  ),
   "physics.mechanics.spring-mass": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/mechanics/spring-mass")
   ),
-
+  "physics.waves.surface-waves-double-slit": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/waves/surface-waves-double-slit")
+  ),
 };

@@ -3,6 +3,7 @@ import ScienceIcon from "@mui/icons-material/Science";
 import FunctionsIcon from "@mui/icons-material/Functions";
 import BiotechIcon from "@mui/icons-material/Biotech";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import WavesIcon from "@mui/icons-material/Waves"; // اضافه کن بالا
 
 // 📘 All Experiments Library
 export const experimentsData = [
@@ -84,25 +85,17 @@ export const experimentsData = [
     demo: false,
   },
 
-  // 🧬 BIOLOGY
+  // 🌊 PHYSICS - WAVES`
   {
-    id: "cell-structure",
-    subject: "Biology",
-    name: "Cell Structure Explorer",
-    desc: "Zoom into a cell and explore its organelles interactively.",
-    Icon: BiotechIcon,
-    gradient: "linear-gradient(135deg,#22c55e,#10b981)",
+    id: "physics.waves.surface-waves-double-slit",
+    subject: "Physics",
+    name: "Surface Waves + Double-Slit",
+    desc: "Ripple tank + interference patterns (Young’s double-slit).",
+    Icon: WavesIcon,
+    gradient: "linear-gradient(135deg,#06b6d4,#3b82f6)",
     demo: true,
   },
-  {
-    id: "dna-replication",
-    subject: "Biology",
-    name: "DNA Replication Process",
-    desc: "Understand DNA duplication through step-by-step simulation.",
-    Icon: BiotechIcon,
-    gradient: "linear-gradient(135deg,#0ea5e9,#60a5fa)",
-    demo: false,
-  },
+
   // 🧪 NEW SIMULATION (DEV)
   {
     id: "newSimulation",
@@ -121,7 +114,8 @@ export const experimentsData = [
     Icon: ScienceIcon,
     gradient: "linear-gradient(135deg,#0f766e,#0ea5e9)",
     demo: true,
-  },  {
+  },
+  {
     id: "astronomy.space.solar-system",
     subject: "Astronomy",
     name: "Solar System (3D)",
@@ -139,5 +133,4 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
     demo: true,
   },
-
 ];
