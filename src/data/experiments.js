@@ -75,15 +75,25 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#ef4444,#f97316)",
     demo: true,
   },
+  // 🧲 ASTRONOMY
   {
-    id: "molecules",
-    subject: "Chemistry",
-    name: "Molecular Bonding",
-    desc: "Explore how molecules bond and form compounds.",
-    Icon: BiotechIcon,
-    gradient: "linear-gradient(135deg,#f43f5e,#e11d48)",
-    demo: false,
+    id: "astronomy.space.satellites-telescopes",
+    subject: "Astronomy",
+    name: "Satellites & Telescopes (Earth)",
+    desc: "Simulate Earth orbits + ground telescope visibility and tracking.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#0ea5e9,#a78bfa)",
+    demo: true,
   },
+{
+  id: "astronomy.space.earth-orbit-lab",
+  subject: "Astronomy",
+  name: "Earth Orbit Lab (3D)",
+  desc: "Real orbital motion + ground telescope visibility (LOS) with Earth rotation.",
+  Icon: ScienceIcon,
+  gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+  demo: true,
+},
 
   // 🌊 PHYSICS - WAVES`
   {

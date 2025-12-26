@@ -26,4 +26,10 @@ export const simulationRegistry = {
   "physics.waves.surface-waves-double-slit": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/waves/surface-waves-double-slit")
   ),
+  "astronomy.space.satellites-telescopes": lazyWithRetry(() =>
+    import("@/simulations/subjects/astronomy/space/satellites-telescopes")
+  ),
+  "astronomy.space.earth-orbit-lab": lazyWithRetry(() =>
+    import("@/simulations/subjects/astronomy/space/earth-orbit-lab")
+  ),
 };
