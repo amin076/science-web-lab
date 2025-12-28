@@ -55,14 +55,24 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#34d399,#22c55e)",
     demo: true,
   },
+  // 🔭 OPTICS
   {
-    id: "probability",
-    subject: "Mathematics",
-    name: "Probability Simulator",
-    desc: "Run experiments to understand randomness and statistics.",
-    Icon: FunctionsIcon,
-    gradient: "linear-gradient(135deg,#16a34a,#22c55e)",
-    demo: false,
+    id: "physics.optics.lens-mirror-2d",
+    subject: "Physics",
+    name: "Optics — Lenses & Mirrors (2D)",
+    desc: "Interactive 2D ray diagrams for lenses and mirrors.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#22c55e,#06b6d4)",
+    demo: true,
+  },
+  {
+    id: "physics.optics.lens-mirror-3d",
+    subject: "Physics",
+    name: "Optics — Lenses & Mirrors (3D)",
+    desc: "3D visualization of lenses/mirrors with rays and object/image rendering.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)",
+    demo: true,
   },
 
   // ⚗️ CHEMISTRY
@@ -85,15 +95,15 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg,#0ea5e9,#a78bfa)",
     demo: true,
   },
-{
-  id: "astronomy.space.earth-orbit-lab",
-  subject: "Astronomy",
-  name: "Earth Orbit Lab (3D)",
-  desc: "Real orbital motion + ground telescope visibility (LOS) with Earth rotation.",
-  Icon: ScienceIcon,
-  gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
-  demo: true,
-},
+  {
+    id: "astronomy.space.earth-orbit-lab",
+    subject: "Astronomy",
+    name: "Earth Orbit Lab (3D)",
+    desc: "Real orbital motion + ground telescope visibility (LOS) with Earth rotation.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    demo: true,
+  },
 
   // 🌊 PHYSICS - WAVES`
   {
@@ -106,12 +116,12 @@ export const experimentsData = [
     demo: true,
   },
 
-  // 🧪 NEW SIMULATION (DEV)
+  // ⚙️ PHYSICS - MECHANICS
   {
-    id: "newSimulation",
+    id: "physics.mechanics.seesaw",
     subject: "Physics",
-    name: "New Physics Simulation",
-    desc: "A new interactive physics simulation under active development.",
+    name: "Seesaw Balance",
+    desc: "Explore torque and equilibrium on a seesaw with adjustable weights.",
     Icon: ScienceIcon,
     gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
     demo: true,
