@@ -32,4 +32,13 @@ export const simulationRegistry = {
   "astronomy.space.earth-orbit-lab": lazyWithRetry(() =>
     import("@/simulations/subjects/astronomy/space/earth-orbit-lab")
   ),
+  "physics.optics.lens-mirror-2d": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/optics/lens-mirror-2d")
+  ),
+  "physics.optics.lens-mirror-3d": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/optics/lens-mirror-3d")
+  ),
+  "physics.mechanics.seesaw": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/seesaw")
+  ),
 };
