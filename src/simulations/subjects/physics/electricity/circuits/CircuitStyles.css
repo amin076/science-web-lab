@@ -1,0 +1,88 @@
+/* src/components/features/circuits/CircuitStyles.css */
+
+/* =========================================
+   1. GLOBAL SCROLLBAR (Modern & Dark)
+   ========================================= */
+/* This works on Chrome, Edge, and Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f3460; /* Deep Blue Track */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a1a2e; /* Dark Handle */
+  border-radius: 4px;
+  border: 1px solid #16213e;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e94560; /* Red Highlight on Hover */
+  border: 1px solid #c0392b;
+}
+
+/* Firefox Support */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1a1a2e #0f3460;
+}
+
+/* =========================================
+   2. INDUCTOR STYLES (Legacy Preserved)
+   ========================================= */
+.turn {
+  position: relative;
+  border-radius: 50%;
+  border: 3px solid #c084fc;
+
+  background: linear-gradient(
+    90deg,
+    rgba(192, 132, 252, 0.2),
+    rgba(232, 121, 249, 0.95),
+    rgba(192, 132, 252, 0.2)
+  );
+
+  transform-style: preserve-3d;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5),
+    inset 0 0 8px rgba(255, 255, 255, 0.4);
+
+  transition: all 0.3s ease;
+}
+
+/* =========================================
+   3. LAB UI UTILITIES
+   ========================================= */
+
+/* Range Input Slider Styling (Making them glow) */
+input[type="range"] {
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #2a2a4e;
+  border-radius: 3px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  margin-top: -5px; /* center thumb */
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid currentColor; /* Takes the color from class (text-red-500 etc) */
+  box-shadow: 0 0 10px currentColor;
+  transition: transform 0.1s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
