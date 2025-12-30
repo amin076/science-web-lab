@@ -18,12 +18,12 @@ export const experimentsData = [
     demo: true,
   },
   {
-    id: "electricity",
+    id: "physics.electricity.circuits",
     subject: "Physics",
-    name: "Electric Circuits",
-    desc: "Build and analyze simple circuits with voltage and resistance.",
-    Icon: LocalFireDepartmentIcon,
-    gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)",
+    name: "Electric Circuits Simulator",
+    desc: "Build and analyze electric circuits with resistors, capacitors, and power sources.",
+    Icon: BiotechIcon,
+    gradient: "linear-gradient(135deg,#f472b6,#fb7185)",
     demo: true,
   },
   {

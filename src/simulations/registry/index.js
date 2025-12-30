@@ -41,4 +41,7 @@ export const simulationRegistry = {
   "physics.mechanics.seesaw": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/mechanics/seesaw")
   ),
+  "physics.electricity.circuits": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/electricity/circuits")
+  ),
 };
