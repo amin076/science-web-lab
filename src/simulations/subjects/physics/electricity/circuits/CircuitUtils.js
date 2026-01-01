@@ -2,10 +2,12 @@
 
 export const COMPONENT_TYPES = {
   BATTERY: "battery",
+  AC_SOURCE: "ac_source",
   RESISTOR: "resistor",
   CAPACITOR: "capacitor",
   INDUCTOR: "inductor",
   SWITCH: "switch",
+  DIODE: "diode",
   LED: "led",
   GROUND: "ground",
   NODE: "node",
@@ -13,64 +15,69 @@ export const COMPONENT_TYPES = {
 
 export const DEFAULT_VALUES = {
   [COMPONENT_TYPES.BATTERY]: { voltage: 9, unit: "V" },
+  [COMPONENT_TYPES.AC_SOURCE]: { voltage: 10, frequency: 1, unit: "V" },
   [COMPONENT_TYPES.RESISTOR]: { resistance: 1000, unit: "Ω" },
   [COMPONENT_TYPES.CAPACITOR]: { capacitance: 10, unit: "µF" },
   [COMPONENT_TYPES.INDUCTOR]: { inductance: 100, unit: "mH" },
   [COMPONENT_TYPES.SWITCH]: { closed: true },
+  [COMPONENT_TYPES.DIODE]: { forwardVoltage: 0.7 },
   [COMPONENT_TYPES.LED]: { color: "red" },
   [COMPONENT_TYPES.GROUND]: {},
   [COMPONENT_TYPES.NODE]: {},
 };
 
-const INTERNAL_RESISTANCE = 0.001;
-export const TERMINAL_HIT_RADIUS = 15;
+export const TERMINAL_HIT_RADIUS = 14;
+
+// --- PHYSICS CONSTANTS ---
+const INTERNAL_RESISTANCE_OHMS = 1.0;
+const DIODE_ON_RES = 0.5;
+// 1 GigaOhm for OFF state to strictly block DC current
+const DIODE_OFF_RES = 1e9;
+const CAP_OPEN_COND = 1e-12;
+const IND_SHORT_RES = 1e-4;
 
 export const generateId = () =>
-  `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-// --- Geometry ---
-export const getTerminalPositions = (component) => {
-  const { x, y, rotation = 0 } = component;
-  const rad = (rotation * Math.PI) / 180;
-  const cos = Math.cos(rad);
-  const sin = Math.sin(rad);
-
-  if (component.type === COMPONENT_TYPES.NODE) {
-    return { left: { x, y, id: "left" }, right: { x, y, id: "right" } };
-  }
-  if (component.type === COMPONENT_TYPES.GROUND) {
-    const topX = x + 0 * cos - -20 * sin;
-    const topY = y + 0 * sin + -20 * cos;
-    return {
-      left: { x: topX, y: topY, id: "left" },
-      right: { x: topX, y: topY, id: "right" },
-    };
-  }
-  if (component.type === COMPONENT_TYPES.BATTERY) {
-    return {
-      left: { x: x - 40 * cos, y: y - 40 * sin, id: "left" },
-      right: { x: x + 40 * cos, y: y + 40 * sin, id: "right" },
-    };
-  }
-
-  return {
-    left: { x: x - 50 * cos, y: y - 50 * sin, id: "left" },
-    right: { x: x + 50 * cos, y: y + 50 * sin, id: "right" },
-  };
-};
+  `comp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
 export const isNearTerminal = (x, y, t) => {
   const dx = x - t.x;
   const dy = y - t.y;
-  return Math.sqrt(dx * dx + dy * dy) < TERMINAL_HIT_RADIUS;
+  return Math.hypot(dx, dy) < TERMINAL_HIT_RADIUS;
+};
+
+export const getTerminalPositions = (component) => {
+  const { x, y, rotation = 0, type } = component;
+  const rad = (rotation * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
+  if (type === COMPONENT_TYPES.NODE) {
+    return { left: { x, y, id: "left" }, right: { x, y, id: "right" } };
+  }
+  if (type === COMPONENT_TYPES.GROUND) {
+    return {
+      left: { x, y: y - 25, id: "left" },
+      right: { x, y: y - 25, id: "right" },
+    };
+  }
+
+  // Standard 2-terminal components
+  // Physically, "Left" is index 0 (Anode for diodes), "Right" is index 1 (Cathode)
+  const dx = 50 * cos;
+  const dy = 50 * sin;
+  return {
+    left: { x: x - dx, y: y - dy, id: "left" },
+    right: { x: x + dx, y: y + dy, id: "right" },
+  };
 };
 
 export const getWirePath = (x1, y1, x2, y2) => {
-  if (Math.abs(x1 - x2) < 2 || Math.abs(y1 - y2) < 2)
+  if (Math.abs(x1 - x2) < 2 || Math.abs(y1 - y2) < 2) {
     return [
       { x: x1, y: y1 },
       { x: x2, y: y2 },
     ];
+  }
   const midX = (x1 + x2) / 2;
   return [
     { x: x1, y: y1 },
@@ -80,57 +87,56 @@ export const getWirePath = (x1, y1, x2, y2) => {
   ];
 };
 
-const traceCurrent = (
+// --- RECURSIVE MAGNITUDE TRACER ---
+// This finds the magnitude of current flowing through a wire/node network.
+// It recursively looks past "Nodes" to find a real component with valid current data.
+const findCurrentMagnitude = (
   startComp,
-  startTerm,
   connections,
   components,
   results,
   visited = new Set()
 ) => {
-  if (!startComp) return { mag: 0, flowOut: false };
+  if (!startComp || !results) return 0;
 
+  // 1. If this is a real component (Battery, Resistor, etc), return its calculated current.
   if (
     startComp.type !== COMPONENT_TYPES.NODE &&
     startComp.type !== COMPONENT_TYPES.GROUND
   ) {
-    if (results[startComp.id]) {
-      const val = results[startComp.id].current;
-      let flowsOut = false;
-      if (val > 0 && startTerm === "right") flowsOut = true;
-      if (val < 0 && startTerm === "left") flowsOut = true;
-      return { mag: Math.abs(val), flowOut: flowsOut };
-    }
+    const res = results[startComp.id];
+    return res ? Math.abs(res.current) : 0;
   }
 
-  if (visited.has(startComp.id)) return null;
+  // 2. If it is a NODE/GROUND, we must dig deeper.
+  if (visited.has(startComp.id)) return 0;
   visited.add(startComp.id);
 
+  // Find all wires connected to this Node
   const connectedWires = connections.filter(
     (c) => c.fromComponent === startComp.id || c.toComponent === startComp.id
   );
 
+  // Recursively check neighbors. Return the first non-zero current found.
   for (const wire of connectedWires) {
-    const isFrom = wire.fromComponent === startComp.id;
-    const neighborId = isFrom ? wire.toComponent : wire.fromComponent;
-    const neighborTerm = isFrom ? wire.toTerminal : wire.fromTerminal;
+    const neighborId =
+      wire.fromComponent === startComp.id
+        ? wire.toComponent
+        : wire.fromComponent;
     const neighbor = components.find((c) => c.id === neighborId);
-
-    const result = traceCurrent(
-      neighbor,
-      neighborTerm,
-      connections,
-      components,
-      results,
-      visited
-    );
-
-    if (result && result.mag > 0) {
-      return result;
+    if (neighbor) {
+      const mag = findCurrentMagnitude(
+        neighbor,
+        connections,
+        components,
+        results,
+        visited
+      );
+      if (mag > 1e-6) return mag; // Found a valid current path
     }
   }
 
-  return { mag: 0, flowOut: true };
+  return 0;
 };
 
 // --- RENDERER ---
@@ -152,86 +158,107 @@ export const renderCircuit = (
 ) => {
   ctx.clearRect(0, 0, width, height);
 
-  // Grid
-  ctx.strokeStyle = "#1e1e2f";
+  // 1. Grid
+  ctx.save();
+  ctx.strokeStyle = "rgba(255,255,255,0.06)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  for (let x = 0; x < width; x += 25) {
+  for (let x = 0; x <= width; x += 30) {
     ctx.moveTo(x, 0);
     ctx.lineTo(x, height);
   }
-  for (let y = 0; y < height; y += 25) {
+  for (let y = 0; y <= height; y += 30) {
     ctx.moveTo(0, y);
     ctx.lineTo(width, y);
   }
   ctx.stroke();
+  ctx.restore();
 
-  // Wires
+  // 2. Wires
   connections.forEach((conn) => {
     const c1 = components.find((c) => c.id === conn.fromComponent);
     const c2 = components.find((c) => c.id === conn.toComponent);
     if (!c1 || !c2) return;
+
     const t1 = getTerminalPositions(c1)[conn.fromTerminal];
     const t2 = getTerminalPositions(c2)[conn.toTerminal];
     const path = getWirePath(t1.x, t1.y, t2.x, t2.y);
 
     let currentMag = 0;
-    let flowDirection = 1;
+    let flowDirection = true; // true = t1 -> t2
 
     if (simulationResults?.components) {
-      let foundData = traceCurrent(
+      // 1. Get Magnitude (using recursive lookup to handle Nodes)
+      currentMag = findCurrentMagnitude(
         c1,
-        conn.fromTerminal,
         connections,
         components,
         simulationResults.components
       );
-      if (!foundData || foundData.mag === 0) {
-        foundData = traceCurrent(
+      if (currentMag === 0) {
+        currentMag = findCurrentMagnitude(
           c2,
-          conn.toTerminal,
           connections,
           components,
           simulationResults.components
         );
-        if (foundData) foundData.flowOut = !foundData.flowOut;
       }
-      if (foundData) {
-        currentMag = foundData.mag;
-        flowDirection = foundData.flowOut ? 1 : -1;
+
+      // 2. Get Direction (using Voltage Difference)
+      // Current ALWAYS flows High Voltage -> Low Voltage
+      const res1 = simulationResults.components[c1.id];
+      const res2 = simulationResults.components[c2.id];
+
+      if (res1 && res2) {
+        // Look up the specific terminal voltages
+        const v1 = conn.fromTerminal === "left" ? res1.vLeft : res1.vRight;
+        const v2 = conn.toTerminal === "left" ? res2.vLeft : res2.vRight;
+
+        // If V1 > V2, flow is 1->2 (forward). If V2 > V1, flow is 2->1 (backward).
+        flowDirection = v1 >= v2;
       }
     }
 
     const isActive = currentMag > 1e-6;
+
+    // Draw Wire Line
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(path[0].x, path[0].y);
-    path.forEach((p) => ctx.lineTo(p.x, p.y));
-    ctx.strokeStyle = isActive ? "#4ecca3" : "#6c757d";
-    ctx.lineWidth = 4;
+    for (const p of path.slice(1)) ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = isActive
+      ? "rgba(255,255,255,0.6)"
+      : "rgba(255,255,255,0.3)";
+    ctx.lineWidth = 3;
     ctx.stroke();
 
+    // Draw Animation Dots
     if (isActive) {
-      const speed = Math.max(Math.min(currentMag * 100, 15), 2);
+      const speed = 1.0 + Math.min(5, currentMag * 5);
       ctx.beginPath();
       ctx.moveTo(path[0].x, path[0].y);
-      path.forEach((p) => ctx.lineTo(p.x, p.y));
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 2;
+      for (const p of path.slice(1)) ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 3;
       ctx.setLineDash([6, 12]);
-      ctx.lineDashOffset = -1 * animationOffset * speed * flowDirection;
+
+      // If flowDirection is true (v1 > v2), offset moves negative to look like forward flow.
+      ctx.lineDashOffset = (flowDirection ? -1 : 1) * (animationOffset * speed);
       ctx.stroke();
-      ctx.setLineDash([]);
     }
+    ctx.restore();
   });
 
-  // Components
+  // 3. Components
   components.forEach((comp) => {
     ctx.save();
     ctx.translate(comp.x, comp.y);
     ctx.rotate((comp.rotation * Math.PI) / 180);
     drawComponentSymbol(ctx, comp, simulationResults?.components?.[comp.id]);
+
+    // Selection Box
     if (selectedId === comp.id) {
-      ctx.strokeStyle = "#f39c12";
+      ctx.strokeStyle = "rgba(233,69,96,0.95)";
       ctx.lineWidth = 2;
       const isNode = comp.type === COMPONENT_TYPES.NODE;
       ctx.strokeRect(
@@ -243,11 +270,12 @@ export const renderCircuit = (
     }
     ctx.restore();
 
-    const terms = getTerminalPositions(comp);
+    // Terminals
     if (
-      comp.type !== COMPONENT_TYPES.NODE &&
-      comp.type !== COMPONENT_TYPES.GROUND
+      comp.type !== COMPONENT_TYPES.GROUND &&
+      comp.type !== COMPONENT_TYPES.NODE
     ) {
+      const terms = getTerminalPositions(comp);
       [terms.left, terms.right].forEach((t) => {
         ctx.beginPath();
         ctx.arc(t.x, t.y, 6, 0, Math.PI * 2);
@@ -255,33 +283,33 @@ export const renderCircuit = (
           hoveredTerminal?.componentId === comp.id &&
           hoveredTerminal?.terminal === t.id
         )
-          ctx.fillStyle = "#fff";
-        else if (isTerminalConnected(comp.id, t.id)) ctx.fillStyle = "#4ecca3";
-        else ctx.fillStyle = "#e94560";
+          ctx.fillStyle = "#f39c12";
+        else if (isTerminalConnected?.(comp.id, t.id))
+          ctx.fillStyle = "#4ecca3";
+        else ctx.fillStyle = "rgba(255,255,255,0.4)";
         ctx.fill();
       });
-    }
-    if (comp.type === COMPONENT_TYPES.GROUND) {
-      const t = terms.left;
+    } else {
+      const terms = getTerminalPositions(comp);
       ctx.beginPath();
-      ctx.arc(t.x, t.y, 4, 0, Math.PI * 2);
-      ctx.fillStyle = isTerminalConnected(comp.id, "left")
-        ? "#4ecca3"
-        : "#e94560";
-      if (hoveredTerminal?.componentId === comp.id) ctx.fillStyle = "#fff";
+      ctx.arc(terms.left.x, terms.left.y, 5, 0, Math.PI * 2);
+      ctx.fillStyle =
+        hoveredTerminal?.componentId === comp.id ? "#f39c12" : "#4ecca3";
       ctx.fill();
     }
   });
 
-  // Drag Line
+  // 4. Dragging Wire
   if (connectingFrom && mousePos) {
+    ctx.save();
     ctx.beginPath();
     ctx.moveTo(connectingFrom.position.x, connectingFrom.position.y);
     ctx.lineTo(mousePos.x, mousePos.y);
-    ctx.strokeStyle = "#fff";
+    ctx.strokeStyle = "#f39c12";
     ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.setLineDash([]);
+    ctx.restore();
   }
 };
 
@@ -289,18 +317,54 @@ const drawComponentSymbol = (ctx, comp, result) => {
   const { type, props } = comp;
   const rad = (comp.rotation * Math.PI) / 180;
 
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
   ctx.lineWidth = 3;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  ctx.fillStyle = "#fff";
   ctx.beginPath();
 
   if (type === COMPONENT_TYPES.NODE) {
-    ctx.fillStyle = "#4ecca3";
+    ctx.fillStyle = "#fff";
     ctx.arc(0, 0, 6, 0, Math.PI * 2);
     ctx.fill();
-    return;
+  } else if (type === COMPONENT_TYPES.GROUND) {
+    ctx.moveTo(0, -20);
+    ctx.lineTo(0, 0);
+    ctx.moveTo(-15, 0);
+    ctx.lineTo(15, 0);
+    ctx.moveTo(-10, 6);
+    ctx.lineTo(10, 6);
+    ctx.moveTo(-5, 12);
+    ctx.lineTo(5, 12);
+    ctx.stroke();
+  } else if (
+    type === COMPONENT_TYPES.BATTERY ||
+    type === COMPONENT_TYPES.AC_SOURCE
+  ) {
+    ctx.moveTo(-30, 0);
+    ctx.lineTo(-12, 0);
+    ctx.moveTo(12, 0);
+    ctx.lineTo(30, 0);
+    ctx.stroke();
+    if (type === COMPONENT_TYPES.BATTERY) {
+      ctx.beginPath();
+      ctx.moveTo(-12, -14);
+      ctx.lineTo(-12, 14);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(12, -22);
+      ctx.lineTo(12, 22);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-9, 0);
+      ctx.bezierCurveTo(-4, -9, 4, 9, 9, 0);
+      ctx.stroke();
+    }
   } else if (type === COMPONENT_TYPES.RESISTOR) {
     ctx.moveTo(-50, 0);
     ctx.lineTo(-25, 0);
@@ -311,47 +375,60 @@ const drawComponentSymbol = (ctx, comp, result) => {
     ctx.lineTo(20, -12);
     ctx.lineTo(25, 0);
     ctx.lineTo(50, 0);
+    ctx.stroke();
+  } else if (type === COMPONENT_TYPES.DIODE) {
+    ctx.moveTo(-30, 0);
+    ctx.lineTo(-18, 0);
+    ctx.moveTo(18, 0);
+    ctx.lineTo(30, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(-18, -14);
+    ctx.lineTo(18, 0);
+    ctx.lineTo(-18, 14);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.fill();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(18, -14);
+    ctx.lineTo(18, 14);
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.lineWidth = 3;
   } else if (type === COMPONENT_TYPES.LED) {
     ctx.moveTo(-50, 0);
-    ctx.lineTo(-10, 0);
-    ctx.moveTo(-10, -15);
-    ctx.lineTo(10, 0);
-    ctx.lineTo(-10, 15);
-    ctx.lineTo(-10, -15); // Triangle
-    ctx.moveTo(10, -15);
-    ctx.lineTo(10, 15); // Bar
-    ctx.moveTo(10, 0);
+    ctx.lineTo(-12, 0);
+    ctx.beginPath();
+    ctx.moveTo(-12, -15);
+    ctx.lineTo(12, 0);
+    ctx.lineTo(-12, 15);
+    ctx.closePath();
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(12, -15);
+    ctx.lineTo(12, 15);
+    ctx.stroke();
+    ctx.moveTo(12, 0);
     ctx.lineTo(50, 0);
     ctx.stroke();
-    // Arrows
     ctx.beginPath();
     ctx.moveTo(5, -20);
     ctx.lineTo(15, -30);
     ctx.moveTo(15, -20);
     ctx.lineTo(25, -30);
     ctx.stroke();
-    // Glow when ON
-    if (result && result.current > 0.0001) {
+    // Glow only if component is conducting (current > small threshold)
+    if (result && Math.abs(result.current) > 1e-4) {
       ctx.save();
       ctx.shadowBlur = 20;
-      ctx.shadowColor = props.color || "red";
-      ctx.fillStyle = props.color || "red";
+      ctx.shadowColor = "#f1c40f";
+      ctx.fillStyle = "#f1c40f";
       ctx.beginPath();
-      ctx.moveTo(-10, -15);
-      ctx.lineTo(10, 0);
-      ctx.lineTo(-10, 15);
+      ctx.arc(0, 0, 15, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
     }
-  } else if (type === COMPONENT_TYPES.BATTERY) {
-    ctx.moveTo(-30, 0);
-    ctx.lineTo(-10, 0);
-    ctx.moveTo(-10, -15);
-    ctx.lineTo(-10, 15);
-    ctx.moveTo(10, -25);
-    ctx.lineTo(10, 25);
-    ctx.moveTo(10, 0);
-    ctx.lineTo(30, 0);
   } else if (type === COMPONENT_TYPES.CAPACITOR) {
     ctx.moveTo(-30, 0);
     ctx.lineTo(-5, 0);
@@ -361,6 +438,7 @@ const drawComponentSymbol = (ctx, comp, result) => {
     ctx.lineTo(5, 20);
     ctx.moveTo(5, 0);
     ctx.lineTo(30, 0);
+    ctx.stroke();
   } else if (type === COMPONENT_TYPES.INDUCTOR) {
     ctx.moveTo(-30, 0);
     ctx.lineTo(-20, 0);
@@ -369,6 +447,7 @@ const drawComponentSymbol = (ctx, comp, result) => {
     ctx.arc(10, 0, 5, Math.PI, 0);
     ctx.moveTo(15, 0);
     ctx.lineTo(30, 0);
+    ctx.stroke();
   } else if (type === COMPONENT_TYPES.SWITCH) {
     ctx.moveTo(-30, 0);
     ctx.lineTo(-10, 0);
@@ -376,6 +455,8 @@ const drawComponentSymbol = (ctx, comp, result) => {
     ctx.moveTo(10, 0);
     ctx.arc(10, 0, 2, 0, Math.PI * 2);
     ctx.lineTo(30, 0);
+    ctx.stroke();
+    ctx.beginPath();
     if (props.closed) {
       ctx.moveTo(-10, 0);
       ctx.lineTo(10, 0);
@@ -383,275 +464,431 @@ const drawComponentSymbol = (ctx, comp, result) => {
       ctx.moveTo(-10, 0);
       ctx.lineTo(10, -15);
     }
-  } else if (type === COMPONENT_TYPES.GROUND) {
-    ctx.moveTo(0, -20);
-    ctx.lineTo(0, 0);
-    ctx.moveTo(-15, 0);
-    ctx.lineTo(15, 0);
-    ctx.moveTo(-10, 5);
-    ctx.lineTo(10, 5);
+    ctx.stroke();
   }
-  ctx.stroke();
 
+  // Text Labels
   ctx.save();
   ctx.rotate(-rad);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = "11px Arial";
+  ctx.fillStyle = "#eee";
+
   let label = "";
-  if (type === COMPONENT_TYPES.RESISTOR) label = `${props.resistance}Ω`;
-  else if (type === COMPONENT_TYPES.BATTERY) label = `${props.voltage}V`;
-  else if (type === COMPONENT_TYPES.LED) label = `LED`;
+  if (type === COMPONENT_TYPES.BATTERY) label = `${props.voltage}V`;
+  else if (type === COMPONENT_TYPES.AC_SOURCE) label = `AC ${props.voltage}V`;
+  else if (type === COMPONENT_TYPES.RESISTOR) label = `${props.resistance}Ω`;
+  else if (type === COMPONENT_TYPES.LED) label = `LED (${props.color})`;
+  else if (type === COMPONENT_TYPES.DIODE) label = `Diode`;
 
-  let resultText = null;
-  if (result) {
-    const iAbs = Math.abs(result.current);
-    const vAbs = Math.abs(result.voltageDrop);
-    let iStr = `${iAbs.toFixed(2)}A`;
-    if (iAbs < 0.001) iStr = `${(iAbs * 1e6).toFixed(0)}µA`;
-    else if (iAbs < 1) iStr = `${(iAbs * 1e3).toFixed(2)}mA`;
-    resultText = `${vAbs.toFixed(2)}V | ${iStr}`;
-  }
+  if (label) ctx.fillText(label, 0, -32);
 
-  const isVertical = Math.abs(comp.rotation % 180) === 90;
-  if (isVertical) {
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "12px sans-serif";
-    ctx.fillStyle = "#aaa";
-    ctx.fillText(label, 30, -10);
-    if (resultText) {
-      ctx.font = "bold 12px monospace";
-      ctx.fillStyle = "#f1c40f";
-      ctx.fillText(resultText, 30, 10);
-    }
-  } else {
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-    ctx.font = "12px sans-serif";
-    ctx.fillStyle = "#aaa";
-    ctx.fillText(label, 0, -30);
-    if (resultText) {
-      ctx.textBaseline = "top";
-      ctx.font = "bold 12px monospace";
-      ctx.fillStyle = "#f1c40f";
-      ctx.fillText(resultText, 0, 30);
-    }
+  // Stats (Only show if not NODE/GROUND to prevent "0.00uA" clutter on joints)
+  if (
+    result &&
+    type !== COMPONENT_TYPES.NODE &&
+    type !== COMPONENT_TYPES.GROUND
+  ) {
+    const i = Math.abs(result.current);
+    const v = Math.abs(result.voltageDrop);
+    const iStr =
+      i < 0.001
+        ? (i * 1e6).toFixed(1) + "µA"
+        : i < 1
+        ? (i * 1e3).toFixed(1) + "mA"
+        : i.toFixed(2) + "A";
+    ctx.fillStyle = "#6effcf";
+    ctx.fillText(`${iStr}  ${v.toFixed(2)}V`, 0, 32);
   }
   ctx.restore();
 };
-
-// --- PHYSICS ENGINE (UPDATED WITH DIODE LOGIC) ---
 export class CircuitEngine {
-  solve(components, connections) {
-    const nodeMap = new Map();
-    let nodeCount = 0;
-    const getNode = (id) => {
-      if (!nodeMap.has(id)) nodeMap.set(id, nodeCount++);
-      return nodeMap.get(id);
-    };
+  constructor() {
+    // Transient state:
+    // - Capacitor: previous voltage across (vPrev)
+    // - Inductor: previous current through (iPrev)
+    this.capState = new Map(); // id -> { vPrev }
+    this.indState = new Map(); // id -> { iPrev }
+  }
 
-    const parent = Array(components.length * 2 + 10)
+  reset() {
+    this.capState.clear();
+    this.indState.clear();
+  }
+
+  solve(components, connections, timeSec = 0, dt = 1 / 60) {
+    // Guard dt
+    if (!Number.isFinite(dt) || dt <= 0) dt = 1 / 60;
+    dt = Math.min(dt, 0.05);
+
+    const termIndex = {};
+    let tCount = 0;
+    components.forEach((c) => {
+      termIndex[`${c.id}_left`] = tCount++;
+      termIndex[`${c.id}_right`] = tCount++;
+    });
+
+    // Union-Find to merge wires/nodes
+    const parent = Array(tCount)
       .fill(0)
       .map((_, i) => i);
-    const find = (i) => {
-      if (parent[i] === i) return i;
-      parent[i] = find(parent[i]);
-      return parent[i];
-    };
-    const union = (i, j) => {
-      const rootI = find(i);
-      const rootJ = find(j);
-      if (rootI !== rootJ) parent[rootI] = rootJ;
+    const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+    const union = (a, b) => {
+      const ra = find(a),
+        rb = find(b);
+      if (ra !== rb) parent[rb] = ra;
     };
 
-    const termMap = {};
+    // Merge NODE/GROUND internal terminals, and closed switches
     components.forEach((c) => {
-      termMap[`${c.id}_left`] = getNode(`${c.id}_left`);
-      termMap[`${c.id}_right`] = getNode(`${c.id}_right`);
-      if (
-        c.type === COMPONENT_TYPES.NODE ||
-        c.type === COMPONENT_TYPES.GROUND
-      ) {
-        union(termMap[`${c.id}_left`], termMap[`${c.id}_right`]);
-      }
+      if (c.type === COMPONENT_TYPES.NODE || c.type === COMPONENT_TYPES.GROUND)
+        union(termIndex[`${c.id}_left`], termIndex[`${c.id}_right`]);
+      if (c.type === COMPONENT_TYPES.SWITCH && c.props.closed)
+        union(termIndex[`${c.id}_left`], termIndex[`${c.id}_right`]);
     });
 
-    connections.forEach((conn) => {
-      const u = termMap[`${conn.fromComponent}_${conn.fromTerminal}`];
-      const v = termMap[`${conn.toComponent}_${conn.toTerminal}`];
-      if (u !== undefined && v !== undefined) union(u, v);
+    // Merge connections
+    connections.forEach((c) => {
+      const a = termIndex[`${c.fromComponent}_${c.fromTerminal}`];
+      const b = termIndex[`${c.toComponent}_${c.toTerminal}`];
+      if (a !== undefined && b !== undefined) union(a, b);
     });
 
-    const groundComps = components.filter(
-      (c) => c.type === COMPONENT_TYPES.GROUND
-    );
-    let groundRoot = -1;
-    if (groundComps.length > 0) {
-      const gTerm = termMap[`${groundComps[0].id}_left`];
-      if (gTerm !== undefined) groundRoot = find(gTerm);
-    } else if (components.length > 0) {
-      const firstComp = components[0];
-      const t = termMap[`${firstComp.id}_right`];
-      if (t !== undefined) groundRoot = find(t);
+    // Choose ground reference
+    let groundRoot = null;
+    const gComp = components.find((c) => c.type === COMPONENT_TYPES.GROUND);
+    if (gComp) groundRoot = find(termIndex[`${gComp.id}_left`]);
+    else {
+      // Fallback auto-reference (UI should normally prevent starting without ground)
+      const src = components.find(
+        (c) =>
+          c.type === COMPONENT_TYPES.BATTERY ||
+          c.type === COMPONENT_TYPES.AC_SOURCE
+      );
+      if (src) groundRoot = find(termIndex[`${src.id}_right`]);
+      else if (components[0])
+        groundRoot = find(termIndex[`${components[0].id}_left`]);
+      else return { isComplete: true, components: {} };
     }
 
-    const rootToMatrix = new Map();
-    let matrixSize = 0;
-    const uniqueRoots = new Set();
+    // Map roots to matrix rows
+    const roots = new Set();
     components.forEach((c) => {
-      uniqueRoots.add(find(termMap[`${c.id}_left`]));
-      uniqueRoots.add(find(termMap[`${c.id}_right`]));
-    });
-    uniqueRoots.forEach((root) => {
-      if (root !== groundRoot) rootToMatrix.set(root, matrixSize++);
+      roots.add(find(termIndex[`${c.id}_left`]));
+      roots.add(find(termIndex[`${c.id}_right`]));
     });
 
-    if (matrixSize === 0) return { isComplete: true, components: {} };
+    const rootToRow = new Map();
+    let n = 0;
+    for (const r of roots) if (r !== groundRoot) rootToRow.set(r, n++);
 
-    // --- ITERATIVE SOLVER FOR DIODES ---
-    let diodeStates = {}; // Map of LED_ID -> boolean (true=Conducting, false=Blocking)
-    // Initial Guess: All ON
-    components
-      .filter((c) => c.type === COMPONENT_TYPES.LED)
-      .forEach((c) => (diodeStates[c.id] = true));
+    if (n === 0) return { isComplete: true, components: {} };
 
-    let finalVoltages = null;
+    // Diode states (simple iterative)
+    const diodes = components.filter(
+      (c) => c.type === COMPONENT_TYPES.DIODE || c.type === COMPONENT_TYPES.LED
+    );
+    const diodeStates = {};
+    diodes.forEach((d) => (diodeStates[d.id] = true)); // initial guess ON
 
-    // Loop max 5 times to converge diode states
-    for (let iter = 0; iter < 5; iter++) {
-      const G = Array(matrixSize)
-        .fill(0)
-        .map(() => Array(matrixSize).fill(0));
-      const I = Array(matrixSize).fill(0);
+    let finalV = Array(n).fill(0);
+
+    // Iterative solver (handles diode nonlinearity)
+    for (let iter = 0; iter < 10; iter++) {
+      const G = Array.from({ length: n }, () => Array(n).fill(0));
+      const I = Array(n).fill(0);
+
+      // Stamp conductance between n1 and n2
+      const stampG = (n1, n2, g) => {
+        if (n1 !== null) G[n1][n1] += g;
+        if (n2 !== null) G[n2][n2] += g;
+        if (n1 !== null && n2 !== null) {
+          G[n1][n2] -= g;
+          G[n2][n1] -= g;
+        }
+      };
+
+      // Inject current into node (positive means injected into node)
+      const inject = (node, val) => {
+        if (node !== null) I[node] += val;
+      };
+
+      // Convenience for a Norton current source from n1 -> n2 with magnitude Is
+      // (i.e., pushes current leaving n1 and entering n2)
+      const injectBetween = (n1, n2, Is) => {
+        // matches your existing convention for sources
+        inject(n2, Is);
+        inject(n1, -Is);
+      };
 
       components.forEach((comp) => {
         if (
-          comp.type === COMPONENT_TYPES.GROUND ||
-          comp.type === COMPONENT_TYPES.NODE
+          comp.type === COMPONENT_TYPES.NODE ||
+          comp.type === COMPONENT_TYPES.GROUND
         )
           return;
-        const n1 = rootToMatrix.get(find(termMap[`${comp.id}_left`]));
-        const n2 = rootToMatrix.get(find(termMap[`${comp.id}_right`]));
-        let cond = 0;
-        let currentSrc = 0;
 
-        if (comp.type === COMPONENT_TYPES.RESISTOR)
-          cond = 1 / comp.props.resistance;
-        else if (comp.type === COMPONENT_TYPES.LED) {
-          // Check guess state
-          const isConducting = diodeStates[comp.id];
-          cond = isConducting ? 1 / 10 : 1e-9; // 10 Ohm when ON, 1 GigaOhm when OFF
-        } else if (comp.type === COMPONENT_TYPES.BATTERY) {
-          cond = 1 / INTERNAL_RESISTANCE;
-          currentSrc = comp.props.voltage / INTERNAL_RESISTANCE;
-        } else if (comp.type === COMPONENT_TYPES.SWITCH && comp.props.closed)
-          cond = 1 / 0.001;
-        else if (comp.type === COMPONENT_TYPES.INDUCTOR)
-          cond = 1 / INTERNAL_RESISTANCE;
+        const r1 = find(termIndex[`${comp.id}_left`]);
+        const r2 = find(termIndex[`${comp.id}_right`]);
 
-        if (n1 !== undefined) G[n1][n1] += cond;
-        if (n2 !== undefined) G[n2][n2] += cond;
-        if (n1 !== undefined && n2 !== undefined) {
-          G[n1][n2] -= cond;
-          G[n2][n1] -= cond;
+        const n1 = r1 === groundRoot ? null : rootToRow.get(r1);
+        const n2 = r2 === groundRoot ? null : rootToRow.get(r2);
+
+        let g = 0;
+
+        // --- Linear elements ---
+        if (comp.type === COMPONENT_TYPES.RESISTOR) {
+          g = 1 / (comp.props.resistance || 1000);
+          stampG(n1, n2, g);
+          return;
         }
-        if (n2 !== undefined) I[n2] += currentSrc;
-        if (n1 !== undefined) I[n1] -= currentSrc;
+
+        // --- Transient: Capacitor (Backward Euler companion model) ---
+        if (comp.type === COMPONENT_TYPES.CAPACITOR) {
+          // Props are in µF -> convert to Farads
+          const C_uF = comp.props.capacitance ?? 10;
+          const C = Math.max(0, C_uF) * 1e-6;
+
+          // g = C/dt
+          g = C / dt;
+
+          const st = this.capState.get(comp.id) || { vPrev: 0 };
+          this.capState.set(comp.id, st);
+
+          // i = g*v - g*vPrev  => conductance + history current source
+          stampG(n1, n2, g);
+
+          // Norton history source: Is = -g*vPrev (from n1 -> n2)
+          const Is = -g * (st.vPrev || 0);
+          injectBetween(n1, n2, Is);
+          return;
+        }
+
+        // --- Transient: Inductor (Backward Euler companion model) ---
+        if (comp.type === COMPONENT_TYPES.INDUCTOR) {
+          // Props are in mH -> convert to Henry
+          const L_mH = comp.props.inductance ?? 100;
+          const L = Math.max(1e-12, L_mH * 1e-3);
+
+          // i = iPrev + (dt/L)*v  => Norton: g = dt/L, Is = iPrev
+          g = dt / L;
+
+          const st = this.indState.get(comp.id) || { iPrev: 0 };
+          this.indState.set(comp.id, st);
+
+          stampG(n1, n2, g);
+
+          // Norton history source: Is = iPrev (from n1 -> n2)
+          injectBetween(n1, n2, st.iPrev || 0);
+          return;
+        }
+
+        // --- Switch ---
+        if (comp.type === COMPONENT_TYPES.SWITCH) {
+          g = comp.props.closed ? 1 / IND_SHORT_RES : 1e-9;
+          stampG(n1, n2, g);
+          return;
+        }
+
+        // --- Sources (modeled as Thevenin -> Norton through INTERNAL_RESISTANCE_OHMS) ---
+        if (comp.type === COMPONENT_TYPES.BATTERY) {
+          const V = comp.props.voltage || 9;
+          g = 1 / INTERNAL_RESISTANCE_OHMS;
+          stampG(n1, n2, g);
+          // Norton equivalent current source: Is = V/R from n1 -> n2
+          injectBetween(n1, n2, V * g);
+          return;
+        }
+
+        if (comp.type === COMPONENT_TYPES.AC_SOURCE) {
+          const V =
+            (comp.props.voltage || 10) *
+            Math.sin(2 * Math.PI * (comp.props.frequency || 1) * timeSec);
+          g = 1 / INTERNAL_RESISTANCE_OHMS;
+          stampG(n1, n2, g);
+          injectBetween(n1, n2, V * g);
+          return;
+        }
+
+        // --- Diode / LED (simple piecewise model via iteration) ---
+        if (
+          comp.type === COMPONENT_TYPES.DIODE ||
+          comp.type === COMPONENT_TYPES.LED
+        ) {
+          const on = diodeStates[comp.id];
+          const threshold =
+            comp.type === COMPONENT_TYPES.DIODE
+              ? comp.props.forwardVoltage || 0.7
+              : 1.8;
+
+          if (on) {
+            // ON: resistor + fixed drop (companion)
+            g = 1 / DIODE_ON_RES;
+            stampG(n1, n2, g);
+
+            // Model the threshold as a fixed current injection
+            const iFix = g * threshold;
+            // This matches your previous convention (injecting + into n1 and - into n2)
+            inject(n1, iFix);
+            inject(n2, -iFix);
+          } else {
+            // OFF: very high resistance
+            g = 1 / DIODE_OFF_RES;
+            stampG(n1, n2, g);
+          }
+          return;
+        }
       });
 
-      finalVoltages = this.gaussianElimination(G, I);
+      finalV = this.gaussianElimination(G, I);
 
-      // Check Diode Conditions
+      // Diode convergence check
       let changed = false;
-      components
-        .filter((c) => c.type === COMPONENT_TYPES.LED)
-        .forEach((c) => {
-          const root1 = find(termMap[`${c.id}_left`]);
-          const root2 = find(termMap[`${c.id}_right`]);
-          const v1 =
-            root1 === groundRoot
-              ? 0
-              : finalVoltages[rootToMatrix.get(root1)] || 0;
-          const v2 =
-            root2 === groundRoot
-              ? 0
-              : finalVoltages[rootToMatrix.get(root2)] || 0;
+      diodes.forEach((d) => {
+        const r1 = find(termIndex[`${d.id}_left`]);
+        const r2 = find(termIndex[`${d.id}_right`]);
+        const v1 = r1 === groundRoot ? 0 : finalV[rootToRow.get(r1)] || 0;
+        const v2 = r2 === groundRoot ? 0 : finalV[rootToRow.get(r2)] || 0;
 
-          // Forward Bias: Anode (Left) > Cathode (Right)
-          const vDrop = v1 - v2;
+        const vDrop = v1 - v2;
+        const threshold =
+          d.type === COMPONENT_TYPES.DIODE
+            ? d.props.forwardVoltage || 0.7
+            : 1.8;
 
-          // If vDrop > 0, it should be ON. If vDrop <= 0, it should be OFF.
-          const shouldConduct = vDrop > 0.001;
+        const wasOn = diodeStates[d.id];
+        let shouldConduct = wasOn;
 
-          if (diodeStates[c.id] !== shouldConduct) {
-            diodeStates[c.id] = shouldConduct;
-            changed = true;
+        // Reverse bias => OFF
+        if (vDrop <= 0) {
+          shouldConduct = false;
+        } else {
+          if (wasOn) {
+            if (vDrop < threshold * 0.5) shouldConduct = false;
+          } else {
+            if (vDrop > threshold) shouldConduct = true;
           }
-        });
+        }
 
-      if (!changed) break; // Converged!
+        if (wasOn !== shouldConduct) {
+          diodeStates[d.id] = shouldConduct;
+          changed = true;
+        }
+      });
+
+      if (!changed) break;
     }
 
-    const results = {};
-    components.forEach((comp) => {
-      const root1 = find(termMap[`${comp.id}_left`]);
-      const root2 = find(termMap[`${comp.id}_right`]);
-      const v1 =
-        root1 === groundRoot ? 0 : finalVoltages[rootToMatrix.get(root1)] || 0;
-      const v2 =
-        root2 === groundRoot ? 0 : finalVoltages[rootToMatrix.get(root2)] || 0;
-      const voltageDrop = v1 - v2;
-      let current = 0;
+    // Build results + update transient states
+    const res = {};
+    const getV = (r) => (r === groundRoot ? 0 : finalV[rootToRow.get(r)] || 0);
 
-      if (comp.type === COMPONENT_TYPES.NODE) current = 0;
-      else if (comp.type === COMPONENT_TYPES.RESISTOR)
-        current = voltageDrop / comp.props.resistance;
-      else if (comp.type === COMPONENT_TYPES.BATTERY)
-        current = (voltageDrop + comp.props.voltage) / INTERNAL_RESISTANCE;
-      else if (comp.type === COMPONENT_TYPES.SWITCH && comp.props.closed)
-        current = voltageDrop / 0.001;
-      else if (comp.type === COMPONENT_TYPES.INDUCTOR)
-        current = voltageDrop / INTERNAL_RESISTANCE;
-      else if (comp.type === COMPONENT_TYPES.LED) {
-        const isConducting = diodeStates[comp.id];
-        current = isConducting ? voltageDrop / 10 : 0;
+    components.forEach((c) => {
+      const r1 = find(termIndex[`${c.id}_left`]);
+      const r2 = find(termIndex[`${c.id}_right`]);
+
+      const vL = getV(r1);
+      const vR = getV(r2);
+      const vDrop = vL - vR;
+
+      let curr = 0;
+
+      if (c.type === COMPONENT_TYPES.RESISTOR) {
+        curr = vDrop / (c.props.resistance || 1000);
+      } else if (c.type === COMPONENT_TYPES.BATTERY) {
+        const V = c.props.voltage || 9;
+        curr = (V - vDrop) / INTERNAL_RESISTANCE_OHMS; // approx branch current
+      } else if (c.type === COMPONENT_TYPES.AC_SOURCE) {
+        const V =
+          (c.props.voltage || 10) *
+          Math.sin(2 * Math.PI * (c.props.frequency || 1) * timeSec);
+        curr = (V - vDrop) / INTERNAL_RESISTANCE_OHMS;
+      } else if (
+        c.type === COMPONENT_TYPES.DIODE ||
+        c.type === COMPONENT_TYPES.LED
+      ) {
+        const on = true; // approx from last iteration is not stored here; use vDrop physics
+        const threshold =
+          c.type === COMPONENT_TYPES.DIODE
+            ? c.props.forwardVoltage || 0.7
+            : 1.8;
+        if (vDrop > threshold) curr = (vDrop - threshold) / DIODE_ON_RES;
+        else curr = vDrop / DIODE_OFF_RES;
+      } else if (c.type === COMPONENT_TYPES.SWITCH) {
+        curr = c.props.closed ? vDrop / IND_SHORT_RES : 0;
+      } else if (c.type === COMPONENT_TYPES.CAPACITOR) {
+        // i = C*(v - vPrev)/dt
+        const C_uF = c.props.capacitance ?? 10;
+        const C = Math.max(0, C_uF) * 1e-6;
+        const st = this.capState.get(c.id) || { vPrev: 0 };
+        curr = (C * (vDrop - (st.vPrev || 0))) / dt;
+
+        // Update capacitor history for next frame
+        st.vPrev = vDrop;
+        this.capState.set(c.id, st);
+      } else if (c.type === COMPONENT_TYPES.INDUCTOR) {
+        // i = iPrev + (dt/L)*v
+        const L_mH = c.props.inductance ?? 100;
+        const L = Math.max(1e-12, L_mH * 1e-3);
+        const st = this.indState.get(c.id) || { iPrev: 0 };
+        const g = dt / L;
+        const iNew = (st.iPrev || 0) + g * vDrop;
+        curr = iNew;
+
+        // Update inductor history for next frame
+        st.iPrev = iNew;
+        this.indState.set(c.id, st);
       }
 
-      results[comp.id] = { voltageDrop, current };
+      res[c.id] = { current: curr, voltageDrop: vDrop, vLeft: vL, vRight: vR };
     });
-    return { isComplete: true, components: results };
+
+    return { isComplete: true, components: res };
   }
 
   gaussianElimination(A, b) {
     const n = A.length;
+    const M = A.map((r) => [...r]);
+    const x = [...b];
+
     for (let i = 0; i < n; i++) {
-      let maxEl = Math.abs(A[i][i]);
-      let maxRow = i;
-      for (let k = i + 1; k < n; k++)
-        if (Math.abs(A[k][i]) > maxEl) {
-          maxEl = Math.abs(A[k][i]);
-          maxRow = k;
-        }
-      for (let k = i; k < n; k++) {
-        const tmp = A[maxRow][k];
-        A[maxRow][k] = A[i][k];
-        A[i][k] = tmp;
-      }
-      const tmp = b[maxRow];
-      b[maxRow] = b[i];
-      b[i] = tmp;
+      let max = i,
+        maxVal = Math.abs(M[i][i]);
+
       for (let k = i + 1; k < n; k++) {
-        const c = -A[k][i] / A[i][i];
-        for (let j = i; j < n; j++)
-          if (i === j) A[k][j] = 0;
-          else A[k][j] += c * A[i][j];
-        b[k] += c * b[i];
+        if (Math.abs(M[k][i]) > maxVal) {
+          max = k;
+          maxVal = Math.abs(M[k][i]);
+        }
+      }
+
+      if (Math.abs(M[max][i]) < 1e-12) continue;
+
+      [M[i], M[max]] = [M[max], M[i]];
+      [x[i], x[max]] = [x[max], x[i]];
+
+      for (let k = i + 1; k < n; k++) {
+        const c = -M[k][i] / M[i][i];
+        for (let j = i; j < n; j++) {
+          if (i === j) M[k][j] = 0;
+          else M[k][j] += c * M[i][j];
+        }
+        x[k] += c * x[i];
       }
     }
-    const x = new Array(n).fill(0);
-    for (let i = n - 1; i > -1; i--) {
-      let sum = 0;
-      for (let j = i + 1; j < n; j++) sum += A[i][j] * x[j];
-      x[i] = (b[i] - sum) / A[i][i];
+
+    const res = Array(n).fill(0);
+    for (let i = n - 1; i >= 0; i--) {
+      const piv = M[i][i];
+      if (Math.abs(piv) < 1e-12) {
+        res[i] = 0; // avoid NaN/Infinity
+        continue;
+      }
+      let sum = x[i];
+      for (let j = i + 1; j < n; j++) sum -= M[i][j] * res[j];
+      res[i] = sum / piv;
     }
-    return x;
+    return res;
   }
 }

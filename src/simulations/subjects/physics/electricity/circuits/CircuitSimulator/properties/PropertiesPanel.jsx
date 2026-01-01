@@ -1,10 +1,14 @@
-import React from "react";
+// src/components/features/circuits/CircuitSimulator/properties/PropertiesPanel.jsx
+import React, { useState } from "react";
 import { COMPONENT_TYPES } from "../../CircuitUtils";
+import ScopeOverlay from "../Scope/ScopeOverlay";
 
 export default function PropertiesPanel({
   components,
   connections,
   selectedId,
+  scopeSamples,
+  onClearScope,
   onSelect,
   onRotate,
   onUpdateProps,
@@ -12,128 +16,229 @@ export default function PropertiesPanel({
   onDeleteConnection,
 }) {
   const selected = components.find((c) => c.id === selectedId);
+  const shortId = selectedId ? selectedId.slice(-5) : "";
+  const scopeTitle = selected
+    ? `Scope • ${selected.type.toUpperCase()} (${shortId})`
+    : "Scope";
+  // Collapsible Scope panel (keeps UI clean)
+  const [showScope, setShowScope] = useState(true);
+
+  const canShowScope =
+    !!selectedId && Array.isArray(scopeSamples) && scopeSamples.length > 5;
 
   return (
-    <aside className="w-80 bg-[#16213e] p-4 border-l-2 border-[#0f3460] overflow-y-auto flex flex-col h-full z-10">
+    <aside className="w-[320px] bg-[#16213e] text-white p-3 flex flex-col gap-4 border-l border-[#0f3460] h-full min-h-0 overflow-y-auto">
       {/* PROPERTIES */}
-      <div className="mb-6">
-        <h3 className="text-xs font-bold mb-3 text-[#e94560] tracking-wider uppercase">
+      <div className="bg-[#0f3460] rounded-lg p-3 shrink-0">
+        <h3 className="text-sm font-bold tracking-wide text-red-300 mb-3">
           Properties
         </h3>
 
         {selected ? (
-          <div className="bg-[#0f3460] p-4 rounded-lg border border-[#2a2a4e]">
-            <h4 className="text-lg font-bold text-white mb-4 border-b border-gray-600 pb-2">
+          <div className="flex flex-col gap-3">
+            <h4 className="text-xs font-bold text-gray-200">
               {selected.type.toUpperCase()}
             </h4>
 
-            <div className="space-y-4 mb-4">
-              {selected.type === COMPONENT_TYPES.BATTERY && (
+            {selected.type === COMPONENT_TYPES.BATTERY && (
+              <div>
+                <label className="text-xs text-gray-300">Voltage (V)</label>
+                <input
+                  type="number"
+                  value={selected.props.voltage}
+                  onChange={(e) =>
+                    onUpdateProps(selected.id, {
+                      voltage: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full bg-[#16213e] text-white border border-gray-600 rounded px-2 py-1 text-sm"
+                />
+              </div>
+            )}
+
+            {selected.type === COMPONENT_TYPES.AC_SOURCE && (
+              <>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Voltage (V)
+                  <label className="text-xs text-gray-300">
+                    Peak Voltage (Vpk)
                   </label>
                   <input
                     type="number"
-                    value={selected.props.voltage ?? 0}
+                    value={selected.props.voltage}
                     onChange={(e) =>
                       onUpdateProps(selected.id, {
                         voltage: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-[#1a1a2e] border border-[#4ecca3] rounded px-2 py-2 text-white outline-none"
+                    className="w-full bg-[#16213e] text-white border border-gray-600 rounded px-2 py-1 text-sm"
                   />
                 </div>
-              )}
-
-              {selected.type === COMPONENT_TYPES.RESISTOR && (
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1">
-                    Resistance (Ω)
+                  <label className="text-xs text-gray-300">
+                    Frequency (Hz)
                   </label>
                   <input
                     type="number"
-                    value={selected.props.resistance ?? 0}
+                    value={selected.props.frequency}
                     onChange={(e) =>
                       onUpdateProps(selected.id, {
-                        resistance: parseFloat(e.target.value),
+                        frequency: parseFloat(e.target.value),
                       })
                     }
-                    className="w-full bg-[#1a1a2e] border border-[#4ecca3] rounded px-2 py-2 text-white outline-none"
+                    className="w-full bg-[#16213e] text-white border border-gray-600 rounded px-2 py-1 text-sm"
                   />
                 </div>
-              )}
+              </>
+            )}
 
-              {selected.type === COMPONENT_TYPES.SWITCH && (
-                <div className="flex items-center p-2 bg-[#1a1a2e] rounded border border-[#2a2a4e]">
-                  <input
-                    type="checkbox"
-                    checked={selected.props.closed || false}
-                    onChange={(e) =>
-                      onUpdateProps(selected.id, { closed: e.target.checked })
-                    }
-                    className="w-5 h-5 mr-3 accent-[#4ecca3]"
-                  />
-                  <span
-                    className={
-                      selected.props.closed
-                        ? "text-[#4ecca3] font-bold"
-                        : "text-gray-400"
-                    }
-                  >
-                    {selected.props.closed ? "Switch CLOSED" : "Switch OPEN"}
-                  </span>
-                </div>
-              )}
-            </div>
+            {selected.type === COMPONENT_TYPES.RESISTOR && (
+              <div>
+                <label className="text-xs text-gray-300">Resistance (Ω)</label>
+                <input
+                  type="number"
+                  value={selected.props.resistance}
+                  onChange={(e) =>
+                    onUpdateProps(selected.id, {
+                      resistance: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full bg-[#16213e] text-white border border-gray-600 rounded px-2 py-1 text-sm"
+                />
+              </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-2">
+            {selected.type === COMPONENT_TYPES.DIODE && (
+              <div>
+                <label className="text-xs text-gray-300">
+                  Forward Voltage (Vf)
+                </label>
+                <input
+                  type="number"
+                  step="0.05"
+                  value={selected.props.forwardVoltage ?? 0.7}
+                  onChange={(e) =>
+                    onUpdateProps(selected.id, {
+                      forwardVoltage: parseFloat(e.target.value),
+                    })
+                  }
+                  className="w-full bg-[#16213e] text-white border border-gray-600 rounded px-2 py-1 text-sm"
+                />
+              </div>
+            )}
+
+            {selected.type === COMPONENT_TYPES.SWITCH && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={!!selected.props.closed}
+                  onChange={(e) =>
+                    onUpdateProps(selected.id, { closed: e.target.checked })
+                  }
+                />
+                <span
+                  className={`text-sm ${
+                    selected.props.closed
+                      ? "text-[#4ecca3] font-bold"
+                      : "text-gray-300"
+                  }`}
+                >
+                  {selected.props.closed ? "Switch CLOSED" : "Switch OPEN"}
+                </span>
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-2">
               <button
                 onClick={() => onRotate(selected.id)}
-                className="bg-[#e94560] hover:bg-[#c0392b] text-white py-2 rounded text-sm transition-colors"
+                className="flex-1 py-2 bg-[#1a1a2e] hover:bg-[#2a2a4e] rounded transition text-sm"
               >
                 🔄 Rotate
               </button>
-
               <button
                 onClick={() => onDeleteComponent(selected.id)}
-                className="bg-[#dc3545] hover:bg-[#a71d2a] text-white py-2 rounded text-sm transition-colors"
+                className="flex-1 py-2 bg-[#c0392b] hover:bg-[#e74c3c] rounded transition text-sm"
               >
                 🗑 Delete
               </button>
             </div>
           </div>
         ) : (
-          <div className="text-gray-500 text-sm italic p-4 text-center border border-dashed border-gray-700 rounded">
+          <div className="text-sm text-gray-300">
             Select a component to view and edit its properties
           </div>
         )}
       </div>
 
+      {/* SCOPE (DOCKED) */}
+      <div className="bg-[#0f3460] rounded-lg p-3 shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold tracking-wide text-emerald-200">
+            Scope
+          </h3>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowScope((s) => !s)}
+              className="text-xs px-2 py-1 rounded bg-black/20 hover:bg-black/40"
+              title="Show/Hide Scope"
+            >
+              {showScope ? "Hide" : "Show"}
+            </button>
+
+            <button
+              type="button"
+              onClick={onClearScope}
+              className="text-xs px-2 py-1 rounded bg-black/20 hover:bg-black/40"
+              title="Clear scope samples"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+
+        {showScope ? (
+          canShowScope ? (
+            <ScopeOverlay
+              samples={scopeSamples}
+              title={scopeTitle}
+              windowSeconds={6}
+            />
+          ) : (
+            <div className="text-xs text-gray-300">
+              Select a component and start the simulation to see the waveform.
+            </div>
+          )
+        ) : (
+          <div className="text-xs text-gray-400">Scope is hidden.</div>
+        )}
+      </div>
+
       {/* COMPONENTS LIST */}
-      <div className="mb-6">
-        <h3 className="text-xs font-bold mb-3 text-[#e94560] tracking-wider uppercase">
+      <div className="bg-[#0f3460] rounded-lg p-3 shrink-0 flex flex-col min-h-0">
+        <h3 className="text-sm font-bold tracking-wide text-cyan-300 mb-3">
           Components ({components.length})
         </h3>
-
-        <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+        <div className="flex flex-col gap-2 overflow-y-auto max-h-[250px] pr-1">
           {components.map((comp) => (
             <div
               key={comp.id}
               onClick={() => onSelect(comp.id)}
-              className={`flex justify-between items-center p-2 rounded cursor-pointer text-xs transition-colors ${
+              className={`cursor-pointer px-2 py-2 rounded flex items-center justify-between transition shrink-0 ${
                 selectedId === comp.id
                   ? "bg-[#e94560] text-white"
-                  : "bg-[#0f3460] text-gray-300 hover:bg-[#2a2a4e]"
+                  : "bg-[#1a1a2e] text-gray-200 hover:bg-[#2a2a4e]"
               }`}
             >
-              <span className="font-medium">{comp.type.toUpperCase()}</span>
+              <span className="text-xs">
+                {comp.type} ({comp.id.slice(-4)})
+              </span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteComponent(comp.id);
                 }}
-                className="text-white/70 hover:text-white px-2"
+                className="text-xs px-2 py-1 rounded bg-black/20 hover:bg-black/40"
               >
                 ✕
               </button>
@@ -143,30 +248,27 @@ export default function PropertiesPanel({
       </div>
 
       {/* CONNECTIONS LIST */}
-      <div className="flex-1 overflow-hidden flex flex-col">
-        <h3 className="text-xs font-bold mb-3 text-[#e94560] tracking-wider uppercase">
+      <div className="bg-[#0f3460] rounded-lg p-3 shrink-0 flex flex-col min-h-0">
+        <h3 className="text-sm font-bold tracking-wide text-purple-300 mb-3">
           Connections ({connections.length})
         </h3>
-
-        <div className="overflow-y-auto flex-1 space-y-1 pr-1">
+        <div className="flex flex-col gap-2 overflow-y-auto max-h-[200px] pr-1">
           {connections.map((conn) => {
             const fromComp = components.find(
               (c) => c.id === conn.fromComponent
             );
             const toComp = components.find((c) => c.id === conn.toComponent);
-            const label = `${fromComp?.type ?? "?"}(${
-              conn.fromTerminal[0]
-            }) → ${toComp?.type ?? "?"}(${conn.toTerminal[0]})`;
+            const label = `${fromComp?.type ?? "?"} → ${toComp?.type ?? "?"}`;
 
             return (
               <div
                 key={conn.id}
-                className="flex justify-between items-center bg-[#0f3460] p-2 rounded text-xs text-gray-300 border border-[#1a1a2e]"
+                className="px-2 py-2 rounded flex items-center justify-between bg-[#1a1a2e] shrink-0"
               >
-                <span className="truncate mr-2">{label}</span>
+                <span className="text-[11px] text-gray-200">{label}</span>
                 <button
                   onClick={() => onDeleteConnection(conn.id)}
-                  className="text-[#e94560] hover:text-white"
+                  className="text-xs px-2 py-1 rounded bg-black/20 hover:bg-black/40"
                 >
                   ✕
                 </button>
