@@ -1,15 +1,15 @@
-// ✅ src/components/experiments/ExperimentCard.jsx
-import { Box, Typography, Button, Divider } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import { motion, useAnimation } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
   const controls = useAnimation();
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ نمایش اولیه کارت
   useEffect(() => {
     controls.start({ opacity: 1, y: 0 });
   }, [controls]);
@@ -17,20 +17,16 @@ export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
   const handleHoverStart = () => {
     setIsHovered(true);
     controls.start({
-      scale: 1.04,
-      y: -6,
-      boxShadow: "0 0 25px rgba(0,0,0,0.25)",
-      transition: { duration: 0.4, ease: "easeInOut" },
+      y: -8,
+      transition: { duration: 0.3, ease: "easeOut" },
     });
   };
 
   const handleHoverEnd = () => {
     setIsHovered(false);
     controls.start({
-      scale: 1,
       y: 0,
-      boxShadow: "0 6px 14px rgba(0,0,0,0.12)",
-      transition: { duration: 0.6, ease: "easeOut" },
+      transition: { duration: 0.3, ease: "easeOut" },
     });
   };
 
@@ -45,9 +41,8 @@ export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={controls}
-      whileTap={{ scale: 0.98 }}
       onHoverStart={handleHoverStart}
       onHoverEnd={handleHoverEnd}
       sx={{
@@ -55,93 +50,167 @@ export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        borderRadius: "12px",
+        borderRadius: "24px", // Modern rounded corners
         overflow: "hidden",
-        backgroundColor: "background.paper",
-        boxShadow: "0 6px 14px rgba(0,0,0,0.12)",
-        transition: "all 0.4s ease",
+        position: "relative",
+
+        // 🔮 Glassmorphism Styles
+        background: "rgba(30, 41, 59, 0.4)", // Semi-transparent dark slate
+        backdropFilter: "blur(12px)", // The glass blur effect
+        border: "1px solid rgba(255, 255, 255, 0.08)", // Subtle border
+        boxShadow: isHovered
+          ? "0 20px 40px rgba(0,0,0,0.4)"
+          : "0 4px 6px rgba(0,0,0,0.1)",
+
+        transition: "box-shadow 0.3s ease, border-color 0.3s ease",
+        "&:hover": {
+          border: "1px solid rgba(255, 255, 255, 0.2)",
+        },
       }}
     >
-      {/* 🌈 Header Gradient */}
+      {/* 🔦 Top Ambient Glow (Decorative) */}
       <Box
         sx={{
+          position: "absolute",
+          top: "-50px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "150px",
+          height: "150px",
           background: gradient,
-          color: "white",
-          p: 3,
+          filter: "blur(60px)",
+          opacity: 0.4,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* 🧪 Icon Container */}
+      <Box
+        sx={{
+          pt: 5,
+          pb: 2,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          minHeight: 120,
+          position: "relative",
+          zIndex: 1,
         }}
       >
-        <Icon sx={{ fontSize: 48 }} />
+        <Box
+          sx={{
+            width: 80,
+            height: 80,
+            borderRadius: "50%",
+            background: `linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))`,
+            border: "1px solid rgba(255,255,255,0.1)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          {/* Render the Icon with the gradient applied to it specifically */}
+          <Icon
+            sx={{
+              fontSize: 40,
+              color: "white", // Or use css filter if you want the icon itself to be gradient
+            }}
+          />
+        </Box>
       </Box>
 
-      {/* 📘 Details */}
-      <Box sx={{ p: 3, flexGrow: 1 }}>
+      {/* 📝 Content */}
+      <Box
+        sx={{
+          p: 3,
+          pt: 1,
+          flexGrow: 1,
+          position: "relative",
+          zIndex: 1,
+          textAlign: "center",
+        }}
+      >
         <Typography
           variant="h6"
-          fontWeight={700}
+          fontWeight={800}
           gutterBottom
           sx={{
-            textAlign: "center",
             background: gradient,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            letterSpacing: "0.5px",
+            mb: 1.5,
           }}
         >
           {name}
         </Typography>
+
         <Typography
           variant="body2"
-          color="text.secondary"
-          sx={{ textAlign: "center" }}
+          sx={{
+            color: "rgba(255,255,255,0.7)",
+            lineHeight: 1.6,
+            fontSize: "0.9rem",
+          }}
         >
           {desc}
         </Typography>
       </Box>
 
-      <Divider />
-
       {/* 🧭 Action Buttons */}
       <Box
         sx={{
-          p: 2,
+          p: 3,
+          pt: 0,
           display: "flex",
-          justifyContent: "space-around",
-          alignItems: "center",
-          gap: 1.5,
+          gap: 2,
+          position: "relative",
+          zIndex: 1,
         }}
       >
         <Button
+          fullWidth
           variant="contained"
-          size="small"
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            borderRadius: "6px",
-          }}
+          startIcon={<PlayArrowRoundedIcon />}
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation(); // ✅ اگر بعداً کارت هم clickable شد
+            e.stopPropagation();
             goToRun();
           }}
+          sx={{
+            background: gradient,
+            borderRadius: "12px",
+            textTransform: "none",
+            fontWeight: 700,
+            boxShadow: "0 4px 14px 0 rgba(0,0,0,0.3)",
+            color: "white",
+            "&:hover": {
+              filter: "brightness(1.1)",
+              boxShadow: "0 6px 20px 0 rgba(0,0,0,0.4)",
+            },
+          }}
         >
-          START
+          Start
         </Button>
 
         <Button
           variant="outlined"
-          color="secondary"
-          size="small"
-          sx={{ textTransform: "none", fontWeight: 500 }}
           onClick={(e) => {
-            e.preventDefault();
             e.stopPropagation();
             goToDetails();
           }}
+          sx={{
+            minWidth: "50px",
+            borderRadius: "12px",
+            borderColor: "rgba(255,255,255,0.2)",
+            color: "rgba(255,255,255,0.8)",
+            "&:hover": {
+              borderColor: "white",
+              background: "rgba(255,255,255,0.05)",
+            },
+          }}
         >
-          DETAILS
+          <InfoOutlinedIcon />
         </Button>
       </Box>
     </Box>

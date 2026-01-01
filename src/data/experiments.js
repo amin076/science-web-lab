@@ -1,77 +1,155 @@
 // ✅ src/data/experiments.js
-import ScienceIcon from "@mui/icons-material/Science";
-import FunctionsIcon from "@mui/icons-material/Functions";
-import BiotechIcon from "@mui/icons-material/Biotech";
-import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
-import WavesIcon from "@mui/icons-material/Waves"; // اضافه کن بالا
+
+// 1. Import specific icons to match the subjects
+import ScienceIcon from "@mui/icons-material/Science"; // For Chemistry
+import ElectricBoltIcon from "@mui/icons-material/ElectricBolt"; // For Electricity
+import SpeedIcon from "@mui/icons-material/Speed"; // For Mechanics/Motion
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows"; // For Collisions/Vectors
+import VisibilityIcon from "@mui/icons-material/Visibility"; // For Optics
+import BlurOnIcon from "@mui/icons-material/BlurOn"; // For Fields/Particles
+import GraphicEqIcon from "@mui/icons-material/GraphicEq"; // For Acoustics/Doppler
+import RocketLaunchIcon from "@mui/icons-material/RocketLaunch"; // For Space
+import PublicIcon from "@mui/icons-material/Public"; // For Planets/Orbit
+import WavesIcon from "@mui/icons-material/Waves"; // For Waves
+import BalanceIcon from "@mui/icons-material/Balance"; // For Seesaw
+import TerrainIcon from "@mui/icons-material/Terrain"; // For Geology
+import ShowChartIcon from "@mui/icons-material/ShowChart"; // For Oscillators
 
 // 📘 All Experiments Library
 export const experimentsData = [
-  // 🔬 PHYSICS
+  // 🔬 PHYSICS - MECHANICS
   {
     id: "mechanics",
     subject: "Physics",
     name: "Mechanics Simulation",
-    desc: "Explore motion, forces, and momentum with interactive simulations.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    desc: "Master Newton's laws. Experiment with force, mass, and acceleration in a friction-free environment.",
+    Icon: SpeedIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
   {
+    id: "physics.mechanics.collision",
+    subject: "Physics",
+    name: "Collision Simulator",
+    desc: "Crash objects together! visualize elastic vs. inelastic collisions and momentum conservation in real-time.",
+    Icon: CompareArrowsIcon,
+    gradient: "linear-gradient(135deg, #f97316, #f59e0b)",
+    demo: true,
+  },
+  {
+    id: "physics.mechanics.seesaw",
+    subject: "Physics",
+    name: "Seesaw Balance",
+    desc: "Learn about torque and rotational equilibrium by balancing objects of different masses.",
+    Icon: BalanceIcon,
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    demo: true,
+  },
+  {
+    id: "physics.mechanics.spring-mass",
+    subject: "Physics",
+    name: "Spring-Mass Oscillator",
+    desc: "Analyze Simple Harmonic Motion (SHM) by observing period, frequency, and damping effects.",
+    Icon: ShowChartIcon,
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    demo: true,
+  },
+
+  // ⚡ PHYSICS - ELECTRICITY & MAGNETISM
+  {
     id: "physics.electricity.circuits",
     subject: "Physics",
-    name: "Electric Circuits Simulator",
-    desc: "Build and analyze electric circuits with resistors, capacitors, and power sources.",
-    Icon: BiotechIcon,
-    gradient: "linear-gradient(135deg,#f472b6,#fb7185)",
+    name: "Electric Circuits Lab",
+    desc: "Design your own electronics. Wire up resistors, capacitors, and batteries to analyze voltage and current.",
+    Icon: ElectricBoltIcon,
+    gradient: "linear-gradient(135deg, #f472b6, #fb7185)",
     demo: true,
   },
   {
     id: "coulomb-law-2d",
     subject: "Physics",
     name: "Coulomb's Law (2D)",
-    desc: "Visualize electrostatic forces, vector field, and flux lines in 2D.",
-    Icon: LocalFireDepartmentIcon,
-    gradient: "linear-gradient(135deg,#f59e0b,#fb7185)",
+    desc: "Visualize invisible forces. See how electric fields and flux lines interact between charged particles.",
+    Icon: BlurOnIcon,
+    gradient: "linear-gradient(135deg, #f59e0b, #fb7185)",
     demo: true,
   },
   {
     id: "coulomb-law-3d",
     subject: "Physics",
     name: "Coulomb's Law (3D)",
-    desc: "Explore electric field vectors and flux lines around charges in 3D.",
-    Icon: LocalFireDepartmentIcon,
-    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    desc: "A fully immersive 3D visualization of electric field vectors radiating from point charges.",
+    Icon: BlurOnIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
 
-  // ➗ MATHEMATICS
-  {
-    id: "geometry",
-    subject: "Mathematics",
-    name: "Geometric Shapes Explorer",
-    desc: "Visualize 2D and 3D shapes and their properties.",
-    Icon: FunctionsIcon,
-    gradient: "linear-gradient(135deg,#34d399,#22c55e)",
-    demo: true,
-  },
-  // 🔭 OPTICS
+  // 🔭 PHYSICS - OPTICS
   {
     id: "physics.optics.lens-mirror-2d",
     subject: "Physics",
-    name: "Optics — Lenses & Mirrors (2D)",
-    desc: "Interactive 2D ray diagrams for lenses and mirrors.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#22c55e,#06b6d4)",
+    name: "Optics Bench (2D)",
+    desc: "Manipulate light rays. Place convex/concave lenses and mirrors to see how images form.",
+    Icon: VisibilityIcon,
+    gradient: "linear-gradient(135deg, #22c55e, #06b6d4)",
     demo: true,
   },
   {
     id: "physics.optics.lens-mirror-3d",
     subject: "Physics",
-    name: "Optics — Lenses & Mirrors (3D)",
-    desc: "3D visualization of lenses/mirrors with rays and object/image rendering.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#a78bfa,#60a5fa)",
+    name: "Optics Bench (3D)",
+    desc: "Step into a 3D optical lab to render real-time reflections and refractions of objects.",
+    Icon: VisibilityIcon,
+    gradient: "linear-gradient(135deg, #a78bfa, #60a5fa)",
+    demo: true,
+  },
+
+  // 🔊 PHYSICS - WAVES & ACOUSTICS
+  {
+    id: "physics.acoustics.doppler",
+    subject: "Physics",
+    name: "Doppler Effect",
+    desc: "Hear the shift. Visualize how sound wave frequencies compress and stretch with relative motion.",
+    Icon: GraphicEqIcon,
+    gradient: "linear-gradient(135deg, #f43f5e, #ec4899)",
+    demo: true,
+  },
+  {
+    id: "physics.waves.surface-waves-double-slit",
+    subject: "Physics",
+    name: "Ripple Tank & Interference",
+    desc: "Create water waves and replicate Young’s famous double-slit experiment to see interference patterns.",
+    Icon: WavesIcon,
+    gradient: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+    demo: true,
+  },
+
+  // 🚀 ASTRONOMY
+  {
+    id: "astronomy.space.satellites-telescopes",
+    subject: "Astronomy",
+    name: "Satellites & Tracking",
+    desc: "Control ground telescopes to track satellites moving across the Earth's orbit.",
+    Icon: RocketLaunchIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #a78bfa)",
+    demo: true,
+  },
+  {
+    id: "astronomy.space.earth-orbit-lab",
+    subject: "Astronomy",
+    name: "Earth Orbit Lab (3D)",
+    desc: "Simulate orbital mechanics, Line-of-Sight (LOS) communications, and Earth rotation.",
+    Icon: PublicIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+  {
+    id: "astronomy.space.solar-system",
+    subject: "Astronomy",
+    name: "Solar System (3D)",
+    desc: "Journey through space. Interactive gravity simulation of our planets and their orbits.",
+    Icon: PublicIcon,
+    gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     demo: true,
   },
 
@@ -79,78 +157,21 @@ export const experimentsData = [
   {
     id: "acid-base",
     subject: "Chemistry",
-    name: "Acid-Base Reactions",
-    desc: "Simulate neutralization and observe pH changes in real-time.",
-    Icon: LocalFireDepartmentIcon,
-    gradient: "linear-gradient(135deg,#ef4444,#f97316)",
-    demo: true,
-  },
-  // 🧲 ASTRONOMY
-  {
-    id: "astronomy.space.satellites-telescopes",
-    subject: "Astronomy",
-    name: "Satellites & Telescopes (Earth)",
-    desc: "Simulate Earth orbits + ground telescope visibility and tracking.",
+    name: "Acid-Base Titration",
+    desc: "Mix solutions safely. Simulate neutralization reactions and track pH levels in real-time.",
     Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#0ea5e9,#a78bfa)",
-    demo: true,
-  },
-  {
-    id: "astronomy.space.earth-orbit-lab",
-    subject: "Astronomy",
-    name: "Earth Orbit Lab (3D)",
-    desc: "Real orbital motion + ground telescope visibility (LOS) with Earth rotation.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#0ea5e9,#22d3ee)",
+    gradient: "linear-gradient(135deg, #ef4444, #f97316)",
     demo: true,
   },
 
-  // 🌊 PHYSICS - WAVES`
-  {
-    id: "physics.waves.surface-waves-double-slit",
-    subject: "Physics",
-    name: "Surface Waves + Double-Slit",
-    desc: "Ripple tank + interference patterns (Young’s double-slit).",
-    Icon: WavesIcon,
-    gradient: "linear-gradient(135deg,#06b6d4,#3b82f6)",
-    demo: true,
-  },
-
-  // ⚙️ PHYSICS - MECHANICS
-  {
-    id: "physics.mechanics.seesaw",
-    subject: "Physics",
-    name: "Seesaw Balance",
-    desc: "Explore torque and equilibrium on a seesaw with adjustable weights.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-    demo: true,
-  },
+  // 🌋 EARTH SCIENCE
   {
     id: "earth-science.geology.plate-tectonics",
     subject: "Earth Science",
     name: "Plate Tectonics (3D)",
-    desc: "Explore tectonic plate movements and Earth’s internal layers in an interactive 3D simulation.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#0f766e,#0ea5e9)",
-    demo: true,
-  },
-  {
-    id: "astronomy.space.solar-system",
-    subject: "Astronomy",
-    name: "Solar System (3D)",
-    desc: "An interactive simulation.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-    demo: true,
-  },
-  {
-    id: "physics.mechanics.spring-mass",
-    subject: "Physics",
-    name: "SpringMass Oscillator",
-    desc: "Explore simple harmonic motion using a springmass system.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    desc: "Dive underground. Explore Earth’s crust, mantle, and the movement of tectonic plates.",
+    Icon: TerrainIcon,
+    gradient: "linear-gradient(135deg, #0f766e, #0ea5e9)",
     demo: true,
   },
 ];

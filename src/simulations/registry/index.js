@@ -44,4 +44,10 @@ export const simulationRegistry = {
   "physics.electricity.circuits": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/electricity/circuits")
   ),
+  "physics.mechanics.collision": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/collision")
+  ),
+  "physics.acoustics.doppler": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/acoustics/Doppler")
+  ),
 };
