@@ -1,18 +1,19 @@
+// Caps.jsx
 import React, { useMemo } from "react";
 import * as THREE from "three";
 import { LAYERS } from "./layers";
 
-const CAP_EPS = 0.002;
+const CAP_EPS = 0.003;
 
 function CircleCap({ radius, rotation, position, color, clippingPlanes = [] }) {
   return (
     <mesh rotation={rotation} position={position}>
-      <circleGeometry args={[radius, 64]} />
+      <circleGeometry args={[radius, 80]} />
       <meshBasicMaterial
         color={color}
         side={THREE.DoubleSide}
         clippingPlanes={clippingPlanes}
-        // Helps prevent flicker where the cap touches the sliced shell
+        clipIntersection={false} // caps must always be AND/intersection-style
         polygonOffset
         polygonOffsetFactor={-1}
         polygonOffsetUnits={-1}
@@ -32,11 +33,12 @@ function RingCap({
 }) {
   return (
     <mesh rotation={rotation} position={position}>
-      <ringGeometry args={[innerRadius, outerRadius, 64]} />
+      <ringGeometry args={[innerRadius, outerRadius, 80]} />
       <meshBasicMaterial
         color={color}
         side={THREE.DoubleSide}
         clippingPlanes={clippingPlanes}
+        clipIntersection={false}
         polygonOffset
         polygonOffsetFactor={-1}
         polygonOffsetUnits={-1}
@@ -46,10 +48,6 @@ function RingCap({
   );
 }
 
-/**
- * Builds circle + ring stack for the currently visible layers.
- * This is reusable for X/Y/Z caps.
- */
 function useCapLayers(settings) {
   return useMemo(() => {
     const arr = [];
@@ -59,7 +57,7 @@ function useCapLayers(settings) {
       arr.push({ r: LAYERS.outer.radius, c: LAYERS.outer.emissive });
     if (settings.showMantle)
       arr.push({ r: LAYERS.mantle.radius, c: LAYERS.mantle.emissive });
-    if (settings.showCrust) arr.push({ r: LAYERS.crust.radius, c: "#5c4033" }); // crust cut color
+    if (settings.showCrust) arr.push({ r: LAYERS.crust.radius, c: "#5c4033" });
     return arr;
   }, [
     settings.showInner,
@@ -71,10 +69,9 @@ function useCapLayers(settings) {
 
 function CapStack({ capLayers, rotation, position, clippingPlanes }) {
   if (!capLayers.length) return null;
-
   let prev = 0;
   return (
-    <>
+    <group rotation={rotation} position={position}>
       {capLayers.map((layer, idx) => {
         if (idx === 0) {
           prev = layer.r;
@@ -82,21 +79,21 @@ function CapStack({ capLayers, rotation, position, clippingPlanes }) {
             <CircleCap
               key={`circle-${layer.r}`}
               radius={layer.r}
-              rotation={rotation}
-              position={position}
+              rotation={[0, 0, 0]}
+              position={[0, 0, 0]}
               color={layer.c}
               clippingPlanes={clippingPlanes}
             />
           );
         }
-
+        const safeInner = prev - 0.02;
         const node = (
           <RingCap
             key={`ring-${prev}-${layer.r}`}
-            innerRadius={prev}
+            innerRadius={safeInner}
             outerRadius={layer.r}
-            rotation={rotation}
-            position={position}
+            rotation={[0, 0, 0]}
+            position={[0, 0, 0]}
             color={layer.c}
             clippingPlanes={clippingPlanes}
           />
@@ -104,50 +101,104 @@ function CapStack({ capLayers, rotation, position, clippingPlanes }) {
         prev = layer.r;
         return node;
       })}
-    </>
+    </group>
   );
 }
 
-/**
- * Props expected:
- * - settings (must include showInner/showOuter/showMantle/showCrust + sliceVariant)
- * - sliceDepth: 0..3
- * - capClipPlanes: { xCap: Plane[], yCap: Plane[], zCap: Plane[] }
- */
+function rotationFromNormal(n) {
+  // circleGeometry faces +Z, rotate so +Z aligns with normal
+  const q = new THREE.Quaternion().setFromUnitVectors(
+    new THREE.Vector3(0, 0, 1),
+    n.clone().normalize()
+  );
+  const e = new THREE.Euler().setFromQuaternion(q, "XYZ");
+  return [e.x, e.y, e.z];
+}
+
 export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
   if (!sliceDepth || sliceDepth <= 0) return null;
 
   const capLayers = useCapLayers(settings);
   if (!capLayers.length) return null;
 
-  // Nudge caps into the "removed" side to avoid z-fighting.
-  // small: removed side is negatives (x<0,y<0,z<0) => push -axis
-  // big:   removed side is positives (x>0,y>0,z>0) => push +axis
+  // ---------- BLOCK MODE ----------
+  if (sliceDepth === 4) {
+    // These normals MUST match the block plane normals from useEarthClipping (keep-orientation).
+    const angleDeg = 20;
+    const tanA = Math.tan(THREE.MathUtils.degToRad(angleDeg));
+
+    const nYpos = new THREE.Vector3(tanA, -1, 0).normalize();
+    const nYneg = new THREE.Vector3(tanA, +1, 0).normalize();
+    const nZpos = new THREE.Vector3(tanA, 0, -1).normalize();
+    const nZneg = new THREE.Vector3(tanA, 0, +1).normalize();
+
+    // Nudge: push caps slightly into removed side to avoid z-fighting.
+    // removed side is "behind" plane => along -normal
+    const epsDir = settings.sliceVariant === "big" ? +1 : -1;
+
+    return (
+      <group>
+        <CapStack
+          capLayers={capLayers}
+          rotation={rotationFromNormal(nYpos)}
+          position={nYpos
+            .clone()
+            .multiplyScalar(CAP_EPS * epsDir)
+            .toArray()}
+          clippingPlanes={capClipPlanes?.wallYpos || []}
+        />
+        <CapStack
+          capLayers={capLayers}
+          rotation={rotationFromNormal(nYneg)}
+          position={nYneg
+            .clone()
+            .multiplyScalar(CAP_EPS * epsDir)
+            .toArray()}
+          clippingPlanes={capClipPlanes?.wallYneg || []}
+        />
+        <CapStack
+          capLayers={capLayers}
+          rotation={rotationFromNormal(nZpos)}
+          position={nZpos
+            .clone()
+            .multiplyScalar(CAP_EPS * epsDir)
+            .toArray()}
+          clippingPlanes={capClipPlanes?.wallZpos || []}
+        />
+        <CapStack
+          capLayers={capLayers}
+          rotation={rotationFromNormal(nZneg)}
+          position={nZneg
+            .clone()
+            .multiplyScalar(CAP_EPS * epsDir)
+            .toArray()}
+          clippingPlanes={capClipPlanes?.wallZneg || []}
+        />
+      </group>
+    );
+  }
+
+  // ---------- STANDARD MODE (1/2..1/8) ----------
+  // Keep your existing X/Y/Z cap rendering (below is compatible with your original design)
   const dir = settings.sliceVariant === "big" ? 1 : -1;
 
-  // X plane cap (x = 0): disk is in YZ plane
   const xRotation = [0, -Math.PI / 2, 0];
   const xPosition = [dir * CAP_EPS, 0, 0];
 
-  // Y plane cap (y = 0): disk is in XZ plane
   const yRotation = [Math.PI / 2, 0, 0];
   const yPosition = [0, dir * CAP_EPS, 0];
 
-  // Z plane cap (z = 0): disk is in XY plane (no rotation)
   const zRotation = [0, 0, 0];
   const zPosition = [0, 0, dir * CAP_EPS];
 
   return (
     <group>
-      {/* Depth >= 1: X cap always */}
       <CapStack
         capLayers={capLayers}
         rotation={xRotation}
         position={xPosition}
         clippingPlanes={capClipPlanes?.xCap || []}
       />
-
-      {/* Depth >= 2: Y cap */}
       {sliceDepth >= 2 && (
         <CapStack
           capLayers={capLayers}
@@ -156,8 +207,6 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
           clippingPlanes={capClipPlanes?.yCap || []}
         />
       )}
-
-      {/* Depth >= 3: Z cap */}
       {sliceDepth >= 3 && (
         <CapStack
           capLayers={capLayers}

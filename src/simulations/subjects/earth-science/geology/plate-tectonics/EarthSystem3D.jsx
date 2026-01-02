@@ -76,7 +76,9 @@ export function EarthSystem3D({ settings }) {
         {settings.showCrust && (
           <SphereLayer
             radius={LAYERS.crust.radius}
-            segments={1024}
+            // --- OPTIMIZATION FIX: Reduced from 1024 to 384 ---
+            // This maintains detail but drastically improves framerate
+            segments={384}
             // Textures
             map={textures.diffuse}
             normalMap={textures.normal}
