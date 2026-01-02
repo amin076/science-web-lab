@@ -33,7 +33,13 @@ export function Overlays({
         <AxisArrow color="#ff4040" label="Geo North" length={11} />
       )}
 
-      {settings.showField && <MagneticField />}
+      {/* FIX: Passed clipping props so lines disappear in cutaway views */}
+      {settings.showField && (
+        <MagneticField
+          clippingPlanes={clippingPlanes}
+          clipIntersection={clipIntersection}
+        />
+      )}
 
       {/* Atmosphere only in full (optional, avoids cut artifacts) */}
       {settings.viewMode === "full" && <Atmosphere />}

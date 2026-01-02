@@ -54,6 +54,7 @@ function buildStreamline({
   return points;
 }
 
+// FIX: Added clippingPlanes and clipIntersection to props
 export default function MagneticField({
   earthRadius = 4.0,
   tiltDeg = 11,
@@ -61,6 +62,8 @@ export default function MagneticField({
   seedR = 4.25,
   outerR = 20,
   color = "#33e3ff",
+  clippingPlanes = [],
+  clipIntersection = false,
 }) {
   const groupRef = useRef();
 
@@ -134,6 +137,9 @@ export default function MagneticField({
         opacity: 0.55,
         dashSize: 0.35,
         gapSize: 0.25,
+        // FIX: Apply clipping logic to materials
+        clippingPlanes: clippingPlanes,
+        clipIntersection: clipIntersection,
       });
 
       builtLines.push({ points: smoothPts, mat, idx });
@@ -141,7 +147,17 @@ export default function MagneticField({
     });
 
     return { lines: builtLines, dashMaterials: mats };
-  }, [earthRadius, tiltDeg, lineCount, seedR, outerR, color]);
+  }, [
+    earthRadius,
+    tiltDeg,
+    lineCount,
+    seedR,
+    outerR,
+    color,
+    // FIX: Re-run memo if planes change (e.g. switching from Half to Quarter)
+    clippingPlanes,
+    clipIntersection,
+  ]);
 
   useFrame((state, delta) => {
     // subtle overall breathing + rotation

@@ -1,4 +1,4 @@
-import React, { useState, Suspense, useMemo } from "react";
+import React, { useState, Suspense, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { EarthSystem3D } from "./EarthSystem3D";
@@ -29,8 +29,14 @@ export default function GeologySimulator3D() {
   const setSliceVariant = (variant) =>
     setSettings((p) => ({ ...p, sliceVariant: variant }));
 
-  // simple responsive: sidebar below canvas on small screens
-  const isNarrow = useMemo(() => window.innerWidth < 900, []);
+  // FIX: Added a proper resize listener so the layout adapts dynamically
+  const [isNarrow, setIsNarrow] = useState(() => window.innerWidth < 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsNarrow(window.innerWidth < 900);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div
@@ -83,10 +89,11 @@ export default function GeologySimulator3D() {
         </Canvas>
 
         {/* Overlay title */}
+        {/* FIX: Moved 'top' from 16 to 80 to avoid collision with Back button/Header */}
         <div
           style={{
             position: "absolute",
-            top: 16,
+            top: 80,
             left: 16,
             maxWidth: 340,
             padding: 16,
