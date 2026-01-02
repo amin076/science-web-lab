@@ -4,11 +4,16 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import ScienceIcon from "@mui/icons-material/Science"; // Fallback import
 
 export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
   const controls = useAnimation();
   const [isHovered, setIsHovered] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ SAFELY handle the Icon.
+  // We expect a React Component (MUI Icon). If missing, use Fallback.
+  const ValidIcon = Icon || ScienceIcon;
 
   useEffect(() => {
     controls.start({ opacity: 1, y: 0 });
@@ -50,25 +55,23 @@ export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        borderRadius: "24px", // Modern rounded corners
+        borderRadius: "24px",
         overflow: "hidden",
         position: "relative",
-
-        // 🔮 Glassmorphism Styles
-        background: "rgba(30, 41, 59, 0.4)", // Semi-transparent dark slate
-        backdropFilter: "blur(12px)", // The glass blur effect
-        border: "1px solid rgba(255, 255, 255, 0.08)", // Subtle border
+        // Glassmorphism
+        background: "rgba(30, 41, 59, 0.4)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255, 255, 255, 0.08)",
         boxShadow: isHovered
           ? "0 20px 40px rgba(0,0,0,0.4)"
           : "0 4px 6px rgba(0,0,0,0.1)",
-
         transition: "box-shadow 0.3s ease, border-color 0.3s ease",
         "&:hover": {
           border: "1px solid rgba(255, 255, 255, 0.2)",
         },
       }}
     >
-      {/* 🔦 Top Ambient Glow (Decorative) */}
+      {/* 🔦 Top Ambient Glow */}
       <Box
         sx={{
           position: "absolute",
@@ -110,13 +113,7 @@ export default function ExperimentCard({ id, name, desc, Icon, gradient }) {
             boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
           }}
         >
-          {/* Render the Icon with the gradient applied to it specifically */}
-          <Icon
-            sx={{
-              fontSize: 40,
-              color: "white", // Or use css filter if you want the icon itself to be gradient
-            }}
-          />
+          <ValidIcon sx={{ fontSize: 40, color: "white" }} />
         </Box>
       </Box>
 
