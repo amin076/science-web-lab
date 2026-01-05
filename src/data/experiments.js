@@ -10,12 +10,13 @@ import GraphicEqIcon from "@mui/icons-material/GraphicEq";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import PublicIcon from "@mui/icons-material/Public";
 import WavesIcon from "@mui/icons-material/Waves";
+import Thermometer from "@mui/icons-material/Thermostat";
 import BalanceIcon from "@mui/icons-material/Balance";
 import TerrainIcon from "@mui/icons-material/Terrain";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import OpacityIcon from "@mui/icons-material/Opacity"; // For Ripple Tank
 import BatteryChargingFullIcon from "@mui/icons-material/BatteryChargingFull"; // For Coulomb 3D
-
+import TuneIcon from "@mui/icons-material/Tune"; // Add this for the Pendulum
 // 📘 All Experiments Library
 export const experimentsData = [
   // 🔬 PHYSICS - MECHANICS
@@ -35,6 +36,15 @@ export const experimentsData = [
     desc: "Crash objects together! Visualize elastic vs. inelastic collisions.",
     Icon: CompareArrowsIcon,
     gradient: "linear-gradient(135deg, #f97316, #f59e0b)",
+    demo: true,
+  },
+  {
+    id: "physics.mechanics.simple-pendulum",
+    subject: "Physics",
+    name: "Simple Pendulum",
+    desc: "Explore harmonic motion. Modify length, gravity, and damping.",
+    Icon: TuneIcon,
+    gradient: "linear-gradient(135deg, #10b981, #34d399)",
     demo: true,
   },
   {
@@ -84,6 +94,16 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
+  // 🌡️ PHYSICS - THERMODYNAMICS
+  {
+    id: "physics.thermodynamics.gas",
+    subject: "Physics",
+    name: "Ideal Gas Law Simulation",
+    desc: "Explore the relationship between pressure, volume, and temperature.",
+    Icon: Thermometer,
+    gradient: "linear-gradient(135deg, #f472b6, #fb7185)",
+    demo: true,
+  },
 
   // 🔭 PHYSICS - OPTICS
   {
@@ -124,6 +144,15 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg, #06b6d4, #3b82f6)",
     demo: true,
   },
+  {
+    id: "physics.waves.multi-source-interference",
+    subject: "Physics",
+    name: "Multi-Source Interference",
+    desc: "Visualize wave interference from multiple sources.",
+    Icon: WavesIcon,
+    gradient: "linear-gradient(135deg, #06b6d4, #3b82f6)",
+    demo: true,
+  },
 
   // 🚀 ASTRONOMY
   {
@@ -151,17 +180,6 @@ export const experimentsData = [
     desc: "Journey through space. Interactive gravity simulation of our planets.",
     Icon: PublicIcon,
     gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-    demo: true,
-  },
-
-  // ⚗️ CHEMISTRY
-  {
-    id: "acid-base",
-    subject: "Chemistry",
-    name: "Acid-Base Titration",
-    desc: "Mix solutions safely. Simulate neutralization reactions.",
-    Icon: ScienceIcon,
-    gradient: "linear-gradient(135deg, #ef4444, #f97316)",
     demo: true,
   },
 

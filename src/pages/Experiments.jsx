@@ -1,4 +1,4 @@
-// ✅ src/pages/Experiments.jsx
+//src/pages/Experiments.jsx
 import { Typography, Box } from "@mui/material";
 import { motion } from "framer-motion";
 import { experimentsData } from "@/data/experiments";

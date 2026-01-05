@@ -50,4 +50,13 @@ export const simulationRegistry = {
   "physics.acoustics.doppler": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/acoustics/Doppler")
   ),
+  "physics.mechanics.simple-pendulum": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/pendulum")
+  ),
+  "physics.thermodynamics.gas": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/thermodynamics/gas")
+  ),
+  "physics.waves.multi-source-interference": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/waves/multi-source-interference")
+  ),
 };
