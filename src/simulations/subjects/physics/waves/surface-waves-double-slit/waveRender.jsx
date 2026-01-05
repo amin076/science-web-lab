@@ -1,42 +1,58 @@
-// src/simulations/subjects/physics/waves/surface-waves-double-slit/waveRender.js
 import { clamp } from "./surfaceWaves.math.js";
 
 /**
- * High-contrast visualization (similar to your reference app):
- * - Positive: cyan/white
- * - Negative: deep blue
- * - Wall: dark gray
+ * Realistic "Daylight" Water Rendering
+ *
+ * - Base: Clear Blue-Grey
+ * - Crests: Refract light intensely (Pure White)
+ * - Troughs: Cast soft shadows (Darker Blue)
+ * - Gradient: Smooth transitions
  */
 export function renderWaveToImageData(state, imgData, opts = {}) {
   const { u, obstacles } = state;
   const pixels = imgData.data;
 
-  const scale = opts.colorScale ?? 6.0; // adjust for stronger contrast
+  // Scale factor for wave height visualization
+  const scale = opts.colorScale ?? 2.5;
+
+  // Base Water Color (Lighter, like a pool or ripple tank)
+  const baseR = 40;
+  const baseG = 110;
+  const baseB = 160;
 
   for (let i = 0; i < u.length; i++) {
     const p = i * 4;
 
+    // Walls
     if (obstacles[i] === 1) {
-      pixels[p] = 40;
-      pixels[p + 1] = 40;
-      pixels[p + 2] = 40;
+      pixels[p] = 60;
+      pixels[p + 1] = 60;
+      pixels[p + 2] = 65;
       pixels[p + 3] = 255;
       continue;
     }
 
     const val = u[i];
-    const intensity = clamp(Math.abs(val) * scale, 0, 255);
 
-    if (val >= 0) {
-      // cyan-ish
-      pixels[p] = intensity * 0.1;
-      pixels[p + 1] = intensity;
-      pixels[p + 2] = intensity;
+    // We create a "lighting" effect.
+    // Real waves are smooth, so we map the value non-linearly.
+
+    if (val > 0) {
+      // --- CRESTS (Highlights) ---
+      // We want distinct, sharp bright lines for the tops of waves
+      const intensity = Math.pow(val * scale, 0.8) * 120;
+
+      pixels[p] = clamp(baseR + intensity, 0, 255);
+      pixels[p + 1] = clamp(baseG + intensity, 0, 255);
+      pixels[p + 2] = clamp(baseB + intensity, 0, 255); // Whiten towards 255
     } else {
-      // deep blue-ish
-      pixels[p] = 0;
-      pixels[p + 1] = 0;
-      pixels[p + 2] = intensity * 0.85;
+      // --- TROUGHS (Shadows) ---
+      // Shadows should be diffuse and not pitch black
+      const intensity = Math.pow(Math.abs(val) * scale, 0.8) * 80;
+
+      pixels[p] = clamp(baseR - intensity * 0.8, 0, 255);
+      pixels[p + 1] = clamp(baseG - intensity * 0.8, 0, 255);
+      pixels[p + 2] = clamp(baseB - intensity * 0.5, 10, 255); // Keep blue hue
     }
 
     pixels[p + 3] = 255;

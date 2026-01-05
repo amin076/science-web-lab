@@ -1,11 +1,4 @@
-// src/simulations/subjects/physics/waves/surface-waves-double-slit/wavePhysics.js
 import { clamp, idx, gaussian2 } from "./surfaceWaves.math.js";
-
-/**
- * A simple 2D wave equation solver (finite-difference time-domain).
- * uNext = (2 - d) u - (1 - d) uPrev + r^2 * Laplacian(u)
- * where r = c * dt / dx (Courant number), must be <= ~0.707 for 2D stability.
- */
 
 export function createWaveState(w, h) {
   return {
@@ -16,6 +9,7 @@ export function createWaveState(w, h) {
     uPrev: new Float32Array(w * h),
     uNext: new Float32Array(w * h),
     obstacles: new Uint8Array(w * h), // 1 = wall, 0 = free
+    dampingMap: new Float32Array(w * h), // Edge absorption
   };
 }
 
@@ -26,56 +20,62 @@ export function clearWave(state) {
   state.t = 0;
 }
 
+export function buildDampingMap(state) {
+  const { w, h, dampingMap } = state;
+  const spongeSize = 25; // Slightly larger sponge for better absorption
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let d = 0;
+      const dx = Math.min(x, w - 1 - x);
+      const dy = Math.min(y, h - 1 - y);
+      const dist = Math.min(dx, dy);
+
+      if (dist < spongeSize) {
+        d = 0.25 * Math.pow((spongeSize - dist) / spongeSize, 2);
+      }
+      dampingMap[idx(x, y, w)] = d;
+    }
+  }
+}
+
 export function buildDoubleSlitObstacle(obstacles, w, h, opts) {
   obstacles.fill(0);
+  if (!opts.enabled) return;
 
-  const enabled = !!opts.enabled;
-  if (!enabled) return;
-
-  const wallX = clamp(Math.floor(opts.wallX ?? Math.floor(w / 2)), 2, w - 3);
-  const thickness = clamp(Math.floor(opts.thickness ?? 2), 1, 8);
-
-  const slitSize = clamp(Math.floor(opts.slitSize ?? 10), 2, Math.floor(h / 3));
+  const wallX = clamp(Math.floor(opts.wallX ?? Math.floor(w / 2)), 5, w - 5);
+  const thickness = clamp(Math.floor(opts.thickness ?? 2), 1, 10);
+  const slitSize = clamp(Math.floor(opts.slitSize ?? 10), 1, Math.floor(h / 3));
   const slitSeparation = clamp(
     Math.floor(opts.slitSeparation ?? 26),
     2,
-    Math.floor(h / 2) - slitSize - 2
+    Math.floor(h / 2)
   );
-
   const cy = Math.floor(h / 2);
 
-  // Paint wall (vertical band)
-  for (let y = 1; y < h - 1; y++) {
+  for (let y = 0; y < h; y++) {
     for (let tx = 0; tx < thickness; tx++) {
       obstacles[idx(wallX + tx, y, w)] = 1;
     }
   }
 
-  // Cut two slits (clear obstacles)
-  const slit1Y0 = cy - slitSeparation - slitSize;
-  const slit1Y1 = cy - slitSeparation + slitSize;
-
-  const slit2Y0 = cy + slitSeparation - slitSize;
-  const slit2Y1 = cy + slitSeparation + slitSize;
-
-  for (let y = slit1Y0; y <= slit1Y1; y++) {
-    if (y <= 1 || y >= h - 2) continue;
+  const s1Top = cy - slitSeparation - slitSize;
+  const s1Bot = cy - slitSeparation + slitSize;
+  for (let y = s1Top; y <= s1Bot; y++) {
     for (let tx = 0; tx < thickness; tx++) {
-      obstacles[idx(wallX + tx, y, w)] = 0;
+      if (y > 1 && y < h - 2) obstacles[idx(wallX + tx, y, w)] = 0;
     }
   }
 
-  for (let y = slit2Y0; y <= slit2Y1; y++) {
-    if (y <= 1 || y >= h - 2) continue;
+  const s2Top = cy + slitSeparation - slitSize;
+  const s2Bot = cy + slitSeparation + slitSize;
+  for (let y = s2Top; y <= s2Bot; y++) {
     for (let tx = 0; tx < thickness; tx++) {
-      obstacles[idx(wallX + tx, y, w)] = 0;
+      if (y > 1 && y < h - 2) obstacles[idx(wallX + tx, y, w)] = 0;
     }
   }
 }
 
-/**
- * Ensure no energy "lives" inside walls after obstacle changes.
- */
 export function zeroInsideObstacles(state) {
   const { obstacles, u, uPrev, uNext } = state;
   for (let i = 0; i < obstacles.length; i++) {
@@ -97,92 +97,75 @@ export function injectPulse(state, x, y, amp = 1, radius = 8) {
     if (yy <= 1 || yy >= h - 2) continue;
     for (let xx = cx - r; xx <= cx + r; xx++) {
       if (xx <= 1 || xx >= w - 2) continue;
-
       const i = idx(xx, yy, w);
       if (obstacles[i] === 1) continue;
 
       const g = gaussian2(xx - cx, yy - cy, r * 0.45);
-      const add = amp * g;
-
-      // Add displacement with near-zero initial velocity (keep uPrev close to u)
-      u[i] += add;
-      uPrev[i] += add;
+      u[i] += amp * g;
+      uPrev[i] += amp * g;
     }
   }
 }
 
 function applyContinuousSource(state, params, dt) {
-  const { w, h, u, uPrev, obstacles, t } = state;
-
+  const { w, h, u, t, obstacles } = state;
   if (params.sourceMode !== "continuous") return;
 
   const amp = params.amplitude ?? 1;
-  const freqHz = params.frequency ?? 1; // Hz in "simulation seconds"
+  const freqHz = params.frequency ?? 1;
   const omega = 2 * Math.PI * freqHz;
   const value = amp * Math.sin(omega * t);
 
-  if (params.sourceShape === "plane") {
-    // Drive a vertical line to create plane waves (parallel wavefronts)
-    const x = clamp(Math.floor(params.sourceX ?? 10), 2, w - 3);
-    for (let y = 2; y < h - 2; y++) {
-      const i = idx(x, y, w);
-      if (obstacles[i] === 1) continue;
-      u[i] = value;
-      uPrev[i] = value;
+  // Soft Gaussian injection for point source to prevent square artifacts
+  if (params.sourceShape === "point") {
+    const sx = clamp(Math.floor(params.sourceX ?? w * 0.18), 2, w - 3);
+    const sy = clamp(Math.floor(params.sourceY ?? h * 0.5), 2, h - 3);
+
+    // 3x3 kernel
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const i = idx(sx + dx, sy + dy, w);
+        if (obstacles[i] === 0) {
+          // Simple weight based on distance
+          const weight = dx === 0 && dy === 0 ? 0.5 : 0.125;
+          u[i] = u[i] * (1 - weight) + value * weight;
+        }
+      }
     }
-  } else {
-    // Point source (circular waves)
-    const sx = clamp(
-      Math.floor(params.sourceX ?? Math.floor(w * 0.18)),
-      2,
-      w - 3
-    );
-    const sy = clamp(
-      Math.floor(params.sourceY ?? Math.floor(h * 0.5)),
-      2,
-      h - 3
-    );
-    const i = idx(sx, sy, w);
-    if (obstacles[i] === 0) {
-      u[i] = value;
-      uPrev[i] = value;
+  }
+  // Plane source (Line)
+  else if (params.sourceShape === "plane") {
+    const x = clamp(Math.floor(params.sourceX ?? 10), 5, w - 5);
+    for (let y = 5; y < h - 5; y++) {
+      const i = idx(x, y, w);
+      if (obstacles[i] === 0) u[i] = value;
     }
   }
 }
 
-/**
- * One physics step.
- * params: { waveSpeed, damping, dx, sourceMode, sourceShape, ... }
- */
 export function stepWave(state, params, dt) {
-  const { w, h, u, uPrev, uNext, obstacles } = state;
+  const { w, h, u, uPrev, uNext, obstacles, dampingMap } = state;
 
-  const dx = params.dx ?? 1; // grid spacing
-  const c = params.waveSpeed ?? 10; // "cells per second"
+  const dx = 1;
+  // Courant stability check
+  const c = Math.min(params.waveSpeed ?? 10, (0.6 * dx) / dt);
   const r = (c * dt) / dx;
   const r2 = r * r;
 
-  // Damping as a velocity-proportional term (small recommended).
-  // UI could be 0..1, we map to 0..0.02-ish per step.
-  const dampUI = clamp(params.damping ?? 0.1, 0, 1);
-  const d = dampUI * 0.02;
+  const baseDamp = clamp(params.damping ?? 0.05, 0, 1) * 0.1;
 
-  // Apply continuous source BEFORE stepping so it injects energy cleanly
   applyContinuousSource(state, params, dt);
 
-  // Absorbing boundary (zero edges) to reduce reflections from frame
-  for (let x = 0; x < w; x++) {
-    uNext[idx(x, 0, w)] = 0;
-    uNext[idx(x, h - 1, w)] = 0;
-  }
-  for (let y = 0; y < h; y++) {
-    uNext[idx(0, y, w)] = 0;
-    uNext[idx(w - 1, y, w)] = 0;
-  }
+  // --- MAIN LOOP ---
+  // Using 9-Point Stencil for Isotropic (Circular) Propagation
 
   for (let y = 1; y < h - 1; y++) {
+    const rowOffset = y * w;
+    const prevRow = (y - 1) * w;
+    const nextRow = (y + 1) * w;
+
     for (let x = 1; x < w - 1; x++) {
-      const i = idx(x, y, w);
+      const i = rowOffset + x;
 
       if (obstacles[i] === 1) {
         uNext[i] = 0;
@@ -190,23 +173,30 @@ export function stepWave(state, params, dt) {
       }
 
       const uC = u[i];
-      const lap =
-        u[idx(x - 1, y, w)] +
-        u[idx(x + 1, y, w)] +
-        u[idx(x, y - 1, w)] +
-        u[idx(x, y + 1, w)] -
-        4 * uC;
+      const d = baseDamp + dampingMap[i];
 
-      // Wave equation with damping
+      // 1. Cross Neighbors (Up, Down, Left, Right)
+      const valCross = u[i - 1] + u[i + 1] + u[prevRow + x] + u[nextRow + x];
+
+      // 2. Diagonal Neighbors (Corners)
+      const valDiag =
+        u[prevRow + x - 1] +
+        u[prevRow + x + 1] +
+        u[nextRow + x - 1] +
+        u[nextRow + x + 1];
+
+      // 3. Isotropic Laplacian Approximation
+      // 0.5 weight to cross, 0.25 weight to diagonals, -3 center
+      // This magic ratio balances the propagation speed in all directions.
+      const lap = 0.5 * valCross + 0.25 * valDiag - 3.0 * uC;
+
+      // Wave Equation
       uNext[i] = (2 - d) * uC - (1 - d) * uPrev[i] + r2 * lap;
     }
   }
 
-  // Swap buffers
-  state.uPrev = state.u;
-  state.u = state.uNext;
-  state.uNext = uPrev; // reuse old uPrev array as the next buffer
-
-  // Time update
+  // Swap
+  state.uPrev.set(state.u);
+  state.u.set(state.uNext);
   state.t += dt;
 }
