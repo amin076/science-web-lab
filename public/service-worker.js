@@ -47,10 +47,11 @@ self.addEventListener("fetch", (event) => {
           const cache = await caches.open(CACHE_NAME);
           cache.put("/index.html", fresh.clone()); // store latest shell for offline
           return fresh;
-        } catch (err) {
+        } catch {
           const cachedIndex = await caches.match("/index.html");
           return cachedIndex || new Response("Offline", { status: 503 });
         }
+
       })()
     );
     return;

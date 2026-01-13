@@ -1,5 +1,5 @@
 // src/simulations/subjects/astronomy/space/earth-orbit-lab/EarthVisual.jsx
-import React, { useMemo, useRef, useEffect } from "react";
+import React, { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useLoader, useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";

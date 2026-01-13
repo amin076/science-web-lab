@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# -----------------------------
+# Local-only AI/dev bundle outputs
+# -----------------------------
+packs/
+**/*.pack.md
+**/*ai-pack*.md
+**/*ai_pack*.md
+**/*aipack*.md
+
+# Optional: if you generate packed simulations elsewhere, add those folders too
+generated/
+artifacts/
+out/
+
+# Optional: common local scratch outputs
+*.tmp
+*.temp

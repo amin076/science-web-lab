@@ -1,0 +1,189 @@
+{
+  "title": "two-body gravity",
+  "subtitle": "",
+  "registryKey": "physics.mechanics.two-body-gravity",
+  "folder": "src/simulations/subjects/physics/mechanics/two-body-gravity",
+  "render": {
+    "stack": "canvas2d",
+    "pxPerMeter": 60
+  },
+  "timing": {
+    "maxDt": 0.03333333333333333,
+    "uiHz": 12
+  },
+  "goal": "we have 2 bodies with diffrent masses and we have only gravity between them. we want ot know with given velocities and distance what would be their motion and orbits. They are not same mass but they can be and if one of them will be more than 1000 times bigger than the other you can make a comparesion between they orbit and the Kepler orbit for two planet that one of them is so much bigger as a Sun. if they are not going to turn around each other the simulation should alarm about with a reason that will written in the HUD as well! The Hud should show live data of velocities and acceleration and position of each of the bodies.",
+  "controls": [
+    {
+      "key": "mass1",
+      "label": "mass2",
+      "type": "number",
+      "unit": "kg",
+      "default": 1,
+      "min": 0.1,
+      "max": 1000,
+      "step": 0.1,
+      "notes": "yes"
+    },
+    {
+      "key": "mass2",
+      "label": "Mass body 2",
+      "type": "number",
+      "unit": "kg",
+      "default": 1,
+      "min": 0.1,
+      "max": 1000,
+      "step": 0.1,
+      "notes": "yes"
+    },
+    {
+      "key": "Velocity body 1",
+      "label": "V1",
+      "type": "number",
+      "unit": "m/s",
+      "default": 1,
+      "min": 0,
+      "max": 1000,
+      "step": 0.1,
+      "notes": "yes"
+    },
+    {
+      "key": "Velocity body 2",
+      "label": "V2",
+      "type": "number",
+      "unit": "m/s",
+      "default": 1,
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "notes": "yes"
+    },
+    {
+      "key": "Angle Body 1",
+      "label": "Angle1",
+      "type": "number",
+      "unit": "1",
+      "default": 90,
+      "min": 0,
+      "max": 180,
+      "step": 1,
+      "notes": "yes"
+    },
+    {
+      "key": "Angle Body 2",
+      "label": "Angle",
+      "type": "number",
+      "unit": "",
+      "default": 0,
+      "min": 0,
+      "max": 180,
+      "step": 1,
+      "notes": "yes"
+    },
+    {
+      "key": "Position X body 1",
+      "label": "X1",
+      "type": "number",
+      "unit": "meter",
+      "default": 10,
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "notes": "yes"
+    },
+    {
+      "key": "Position Body 2",
+      "label": "X2",
+      "type": "number",
+      "unit": "meter",
+      "default": 0,
+      "min": 0,
+      "max": 1000,
+      "step": 1,
+      "notes": "yes"
+    }
+  ],
+  "outputs": [
+    {
+      "key": "velocity body 1",
+      "label": "V1",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "velocity body 2",
+      "label": "V2",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "angle 1",
+      "label": "angle1",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "angle body 2",
+      "label": "angle2",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "x body 1",
+      "label": "x1",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "x body 2",
+      "label": "x2",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "Y body 1",
+      "label": "Y1",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "Y body 2",
+      "label": "Y2",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "Acceleration body 1",
+      "label": "A1",
+      "unit": "",
+      "formula": ""
+    },
+    {
+      "key": "Acceleration body 2",
+      "label": "a2",
+      "unit": "",
+      "formula": ""
+    }
+  ],
+  "charts": {
+    "sampleRate": 30,
+    "windowSec": 10,
+    "maxPoints": 300,
+    "seriesKeys": [
+      "v1x",
+      "v2x",
+      "a1x",
+      "a2x",
+      "v1y",
+      "v2y",
+      "x1",
+      "x2",
+      "y1",
+      "y2",
+      "KE1",
+      "KE2)"
+    ]
+  },
+  "physics": "the only force is gravity and gravity can be calculated by Newton Gravity Law . this is a 2D simulation and we just have (x,y) for bodies and by default they are in a same page always.",
+  "tests": [],
+  "generatedAt": "2026-01-08T04:53:50.248Z"
+}

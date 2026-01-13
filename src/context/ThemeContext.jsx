@@ -1,30 +1,35 @@
-// ✅ src/context/ThemeContext.jsx
-import { createContext, useContext, useEffect, useState } from "react";
+// src/context/ThemeContext.jsx
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { lightTheme, darkTheme } from "@/theme";
-
-export const AuthContext = createContext();
-
-// Context + Provider + Hook در یک فایل 👇
-const ThemeModeContext = createContext();
+import { ThemeModeContext } from "./ThemeModeContext";
 
 export function ThemeModeProvider({ children }) {
-  const [mode, setMode] = useState(localStorage.getItem("theme") || "light");
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("theme") || "light"
+  );
 
-  const toggleTheme = () => {
-    const next = mode === "light" ? "dark" : "light";
-    setMode(next);
-    localStorage.setItem("theme", next);
-  };
+  const toggleTheme = useCallback(() => {
+    setMode((prev) => {
+      const next = prev === "light" ? "dark" : "light";
+      localStorage.setItem("theme", next);
+      return next;
+    });
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", mode);
   }, [mode]);
 
-  const theme = mode === "light" ? lightTheme : darkTheme;
+  const theme = useMemo(
+    () => (mode === "light" ? lightTheme : darkTheme),
+    [mode]
+  );
+
+  const value = useMemo(() => ({ mode, toggleTheme }), [mode, toggleTheme]);
 
   return (
-    <ThemeModeContext.Provider value={{ mode, toggleTheme }}>
+    <ThemeModeContext.Provider value={value}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
@@ -32,5 +37,3 @@ export function ThemeModeProvider({ children }) {
     </ThemeModeContext.Provider>
   );
 }
-
-export const useThemeMode = () => useContext(ThemeModeContext);

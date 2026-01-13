@@ -7,7 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen": "plop --plopfile plopfile.cjs",
+    "sim:check": "node scripts/verify-simulations.cjs",
+    "sim:spec": "node scripts/sim-spec.cjs",
+    "sim:pack": "plop --plopfile plopfile.cjs sim-pack",
+    "pack:sim": "node scripts/pack-simulation-md.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -39,6 +44,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
+    "plop": "^4.0.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "vite": "^7.1.7"

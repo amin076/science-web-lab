@@ -1,0 +1,286 @@
+import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import SimulationShell from "@/system/SimulationShell";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { OrbitControls } from "@react-three/drei";
+
+import Controls from "./Controls";
+import HUD from "./HUD";
+import Charts from "./Charts";
+
+import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG } from "./schema";
+import { clamp, MAX_DT, pushCapped } from "./constants";
+
+/**
+ * {{title}} (Three / R3F Template)
+ * Registry Key: {{registryKey}}
+ * Folder: src/simulations/subjects/{{relativePath}}/
+ *
+ * Template goals:
+ * - Stage is R3F (Canvas)
+ * - Same right panel structure as 2D (Controls + HUD + Charts)
+ * - Single simulation loop inside useFrame with:
+ *   - dt clamp
+ *   - UI throttling
+ *   - chart sampling + capped buffer
+ *
+ * Replace the "demo orbit" with your real 3D physics.
+ */
+export default function {{componentName}}() {
+  // Running state
+  const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
+
+  // Params
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const paramsRef = useRef(DEFAULT_PARAMS);
+
+  // HUD (throttled)
+  const [hud, setHud] = useState(() => ({
+    t: 0,
+    note: "Three.js template HUD (replace with real computed values)",
+  }));
+
+  // Charts (capped)
+  const chartCfg = useMemo(() => DEFAULT_CHART_CONFIG, []);
+  const samplesRef = useRef([]);
+  const [chartData, setChartData] = useState([]);
+
+  // Internal time ref (no re-render)
+  const tRef = useRef(0);
+
+  // Keep refs synced
+  useEffect(() => {
+    runningRef.current = running;
+  }, [running]);
+
+  useEffect(() => {
+    paramsRef.current = params;
+  }, [params]);
+
+  // Reset action
+  const onReset = useCallback(() => {
+    setRunning(false);
+    runningRef.current = false;
+
+    tRef.current = 0;
+    samplesRef.current = [];
+    setChartData([]);
+
+    setParams(DEFAULT_PARAMS);
+
+    setHud({
+      t: 0,
+      note: "Reset done. Replace template logic with real formulas.",
+    });
+  }, []);
+
+  const onStartStop = useCallback(() => {
+    setRunning((s) => !s);
+  }, []);
+
+  const setParam = useCallback((key, value) => {
+    setParams((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  return (
+    <SimulationShell
+      title="{{title}}"
+      subtitle="{{subtitle}}"
+      topOffset="5px"
+      panelTop={
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={onStartStop}
+              className={`w-full py-3 rounded-xl font-black tracking-wide transition-all border ${
+                running
+                  ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/20"
+                  : "bg-emerald-500/15 text-emerald-200 border-emerald-500/40 hover:bg-emerald-500/20"
+              }`}
+            >
+              {running ? "STOP" : "START"}
+            </button>
+
+            <button
+              onClick={onReset}
+              className="w-full py-3 rounded-xl font-black tracking-wide bg-white/8 text-white border border-white/12 hover:bg-white/12 transition-all"
+            >
+              RESET
+            </button>
+          </div>
+        </div>
+      }
+      panel={
+        <div className="space-y-4">
+          <Controls params={params} setParam={setParam} />
+          <HUD hud={hud} />
+          <Charts data={chartData} />
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-white/60 text-sm">
+            <div className="font-bold text-white/80 mb-2">Notes</div>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                Replace the demo orbit logic inside <span className="font-mono">useFrame</span>.
+              </li>
+              <li>
+                Charts are capped to prevent memory leaks (<span className="font-mono">maxPoints</span>).
+              </li>
+              <li>
+                UI updates are throttled (avoid React state every frame).
+              </li>
+            </ul>
+          </div>
+        </div>
+      }
+    >
+      <div className="w-full h-full">
+        <Canvas
+          className="w-full h-full"
+          dpr={ [1, 2] }
+          camera={ { position: [5, 4, 5], fov: 50 } }
+        >
+          <ThreeTemplateScene
+            runningRef={runningRef}
+            paramsRef={paramsRef}
+            tRef={tRef}
+            chartCfg={chartCfg}
+            samplesRef={samplesRef}
+            setHud={setHud}
+            setChartData={setChartData}
+          />
+
+          <OrbitControls makeDefault />
+        </Canvas>
+      </div>
+    </SimulationShell>
+  );
+}
+
+/**
+ * ThreeTemplateScene
+ * Demo: a sphere moving on a circle in XZ plane.
+ * Replace this with your real 3D simulation (two-body, collisions, etc).
+ */
+function ThreeTemplateScene({
+  runningRef,
+  paramsRef,
+  tRef,
+  chartCfg,
+  samplesRef,
+  setHud,
+  setChartData,
+}) {
+  const bodyRef = useRef(null);
+
+  // Throttling accumulators
+  const uiAccRef = useRef(0);
+  const sampleAccRef = useRef(0);
+
+  useFrame((state, delta) => {
+    const dt = Math.min(delta, MAX_DT);
+
+    // Always keep some basic lighting stable
+    // (render loop is handled by R3F)
+
+    if (!runningRef.current) return;
+
+    // Update time
+    tRef.current += dt;
+
+    const p = paramsRef.current;
+
+    // Demo orbit parameters (placeholder)
+    const r = clamp(Number(p.radius) || 2, 0.0001, 1e9);
+    const v = Number(p.speed) || 0;
+
+    const omega = v / r;
+    const T = omega !== 0 ? (2 * Math.PI) / Math.abs(omega) : Infinity;
+
+    const t = tRef.current;
+
+    // Position on a circle in XZ plane
+    const x = r * Math.cos(omega * t);
+    const z = r * Math.sin(omega * t);
+
+    // "Velocity components" placeholder
+    const vx = -r * omega * Math.sin(omega * t);
+    const vy = 0;
+    const vz = r * omega * Math.cos(omega * t);
+
+    // "Acceleration components" placeholder
+    const ax = -r * omega * omega * Math.cos(omega * t);
+    const ay = 0;
+    const az = -r * omega * omega * Math.sin(omega * t);
+
+    // Move mesh imperatively (no React re-render)
+    if (bodyRef.current) {
+      bodyRef.current.position.set(x, 0, z);
+    }
+
+    const out = { t, omega, T, vx, vy, ax, ay, vz, az };
+
+    // Chart sampling
+    sampleAccRef.current += dt;
+    const sampleEvery = 1 / chartCfg.sampleRate;
+    if (sampleAccRef.current >= sampleEvery) {
+      sampleAccRef.current = 0;
+      pushCapped(samplesRef.current, out, chartCfg.maxPoints);
+    }
+
+    // UI throttling (update HUD + chart snapshot)
+    uiAccRef.current += dt;
+    const uiEvery = 1 / 12; // fixed UI rate (template). You can move this into constants/schema.
+    if (uiAccRef.current >= uiEvery) {
+      uiAccRef.current = 0;
+
+      setHud({
+        t: out.t,
+        omega: out.omega,
+        T: out.T,
+        vx: out.vx,
+        vy: out.vy,
+        ax: out.ax,
+        ay: out.ay,
+        // extra 3D values (optional)
+        vz: out.vz,
+        az: out.az,
+      });
+
+      // snapshot chart data for recharts
+      setChartData([...samplesRef.current]);
+    }
+  });
+
+  // Visual helpers
+  const p = paramsRef.current;
+  const r = clamp(Number(p.radius) || 2, 0.0001, 1e9);
+  const showAxes = !!p.showVectors; // reuse existing toggle key from schema
+  const showGrid = true;
+
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={ [5, 8, 3] } intensity={1.0} />
+
+      {showGrid ? <gridHelper args={ [50, 50] } /> : null}
+      {showAxes ? <axesHelper args={ [Math.max(2, r * 1.2)] } /> : null}
+
+      {/* Orbit ring (visual placeholder) */}
+      <mesh rotation={ [-Math.PI / 2, 0, 0] }>
+        <torusGeometry args={ [r, 0.02, 12, 128] } />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.15} />
+      </mesh>
+
+      {/* Body (placeholder) */}
+      <mesh ref={bodyRef}>
+        <sphereGeometry args={ [0.18, 32, 32] } />
+        <meshStandardMaterial color="#22d3ee" emissive="#22d3ee" emissiveIntensity={0.2} />
+      </mesh>
+
+      {/* Center marker */}
+      <mesh>
+        <sphereGeometry args={ [0.06, 24, 24] } />
+        <meshStandardMaterial color="#ffffff" transparent opacity={0.35} />
+      </mesh>
+    </>
+  );
+}

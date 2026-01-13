@@ -2,7 +2,7 @@
 import { Box, Container } from "@mui/material";
 import Header from "./Header";
 import Footer from "./Footer";
-import { useThemeMode } from "@/context/ThemeContext";
+import { useThemeMode } from "@/context/ThemeModeContext";
 import { motion } from "framer-motion";
 import ThemeSwitcher from "@/components/common/ThemeSwitcher";
 import DashboardDrawer from "@/components/dashboard/DashboardDrawer"; // 🧩 اضافه شد

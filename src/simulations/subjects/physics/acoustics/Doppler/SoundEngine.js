@@ -152,15 +152,6 @@ export class AudioVoice {
     this.output.gain.setTargetAtTime(0, t, 0.05); // Fade out
 
     setTimeout(() => {
-      this.nodes.forEach((n) => {
-        const osc = n instanceof OscillatorNode ? n : n.osc;
-        try {
-          osc.stop();
-        } catch (e) {}
-        try {
-          osc.disconnect();
-        } catch (e) {}
-      });
       this.output.disconnect();
     }, 100);
   }

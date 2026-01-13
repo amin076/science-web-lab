@@ -53,7 +53,7 @@ export function makeCircularOrbitState({
   raanDeg = 0,
   trueAnomalyDeg = 0,
   mu = MU_EARTH,
-  parentR = [0, 0, 0], // Position of parent body (e.g. Earth or Moon)
+
   radiusOfParent = R_EARTH_M,
 }) {
   const r0 = radiusOfParent + altitudeM;
