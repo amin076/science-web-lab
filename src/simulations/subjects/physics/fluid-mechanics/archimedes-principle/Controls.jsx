@@ -17,7 +17,7 @@ import {
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import { SHAPES } from "./shapes";
+import { SHAPES } from "./Shapes";
 
 // --- PRESETS DATA ---
 const MATERIALS = [
