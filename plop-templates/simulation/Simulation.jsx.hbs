@@ -1,0 +1,287 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import SimulationShell from "@/system/SimulationShell";
+import Controls from "./Controls";
+import HUD from "./HUD";
+import Charts from "./Charts";
+import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG } from "./schema";
+import { clamp, MAX_DT, PX_PER_METER, GRID_STEP, pushCapped } from "./constants";
+import { useSimLoop } from "./useSimLoop";
+
+/**
+ * {{title}}
+ * Registry Key: {{registryKey}}
+ * Folder: src/simulations/subjects/{{relativePath}}/
+ *
+ * TEMPLATE simulation:
+ * - Left: Canvas stage (2D)
+ * - Right: Unified panel (fixed top buttons + scroll body)
+ * - Controls + HUD + Charts (Recharts)
+ *
+ * Next step: replace "demo physics" with real formulas/logic.
+ */
+export default function {{componentName}}() {
+  const canvasRef = useRef(null);
+
+  // Simulation state
+  const [running, setRunning] = useState(false);
+  const runningRef = useRef(false);
+
+  // Parameters (editable from Controls)
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+
+  // HUD state (throttled via loop; keep lightweight)
+  const [hud, setHud] = useState(() => ({
+    t: 0,
+    note: "Template HUD (replace with real computed values)",
+  }));
+
+  // Chart samples (keep last N seconds)
+  const chartCfg = useMemo(() => DEFAULT_CHART_CONFIG, []);
+  const samplesRef = useRef([]);
+  const [chartData, setChartData] = useState([]);
+
+  // Sampling accumulator (stable sampling even if dt varies)
+  const sampleAccRef = useRef(0);
+
+  // Sim internal refs (avoid re-render each frame)
+  const tRef = useRef(0);
+
+  // Canvas resize (DPR-aware + reacts to layout changes)
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      const cssW = parent.clientWidth;
+      const cssH = parent.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.width = Math.floor(cssW * dpr);
+      canvas.height = Math.floor(cssH * dpr);
+      canvas.style.width = `${cssW}px`;
+      canvas.style.height = `${cssH}px`;
+
+      // Draw using CSS pixels while backing store is DPR-scaled
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    resize();
+
+    return () => ro.disconnect();
+  }, []);
+
+  // --- Demo physics step (REPLACE THIS) ---
+  const step = (dt) => {
+    tRef.current += dt;
+
+    // Example derived values (replace with real ones)
+    const r = clamp(params.radius, 0.0001, 1e9);
+    const v = params.speed;
+
+    // Placeholder circular motion
+    const omega = v / r;
+    const T = omega !== 0 ? (2 * Math.PI) / Math.abs(omega) : Infinity;
+
+    const t = tRef.current;
+    const vx = v * Math.cos(omega * t);
+    const vy = v * Math.sin(omega * t);
+    const ax = -omega * v * Math.sin(omega * t);
+    const ay = omega * v * Math.cos(omega * t);
+
+    return { t, omega, T, vx, vy, ax, ay };
+  };
+
+  // --- Draw (replace with real rendering) ---
+  const draw = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+
+    // background
+    ctx.clearRect(0, 0, w, h);
+    ctx.fillStyle = "#050510";
+    ctx.fillRect(0, 0, w, h);
+
+    // grid
+    ctx.strokeStyle = "#FFFFFF10";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < w; x += GRID_STEP) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    for (let y = 0; y < h; y += GRID_STEP) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+    }
+    ctx.stroke();
+
+    // stage text
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.font = "13px ui-monospace, SFMono-Regular, Menlo, monospace";
+    ctx.fillText(runningRef.current ? "RUNNING" : "STOPPED", 16, 28);
+
+    // Simple "circle motion" placeholder
+    const rMeters = params.radius;
+    const rPx = Math.max(20, rMeters * PX_PER_METER);
+    const cx = w * 0.5;
+    const cy = h * 0.55;
+
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
+    ctx.beginPath();
+    ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+    ctx.stroke();
+
+    const omega = (params.speed / Math.max(params.radius, 0.0001)) || 0;
+    const t = tRef.current;
+    const px = cx + rPx * Math.cos(omega * t);
+    const py = cy + rPx * Math.sin(omega * t);
+
+    ctx.fillStyle = "rgba(34,211,238,0.20)";
+    ctx.beginPath();
+    ctx.arc(px, py, 14, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(34,211,238,0.75)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  };
+
+  // Loop hook
+  const { resetClock } = useSimLoop({
+    running,
+    maxDt: MAX_DT,
+    step,
+    draw,
+    onFrame: (out, dt, didStep) => {
+      if (!didStep || !out) return;
+
+      // HUD (keep cheap)
+      setHud({
+        t: out.t,
+        omega: out.omega,
+        T: out.T,
+        vx: out.vx,
+        vy: out.vy,
+        ax: out.ax,
+        ay: out.ay,
+      });
+
+      // Chart sampling (stable with accumulator)
+      const sampleEvery = 1 / chartCfg.sampleRate;
+      sampleAccRef.current += dt;
+
+      let pushed = false;
+      while (sampleAccRef.current >= sampleEvery) {
+        sampleAccRef.current -= sampleEvery;
+        pushCapped(samplesRef.current, { ...out }, chartCfg.maxPoints);
+        pushed = true;
+      }
+
+      if (pushed) setChartData([...samplesRef.current]);
+    },
+  });
+
+  // Keep runningRef in sync + avoid dt jump after pause
+  useEffect(() => {
+    runningRef.current = running;
+  }, [running]);
+
+  const onStartStop = () => {
+    setRunning((s) => !s);
+    resetClock(); // avoid dt jump
+  };
+
+  const onReset = () => {
+    setRunning(false);
+    runningRef.current = false;
+    resetClock();
+
+    tRef.current = 0;
+    samplesRef.current = [];
+    setChartData([]);
+    sampleAccRef.current = 0;
+
+    setParams(DEFAULT_PARAMS);
+
+    setHud({
+      t: 0,
+      note: "Reset done. Replace template logic with real formulas.",
+    });
+
+    draw();
+  };
+
+  const setParam = (key, value) => {
+    setParams((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <SimulationShell
+      title="{{title}}"
+      subtitle="{{subtitle}}"
+      topOffset="5px"
+      panelTop={
+        <div className="w-full">
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={onStartStop}
+              className={`w-full py-3 rounded-xl font-black tracking-wide transition-all border ${
+                running
+                  ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/20"
+                  : "bg-emerald-500/15 text-emerald-200 border-emerald-500/40 hover:bg-emerald-500/20"
+              }`}
+            >
+              {running ? "STOP" : "START"}
+            </button>
+
+            <button
+              onClick={onReset}
+              className="w-full py-3 rounded-xl font-black tracking-wide bg-white/8 text-white border border-white/12 hover:bg-white/12 transition-all"
+            >
+              RESET
+            </button>
+          </div>
+        </div>
+      }
+      panel={
+        <div className="space-y-4">
+          <Controls params={params} setParam={setParam} />
+          <HUD hud={hud} />
+          <Charts data={chartData} />
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 text-white/60 text-sm">
+            <div className="font-bold text-white/80 mb-2">Notes</div>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>
+                Replace <span className="font-mono">step()</span> &{" "}
+                <span className="font-mono">draw()</span> with real simulation.
+              </li>
+              <li>
+                Charts are capped to avoid memory leaks (
+                <span className="font-mono">maxPoints</span>).
+              </li>
+              <li>
+                Avoid React state updates every frame — use refs + throttle.
+              </li>
+            </ul>
+          </div>
+        </div>
+      }
+    >
+      <canvas ref={canvasRef} className="w-full h-full block" />
+    </SimulationShell>
+  );
+}

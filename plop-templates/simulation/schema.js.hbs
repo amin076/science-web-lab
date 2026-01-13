@@ -1,0 +1,99 @@
+/**
+ * schema.js
+ * Define default params + control UI schema + HUD schema + chart settings.
+ *
+ * Simulation: {{title}}
+ * Registry Key: {{registryKey}}
+ *
+ * ✅ Edit this file first for ANY new simulation:
+ * - DEFAULT_PARAMS: initial state
+ * - CONTROL_SCHEMA: right panel controls UI
+ * - HUD_SCHEMA: readouts list (HUD.jsx renders from this)
+ * - DEFAULT_CHART_CONFIG: sampling window/cap
+ */
+
+export const DEFAULT_PARAMS = {
+  // --- Core example params (edit for your sim) ---
+  radius: 2.0, // m
+  mass: 1.0, // kg
+  speed: 3.0, // m/s
+
+  // --- Common toggles ---
+  showVectors: true,
+  showTrail: false,
+};
+
+export const CONTROL_SCHEMA = [
+  {
+    key: "radius",
+    label: "Radius",
+    unit: "m",
+    type: "number",
+    min: 0.2,
+    max: 10,
+    step: 0.1,
+    defaultValue: DEFAULT_PARAMS.radius,
+    help: "Circle radius (meters).",
+  },
+  {
+    key: "mass",
+    label: "Mass",
+    unit: "kg",
+    type: "number",
+    min: 0.1,
+    max: 50,
+    step: 0.1,
+    defaultValue: DEFAULT_PARAMS.mass,
+    help: "Mass affects force/energy (depends on your formulas).",
+  },
+  {
+    key: "speed",
+    label: "Speed",
+    unit: "m/s",
+    type: "number",
+    min: 0,
+    max: 20,
+    step: 0.1,
+    defaultValue: DEFAULT_PARAMS.speed,
+    help: "Constant tangential speed.",
+  },
+  {
+    key: "showVectors",
+    label: "Show vectors",
+    type: "toggle",
+    help: "Show velocity/acceleration vectors (optional).",
+  },
+  {
+    key: "showTrail",
+    label: "Show trail",
+    type: "toggle",
+    help: "Draw a motion trail (optional).",
+  },
+];
+
+/**
+ * HUD_SCHEMA
+ * HUD.jsx renders items from this schema using hud[key].
+ * Add/remove items per simulation (keep keys consistent with hud state).
+ */
+export const HUD_SCHEMA = [
+  { key: "t", label: "t", unit: "s", precision: 3 },
+
+  // Circular motion examples (remove/replace for other sims)
+  { key: "omega", label: "ω", unit: "rad/s", precision: 4 },
+  { key: "T", label: "T", unit: "s", precision: 4 },
+
+  { key: "vx", label: "Vx", unit: "m/s", precision: 4 },
+  { key: "vy", label: "Vy", unit: "m/s", precision: 4 },
+  { key: "ax", label: "Ax", unit: "m/s²", precision: 4 },
+  { key: "ay", label: "Ay", unit: "m/s²", precision: 4 },
+];
+
+// Chart sampling policy (used by Simulation.jsx + Charts.jsx)
+export const DEFAULT_CHART_CONFIG = {
+  sampleRate: 30, // Hz
+  windowSec: 10, // keep last N seconds
+  get maxPoints() {
+    return Math.max(60, Math.floor(this.sampleRate * this.windowSec));
+  },
+};

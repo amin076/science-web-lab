@@ -1,0 +1,147 @@
+import React, { useMemo } from "react";
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
+
+export default function Charts({ data }) {
+  const safeData = Array.isArray(data) ? data : [];
+
+
+  const margin = useMemo(() => ({ top: 8, right: 12, left: 0, bottom: 0 }), []);
+  const tickStyle = useMemo(
+    () => ({ fill: "rgba(255,255,255,0.45)", fontSize: 11 }),
+    []
+  );
+  const axisLineStyle = useMemo(
+    () => ({ stroke: "rgba(255,255,255,0.10)" }),
+    []
+  );
+
+  const tooltipContentStyle = useMemo(
+    () => ({
+      background: "rgba(2, 6, 23, 0.92)",
+      border: "1px solid rgba(255,255,255,0.12)",
+      borderRadius: 12,
+      padding: "8px 10px",
+    }),
+    []
+  );
+  const tooltipLabelStyle = useMemo(
+    () => ({ color: "rgba(255,255,255,0.85)", fontWeight: 800 }),
+    []
+  );
+  const tooltipItemStyle = useMemo(
+    () => ({ color: "rgba(255,255,255,0.75)", fontSize: 12 }),
+    []
+  );
+
+  return (
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-white font-black tracking-wide">Charts</div>
+        <div className="text-xs text-white/40 font-mono">
+          {safeData.length} points
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <ChartCard
+          title="Series A (template)"
+          data={safeData}
+          margin={margin}
+          tickStyle={tickStyle}
+          axisLineStyle={axisLineStyle}
+          tooltipContentStyle={tooltipContentStyle}
+          tooltipLabelStyle={tooltipLabelStyle}
+          tooltipItemStyle={tooltipItemStyle}
+          lines={[
+            { key: "s1", stroke: "rgba(34, 211, 238, 0.9)" },
+            { key: "s2", stroke: "rgba(167, 139, 250, 0.9)" },
+          ]}
+        />
+
+        <ChartCard
+          title="Series B (template)"
+          data={safeData}
+          margin={margin}
+          tickStyle={tickStyle}
+          axisLineStyle={axisLineStyle}
+          tooltipContentStyle={tooltipContentStyle}
+          tooltipLabelStyle={tooltipLabelStyle}
+          tooltipItemStyle={tooltipItemStyle}
+          lines={[
+            { key: "s3", stroke: "rgba(248, 113, 113, 0.9)" },
+            { key: "s4", stroke: "rgba(245, 158, 11, 0.9)" },
+          ]}
+        />
+
+        <div className="text-xs text-white/35">
+          Template keys expected: <span className="font-mono">t, s1, s2, s3, s4</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChartCard({
+  title,
+  data,
+  margin,
+  tickStyle,
+  axisLineStyle,
+  tooltipContentStyle,
+  tooltipLabelStyle,
+  tooltipItemStyle,
+  lines,
+}) {
+  return (
+    <div className="bg-black/20 border border-white/10 rounded-2xl p-3">
+      <div className="text-white/75 font-bold text-sm mb-2">{title}</div>
+
+      <div className="h-56">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data} margin={margin}>
+            <CartesianGrid stroke="rgba(255,255,255,0.08)" />
+            <XAxis
+              dataKey="t"
+              tick={tickStyle}
+              tickLine={false}
+              axisLine={axisLineStyle}
+            />
+            <YAxis
+              tick={tickStyle}
+              tickLine={false}
+              axisLine={axisLineStyle}
+            />
+            <Tooltip
+              contentStyle={tooltipContentStyle}
+              labelStyle={tooltipLabelStyle}
+              itemStyle={tooltipItemStyle}
+            />
+            <Legend />
+            {Array.isArray(lines)
+              ? lines.map((l) => (
+                  <Line
+                    key={l.key}
+                    type="monotone"
+                    dataKey={l.key}
+                    dot={false}
+                    stroke={l.stroke}
+                    strokeWidth={2}
+                    isAnimationActive={false}
+                  />
+                ))
+              : null}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+}

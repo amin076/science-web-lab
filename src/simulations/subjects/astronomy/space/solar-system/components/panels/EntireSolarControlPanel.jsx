@@ -17,9 +17,6 @@ const EntireSolarControlPanel = ({
   setFocusTarget,
   scaleMode,
   setScaleMode,
-
-  // NEW - These MUST come from the Simulator
-  showComparison3D,
   setShowComparison3D,
 }) => {
   const [expandedSection, setExpandedSection] = React.useState("settings");

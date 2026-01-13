@@ -1,4 +1,4 @@
-// src/components/features/motion/ControlPanel.jsx
+// src/simulations/subjects/physics/mechanics/projectile-motion/ControlPanel.jsx
 import React from "react";
 import {
   Box,
@@ -9,42 +9,29 @@ import {
   Divider,
   Stack,
   Button,
-  Chip,
   Paper,
+  Tooltip,
 } from "@mui/material";
 
-// --- GLASS COMPONENT WITH CUSTOM SCROLLBAR ---
-const GlassPaper = ({ children }) => (
+// Custom Scrollbar Component
+const GlassPanel = ({ children }) => (
   <Paper
     elevation={0}
     sx={{
       p: 3,
       height: "100%",
       borderRadius: 4,
-      background: "rgba(20, 20, 35, 0.45)", // Semi-transparent dark
-      backdropFilter: "blur(20px)", // Heavy blur for glass effect
-      border: "1px solid rgba(255,255,255,0.08)",
+      background: "#1e212b", // Darker, cleaner background for daylight theme
+      borderLeft: "1px solid rgba(255,255,255,0.1)",
       color: "white",
       overflowY: "auto",
       boxSizing: "border-box",
-
-      // --- CUSTOM SCROLLBAR STYLING ---
-      "&::-webkit-scrollbar": {
-        width: "8px",
-      },
-      "&::-webkit-scrollbar-track": {
-        background: "transparent",
-      },
+      "&::-webkit-scrollbar": { width: "6px" },
+      "&::-webkit-scrollbar-track": { background: "transparent" },
       "&::-webkit-scrollbar-thumb": {
-        background: "rgba(255, 255, 255, 0.15)",
+        background: "rgba(255, 255, 255, 0.2)",
         borderRadius: "4px",
       },
-      "&::-webkit-scrollbar-thumb:hover": {
-        background: "rgba(255, 255, 255, 0.3)",
-      },
-      // Firefox fallback
-      scrollbarWidth: "thin",
-      scrollbarColor: "rgba(255, 255, 255, 0.15) transparent",
     }}
   >
     {children}
@@ -87,6 +74,7 @@ const PropSlider = ({
   step,
   onChange,
   color = "#fff",
+  unit = "",
 }) => (
   <Box sx={{ mb: 2 }}>
     <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
@@ -98,6 +86,7 @@ const PropSlider = ({
       </Typography>
       <Typography variant="caption" sx={{ fontWeight: "bold" }}>
         {value.toFixed(1)}
+        {unit}
       </Typography>
     </Box>
     <Slider
@@ -110,9 +99,7 @@ const PropSlider = ({
       sx={{
         color: color,
         py: 0,
-        "& .MuiSlider-thumb": {
-          boxShadow: `0 0 10px ${color}`,
-        },
+        "& .MuiSlider-thumb": { boxShadow: `0 0 10px ${color}` },
       }}
     />
   </Box>
@@ -125,22 +112,17 @@ const ControlPanel = ({
   updateObjectProperty,
   gravity,
   setGravity,
+  airResistance,
+  setAirResistance,
   showTrails,
   setShowTrails,
   showInfo,
   setShowInfo,
-  showVectors,
-  setShowVectors,
-  setWorldBounds,
-  worldBounds,
-  meterToPixel = 50,
+  vectorMode,
+  setVectorMode,
 }) => {
-  // Helpers
-  const pxToM = (val) => val / meterToPixel;
-  const mToPx = (val) => val * meterToPixel;
-
   return (
-    <GlassPaper>
+    <GlassPanel>
       {/* HEADER */}
       <Box sx={{ mb: 2, textAlign: "center" }}>
         <Typography
@@ -152,7 +134,7 @@ const ControlPanel = ({
             textFillColor: "transparent",
           }}
         >
-          Motion Lab
+          Projectile Lab
         </Typography>
       </Box>
 
@@ -166,9 +148,13 @@ const ControlPanel = ({
             variant={obj.active ? "contained" : "outlined"}
             sx={{
               flex: 1,
-              bgcolor: obj.active ? obj.color : "rgba(255,255,255,0.05)",
+              bgcolor: obj.active ? obj.color : "transparent",
               borderColor: obj.active ? "transparent" : "rgba(255,255,255,0.2)",
-              color: obj.active ? "#000" : "white",
+              color: obj.active
+                ? obj.id === "ball"
+                  ? "#000"
+                  : "#fff"
+                : "white", // Text contrast fix
               fontWeight: "bold",
               "&:hover": {
                 bgcolor: obj.active ? obj.color : "rgba(255,255,255,0.1)",
@@ -183,7 +169,7 @@ const ControlPanel = ({
       {/* 2. PROPERTIES */}
       {currentObject && (
         <>
-          <SectionHeader icon="📊" title="Properties (Meters)" />
+          <SectionHeader icon="📊" title="Initial State" />
           <Box
             sx={{
               p: 2,
@@ -194,101 +180,91 @@ const ControlPanel = ({
           >
             <PropSlider
               label="Position X"
-              value={pxToM(currentObject.x)}
-              min={0}
-              max={16}
-              step={0.1}
-              onChange={(v) => updateObjectProperty("x", mToPx(v))}
+              value={currentObject.x}
+              min={-500}
+              max={500}
+              step={1} // UPDATED RANGE
+              onChange={(v) => updateObjectProperty("x", v)}
               color={currentObject.color}
+              unit="m"
             />
-            <PropSlider
-              label="Position Y"
-              value={pxToM(currentObject.y)}
-              min={0}
-              max={12}
-              step={0.1}
-              onChange={(v) => updateObjectProperty("y", mToPx(v))}
-              color={currentObject.color}
-            />
+            {currentObject.type === "ball" && (
+              <PropSlider
+                label="Position Y"
+                value={currentObject.y}
+                min={0}
+                max={500}
+                step={1} // UPDATED RANGE
+                onChange={(v) => updateObjectProperty("y", v)}
+                color={currentObject.color}
+                unit="m"
+              />
+            )}
+
             <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.1)" }} />
+
             <PropSlider
-              label="Velocity X"
-              value={pxToM(currentObject.vx)}
-              min={-20}
-              max={20}
+              label="Velocity X (Initial)"
+              value={currentObject.vx}
+              min={-50}
+              max={50}
               step={0.5}
-              onChange={(v) => updateObjectProperty("vx", mToPx(v))}
+              onChange={(v) => updateObjectProperty("vx", v)}
               color="#ffffff"
+              unit="m/s"
             />
-            <PropSlider
-              label="Velocity Y"
-              value={pxToM(currentObject.vy)}
-              min={-20}
-              max={20}
-              step={0.5}
-              onChange={(v) => updateObjectProperty("vy", mToPx(v))}
-              color="#ffffff"
-            />
+
+            {currentObject.type === "ball" ? (
+              <PropSlider
+                label="Velocity Y (Initial)"
+                value={currentObject.vy}
+                min={-50}
+                max={50}
+                step={0.5}
+                onChange={(v) => updateObjectProperty("vy", v)}
+                color="#ffffff"
+                unit="m/s"
+              />
+            ) : (
+              <PropSlider
+                label="Acceleration X"
+                value={currentObject.ax}
+                min={-10}
+                max={10}
+                step={0.1}
+                onChange={(v) => updateObjectProperty("ax", v)}
+                color="#FFB74D"
+                unit="m/s²"
+              />
+            )}
           </Box>
-          <Stack direction="row" spacing={1} mt={1} justifyContent="center">
-            <Chip
-              size="small"
-              label={`Mass: ${currentObject.mass}kg`}
-              sx={{
-                bgcolor: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            />
-            <Chip
-              size="small"
-              label={`KE: ${(
-                0.5 *
-                currentObject.mass *
-                (pxToM(currentObject.vx) ** 2 + pxToM(currentObject.vy) ** 2)
-              ).toFixed(1)} J`}
-              sx={{
-                bgcolor: "rgba(255,255,255,0.1)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
-            />
-          </Stack>
         </>
       )}
 
       {/* 3. WORLD SETTINGS */}
       <SectionHeader icon="🌍" title="Environment" />
       <PropSlider
-        label={`Gravity (${gravity} m/s²)`}
+        label={`Gravity`}
         value={gravity}
-        min={-10}
-        max={20}
+        min={0}
+        max={30}
         step={0.1}
         onChange={setGravity}
         color="#4ECDC4"
+        unit="m/s²"
       />
       <PropSlider
-        label={`Friction (${worldBounds.friction})`}
-        value={worldBounds.friction}
-        min={0.9}
-        max={1.0}
-        step={0.001}
-        onChange={(v) => setWorldBounds((p) => ({ ...p, friction: v }))}
-        color="#FFB74D"
-      />
-      <PropSlider
-        label={`Bounce (${worldBounds.restitution})`}
-        value={worldBounds.restitution}
+        label={`Air Resistance (Drag)`}
+        value={airResistance}
         min={0}
-        max={1.1}
-        step={0.05}
-        onChange={(v) => setWorldBounds((p) => ({ ...p, restitution: v }))}
-        color="#95E1D3"
+        max={0.5}
+        step={0.01}
+        onChange={setAirResistance}
+        color="#FFB74D"
       />
 
       {/* 4. VISIBILITY */}
-      <SectionHeader icon="👁️" title="Visibility" />
+      <SectionHeader icon="👁️" title="HUD & Vectors" />
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         <FormControlLabel
           control={
@@ -300,21 +276,7 @@ const ControlPanel = ({
           }
           label={
             <Typography fontSize={13} color="rgba(255,255,255,0.8)">
-              Show Motion Trails
-            </Typography>
-          }
-        />
-        <FormControlLabel
-          control={
-            <Switch
-              size="small"
-              checked={showVectors}
-              onChange={(e) => setShowVectors(e.target.checked)}
-            />
-          }
-          label={
-            <Typography fontSize={13} color="rgba(255,255,255,0.8)">
-              Show Velocity Vectors
+              Show Trajectory
             </Typography>
           }
         />
@@ -328,12 +290,56 @@ const ControlPanel = ({
           }
           label={
             <Typography fontSize={13} color="rgba(255,255,255,0.8)">
-              Show Info Overlay
+              Show Live HUD
             </Typography>
           }
         />
+
+        <Divider sx={{ my: 1, borderColor: "rgba(255,255,255,0.1)" }} />
+        <Typography
+          variant="caption"
+          sx={{ color: "rgba(255,255,255,0.5)", mb: 1 }}
+        >
+          Vector Components
+        </Typography>
+
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Show Vx (Horizontal)">
+            <Button
+              size="small"
+              variant={vectorMode.x ? "contained" : "outlined"}
+              color="success"
+              onClick={() => setVectorMode((p) => ({ ...p, x: !p.x }))}
+              sx={{ minWidth: 30 }}
+            >
+              Vx
+            </Button>
+          </Tooltip>
+          <Tooltip title="Show Vy (Vertical)">
+            <Button
+              size="small"
+              variant={vectorMode.y ? "contained" : "outlined"}
+              color="info"
+              onClick={() => setVectorMode((p) => ({ ...p, y: !p.y }))}
+              sx={{ minWidth: 30 }}
+            >
+              Vy
+            </Button>
+          </Tooltip>
+          <Tooltip title="Show Net Velocity">
+            <Button
+              size="small"
+              variant={vectorMode.v ? "contained" : "outlined"}
+              color="warning"
+              onClick={() => setVectorMode((p) => ({ ...p, v: !p.v }))}
+              sx={{ minWidth: 30 }}
+            >
+              V
+            </Button>
+          </Tooltip>
+        </Stack>
       </Box>
-    </GlassPaper>
+    </GlassPanel>
   );
 };
 

@@ -1,0 +1,207 @@
+# Simulation Spec — {{title}}
+
+**Registry Key:** {{registryKey}}  
+**Folder:** src/simulations/subjects/{{relativePath}}  
+**Component:** {{componentName}}  
+**Subtitle:** {{subtitle}}  
+
+> IMPORTANT: This spec is the contract between you and the implementation (human or AI).
+> If a detail is missing here, the implementation will likely be wrong.
+
+---
+
+## 0) Simulation Type & Rendering Stack
+Choose one:
+- [ ] 2D Canvas (recommended for most physics)
+- [ ] R3F / three.js (3D)
+- [ ] p5.js
+- [ ] Mixed (Canvas + overlays)
+
+**Renderer rules**
+- Must use `SimulationShell` (left stage + right panel).
+- Stage and panel must be same full height (panel is one unified card).
+- Right panel: fixed top controls + scrollable body.
+- Canvas must be DPR-aware (sharp on retina).
+
+---
+
+## 1) Goal (2–3 lines)
+Explain what the simulation teaches and what the user observes.
+
+Example:
+"Demonstrate how uniform circular motion produces sinusoidal velocity components and constant centripetal acceleration."
+
+---
+
+## 2) Units & Conversions
+Fill these (or confirm defaults):
+
+- Base units:
+  - length: meters (m)
+  - time: seconds (s)
+  - mass: kilograms (kg)
+
+- Canvas conversions:
+  - pxPerMeter: ______ (e.g., 60 px/m)
+
+- Time:
+  - MAX_DT clamp: ______ (e.g., 1/30)
+  - UI update rate: ______ Hz (e.g., 12)
+  - sampling rate: ______ Hz (e.g., 30–60)
+
+- Gravity (if used): g = ______ (e.g., 9.81 m/s²)
+
+---
+
+## 3) Inputs (UI Controls) — Exact Schema
+Keys in this table MUST match React state keys.
+
+| key | label | type (number/toggle/select) | unit | default | min | max | step | notes |
+|---|---|---|---|---:|---:|---:|---:|---|
+|  |  |  |  |  |  |  |  |  |
+|  |  |  |  |  |  |  |  |  |
+
+Buttons:
+- [ ] Start/Stop
+- [ ] Reset
+- [ ] (Optional) Presets dropdown
+- [ ] (Optional) Export CSV
+
+---
+
+## 4) Outputs (HUD) — Exact Keys + Units + Formulas
+These are displayed in the panel and/or canvas overlay.
+
+| key | label | unit | formula / definition |
+|---|---|---|---|
+| t | time | s | simulation time |
+|  |  |  |  |
+|  |  |  |  |
+
+---
+
+## 5) Time-Series Data (Charts) — Exact Series Keys
+Define the object pushed into the chart buffer per sample.
+
+**Series object shape (example):**
+- `t`: number (seconds)
+- `vx`, `vy`: number (m/s)
+- `ax`, `ay`: number (m/s²)
+- `speed`: number (m/s)
+- `accel`: number (m/s²)
+
+### Sampling policy (MUST FILL)
+- sample mode: [ ] dt-based (RAF)  /  [ ] fixed Hz
+- target sample rate: ______ Hz
+- window length: ______ seconds (suggest 10–20)
+- buffer cap: MAX_POINTS = windowSec * sampleRate (hard cap)
+
+---
+
+## 6) Physics / Logic
+Write equations + algorithm notes.
+
+### State Variables (examples)
+- state.t (s)
+- state.theta (rad)
+- state.x, state.y (m) or (px) — specify which
+- state.vx, state.vy (m/s)
+- state.ax, state.ay (m/s²)
+
+### Core Equations
+(Write formulas here)
+
+### Update Algorithm (Pseudo)
+1) `dt = clamp(dt, 0, MAX_DT)`
+2) If running:
+   - update state variables
+   - compute derived outputs
+   - push chart sample (respect sampling policy + cap)
+3) draw stage (canvas/three)
+4) update React UI state at UI_HZ (do NOT set state every frame)
+
+---
+
+## 7) Rendering Requirements (Canvas/Three)
+List exactly what must be visible:
+- objects: (circle track, body, center marker, axes)
+- vectors: (velocity arrow, acceleration arrow) + scaling rule
+- overlays: (labels, grid, angle indicator, radius line)
+- responsiveness: keep centered & safe on resize
+- DPR: must render crisp
+
+---
+
+## 8) UI Layout Requirements (Right Panel)
+Panel body content order (edit as needed):
+1) Controls card (inputs)
+2) HUD / Readouts card
+3) Charts card(s)
+4) Theory / Notes card
+5) Debug card (optional)
+
+Charts required:
+- Chart A: ______ vs time (keys: ______)
+- Chart B: ______ vs time (keys: ______)
+
+---
+
+## 9) Performance & Safety Checklist
+- [ ] clamp dt (MAX_DT)
+- [ ] cap chart buffer (MAX_POINTS)
+- [ ] cancel RAF on unmount
+- [ ] throttle UI updates (UI_HZ)
+- [ ] DPR-aware canvas
+- [ ] resize safe (layout & physics bounds)
+
+---
+
+## 10) Acceptance Checks (Manual)
+Provide at least 2 numeric test cases.
+
+### Test Case 1
+Inputs:
+- ...
+Expected:
+- ...
+Notes:
+- ...
+
+### Test Case 2
+Inputs:
+- ...
+Expected:
+- ...
+Notes:
+- ...
+
+General checks:
+- [ ] Start/Stop/Reset works
+- [ ] Values match formulas for test cases
+- [ ] Resize doesn’t break layout
+- [ ] Only panel scrolls, page does not scroll
+- [ ] No runaway memory (buffers capped)
+
+---
+
+## 11) AI Prompt Pack (Copy/Paste)
+You are working inside my React+Vite project "science-web-lab".
+
+Implement this simulation inside:
+`src/simulations/subjects/{{relativePath}}/`
+
+Rules:
+- Do NOT change routing.
+- Keep entry file `index.jsx` exporting default.
+- Use `SimulationShell` (left stage + right panel).
+- Right panel: fixed top controls + scrollable content (cards + charts).
+- Use `recharts` for charts (already installed).
+- Use dt-based RAF loop with MAX_DT clamp and UI throttling.
+- Provide FULL FILE CONTENT for each changed file.
+
+FILES YOU MAY EDIT:
+- `src/simulations/subjects/{{relativePath}}/{{componentName}}.jsx`
+- `src/simulations/subjects/{{relativePath}}/README.md` (optional)
+
+SPEC (Sections 0–10):
+(Paste filled content here)

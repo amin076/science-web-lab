@@ -1,0 +1,35 @@
+{
+  "title": "Block and Tackle",
+  "subtitle": "Rope and Pulley system",
+  "registryKey": "physics.mechanics.pulley-system",
+  "folder": "src/simulations/subjects/physics/mechanics/pulley-system",
+  "render": {
+    "stack": "canvas2d",
+    "pxPerMeter": 30
+  },
+  "timing": {
+    "maxDt": 0,
+    "uiHz": 0
+  },
+  "goal": "create 2D simulation for pulley and ropes to show mechanical advantages,how to change forces numbers and direction, calculate forces and ropes tentions, anable to add fixed and mobile pulleys. block and tackles system , visual some standard pully rope system for moving heavy loads",
+  "controls": [],
+  "outputs": [],
+  "charts": {
+    "sampleRate": 0,
+    "windowSec": 0,
+    "maxPoints": 60,
+    "seriesKeys": []
+  },
+  "physics": "",
+  "tests": [
+    {
+      "inputs": "one mobile pully",
+      "expected": "one pully two ropes to move a load"
+    },
+    {
+      "inputs": "one fixed pully",
+      "expected": ""
+    }
+  ],
+  "generatedAt": "2026-01-08T18:39:37.473Z"
+}

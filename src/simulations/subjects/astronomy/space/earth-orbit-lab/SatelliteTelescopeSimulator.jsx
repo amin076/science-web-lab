@@ -57,6 +57,7 @@ function calculateOrbitPath(initialState, mu) {
   const period = orbitalPeriod(rMag, mu);
   const segments = 120;
   const dt = period / segments;
+
   const path = [];
   let simState = { r: [...initialState.r], v: [...initialState.v] };
 
@@ -125,7 +126,7 @@ function CameraController({
     if (!controlsRef.current) return;
 
     // Default: Earth (0,0,0)
-    let dest = new THREE.Vector3(0, 0, 0);
+    const dest = new THREE.Vector3(0, 0, 0);
 
     if (focusedBodyId === "moon" && moonRef.current) {
       // Lock to Moon Mesh Position
@@ -150,11 +151,13 @@ function CameraController({
     controlsRef.current.target.copy(targetVec.current);
     controlsRef.current.update();
   });
+
   return null;
 }
 
 function SatelliteVisual({ type, color, scaleFactor = 1 }) {
   const s = 0.4 * scaleFactor;
+
   if (type === "station") {
     return (
       <group rotation={[0, Math.PI / 4, 0]} scale={s * 2}>
@@ -175,6 +178,7 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
       </group>
     );
   }
+
   if (type === "telescope") {
     return (
       <group rotation={[Math.PI / 3, 0, 0]} scale={s * 1.5}>
@@ -193,6 +197,7 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
       </group>
     );
   }
+
   return (
     <group rotation={[0, Math.PI / 4, 0]} scale={s}>
       <mesh>
@@ -244,22 +249,25 @@ function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
 function OrbitalTrail({ trailData, color, visible }) {
   const lineRef = useRef();
   const maxPoints = 800;
+
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
     const positions = new Float32Array(maxPoints * 3);
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geo;
-  }, []);
+  }, [maxPoints]);
 
   useFrame(() => {
     if (!lineRef.current || !visible) return;
     const positions = lineRef.current.geometry.attributes.position.array;
     const count = trailData.length;
+
     for (let i = 0; i < count; i++) {
       positions[i * 3] = trailData[i][0];
       positions[i * 3 + 1] = trailData[i][1];
       positions[i * 3 + 2] = trailData[i][2];
     }
+
     lineRef.current.geometry.setDrawRange(0, count);
     lineRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -279,6 +287,7 @@ function OrbitalTrail({ trailData, color, visible }) {
 function GroundTelescope({ observerRenderRef }) {
   const meshRef = useRef();
   const up = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+
   useFrame(() => {
     if (!meshRef.current || !observerRenderRef.current) return;
     const p = observerRenderRef.current;
@@ -286,6 +295,7 @@ function GroundTelescope({ observerRenderRef }) {
     const normal = new THREE.Vector3(p[0], p[1], p[2]).normalize();
     meshRef.current.quaternion.setFromUnitVectors(up, normal);
   });
+
   return (
     <mesh ref={meshRef}>
       <coneGeometry args={[0.04, 0.12, 18]} />
@@ -307,37 +317,45 @@ function LOSLine({
   showOnlyVisible,
 }) {
   const lineRef = useRef(null);
+
   useFrame(() => {
     if (!enabled || !lineRef.current || !fromRef.current) return;
+
     const shouldShow = showOnlyVisible ? !!toBody.lastVisible : true;
     lineRef.current.visible = shouldShow;
-    if (shouldShow) {
-      const a = fromRef.current; // Observer (Earth surface)
-      const relPos = toRenderUnits(toBody.state.r, mPerUnit);
 
-      let b = relPos;
-      if (parentRef && parentRef.current) {
-        // Add World Position of Parent (Moon)
-        const pPos = parentRef.current.position;
-        b = [pPos.x + relPos[0], pPos.y + relPos[1], pPos.z + relPos[2]];
-      }
+    if (!shouldShow) return;
 
-      if (lineRef.current.geometry?.setPositions)
-        lineRef.current.geometry.setPositions([
-          a[0],
-          a[1],
-          a[2],
-          b[0],
-          b[1],
-          b[2],
-        ]);
-      if (lineRef.current.material?.color?.set)
-        lineRef.current.material.color.set(
-          toBody.lastVisible ? "#4ECDC4" : "#ef4444"
-        );
+    const a = fromRef.current; // Observer (Earth surface)
+    const relPos = toRenderUnits(toBody.state.r, mPerUnit);
+
+    let b = relPos;
+    if (parentRef && parentRef.current) {
+      // Add World Position of Parent (Moon)
+      const pPos = parentRef.current.position;
+      b = [pPos.x + relPos[0], pPos.y + relPos[1], pPos.z + relPos[2]];
+    }
+
+    if (lineRef.current.geometry?.setPositions) {
+      lineRef.current.geometry.setPositions([
+        a[0],
+        a[1],
+        a[2],
+        b[0],
+        b[1],
+        b[2],
+      ]);
+    }
+
+    if (lineRef.current.material?.color?.set) {
+      lineRef.current.material.color.set(
+        toBody.lastVisible ? "#4ECDC4" : "#ef4444"
+      );
     }
   });
+
   if (!enabled) return null;
+
   return (
     <DreiLine
       ref={lineRef}
@@ -371,35 +389,42 @@ function SatelliteBody({
   const meshRef = useRef();
   const arrowRef = useRef(null);
 
+  // ✅ FIX: capture groupRef.current so cleanup uses a stable reference
   useEffect(() => {
-    if (!groupRef.current) return;
+    const group = groupRef.current;
+    if (!group) return;
+
     const arrow = new THREE.ArrowHelper(
       new THREE.Vector3(1, 0, 0),
       new THREE.Vector3(0, 0, 0),
       0.2,
       body.color
     );
+
     arrow.visible = false;
     arrowRef.current = arrow;
-    groupRef.current.add(arrow);
+    group.add(arrow);
+
     return () => {
-      if (arrowRef.current && groupRef.current)
-        groupRef.current.remove(arrowRef.current);
+      if (arrowRef.current) group.remove(arrowRef.current);
     };
   }, [body.color]);
 
   useFrame(() => {
     if (!meshRef.current || !groupRef.current) return;
+
     const p = toRenderUnits(body.state.r, mPerUnit);
     meshRef.current.position.set(p[0], p[1], p[2]);
 
     // LOS Check
     const obs = observerMetersRef ? observerMetersRef.current : null;
     let visible = true;
+
     if (obs && body.parent !== "moon") {
       visible = hasLineOfSight(obs, body.state.r, R_EARTH_M);
       if (elevationDeg(obs, body.state.r) <= 0) visible = false;
     }
+
     body.lastVisible = visible;
     groupRef.current.visible = showOnlyVisible ? visible : true;
 
@@ -407,6 +432,7 @@ function SatelliteBody({
       const vRender = toRenderUnits(body.state.v, mPerUnit);
       const vVec = new THREE.Vector3(vRender[0], vRender[1], vRender[2]);
       const speed = vVec.length();
+
       if (
         showVelocityVectors &&
         speed > 1e-6 &&
@@ -490,7 +516,8 @@ export default function SatelliteTelescopeSimulator() {
 
   const [simMode, setSimMode] = useState("educational");
   const [isRunning, setIsRunning] = useState(true);
-  const [sceneVersion, setSceneVersion] = useState(0);
+
+  // ✅ FIX: remove unused sceneVersion state
   const [focusedBodyId, setFocusedBodyId] = useState(null); // null = Earth, 'moon' = Moon
   const [bodyList, setBodyList] = useState([]);
 
@@ -507,6 +534,7 @@ export default function SatelliteTelescopeSimulator() {
     () => metersPerRenderUnit(earthRenderRadius),
     [earthRenderRadius]
   );
+
   const observerMetersRef = useRef(null);
   const observerRenderRef = useRef(null);
   const moonVisualRef = useRef(null); // Ref to Moon Group for smooth updates
@@ -554,7 +582,6 @@ export default function SatelliteTelescopeSimulator() {
   const addBody = useCallback((cfg) => {
     simRef.current.bodies.push(makeBody(cfg));
     setBodyList([...simRef.current.bodies]);
-    setSceneVersion((v) => v + 1);
   }, []);
 
   const removeBody = useCallback(
@@ -562,7 +589,6 @@ export default function SatelliteTelescopeSimulator() {
       simRef.current.bodies = simRef.current.bodies.filter((b) => b.id !== id);
       setBodyList([...simRef.current.bodies]);
       if (focusedBodyId === id) setFocusedBodyId(null);
-      setSceneVersion((v) => v + 1);
     },
     [focusedBodyId]
   );
@@ -579,6 +605,7 @@ export default function SatelliteTelescopeSimulator() {
             type: "station",
           });
           break;
+
         case "CSS":
           addBody({
             name: "Tiangong",
@@ -588,6 +615,7 @@ export default function SatelliteTelescopeSimulator() {
             type: "station",
           });
           break;
+
         case "HST":
           addBody({
             name: "Hubble",
@@ -597,9 +625,11 @@ export default function SatelliteTelescopeSimulator() {
             type: "telescope",
           });
           break;
-        case "Starlink":
+
+        // ✅ FIX: wrap in braces to allow const declaration (no-case-declarations)
+        case "Starlink": {
           const r = Math.random() * 360;
-          for (let i = 0; i < 5; i++)
+          for (let i = 0; i < 5; i++) {
             addBody({
               name: `Starlink-${i}`,
               color: "#10B981",
@@ -608,7 +638,10 @@ export default function SatelliteTelescopeSimulator() {
               raanDeg: r,
               trueAnomalyDeg: i * 2,
             });
+          }
           break;
+        }
+
         case "GPS":
           addBody({
             name: "GPS",
@@ -618,20 +651,19 @@ export default function SatelliteTelescopeSimulator() {
             type: "satellite",
           });
           break;
+
         case "Gateway":
           addBody({
             name: "Lunar Gateway",
             color: "#ccc",
-            altitudeM: 3000_000,
+            altitudeM: 3_000_000,
             inclinationDeg: 90,
             type: "station",
             parent: "moon",
           });
           break;
 
-        // JAMES WEBB SPACE TELESCOPE
         case "JWST":
-          // 1.5 Million KM altitude.
           addBody({
             name: "James Webb",
             color: "#FFA726",
@@ -652,10 +684,11 @@ export default function SatelliteTelescopeSimulator() {
     simRef.current.t = 0;
     simRef.current.accumulator = 0;
     simRef.current.bodies = [];
+
     setFocusedBodyId(null);
+
     onAddPreset("ISS");
     setBodyList([...simRef.current.bodies]);
-    setSceneVersion((v) => v + 1);
   }, [onAddPreset]);
 
   useEffect(() => {
@@ -667,7 +700,7 @@ export default function SatelliteTelescopeSimulator() {
     useFrame((state, delta) => {
       const sim = simRef.current;
 
-      // 1. Update Earth Observer
+      // 1) Update Earth Observer
       const ecef = latLonToECEF(
         settings.telescopeLat,
         settings.telescopeLon,
@@ -676,10 +709,11 @@ export default function SatelliteTelescopeSimulator() {
       const obsMeters = settings.earthRotationOn
         ? ecefToInertial(ecef, sim.t)
         : ecef;
+
       observerMetersRef.current = obsMeters;
       observerRenderRef.current = toRenderUnits(obsMeters, mPerUnit);
 
-      // 2. HUD Update
+      // 2) HUD Update
       const now = state.clock.elapsedTime;
       if (now - uiThrottleRef.current > 0.1) {
         setUiT(sim.t);
@@ -696,15 +730,15 @@ export default function SatelliteTelescopeSimulator() {
         sim.accumulator -= dt;
         sim.t += dt;
 
-        // A. Update Moon Orbit
+        // A) Update Moon Orbit
         sim.moonState = stepVelocityVerlet(sim.moonState, dt, MU_EARTH);
         const rMoon = sim.moonState.r; // meters
 
-        // B. Update Bodies
+        // B) Update Bodies
         for (const b of sim.bodies) {
           if (b.parent === "moon") {
             b.state = stepVelocityVerlet(b.state, dt, MU_MOON);
-            // Trail in World Space
+
             if (settings.showTrails) {
               const relPos = toRenderUnits(b.state.r, mPerUnit);
               const moonPos = toRenderUnits(rMoon, mPerUnit);
@@ -713,26 +747,30 @@ export default function SatelliteTelescopeSimulator() {
                 moonPos[1] + relPos[1],
                 moonPos[2] + relPos[2],
               ];
+
               b.trail.push(worldPos);
               if (b.trail.length > 500) b.trail.shift();
             }
           } else {
             b.state = stepVelocityVerlet(b.state, dt, MU_EARTH);
+
             if (settings.showTrails) {
               b.trail.push(toRenderUnits(b.state.r, mPerUnit));
               if (b.trail.length > 900) b.trail.shift();
             }
           }
         }
+
         steps++;
       }
 
-      // C. DIRECT RENDER UPDATE (Fixes Jumping)
+      // C) Direct Moon Visual Update (reduces jumping)
       if (moonVisualRef.current && sim.moonState) {
         const mR = toRenderUnits(sim.moonState.r, mPerUnit);
         moonVisualRef.current.position.set(mR[0], mR[1], mR[2]);
       }
     });
+
     return null;
   }
 
@@ -757,7 +795,7 @@ export default function SatelliteTelescopeSimulator() {
         }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: false, logarithmicDepthBuffer: true }}
-        camera={{ position: [0, 5, 20], fov: 45, near: 0.01, far: 5000000 }} // Increased Far Plane for JWST
+        camera={{ position: [0, 5, 20], fov: 45, near: 0.01, far: 5000000 }}
       >
         <color attach="background" args={["#02030f"]} />
         <directionalLight position={[100, 50, 50]} intensity={2.5} />
@@ -769,7 +807,7 @@ export default function SatelliteTelescopeSimulator() {
         <CameraController
           focusedBodyId={focusedBodyId}
           bodies={simRef.current.bodies}
-          moonRef={moonVisualRef} // Pass Ref instead of State
+          moonRef={moonVisualRef}
           mPerUnit={mPerUnit}
           controlsRef={controlsRef}
         />
@@ -777,11 +815,12 @@ export default function SatelliteTelescopeSimulator() {
         {/* --- EARTH SYSTEM --- */}
         <EarthVisual
           radius={earthRenderRadius}
-          simTime={uiT} // Passed for strict rotation sync
+          simTime={uiT}
           showClouds
           showAtmosphere
           showLabel={simMode !== "realistic"}
         />
+
         <GroundTelescope observerRenderRef={observerRenderRef} />
 
         {/* Earth Satellites */}
@@ -794,7 +833,6 @@ export default function SatelliteTelescopeSimulator() {
               mPerUnit={mPerUnit}
               observerMetersRef={observerMetersRef}
               showLabels={simMode !== "realistic"}
-              showTrails={!!settings.showTrails}
               showOrbits={!!settings.showOrbits}
               showVelocityVectors={!!settings.showVectors}
               showOnlyVisible={!!settings.showOnlyVisible}
@@ -814,7 +852,6 @@ export default function SatelliteTelescopeSimulator() {
               />
             )}
 
-            {/* MOON GROUP (Animated via Ref in PhysicsStepper) */}
             <group ref={moonVisualRef}>
               <MoonVisual
                 radius={moonVisualRadius}
@@ -902,6 +939,7 @@ export default function SatelliteTelescopeSimulator() {
         >
           {isRunning ? "Pause" : "Resume"}
         </Button>
+
         <Typography
           sx={{
             color: "rgba(255,255,255,0.7)",

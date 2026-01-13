@@ -1,4 +1,4 @@
-// src/components/features/motion/MotionSimulator.jsx
+// src/simulations/subjects/physics/mechanics/projectile-motion/ProjectileMotion.jsx
 import React, {
   useState,
   useEffect,
@@ -6,402 +6,223 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-// FIX 1: Added Divider to imports
-import { Box, Button, IconButton, Paper, Divider } from "@mui/material";
+import { Box, Button, Paper, Divider, Typography } from "@mui/material";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
+
+// Components
 import ControlPanel from "./ControlPanel";
+import GraphSection from "./SimulationGraphs";
 
-// --- DRAWING UTILS ---
-const drawGrid = (ctx, width, height, scale) => {
-  ctx.clearRect(0, 0, width, height); // Clear previous frame
+// Modules
+import { calculatePhysicsStep } from "./physics";
+import * as Draw from "./drawing";
+import { useCamera } from "./useCamera";
 
-  // Grid Lines
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.05)";
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let x = 0; x <= width; x += scale) {
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-  }
-  for (let y = 0; y <= height; y += scale) {
-    ctx.moveTo(0, height - y);
-    ctx.lineTo(width, height - y);
-  }
-  ctx.stroke();
-
-  // Floor
-  ctx.fillStyle = "rgba(78, 205, 196, 0.1)";
-  ctx.fillRect(0, height - 2, width, 2);
-  ctx.strokeStyle = "#4ECDC4";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, height);
-  ctx.lineTo(width, height);
-  ctx.stroke();
-};
-
-const drawBall = (ctx, obj, cvsHeight) => {
-  const renderY = cvsHeight - obj.y;
-
-  // Outer Glow
-  ctx.shadowColor = obj.color;
-  ctx.shadowBlur = 20;
-
-  ctx.fillStyle = obj.color;
-  ctx.beginPath();
-  ctx.arc(obj.x, renderY, obj.radius, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.shadowBlur = 0; // Reset glow for other elements
-
-  // Inner Highlight
-  ctx.fillStyle = "rgba(255,255,255,0.3)";
-  ctx.beginPath();
-  ctx.arc(
-    obj.x - obj.radius * 0.3,
-    renderY - obj.radius * 0.3,
-    obj.radius * 0.2,
-    0,
-    Math.PI * 2
-  );
-  ctx.fill();
-
-  if (obj.active) {
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.beginPath();
-    ctx.arc(obj.x, renderY, obj.radius + 4, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.setLineDash([]);
-  }
-};
-
-const drawCar = (ctx, obj, cvsHeight) => {
-  const renderY = cvsHeight - obj.y;
-  const w = obj.width;
-  const h = obj.height;
-  const x = obj.x - w / 2;
-  const y = renderY - h / 2;
-
-  ctx.shadowColor = obj.color;
-  ctx.shadowBlur = 15;
-
-  // Body
-  ctx.fillStyle = obj.color;
-  ctx.fillRect(x, y, w, h);
-
-  ctx.shadowBlur = 0;
-
-  // Windows
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(x + w * 0.6, y + 2, w * 0.3, h * 0.4);
-
-  // Wheels
-  ctx.fillStyle = "#222";
-  ctx.beginPath();
-  ctx.arc(x + w * 0.2, y + h, 8, 0, Math.PI * 2);
-  ctx.arc(x + w * 0.8, y + h, 8, 0, Math.PI * 2);
-  ctx.fill();
-
-  if (obj.active) {
-    ctx.strokeStyle = "#fff";
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-    ctx.strokeRect(x - 5, y - 5, w + 10, h + 10);
-    ctx.setLineDash([]);
-  }
-};
-
-const drawVelocityVector = (ctx, obj, cvsHeight) => {
-  if (Math.abs(obj.vx) < 1 && Math.abs(obj.vy) < 1) return;
-  const renderY = cvsHeight - obj.y;
-
-  ctx.strokeStyle = "rgba(255, 255, 0, 0.8)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(obj.x, renderY);
-  // Scale vector visually (0.5x) so it doesn't go off screen
-  ctx.lineTo(obj.x + obj.vx * 0.5, renderY - obj.vy * 0.5);
-  ctx.stroke();
-
-  // Arrowhead
-  const angle = Math.atan2(-obj.vy, obj.vx);
-  const endX = obj.x + obj.vx * 0.5;
-  const endY = renderY - obj.vy * 0.5;
-  const headLen = 8;
-
-  ctx.beginPath();
-  ctx.moveTo(endX, endY);
-  ctx.lineTo(
-    endX - headLen * Math.cos(angle - Math.PI / 6),
-    endY - headLen * Math.sin(angle - Math.PI / 6)
-  );
-  ctx.moveTo(endX, endY);
-  ctx.lineTo(
-    endX - headLen * Math.cos(angle + Math.PI / 6),
-    endY - headLen * Math.sin(angle + Math.PI / 6)
-  );
-  ctx.stroke();
-};
-
-const drawTrail = (ctx, trail, color, cvsHeight) => {
-  if (trail.length < 2) return;
-  ctx.strokeStyle = color;
-  ctx.globalAlpha = 0.4;
-  ctx.lineWidth = 3;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.beginPath();
-  ctx.moveTo(trail[0].x, cvsHeight - trail[0].y);
-  for (let i = 1; i < trail.length; i++) {
-    // Quadratic bezier for smoothness
-    // Simplified to lines for performance in this specific context
-    ctx.lineTo(trail[i].x, cvsHeight - trail[i].y);
-  }
-  ctx.stroke();
-  ctx.globalAlpha = 1.0;
-};
-
-// --- MAIN COMPONENT ---
 const MotionSimulator = () => {
-  const METER_TO_PIXEL = 50;
-  const canvasRef = useRef(null);
+  const [canvasEl, setCanvasEl] = useState(null);
   const containerRef = useRef(null);
 
-  const [worldBounds, setWorldBounds] = useState({
-    width: 800,
-    height: 600,
-    friction: 1.0, // 1.0 = No friction (Vacuum)
-    restitution: 0.8, // Bounciness
-  });
+  const requestRef = useRef(null);
+  const lastTimeRef = useRef(null);
+  const timeElapsedRef = useRef(0);
+  const visualTrailRef = useRef([]);
 
+  // CAMERA
+  const viewRef = useCamera(canvasEl, { scale: 12, x: 100, y: 250 });
+
+  // STATE
+  const [gravity, setGravity] = useState(9.8);
+  const [airResistance, setAirResistance] = useState(0.0);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [selectedObject, setSelectedObject] = useState("ball");
+
+  const [showTrails, setShowTrails] = useState(true);
+  const [showInfo, setShowInfo] = useState(true);
+  const [vectorMode, setVectorMode] = useState({ x: false, y: false, v: true });
+  const [history, setHistory] = useState([]);
+
+  // OBJECTS
   const [objects, setObjects] = useState([
     {
       id: "ball",
       type: "ball",
-      x: 100,
-      y: 400,
-      vx: 0,
-      vy: 0,
-      radius: 10,
-      color: "#baf026e6",
-      mass: 1,
+      x: 0,
+      y: 20,
+      vx: 12,
+      vy: 10,
+      ax: 0,
+      ay: 0,
+      radius: 0.6,
+      color: "#00F0FF", // Electric Cyan
+      mass: 5,
       active: true,
+      stopped: false,
     },
     {
       id: "car",
       type: "car",
-      x: 300,
-      y: 40,
-      vx: 0,
+      x: -15,
+      y: 0,
+      vx: 8,
       vy: 0,
-      width: 90,
-      height: 40,
-      color: "#4ECDC4",
-      mass: 2,
+      ax: 3,
+      ay: 0,
+      width: 4.8,
+      height: 1.2,
+      color: "#FF2E63", // Neon Red
+      mass: 1000,
       active: false,
+      stopped: false,
     },
   ]);
 
-  const [gravity, setGravity] = useState(9.8);
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [selectedObject, setSelectedObject] = useState("ball");
-  const [showTrails, setShowTrails] = useState(true);
-  const [showVectors, setShowVectors] = useState(true);
-  const [showInfo, setShowInfo] = useState(true);
-
-  const [trails, setTrails] = useState({ ball: [], car: [] });
-
-  const lastTimeRef = useRef(null);
-  const requestRef = useRef(null);
-
-  // Resize Observer
+  // Sync active state
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        setWorldBounds((prev) => ({
-          ...prev,
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        }));
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    setObjects((prev) =>
+      prev.map((o) => ({ ...o, active: o.id === selectedObject }))
+    );
+  }, [selectedObject]);
 
-  // --- PHYSICS ENGINE (Semi-Implicit Euler) ---
+  // --- PHYSICS ENGINE ---
   const updatePhysics = useCallback(() => {
     const currentTime = Date.now();
-    let frameTime = (currentTime - lastTimeRef.current) / 1000;
+    let dt = (currentTime - lastTimeRef.current) / 1000;
     lastTimeRef.current = currentTime;
-    if (frameTime > 0.1) frameTime = 0.1;
+    if (dt > 0.1) dt = 0.1;
 
-    // Sub-stepping for stability
-    const SUB_STEPS = 8;
-    const dt = frameTime / SUB_STEPS;
+    timeElapsedRef.current += dt;
 
     setObjects((prevObjects) => {
-      const updatedObjects = prevObjects.map((obj) => ({ ...obj }));
+      const { updatedObjects, newTrails } = calculatePhysicsStep(
+        prevObjects,
+        dt,
+        gravity,
+        airResistance
+      );
 
-      for (let step = 0; step < SUB_STEPS; step++) {
-        updatedObjects.forEach((newObj) => {
-          const G_PIXELS = gravity * METER_TO_PIXEL;
-
-          // 1. Calculate Acceleration
-          // Only gravity for now (no air resistance in acceleration term)
-          let ax = 0;
-          let ay = -G_PIXELS;
-
-          // 2. Update Velocity (Semi-Implicit Euler: Velocity first)
-          newObj.vx += ax * dt;
-          newObj.vy += ay * dt;
-
-          // 3. Apply Air Resistance (Drag)
-          // Friction factor 1.0 means NO friction. < 1.0 means drag.
-          // This applies equally to everything in the world.
-          if (worldBounds.friction < 1.0) {
-            const drag = Math.pow(worldBounds.friction, dt * 60);
-            newObj.vx *= drag;
-            newObj.vy *= drag;
-          }
-
-          // 4. Update Position using NEW velocity
-          newObj.x += newObj.vx * dt;
-          newObj.y += newObj.vy * dt;
-
-          // --- COLLISION DETECTION ---
-          const halfH =
-            newObj.type === "ball" ? newObj.radius : newObj.height / 2;
-          const halfW =
-            newObj.type === "ball" ? newObj.radius : newObj.width / 2;
-
-          // FLOOR
-          if (newObj.y < halfH) {
-            newObj.y = halfH; // Hard fix position
-            newObj.vy *= -worldBounds.restitution; // Bounce
-
-            // FIX 2: Removed "Ground Friction" logic here.
-            // Previously, objects touching the ground got extra X friction.
-            // This caused the rolling Car to slow down faster than the flying Ball.
-            // Now, X speed is preserved unless Air Resistance is active.
-
-            // Stop micro-bouncing if energy is very low AND we are not perfectly elastic
-            if (
-              worldBounds.restitution < 1.0 &&
-              Math.abs(newObj.vy) < G_PIXELS * dt * 2
-            ) {
-              newObj.vy = 0;
-            }
-          }
-          // CEILING
-          else if (newObj.y > worldBounds.height - halfH) {
-            newObj.y = worldBounds.height - halfH;
-            newObj.vy *= -worldBounds.restitution;
-          }
-
-          // WALLS
-          if (newObj.x < halfW) {
-            newObj.x = halfW;
-            newObj.vx *= -worldBounds.restitution;
-          } else if (newObj.x > worldBounds.width - halfW) {
-            newObj.x = worldBounds.width - halfW;
-            newObj.vx *= -worldBounds.restitution;
-          }
-        });
+      // Update visual trails
+      if (newTrails.length > 0 && isSimulating) {
+        visualTrailRef.current.push(...newTrails);
       }
 
-      // Update Trails
-      if (showTrails) {
-        setTrails((prev) => {
-          const next = { ...prev };
-          updatedObjects.forEach((obj) => {
-            const speed = Math.hypot(obj.vx, obj.vy);
-            if (speed > 5) {
-              if (!next[obj.id]) next[obj.id] = [];
-              next[obj.id].push({ x: obj.x, y: obj.y });
-              if (next[obj.id].length > 60) next[obj.id].shift();
-            }
-          });
-          return next;
-        });
+      // Check Auto-Stop Condition: If ALL objects are stopped, pause simulation
+      const allStopped = updatedObjects.every((o) => o.stopped);
+      if (allStopped && isSimulating) {
+        setIsSimulating(false); // AUTO STOP
       }
+
       return updatedObjects;
     });
-  }, [gravity, worldBounds, showTrails]);
+  }, [gravity, airResistance, isSimulating]);
 
-  // Animation Loop
+  // --- DATA LOOP (With Cutoff Logic) ---
+  useEffect(() => {
+    if (!isSimulating) return;
+    const interval = setInterval(() => {
+      setObjects((currentObjs) => {
+        const ball = currentObjs.find((o) => o.id === "ball");
+        const car = currentObjs.find((o) => o.id === "car");
+        const t = timeElapsedRef.current;
+
+        // --- DATA CUTOFF LOGIC ---
+        // If an object is stopped, we send NULL to the graph.
+        // This prevents the "flat line" effect and allows zooming in on the active curve.
+
+        const ballData = ball.stopped
+          ? {
+              ball_x: null,
+              ball_y: null,
+              ball_vx: null,
+              ball_vy: null,
+              ball_KE: null,
+              ball_PE: null,
+              ball_ME: null,
+            }
+          : {
+              ball_x: ball.x,
+              ball_y: ball.y,
+              ball_vx: ball.vx,
+              ball_vy: ball.vy,
+              ball_KE: 0.5 * ball.mass * (ball.vx ** 2 + ball.vy ** 2),
+              ball_PE: ball.mass * gravity * ball.y,
+              ball_ME:
+                0.5 * ball.mass * (ball.vx ** 2 + ball.vy ** 2) +
+                ball.mass * gravity * ball.y,
+            };
+
+        const carData = car.stopped
+          ? {
+              car_x: null,
+              car_vx: null,
+            }
+          : {
+              car_x: car.x,
+              car_vx: car.vx,
+            };
+
+        // Only record if at least one object is still running, or just push nulls to show time passing?
+        // Usually better to push nulls so X-axis (Time) keeps moving for the other object.
+        setHistory((prev) => {
+          if (prev.length > 500) return prev;
+          return [...prev, { time: t, ...ballData, ...carData }];
+        });
+
+        return currentObjs;
+      });
+    }, 100);
+    return () => clearInterval(interval);
+  }, [isSimulating, gravity]);
+
+  // --- RENDER LOOP ---
   const animate = useCallback(() => {
-    if (isSimulating) {
-      updatePhysics();
-    } else {
-      lastTimeRef.current = Date.now();
-    }
+    if (isSimulating) updatePhysics();
+    else lastTimeRef.current = Date.now();
 
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext("2d");
-      const { width, height } = worldBounds;
+    if (canvasEl && containerRef.current) {
+      const ctx = canvasEl.getContext("2d");
+      const { width, height } = containerRef.current.getBoundingClientRect();
 
-      drawGrid(ctx, width, height, METER_TO_PIXEL);
+      if (canvasEl.width !== width || canvasEl.height !== height) {
+        canvasEl.width = width;
+        canvasEl.height = height;
+      }
+
+      const view = viewRef.current;
+
+      Draw.drawEnvironment(ctx, view, width, height);
 
       if (showTrails) {
-        objects.forEach((obj) => {
-          if (trails[obj.id]) drawTrail(ctx, trails[obj.id], obj.color, height);
-        });
+        const ball = objects.find((o) => o.id === "ball");
+        // Only draw live trail if ball hasn't stopped yet
+        if (!ball.stopped) {
+          const liveTrail = [
+            ...visualTrailRef.current,
+            { x: ball.x, y: ball.y },
+          ];
+          Draw.drawTrajectory(ctx, liveTrail, view, height);
+        } else {
+          // If stopped, just draw the static trail buffer
+          Draw.drawTrajectory(ctx, visualTrailRef.current, view, height);
+        }
       }
 
       objects.forEach((obj) => {
-        if (obj.type === "ball") drawBall(ctx, obj, height);
-        if (obj.type === "car") drawCar(ctx, obj, height);
-        if (showVectors) drawVelocityVector(ctx, obj, height);
-
-        // Info Overlay
-        if (showInfo && obj.active) {
-          const renderY = height - obj.y;
-          ctx.fillStyle = "rgba(0,0,0,0.7)";
-          // Note: roundRect support depends on browser version, fallback to rect if needed
-          if (ctx.roundRect) {
-            ctx.roundRect(obj.x + 15, renderY - 45, 110, 40, 6);
-          } else {
-            ctx.fillRect(obj.x + 15, renderY - 45, 110, 40);
-          }
-          ctx.fill();
-
-          ctx.fillStyle = "white";
-          ctx.font = "11px Consolas, monospace";
-          ctx.fillText(
-            `Vx: ${(obj.vx / METER_TO_PIXEL).toFixed(2)}`,
-            obj.x + 25,
-            renderY - 28
-          );
-          ctx.fillText(
-            `Vy: ${(obj.vy / METER_TO_PIXEL).toFixed(2)}`,
-            obj.x + 25,
-            renderY - 14
-          );
-
-          // Color indicator
-          ctx.fillStyle = obj.color;
-          ctx.fillRect(obj.x + 19, renderY - 40, 3, 30);
-        }
+        Draw.drawObject(ctx, obj, view, height, vectorMode);
+        if (showInfo) Draw.drawModernHUD(ctx, obj, view, height);
       });
     }
-
     requestRef.current = requestAnimationFrame(animate);
   }, [
     isSimulating,
     updatePhysics,
-    worldBounds,
-    showTrails,
-    trails,
     objects,
-    showVectors,
     showInfo,
+    vectorMode,
+    showTrails,
+    canvasEl,
+    viewRef,
   ]);
 
   useEffect(() => {
@@ -409,159 +230,179 @@ const MotionSimulator = () => {
     return () => cancelAnimationFrame(requestRef.current);
   }, [animate]);
 
-  // Click Interaction
-  const handleObjectClick = (e) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const physY = worldBounds.height - y;
-
-    const clickedObj = objects.find((obj) => {
-      if (obj.type === "ball") {
-        return Math.hypot(x - obj.x, physY - obj.y) <= obj.radius + 15;
-      } else {
-        return (
-          x >= obj.x - obj.width / 2 &&
-          x <= obj.x + obj.width / 2 &&
-          physY >= obj.y - obj.height / 2 &&
-          physY <= obj.y + obj.height / 2
-        );
-      }
-    });
-
-    if (clickedObj) {
-      setObjects((prev) =>
-        prev.map((o) => ({ ...o, active: o.id === clickedObj.id }))
-      );
-      setSelectedObject(clickedObj.id);
-    }
-  };
-
+  // HANDLERS
   const handleReset = () => {
     setIsSimulating(false);
-    setObjects((prev) => [
-      { ...prev.find((o) => o.id === "ball"), x: 100, y: 400, vx: 0, vy: 0 },
-      { ...prev.find((o) => o.id === "car"), x: 300, y: 40, vx: 0, vy: 0 },
+    timeElapsedRef.current = 0;
+    setHistory([]);
+    visualTrailRef.current = [];
+    setObjects([
+      {
+        ...objects[0],
+        x: 0,
+        y: 20,
+        vx: 12,
+        vy: 10,
+        active: true,
+        stopped: false,
+      },
+      {
+        ...objects[1],
+        x: -15,
+        y: 0,
+        vx: 8,
+        ax: 3,
+        active: false,
+        stopped: false,
+      },
     ]);
-    setTrails({ ball: [], car: [] });
   };
 
-  const updateObjectProperty = (property, value) => {
-    setObjects((prev) =>
-      prev.map((obj) =>
-        obj.id === selectedObject
-          ? { ...obj, [property]: parseFloat(value) }
-          : obj
+  const updateObjectProperty = (prop, val) => {
+    setObjects((p) =>
+      p.map((o) =>
+        o.id === selectedObject ? { ...o, [prop]: parseFloat(val) } : o
       )
     );
   };
 
   const currentObject = useMemo(
-    () => objects.find((obj) => obj.id === selectedObject),
+    () => objects.find((o) => o.id === selectedObject),
     [objects, selectedObject]
   );
+
+  const scrollbarStyles = {
+    "&::-webkit-scrollbar": { width: "8px" },
+    "&::-webkit-scrollbar-track": { background: "#0a0a12" },
+    "&::-webkit-scrollbar-thumb": { background: "#333", borderRadius: "4px" },
+    "&::-webkit-scrollbar-thumb:hover": { background: "#444" },
+  };
 
   return (
     <Box
       sx={{
-        width: "100vw",
+        width: "100%",
         height: "100vh",
         bgcolor: "#111",
+        overflowY: "auto",
         display: "flex",
-        gap: 2,
-        p: 2,
-        boxSizing: "border-box",
+        flexDirection: "column",
+        ...scrollbarStyles,
       }}
     >
-      {/* LEFT: CANVAS AREA */}
       <Box
         sx={{
-          flex: 1,
-          position: "relative",
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.1)",
-          bgcolor: "#02030f",
+          display: "flex",
+          height: "95vh",
+          p: 2,
+          gap: 2,
+          flexShrink: 0,
+          minHeight: 600,
         }}
-        ref={containerRef}
       >
-        <canvas
-          ref={canvasRef}
-          width={worldBounds.width}
-          height={worldBounds.height}
-          onClick={handleObjectClick}
-          style={{ cursor: "crosshair", display: "block" }}
-        />
-
-        {/* FLOATING CONTROL ISLAND (Bottom Center) */}
-        <Paper
-          elevation={6}
+        <Box
+          ref={containerRef}
           sx={{
-            position: "absolute",
-            bottom: 30,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 2,
-            p: 1.5,
+            flex: 1,
+            position: "relative",
             borderRadius: 4,
-            bgcolor: "rgba(30, 30, 45, 0.7)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.15)",
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.1)",
+            bgcolor: "#02030f",
           }}
+          onContextMenu={(e) => e.preventDefault()}
         >
-          <Button
-            variant="contained"
-            onClick={() => setIsSimulating(!isSimulating)}
-            color={isSimulating ? "warning" : "success"}
-            startIcon={isSimulating ? <PauseIcon /> : <PlayArrowIcon />}
-            sx={{ borderRadius: 3, fontWeight: "bold", minWidth: 100 }}
-          >
-            {isSimulating ? "Pause" : "Play"}
-          </Button>
-          <Divider
-            orientation="vertical"
-            flexItem
-            sx={{ borderColor: "rgba(255,255,255,0.2)" }}
+          <canvas
+            ref={setCanvasEl}
+            style={{ display: "block", cursor: "default" }}
           />
-          <Button
-            onClick={handleReset}
-            startIcon={<RestartAltIcon />}
-            sx={{ color: "white", borderRadius: 3 }}
+
+          <Paper
+            elevation={6}
+            sx={{
+              position: "absolute",
+              top: 20,
+              left: "50%",
+              transform: "translateX(-50%)",
+              display: "flex",
+              gap: 2,
+              p: 0.8,
+              px: 2,
+              borderRadius: 10,
+              bgcolor: "rgba(30, 30, 45, 0.8)",
+              backdropFilter: "blur(12px)",
+              border: "1px solid rgba(255,255,255,0.15)",
+            }}
           >
-            Reset
-          </Button>
-        </Paper>
+            <Button
+              onClick={() => setIsSimulating(!isSimulating)}
+              color={isSimulating ? "warning" : "success"}
+              variant="contained"
+              size="small"
+              startIcon={isSimulating ? <PauseIcon /> : <PlayArrowIcon />}
+              sx={{
+                borderRadius: 8,
+                fontWeight: "bold",
+                minWidth: 100,
+                textTransform: "none",
+              }}
+            >
+              {isSimulating ? "Pause" : "Start"}
+            </Button>
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ borderColor: "rgba(255,255,255,0.2)", my: 1 }}
+            />
+            <Button
+              onClick={handleReset}
+              startIcon={<RestartAltIcon />}
+              size="small"
+              sx={{ color: "white", borderRadius: 8, textTransform: "none" }}
+            >
+              Reset
+            </Button>
+          </Paper>
+
+          <Typography
+            sx={{
+              position: "absolute",
+              bottom: 15,
+              left: 20,
+              color: "rgba(255,255,255,0.3)",
+              fontSize: 11,
+              pointerEvents: "none",
+            }}
+          >
+            SCROLL TO ZOOM • RIGHT CLICK TO PAN
+          </Typography>
+        </Box>
+
+        <Box sx={{ width: 360, height: "100%" }}>
+          <ControlPanel
+            currentObject={currentObject}
+            objects={objects}
+            setActiveObject={setSelectedObject}
+            updateObjectProperty={updateObjectProperty}
+            gravity={gravity}
+            setGravity={setGravity}
+            airResistance={airResistance}
+            setAirResistance={setAirResistance}
+            showTrails={showTrails}
+            setShowTrails={setShowTrails}
+            showInfo={showInfo}
+            setShowInfo={setShowInfo}
+            vectorMode={vectorMode}
+            setVectorMode={setVectorMode}
+          />
+        </Box>
       </Box>
 
-      {/* RIGHT: CONTROL PANEL */}
-      <Box sx={{ width: 350 }}>
-        <ControlPanel
-          currentObject={currentObject}
-          objects={objects}
-          setActiveObject={(id) => {
-            setObjects((prev) =>
-              prev.map((o) => ({ ...o, active: o.id === id }))
-            );
-            setSelectedObject(id);
-          }}
-          updateObjectProperty={updateObjectProperty}
-          gravity={gravity}
-          setGravity={setGravity}
-          showTrails={showTrails}
-          setShowTrails={setShowTrails}
-          showVectors={showVectors}
-          setShowVectors={setShowVectors}
-          showInfo={showInfo}
-          setShowInfo={setShowInfo}
-          worldBounds={worldBounds}
-          setWorldBounds={setWorldBounds}
-          meterToPixel={METER_TO_PIXEL}
-        />
+      <Box sx={{ bgcolor: "#111", minHeight: "80vh" }}>
+        <GraphSection data={history} onClear={() => setHistory([])} />
       </Box>
     </Box>
   );
 };
 
 export default MotionSimulator;
-// Sub-stepping for stability

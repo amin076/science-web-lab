@@ -8,7 +8,7 @@ export default function PlanetLabel({ name, radius, color = "white" }) {
   const [opacity, setOpacity] = useState(1);
   const [isVisible, setIsVisible] = useState(true);
 
-  useFrame(({ camera, scene }) => {
+  useFrame(({ camera }) => {
     // پیدا کردن موقعیت این لیبل در جهان
     // (چون لیبل فرزند سیاره است، موقعیتش نسبی است، اما ما فاصله واقعی تا دوربین را می‌خواهیم)
     // اینجا یک منطق ساده پیاده می‌کنیم:

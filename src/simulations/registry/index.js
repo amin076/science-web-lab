@@ -38,6 +38,7 @@ export const simulationRegistry = {
   "physics.optics.lens-mirror-3d": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/optics/lens-mirror-3d")
   ),
+
   "physics.mechanics.seesaw": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/mechanics/seesaw")
   ),
@@ -58,5 +59,34 @@ export const simulationRegistry = {
   ),
   "physics.waves.multi-source-interference": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/waves/multi-source-interference")
+  ),
+  "physics.fluid-mechanics.archimedes-principle": lazyWithRetry(() =>
+    import(
+      "@/simulations/subjects/physics/fluid-mechanics/archimedes-principle"
+    )
+  ),
+  "physics.acoustics.sound-waves": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/acoustics/SoundWaves")
+  ),
+  "physics.acoustics.spatial-audio": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/acoustics/spatial-audio")
+  ),
+  "astronomy.kepler-lab": lazyWithRetry(() =>
+    import("@/simulations/subjects/astronomy/kepler")
+  ),
+  "physics.mechanics.circular-motion": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/circular-motion")
+  ),
+  "physics.mechanics.two-body-gravity": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/two-body-gravity")
+  ),
+  "physics.mechanics.pulley-system": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/pulley-system")
+  ),
+  "physics.mechanics.gearbox-differential-3d": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/gearbox-differential-3d")
+  ),
+  "physics.optics.microscope": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/optics/microscope")
   ),
 };

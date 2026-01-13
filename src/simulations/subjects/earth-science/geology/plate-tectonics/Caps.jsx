@@ -116,9 +116,11 @@ function rotationFromNormal(n) {
 }
 
 export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
-  if (!sliceDepth || sliceDepth <= 0) return null;
-
+  // ✅ Hook MUST be called unconditionally and before any early returns
   const capLayers = useCapLayers(settings);
+
+  // Now it's safe to early-return
+  if (!sliceDepth || sliceDepth <= 0) return null;
   if (!capLayers.length) return null;
 
   // ---------- BLOCK MODE ----------
@@ -179,7 +181,6 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
   }
 
   // ---------- STANDARD MODE (1/2..1/8) ----------
-  // Keep your existing X/Y/Z cap rendering (below is compatible with your original design)
   const dir = settings.sliceVariant === "big" ? 1 : -1;
 
   const xRotation = [0, -Math.PI / 2, 0];
@@ -218,3 +219,4 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
     </group>
   );
 }
+

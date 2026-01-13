@@ -1,5 +1,6 @@
 // ✅ src/data/experiments.js
-
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import HeadphonesIcon from "@mui/icons-material/Headphones";
 import ScienceIcon from "@mui/icons-material/Science";
 import ElectricBoltIcon from "@mui/icons-material/ElectricBolt";
 import SpeedIcon from "@mui/icons-material/Speed";
@@ -17,6 +18,7 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import OpacityIcon from "@mui/icons-material/Opacity"; // For Ripple Tank
 import BatteryChargingFullIcon from "@mui/icons-material/BatteryChargingFull"; // For Coulomb 3D
 import TuneIcon from "@mui/icons-material/Tune"; // Add this for the Pendulum
+import { GlassWaterIcon } from "lucide-react"; // For Archimedes Principle
 // 📘 All Experiments Library
 export const experimentsData = [
   // 🔬 PHYSICS - MECHANICS
@@ -94,6 +96,17 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
+  // 💧 PHYSICS - FLUID MECHANICS
+  {
+    id: "physics.fluid-mechanics.archimedes-principle",
+    subject: "Physics",
+    name: "Archimedes Principle",
+    desc: "Discover buoyancy. See how objects float or sink in fluids.",
+    Icon: GlassWaterIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+
   // 🌡️ PHYSICS - THERMODYNAMICS
   {
     id: "physics.thermodynamics.gas",
@@ -124,6 +137,15 @@ export const experimentsData = [
     gradient: "linear-gradient(135deg, #a78bfa, #60a5fa)",
     demo: true,
   },
+  {
+    id: "physics.optics.microscope",
+    subject: "Physics",
+    name: "Virtual Microscope",
+    desc: "Explore microscopic worlds. Adjust focus, magnification, and illumination.",
+    Icon: VisibilityIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
 
   // 🔊 PHYSICS - WAVES & ACOUSTICS
   {
@@ -132,6 +154,24 @@ export const experimentsData = [
     name: "Doppler Effect",
     desc: "Hear the shift. Visualize how sound wave frequencies compress.",
     Icon: GraphicEqIcon,
+    gradient: "linear-gradient(135deg, #f43f5e, #ec4899)",
+    demo: true,
+  },
+  {
+    id: "physics.acoustics.sound-waves",
+    subject: "Physics",
+    name: "Sound Waves Lab",
+    desc: "Visualize how frequency, amplitude, and waveform shape create the sounds we hear.",
+    Icon: VolumeUpIcon,
+    gradient: "linear-gradient(135deg, #f43f5e, #ec4899)",
+    demo: true,
+  },
+  {
+    id: "physics.acoustics.spatial-audio",
+    subject: "Physics",
+    name: "Spatial Audio Lab",
+    desc: "Experience 3D sound in a virtual environment.",
+    Icon: HeadphonesIcon,
     gradient: "linear-gradient(135deg, #f43f5e, #ec4899)",
     demo: true,
   },
@@ -165,6 +205,15 @@ export const experimentsData = [
     demo: true,
   },
   {
+    id: "astronomy.kepler-lab",
+    subject: "Astronomy",
+    name: "Kepler's Laws Lab",
+    desc: "Explore planetary motion and Kepler's three laws in a dynamic simulation.",
+    Icon: RocketLaunchIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #a78bfa)",
+    demo: true,
+  },
+  {
     id: "astronomy.space.earth-orbit-lab",
     subject: "Astronomy",
     name: "Earth Orbit Lab (3D)",
@@ -191,6 +240,45 @@ export const experimentsData = [
     desc: "Dive underground. Explore Earth’s crust and mantle.",
     Icon: TerrainIcon,
     gradient: "linear-gradient(135deg, #0f766e, #0ea5e9)",
+    demo: true,
+  },
+  {
+    id: "physics.mechanics.circular-motion",
+    subject: "Physics",
+    name: "Uniform Circular Motion",
+    desc: "Enter radius and speed to see velocity/acceleration components over time",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+  // PLOP:INSERT:EXPERIMENTS
+  {
+    id: "physics.mechanics.gearbox-differential-3d",
+    subject: "Physics",
+    name: "Gearbox & Differential (3D)",
+    desc: "Explore gear ratios and differential behavior: speed changes, direction reversal, and wheel speeds while turning.",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+
+  {
+    id: "physics.mechanics.pulley-system",
+    subject: "Physics",
+    name: "Block and Tackle",
+    desc: "Intractive rope and pulley lifting simulation that visualizes mechanical advantage, rope tention and friction",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+
+  {
+    id: "physics.mechanics.two-body-gravity",
+    subject: "Physics",
+    name: "Two-Body Gravity",
+    desc: "Set masses and initial velocities for both bodies and observe their motion",
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
 ];
