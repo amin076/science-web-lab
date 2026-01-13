@@ -9,7 +9,7 @@ import Environment from "./Environment";
 import WaterTank from "./WaterTank";
 import Controls from "./Controls";
 import { usePhysics } from "./usePhysics";
-import { getShapeData, SHAPES } from "./shapes";
+import { getShapeData, SHAPES } from "./Shapes";
 import ObjectWithWaterCut from "./ObjectWithWaterCut";
 import MathExplanation from "./MathExplanation";
 import Ruler from "./Ruler";
