@@ -6,7 +6,7 @@ import {
   TANK_FLOOR_Y,
   DAMPING_FACTOR,
 } from "./constants";
-import { calculateSubmergedVolume } from "./shapes";
+import { calculateSubmergedVolume } from "./Shapes";
 
 export const usePhysics = (
   objectDensity,
