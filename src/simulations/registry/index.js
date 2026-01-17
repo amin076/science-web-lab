@@ -1,7 +1,7 @@
 import lazyWithRetry from "@/components/system/lazyWithRetry";
 
 export const simulationRegistry = {
-  mechanics: lazyWithRetry(() =>
+  "physics.mechanics.projectile": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/mechanics/projectile-motion")
   ),
 
@@ -88,5 +88,8 @@ export const simulationRegistry = {
   ),
   "physics.optics.microscope": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/optics/microscope")
+  ),
+  "physics.mechanics.gyroscope": lazyWithRetry(() =>
+    import("@/simulations/subjects/physics/mechanics/gyroscope")
   ),
 };

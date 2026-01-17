@@ -13,8 +13,9 @@ import {
   Eye,
   EyeOff,
   Activity,
+  Ruler, // New icon for scale
 } from "lucide-react";
-import { LAYERS } from "./layers";
+import { LAYER_DATA } from "./layers";
 
 const scrollbarStyles = `
   .custom-scrollbar::-webkit-scrollbar { width: 5px; }
@@ -60,7 +61,7 @@ function SegmentedControl({ options, activeValue, onChange }) {
           >
             {isActive && (
               <motion.div
-                layoutId="segment-active"
+                layoutId="segment-active" // Ensure unique layoutId per control if multiple exist
                 className="absolute inset-0 bg-white/10 rounded-lg shadow-sm border border-white/10"
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
@@ -161,11 +162,12 @@ function FeatureButton({ active, onClick, label, icon: Icon }) {
 
 export function Sidebar({
   settings,
+  scaleMode,
+  setScaleMode,
   toggleSetting,
   setSliceDepth,
   setSliceVariant,
 }) {
-  // FIX: Added 1/8 back (value 3)
   const depthOptions = [
     { value: 0, label: "Full" },
     { value: 1, label: "1/2" },
@@ -179,6 +181,14 @@ export function Sidebar({
     { value: "big", label: "Keep Big" },
   ];
 
+  const scaleOptions = [
+    { value: "scientific", label: "Scientific (True Scale)" },
+    { value: "schematic", label: "Diagram (Exaggerated)" },
+  ];
+
+  // Get current active colors for the legend
+  const currentLayers = LAYER_DATA[scaleMode].layers;
+
   return (
     <>
       <style>{scrollbarStyles}</style>
@@ -191,7 +201,7 @@ export function Sidebar({
                 CONTROLS
               </h2>
               <div className="text-[10px] font-medium text-white/40 mt-0.5">
-                v2.2 • Geological Mode
+                v2.3 • Real Scale Update
               </div>
             </div>
             <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
@@ -202,6 +212,28 @@ export function Sidebar({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-6 py-6 space-y-8">
+          {/* SCALE MODE (NEW) */}
+          <Section title="Model Scale" icon={Ruler} right="Mode">
+            <div className="bg-white/[0.03] p-2 rounded-2xl border border-white/5">
+              <SegmentedControl
+                options={scaleOptions}
+                activeValue={scaleMode}
+                onChange={setScaleMode}
+              />
+            </div>
+            {scaleMode === "scientific" ? (
+              <div className="px-2 flex gap-2 text-[10px] text-[#4ECDC4]/80 leading-tight">
+                <Info size={12} className="shrink-0 mt-0.5" />
+                <span>Note how thin the Crust (surface) really is!</span>
+              </div>
+            ) : (
+              <div className="px-2 flex gap-2 text-[10px] text-white/30 leading-tight">
+                <Info size={12} className="shrink-0 mt-0.5" />
+                <span>Layers are exaggerated for visibility.</span>
+              </div>
+            )}
+          </Section>
+
           {/* SLICING */}
           <Section title="Cross Section" icon={Scissors} right="Presets">
             <div className="bg-white/[0.03] p-2 rounded-2xl border border-white/5 space-y-2">
@@ -221,12 +253,6 @@ export function Sidebar({
                 </div>
               )}
             </div>
-            <div className="px-2 flex gap-2 text-[10px] text-white/30 leading-tight">
-              <Info size={12} className="shrink-0 mt-0.5" />
-              <span>
-                Use <strong>Block + Keep Small</strong> for pyramid view.
-              </span>
-            </div>
           </Section>
 
           {/* LAYERS */}
@@ -242,19 +268,19 @@ export function Sidebar({
                 label="Mantle (Magma)"
                 active={settings.showMantle}
                 onClick={() => toggleSetting("showMantle")}
-                color={LAYERS?.mantle?.color || "#b22222"}
+                color={currentLayers?.mantle?.color}
               />
               <LayerRow
                 label="Outer Core (Liquid)"
                 active={settings.showOuter}
                 onClick={() => toggleSetting("showOuter")}
-                color={LAYERS?.outer?.color || "#ff8c00"}
+                color={currentLayers?.outer?.color}
               />
               <LayerRow
                 label="Inner Core (Solid)"
                 active={settings.showInner}
                 onClick={() => toggleSetting("showInner")}
-                color={LAYERS?.inner?.color || "#ffe066"}
+                color={currentLayers?.inner?.color}
               />
             </div>
           </Section>

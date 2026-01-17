@@ -22,15 +22,7 @@ import { GlassWaterIcon } from "lucide-react"; // For Archimedes Principle
 // 📘 All Experiments Library
 export const experimentsData = [
   // 🔬 PHYSICS - MECHANICS
-  {
-    id: "mechanics",
-    subject: "Physics",
-    name: "Mechanics Simulation",
-    desc: "Master Newton's laws. Experiment with force, mass, and acceleration.",
-    Icon: SpeedIcon,
-    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
-    demo: true,
-  },
+
   {
     id: "physics.mechanics.collision",
     subject: "Physics",
@@ -65,6 +57,15 @@ export const experimentsData = [
     desc: "Analyze Simple Harmonic Motion (SHM), period, and damping.",
     Icon: ShowChartIcon,
     gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)",
+    demo: true,
+  },
+  {
+    id: "physics.mechanics.projectile",
+    subject: "Physics",
+    name: "Projectile Motion",
+    desc: " Experiment with velocity, and acceleration in a projectile motion.",
+    Icon: SpeedIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
     demo: true,
   },
 
@@ -252,6 +253,16 @@ export const experimentsData = [
     demo: true,
   },
   // PLOP:INSERT:EXPERIMENTS
+  {
+    id: "physics.mechanics.gyroscope",
+    subject: "Physics",
+    name: "gyroscope motion",
+    desc: "a device that uses a spinning wheel or disc to detect and maintain orientation",
+    Icon: SpeedIcon,
+    gradient: "linear-gradient(135deg, #0ea5e9, #22d3ee)",
+    demo: true,
+  },
+
   {
     id: "physics.mechanics.gearbox-differential-3d",
     subject: "Physics",

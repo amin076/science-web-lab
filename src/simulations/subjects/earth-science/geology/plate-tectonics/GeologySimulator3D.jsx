@@ -3,6 +3,8 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
 import { EarthSystem3D } from "./EarthSystem3D";
 import { Sidebar } from "./Sidebar";
+// NEW IMPORT
+import { SimulationHUD } from "./SimulationHUD";
 
 export default function GeologySimulator3D() {
   const [settings, setSettings] = useState({
@@ -12,8 +14,8 @@ export default function GeologySimulator3D() {
     showInner: true,
 
     // Slicing system
-    sliceDepth: 2, // 0 full, 1 half, 2 quarter, 3 eighth
-    sliceVariant: "small", // "small" | "big"
+    sliceDepth: 2,
+    sliceVariant: "small",
 
     // Features
     showClouds: true,
@@ -23,13 +25,14 @@ export default function GeologySimulator3D() {
     showNight: false,
   });
 
+  const [scaleMode, setScaleMode] = useState("scientific");
+
   const toggleSetting = (key) => setSettings((p) => ({ ...p, [key]: !p[key] }));
   const setSliceDepth = (depth) =>
     setSettings((p) => ({ ...p, sliceDepth: depth }));
   const setSliceVariant = (variant) =>
     setSettings((p) => ({ ...p, sliceVariant: variant }));
 
-  // FIX: Added a proper resize listener so the layout adapts dynamically
   const [isNarrow, setIsNarrow] = useState(() => window.innerWidth < 900);
 
   useEffect(() => {
@@ -50,15 +53,18 @@ export default function GeologySimulator3D() {
         overflow: "hidden",
       }}
     >
-      {/* LEFT: Canvas stage */}
       <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
+        {/* NEW: HUD Component (Replaces old static title) */}
+        <SimulationHUD />
+
         <Canvas
           style={{ width: "100%", height: "100%" }}
           camera={{ position: [6, 4, 12], fov: 40 }}
           gl={{ localClippingEnabled: true, antialias: true }}
           shadows
         >
-          <ambientLight intensity={0.1} />
+          {/* Increased ambient light to prevent pitch black insides */}
+          <ambientLight intensity={0.4} />
           <directionalLight position={[15, 5, 5]} intensity={3.0} />
           <pointLight position={[-10, 5, -5]} intensity={0.5} />
           <spotLight
@@ -78,7 +84,7 @@ export default function GeologySimulator3D() {
           />
 
           <Suspense fallback={null}>
-            <EarthSystem3D settings={settings} />
+            <EarthSystem3D settings={settings} scaleMode={scaleMode} />
           </Suspense>
 
           <OrbitControls
@@ -87,33 +93,8 @@ export default function GeologySimulator3D() {
             maxDistance={100}
           />
         </Canvas>
-
-        {/* Overlay title */}
-        {/* FIX: Moved 'top' from 16 to 80 to avoid collision with Back button/Header */}
-        <div
-          style={{
-            position: "absolute",
-            top: 80,
-            left: 16,
-            maxWidth: 340,
-            padding: 16,
-            borderRadius: 14,
-            border: "1px solid rgba(255,255,255,0.10)",
-            background: "rgba(0,0,0,0.40)",
-            backdropFilter: "blur(10px)",
-            pointerEvents: "none",
-          }}
-        >
-          <div style={{ fontWeight: 800, fontSize: 18, color: "#4ECDC4" }}>
-            Geology Simulator
-          </div>
-          <div style={{ fontSize: 12, opacity: 0.85, marginTop: 6 }}>
-            Interactive 3D Earth model with cross-section tools.
-          </div>
-        </div>
       </div>
 
-      {/* RIGHT: Sidebar */}
       <div
         style={{
           width: isNarrow ? "100%" : 360,
@@ -128,6 +109,8 @@ export default function GeologySimulator3D() {
       >
         <Sidebar
           settings={settings}
+          scaleMode={scaleMode}
+          setScaleMode={setScaleMode}
           toggleSetting={toggleSetting}
           setSliceDepth={setSliceDepth}
           setSliceVariant={setSliceVariant}
