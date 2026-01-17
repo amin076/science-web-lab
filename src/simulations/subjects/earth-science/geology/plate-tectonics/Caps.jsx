@@ -1,23 +1,37 @@
-// Caps.jsx
 import React, { useMemo } from "react";
 import * as THREE from "three";
-import { LAYERS } from "./layers";
 
 const CAP_EPS = 0.003;
+const GAP_EPS = 0.005;
 
-function CircleCap({ radius, rotation, position, color, clippingPlanes = [] }) {
+function CircleCap({
+  radius,
+  rotation,
+  position,
+  color,
+  emissive,
+  emissiveIntensity = 0.5,
+  map,
+  emissiveMap,
+  clippingPlanes = [],
+}) {
   return (
     <mesh rotation={rotation} position={position}>
       <circleGeometry args={[radius, 80]} />
-      <meshBasicMaterial
+      <meshStandardMaterial
         color={color}
+        map={map || null}
+        emissive={emissive || color}
+        emissiveMap={emissiveMap || null}
+        emissiveIntensity={emissiveIntensity}
+        roughness={0.7}
+        metalness={0.2}
         side={THREE.DoubleSide}
         clippingPlanes={clippingPlanes}
-        clipIntersection={false} // caps must always be AND/intersection-style
+        clipIntersection={false}
         polygonOffset
         polygonOffsetFactor={-1}
         polygonOffsetUnits={-1}
-        toneMapped={false}
       />
     </mesh>
   );
@@ -29,84 +43,133 @@ function RingCap({
   rotation,
   position,
   color,
+  emissive,
+  emissiveIntensity = 0.5,
+  map,
+  emissiveMap,
   clippingPlanes = [],
 }) {
   return (
     <mesh rotation={rotation} position={position}>
       <ringGeometry args={[innerRadius, outerRadius, 80]} />
-      <meshBasicMaterial
+      <meshStandardMaterial
         color={color}
+        map={map || null}
+        emissive={emissive || color}
+        emissiveMap={emissiveMap || null}
+        emissiveIntensity={emissiveIntensity}
+        roughness={0.7}
+        metalness={0.2}
         side={THREE.DoubleSide}
         clippingPlanes={clippingPlanes}
         clipIntersection={false}
         polygonOffset
         polygonOffsetFactor={-1}
         polygonOffsetUnits={-1}
-        toneMapped={false}
       />
     </mesh>
   );
 }
 
-function useCapLayers(settings) {
+function useShellLayers(settings, layersConfig, textures) {
   return useMemo(() => {
-    const arr = [];
-    if (settings.showInner)
-      arr.push({ r: LAYERS.inner.radius, c: LAYERS.inner.emissive });
-    if (settings.showOuter)
-      arr.push({ r: LAYERS.outer.radius, c: LAYERS.outer.emissive });
-    if (settings.showMantle)
-      arr.push({ r: LAYERS.mantle.radius, c: LAYERS.mantle.emissive });
-    if (settings.showCrust) arr.push({ r: LAYERS.crust.radius, c: "#5c4033" });
-    return arr;
+    const rInner = layersConfig.inner.radius;
+    const rOuter = layersConfig.outer.radius;
+    const rMantle = layersConfig.mantle.radius;
+    const rCrust = layersConfig.crust.radius;
+
+    const definitions = [
+      {
+        id: "inner",
+        visible: settings.showInner,
+        rStart: 0,
+        rEnd: rInner,
+        color: layersConfig.inner.color,
+        emissive: layersConfig.inner.emissive,
+        intensity: 2.0, // Very bright
+        map: textures?.innerMap, // Pass texture
+        emissiveMap: textures?.innerMap,
+      },
+      {
+        id: "outer",
+        visible: settings.showOuter,
+        rStart: rInner + GAP_EPS,
+        rEnd: rOuter,
+        color: layersConfig.outer.color,
+        emissive: layersConfig.outer.emissive,
+        intensity: 1.2,
+        map: textures?.outerMap,
+        emissiveMap: textures?.outerMap,
+      },
+      {
+        id: "mantle",
+        visible: settings.showMantle,
+        rStart: rOuter + GAP_EPS,
+        rEnd: rMantle,
+        color: layersConfig.mantle.color,
+        emissive: layersConfig.mantle.emissive,
+        intensity: 0.8,
+        map: textures?.mantleMap,
+        emissiveMap: textures?.mantleMap,
+      },
+      {
+        id: "crust",
+        visible: settings.showCrust,
+        rStart: rMantle + GAP_EPS,
+        rEnd: rCrust,
+        color: "#4a3c31",
+        emissive: "#2a1c11",
+        intensity: 0.2, // Low glow for cold rock
+        // Crust usually doesn't need the magma flow texture on the cut
+      },
+    ];
+
+    return definitions.filter((d) => d.visible);
   }, [
     settings.showInner,
     settings.showOuter,
     settings.showMantle,
     settings.showCrust,
+    layersConfig,
+    textures,
   ]);
 }
 
-function CapStack({ capLayers, rotation, position, clippingPlanes }) {
-  if (!capLayers.length) return null;
-  let prev = 0;
+function CapStack({ shellLayers, rotation, position, clippingPlanes }) {
+  if (!shellLayers.length) return null;
+
   return (
     <group rotation={rotation} position={position}>
-      {capLayers.map((layer, idx) => {
-        if (idx === 0) {
-          prev = layer.r;
+      {shellLayers.map((layer) => {
+        const props = {
+          rotation: [0, 0, 0],
+          position: [0, 0, 0],
+          color: layer.color,
+          emissive: layer.emissive,
+          emissiveIntensity: layer.intensity,
+          map: layer.map,
+          emissiveMap: layer.emissiveMap,
+          clippingPlanes: clippingPlanes,
+        };
+
+        if (layer.rStart <= 0.001) {
+          return <CircleCap key={layer.id} radius={layer.rEnd} {...props} />;
+        } else {
           return (
-            <CircleCap
-              key={`circle-${layer.r}`}
-              radius={layer.r}
-              rotation={[0, 0, 0]}
-              position={[0, 0, 0]}
-              color={layer.c}
-              clippingPlanes={clippingPlanes}
+            <RingCap
+              key={layer.id}
+              innerRadius={layer.rStart}
+              outerRadius={layer.rEnd}
+              {...props}
             />
           );
         }
-        const safeInner = prev - 0.02;
-        const node = (
-          <RingCap
-            key={`ring-${prev}-${layer.r}`}
-            innerRadius={safeInner}
-            outerRadius={layer.r}
-            rotation={[0, 0, 0]}
-            position={[0, 0, 0]}
-            color={layer.c}
-            clippingPlanes={clippingPlanes}
-          />
-        );
-        prev = layer.r;
-        return node;
       })}
     </group>
   );
 }
 
 function rotationFromNormal(n) {
-  // circleGeometry faces +Z, rotate so +Z aligns with normal
   const q = new THREE.Quaternion().setFromUnitVectors(
     new THREE.Vector3(0, 0, 1),
     n.clone().normalize()
@@ -115,33 +178,36 @@ function rotationFromNormal(n) {
   return [e.x, e.y, e.z];
 }
 
-export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
-  // ✅ Hook MUST be called unconditionally and before any early returns
-  const capLayers = useCapLayers(settings);
+export function CrossSectionCaps({
+  settings,
+  sliceDepth,
+  capClipPlanes,
+  layersConfig,
+  textures, // Accept textures
+}) {
+  const shellLayers = useShellLayers(settings, layersConfig, textures);
 
-  // Now it's safe to early-return
   if (!sliceDepth || sliceDepth <= 0) return null;
-  if (!capLayers.length) return null;
+  if (!shellLayers.length) return null;
+
+  // ... (Geometry logic remains identical to previous, just passing new CapStack)
 
   // ---------- BLOCK MODE ----------
   if (sliceDepth === 4) {
-    // These normals MUST match the block plane normals from useEarthClipping (keep-orientation).
     const angleDeg = 20;
     const tanA = Math.tan(THREE.MathUtils.degToRad(angleDeg));
+    const epsDir = settings.sliceVariant === "big" ? +1 : -1;
 
+    // Normals
     const nYpos = new THREE.Vector3(tanA, -1, 0).normalize();
     const nYneg = new THREE.Vector3(tanA, +1, 0).normalize();
     const nZpos = new THREE.Vector3(tanA, 0, -1).normalize();
     const nZneg = new THREE.Vector3(tanA, 0, +1).normalize();
 
-    // Nudge: push caps slightly into removed side to avoid z-fighting.
-    // removed side is "behind" plane => along -normal
-    const epsDir = settings.sliceVariant === "big" ? +1 : -1;
-
     return (
       <group>
         <CapStack
-          capLayers={capLayers}
+          shellLayers={shellLayers}
           rotation={rotationFromNormal(nYpos)}
           position={nYpos
             .clone()
@@ -150,7 +216,7 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
           clippingPlanes={capClipPlanes?.wallYpos || []}
         />
         <CapStack
-          capLayers={capLayers}
+          shellLayers={shellLayers}
           rotation={rotationFromNormal(nYneg)}
           position={nYneg
             .clone()
@@ -159,7 +225,7 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
           clippingPlanes={capClipPlanes?.wallYneg || []}
         />
         <CapStack
-          capLayers={capLayers}
+          shellLayers={shellLayers}
           rotation={rotationFromNormal(nZpos)}
           position={nZpos
             .clone()
@@ -168,7 +234,7 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
           clippingPlanes={capClipPlanes?.wallZpos || []}
         />
         <CapStack
-          capLayers={capLayers}
+          shellLayers={shellLayers}
           rotation={rotationFromNormal(nZneg)}
           position={nZneg
             .clone()
@@ -180,43 +246,32 @@ export function CrossSectionCaps({ settings, sliceDepth, capClipPlanes }) {
     );
   }
 
-  // ---------- STANDARD MODE (1/2..1/8) ----------
+  // ---------- STANDARD MODE ----------
   const dir = settings.sliceVariant === "big" ? 1 : -1;
-
-  const xRotation = [0, -Math.PI / 2, 0];
-  const xPosition = [dir * CAP_EPS, 0, 0];
-
-  const yRotation = [Math.PI / 2, 0, 0];
-  const yPosition = [0, dir * CAP_EPS, 0];
-
-  const zRotation = [0, 0, 0];
-  const zPosition = [0, 0, dir * CAP_EPS];
-
   return (
     <group>
       <CapStack
-        capLayers={capLayers}
-        rotation={xRotation}
-        position={xPosition}
+        shellLayers={shellLayers}
+        rotation={[0, -Math.PI / 2, 0]}
+        position={[dir * CAP_EPS, 0, 0]}
         clippingPlanes={capClipPlanes?.xCap || []}
       />
       {sliceDepth >= 2 && (
         <CapStack
-          capLayers={capLayers}
-          rotation={yRotation}
-          position={yPosition}
+          shellLayers={shellLayers}
+          rotation={[Math.PI / 2, 0, 0]}
+          position={[0, dir * CAP_EPS, 0]}
           clippingPlanes={capClipPlanes?.yCap || []}
         />
       )}
       {sliceDepth >= 3 && (
         <CapStack
-          capLayers={capLayers}
-          rotation={zRotation}
-          position={zPosition}
+          shellLayers={shellLayers}
+          rotation={[0, 0, 0]}
+          position={[0, 0, dir * CAP_EPS]}
           clippingPlanes={capClipPlanes?.zCap || []}
         />
       )}
     </group>
   );
 }
-

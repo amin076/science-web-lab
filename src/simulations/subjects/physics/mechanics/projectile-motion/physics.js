@@ -1,79 +1,116 @@
-// src/simulations/subjects/physics/mechanics/projectile-motion/utils/physics.js
+// src/simulations/subjects/physics/mechanics/projectile-motion/physics.js
 
 export const calculatePhysicsStep = (objects, dt, gravity, airResistance) => {
-  // --- WORLD LIMITS (Meters) ---
+  // --- UPDATED LIMITS ---
   const MIN_X = -500;
   const MAX_X = 500;
   const MIN_Y = 0;
   const MAX_Y = 500;
 
-  const nextObjects = objects.map((obj) => ({ ...obj }));
-  const trailUpdates = [];
+  let limitReached = false; // Flag to trigger global pause
 
-  nextObjects.forEach((obj) => {
-    // If already stopped, skip physics updates
-    if (obj.stopped) return;
+  // Find the plane to sync the parcel if attached
+  const plane = objects.find((o) => o.id === "plane");
+
+  const nextObjects = objects.map((obj) => {
+    // CLONE OBJECT
+    const newObj = { ...obj };
+
+    // --- 1. HANDLE PARCEL ATTACHMENT ---
+    if (newObj.id === "parcel" && newObj.attached && plane) {
+      // Sync strictly with plane
+      newObj.x = plane.x;
+      newObj.y = plane.y - 2;
+      newObj.vx = plane.vx;
+      newObj.vy = 0;
+      newObj.ax = plane.ax;
+      newObj.stopped = plane.stopped;
+      return newObj;
+    }
+
+    // --- 2. STANDARD PHYSICS ---
+    if (newObj.stopped) return newObj;
 
     let fx = 0;
     let fy = 0;
 
-    // 1. Forces
-    if (obj.type !== 'car') fy -= obj.mass * gravity; // Gravity
-    
-    if (airResistance > 0) {
-      fx -= airResistance * obj.vx * obj.mass;
-      fy -= airResistance * obj.vy * obj.mass;
+    // Forces
+    if (newObj.type !== "car" && newObj.type !== "plane") {
+      fy -= newObj.mass * gravity;
     }
 
-    if (obj.type === 'car') fx += obj.mass * obj.ax;
+    // Drag
+    if (airResistance > 0) {
+      fx -= airResistance * newObj.vx * newObj.mass;
+      fy -= airResistance * newObj.vy * newObj.mass;
+    }
 
-    // 2. Integration
-    const ax = fx / obj.mass;
-    const ay = fy / obj.mass;
+    // Engine Acceleration (Car & Plane)
+    if (newObj.type === "car" || newObj.type === "plane") {
+      fx += newObj.mass * newObj.ax;
+    }
 
-    obj.vx += ax * dt;
-    obj.vy += ay * dt;
-    obj.x += obj.vx * dt;
-    obj.y += obj.vy * dt;
+    // Integration
+    const ax = fx / newObj.mass;
+    const ay = fy / newObj.mass;
 
-    // --- BOUNDARY CHECKS & STOPPING LOGIC ---
+    newObj.vx += ax * dt;
+    newObj.vy += ay * dt;
+    newObj.x += newObj.vx * dt;
+    newObj.y += newObj.vy * dt;
 
-    // A. Ground Collision (Stop Ball)
-    if (obj.y <= MIN_Y) {
-      obj.y = MIN_Y;
-      if (obj.type === 'ball') {
-        // Stop completely
-        obj.vx = 0;
-        obj.vy = 0;
-        obj.stopped = true; 
+    // --- 3. COLLISIONS & LIMITATIONS ---
+
+    // Floor (Y = 0)
+    if (newObj.y <= MIN_Y) {
+      newObj.y = MIN_Y;
+
+      if (newObj.type === "car") {
+        newObj.vy = 0;
       } else {
-        // Car just stays on floor
-        obj.vy = 0; 
+        newObj.vx = 0;
+        newObj.vy = 0;
+        newObj.stopped = true;
+        // Note: Hitting the ground (Y=0) is usually "safe" for balls/parcels,
+        // so we don't set limitReached = true here unless it's the plane crashing.
+        if (newObj.type === "plane") limitReached = true;
       }
     }
 
-    // B. Ceiling Collision
-    if (obj.y >= MAX_Y) {
-      obj.y = MAX_Y;
-      obj.vy = 0; 
+    // Ceiling (Y Max)
+    if (newObj.y >= MAX_Y) {
+      newObj.y = MAX_Y;
+      newObj.vy = 0;
+      newObj.stopped = true;
+      limitReached = true; // Stop simulation on ceiling hit
     }
 
-    // C. Wall Limits (Stop Everything)
-    if (obj.x >= MAX_X) {
-      obj.x = MAX_X;
-      obj.vx = 0;
-      obj.stopped = true; // Stop simulation for this object
-    } else if (obj.x <= MIN_X) {
-      obj.x = MIN_X;
-      obj.vx = 0;
-      obj.stopped = true; // Stop simulation for this object
+    // Walls (X Limits)
+    if (newObj.x >= MAX_X) {
+      newObj.x = MAX_X;
+      newObj.vx = 0;
+      newObj.stopped = true;
+      limitReached = true; // Stop simulation on wall hit
+    } else if (newObj.x <= MIN_X) {
+      newObj.x = MIN_X;
+      newObj.vx = 0;
+      newObj.stopped = true;
+      limitReached = true; // Stop simulation on wall hit
     }
 
-    // D. Trail Collection (Only if moving)
-    if (obj.id === 'ball' && !obj.stopped) {
-      trailUpdates.push({ x: obj.x, y: obj.y });
+    return newObj;
+  });
+
+  // --- 4. TRAIL GENERATION ---
+  const trailUpdates = [];
+  nextObjects.forEach((obj) => {
+    if (
+      (obj.id === "ball" || (obj.id === "parcel" && !obj.attached)) &&
+      !obj.stopped
+    ) {
+      trailUpdates.push({ id: obj.id, x: obj.x, y: obj.y });
     }
   });
 
-  return { updatedObjects: nextObjects, newTrails: trailUpdates };
+  return { updatedObjects: nextObjects, newTrails: trailUpdates, limitReached };
 };

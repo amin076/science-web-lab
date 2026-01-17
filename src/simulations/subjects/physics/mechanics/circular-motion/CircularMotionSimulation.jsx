@@ -1,103 +1,133 @@
 import React, { useEffect, useRef, useState } from "react";
 import SimulationShell from "@/system/SimulationShell";
+import SimulationCanvas from "./SimulationCanvas";
+import SimulationHUD from "./SimulationHUD";
+import ControlPanel from "./ControlPanel";
+import { integratePhysics, getInitialState } from "./physics";
 
 export default function CircularMotionSimulation() {
-  const canvasRef = useRef(null);
+  const [dims, setDims] = useState({ w: 800, h: 600 });
+  const containerRef = useRef(null);
+
   const [running, setRunning] = useState(false);
+  const [viewConfig, setViewConfig] = useState({
+    showVectors: true,
+    showProjections: true,
+    showAngle: true,
+    showComponents: true,
+  });
 
+  const [params, setParams] = useState({
+    radius: 140,
+    theta0: 0,
+    omega0: 1.5,
+    alpha: 0,
+    mass: 1,
+  });
+
+  const physicsRef = useRef(getInitialState(params));
+  const [uiState, setUiState] = useState(getInitialState(params));
+  const [history, setHistory] = useState([]);
+
+  const lastTimeRef = useRef(0);
+  const rafRef = useRef(0);
+
+  // Resize Observer
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setDims({ w: width, h: height });
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
-    const ctx = canvas.getContext("2d");
-    let raf = 0;
+  // Animation Loop
+  useEffect(() => {
+    const loop = (now) => {
+      if (!lastTimeRef.current) lastTimeRef.current = now;
+      const dt = Math.min((now - lastTimeRef.current) / 1000, 0.1);
+      lastTimeRef.current = now;
 
-    const draw = () => {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
+      if (running) {
+        const next = integratePhysics(physicsRef.current, params, dt);
+        physicsRef.current = next;
+        setUiState(next);
 
-      // keep canvas pixels in sync (simple version)
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
+        if (Math.floor(next.t * 20) > Math.floor((next.t - dt) * 20)) {
+          setHistory((h) => {
+            const newH = [...h, next];
+            return newH.length > 150 ? newH.slice(newH.length - 150) : newH;
+          });
+        }
       }
-
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = "#050510";
-      ctx.fillRect(0, 0, w, h);
-
-      // demo grid
-      ctx.strokeStyle = "#FFFFFF10";
-      ctx.beginPath();
-      for (let x = 0; x < w; x += 50) {
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-      }
-      for (let y = 0; y < h; y += 50) {
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-      }
-      ctx.stroke();
-
-      // demo label
-      ctx.fillStyle = "rgba(255,255,255,0.75)";
-      ctx.font = "14px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillText(
-        running ? "RUNNING (template)" : "STOPPED (template)",
-        20,
-        30
-      );
-
-      raf = requestAnimationFrame(draw);
+      rafRef.current = requestAnimationFrame(loop);
     };
 
-    raf = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(raf);
-  }, [running]);
+    rafRef.current = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(rafRef.current);
+  }, [running, params]);
+
+  const handleReset = () => {
+    setRunning(false);
+    const init = getInitialState(params);
+    physicsRef.current = init;
+    setUiState(init);
+    setHistory([]);
+  };
 
   return (
     <SimulationShell
-      title="Uniform Circular Motion"
-      subtitle="circular-motion"
-      topOffset="5px"
+      title="Circular Motion"
+      subtitle="Projections & Vectors"
+      topOffset="0px"
       panelTop={
-        <div className="grid grid-cols-[1fr_auto] gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setRunning((s) => !s)}
-            className={`h-12 rounded-2xl font-bold tracking-wide transition-all border
-        ${
-          running
-            ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/20"
-            : "bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/20"
-        }`}
+            onClick={() => {
+              if (!running) lastTimeRef.current = performance.now();
+              setRunning((r) => !r);
+            }}
+            className={`h-12 rounded-xl font-bold border transition-colors ${
+              running
+                ? "bg-red-500/15 text-red-300 border-red-500/40 hover:bg-red-500/25"
+                : "bg-emerald-500/15 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/25"
+            }`}
           >
             {running ? "STOP" : "START"}
           </button>
-
           <button
-            onClick={() => setRunning(false)}
-            className="h-12 w-28 rounded-2xl bg-white/10 text-white border border-white/10 hover:bg-white/15"
+            onClick={handleReset}
+            className="h-12 rounded-xl bg-white/10 text-white border border-white/10 hover:bg-white/15"
           >
             RESET
           </button>
         </div>
       }
       panel={
-        <div className="space-y-4">
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-white/70">
-            <div className="font-bold mb-2">Template Panel</div>
-            <div className="text-sm text-white/50">
-              Add controls, charts, theory cards, etc.
-            </div>
-          </div>
-
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-white/50 text-sm">
-            Future: graphs, telemetry, presets...
-          </div>
-        </div>
+        <ControlPanel
+          viewConfig={viewConfig}
+          setViewConfig={setViewConfig}
+          params={params}
+          setParams={setParams}
+          history={history}
+        />
       }
     >
-      <canvas ref={canvasRef} className="w-full h-full block" />
+      <div
+        ref={containerRef}
+        className="w-full h-full relative overflow-hidden bg-[#050510]"
+      >
+        <SimulationHUD live={uiState} />
+        <SimulationCanvas
+          width={dims.w}
+          height={dims.h}
+          state={uiState}
+          radius={params.radius}
+          config={viewConfig}
+        />
+      </div>
     </SimulationShell>
   );
 }

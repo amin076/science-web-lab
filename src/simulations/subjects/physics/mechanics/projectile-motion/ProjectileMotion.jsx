@@ -6,10 +6,8 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Box, Button, Paper, Divider, Typography } from "@mui/material";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { Box, Paper, Typography } from "@mui/material";
+import MouseIcon from "@mui/icons-material/Mouse";
 
 // Components
 import ControlPanel from "./ControlPanel";
@@ -20,6 +18,75 @@ import { calculatePhysicsStep } from "./physics";
 import * as Draw from "./drawing";
 import { useCamera } from "./useCamera";
 
+// --- CONSTANTS ---
+const INITIAL_OBJECTS = [
+  {
+    id: "ball",
+    type: "ball",
+    x: 0,
+    y: 20,
+    vx: 15,
+    vy: 15,
+    ax: 0,
+    ay: 0,
+    radius: 0.6,
+    width: 1.2,
+    height: 1.2,
+    color: "#00F0FF",
+    mass: 5,
+    active: true,
+    stopped: false,
+  },
+  {
+    id: "car",
+    type: "car",
+    x: -15,
+    y: 0,
+    vx: 10,
+    vy: 0,
+    ax: 3,
+    ay: 0,
+    width: 4.8,
+    height: 1.2,
+    color: "#FF2E63",
+    mass: 1000,
+    active: false,
+    stopped: false,
+  },
+  {
+    id: "plane",
+    type: "plane",
+    x: -50,
+    y: 60,
+    vx: 30,
+    vy: 0,
+    ax: 0,
+    ay: 0,
+    width: 10,
+    height: 3,
+    color: "#ecf0f1",
+    mass: 2000,
+    active: false,
+    stopped: false,
+  },
+  {
+    id: "parcel",
+    type: "parcel",
+    x: -50,
+    y: 60,
+    vx: 30,
+    vy: 0,
+    radius: 0.8,
+    width: 1.6,
+    height: 1.6,
+    color: "#d35400",
+    mass: 10,
+    active: false,
+    stopped: false,
+    attached: true,
+  },
+];
+
 const MotionSimulator = () => {
   const [canvasEl, setCanvasEl] = useState(null);
   const containerRef = useRef(null);
@@ -29,8 +96,35 @@ const MotionSimulator = () => {
   const timeElapsedRef = useRef(0);
   const visualTrailRef = useRef([]);
 
-  // CAMERA
-  const viewRef = useCamera(canvasEl, { scale: 12, x: 100, y: 250 });
+  // Calculate initial world bounds to fit all objects for camera initialization
+  const initialWorldBounds = useMemo(() => {
+    let minX = Infinity,
+      maxX = -Infinity,
+      minY = Infinity,
+      maxY = -Infinity;
+
+    INITIAL_OBJECTS.forEach((obj) => {
+      const halfW = (obj.width || 0) / 2;
+      minX = Math.min(minX, obj.x - halfW);
+      maxX = Math.max(maxX, obj.x + halfW);
+      minY = Math.min(minY, obj.y);
+      maxY = Math.max(
+        maxY,
+        obj.y + (obj.type === "car" ? obj.height : obj.height || obj.radius * 2)
+      );
+    });
+
+    const padding = 20;
+    return {
+      minX: minX - padding,
+      maxX: maxX + padding,
+      minY: Math.max(0, minY - padding),
+      maxY: maxY + padding,
+    };
+  }, []);
+
+  // CAMERA INIT
+  const viewRef = useCamera(canvasEl, initialWorldBounds, 60);
 
   // STATE
   const [gravity, setGravity] = useState(9.8);
@@ -42,41 +136,7 @@ const MotionSimulator = () => {
   const [showInfo, setShowInfo] = useState(true);
   const [vectorMode, setVectorMode] = useState({ x: false, y: false, v: true });
   const [history, setHistory] = useState([]);
-
-  // OBJECTS
-  const [objects, setObjects] = useState([
-    {
-      id: "ball",
-      type: "ball",
-      x: 0,
-      y: 20,
-      vx: 12,
-      vy: 10,
-      ax: 0,
-      ay: 0,
-      radius: 0.6,
-      color: "#00F0FF", // Electric Cyan
-      mass: 5,
-      active: true,
-      stopped: false,
-    },
-    {
-      id: "car",
-      type: "car",
-      x: -15,
-      y: 0,
-      vx: 8,
-      vy: 0,
-      ax: 3,
-      ay: 0,
-      width: 4.8,
-      height: 1.2,
-      color: "#FF2E63", // Neon Red
-      mass: 1000,
-      active: false,
-      stopped: false,
-    },
-  ]);
+  const [objects, setObjects] = useState(INITIAL_OBJECTS);
 
   // Sync active state
   useEffect(() => {
@@ -95,78 +155,115 @@ const MotionSimulator = () => {
     timeElapsedRef.current += dt;
 
     setObjects((prevObjects) => {
-      const { updatedObjects, newTrails } = calculatePhysicsStep(
+      const { updatedObjects, newTrails, limitReached } = calculatePhysicsStep(
         prevObjects,
         dt,
         gravity,
         airResistance
       );
 
-      // Update visual trails
       if (newTrails.length > 0 && isSimulating) {
         visualTrailRef.current.push(...newTrails);
       }
 
-      // Check Auto-Stop Condition: If ALL objects are stopped, pause simulation
-      const allStopped = updatedObjects.every((o) => o.stopped);
-      if (allStopped && isSimulating) {
-        setIsSimulating(false); // AUTO STOP
+      if (limitReached && isSimulating) {
+        setIsSimulating(false);
       }
 
       return updatedObjects;
     });
   }, [gravity, airResistance, isSimulating]);
 
-  // --- DATA LOOP (With Cutoff Logic) ---
+  // --- DATA RECORDING ---
   useEffect(() => {
     if (!isSimulating) return;
     const interval = setInterval(() => {
       setObjects((currentObjs) => {
         const ball = currentObjs.find((o) => o.id === "ball");
         const car = currentObjs.find((o) => o.id === "car");
+        const plane = currentObjs.find((o) => o.id === "plane");
+        const parcel = currentObjs.find((o) => o.id === "parcel");
         const t = timeElapsedRef.current;
 
-        // --- DATA CUTOFF LOGIC ---
-        // If an object is stopped, we send NULL to the graph.
-        // This prevents the "flat line" effect and allows zooming in on the active curve.
-
-        const ballData = ball.stopped
-          ? {
-              ball_x: null,
-              ball_y: null,
-              ball_vx: null,
-              ball_vy: null,
-              ball_KE: null,
-              ball_PE: null,
-              ball_ME: null,
-            }
-          : {
-              ball_x: ball.x,
-              ball_y: ball.y,
-              ball_vx: ball.vx,
-              ball_vy: ball.vy,
-              ball_KE: 0.5 * ball.mass * (ball.vx ** 2 + ball.vy ** 2),
-              ball_PE: ball.mass * gravity * ball.y,
-              ball_ME:
-                0.5 * ball.mass * (ball.vx ** 2 + ball.vy ** 2) +
-                ball.mass * gravity * ball.y,
+        // UPDATED LOGIC: If an object stops, send NULL to chart.
+        // This causes the chart line to break/stop at that moment.
+        const getStats = (obj) => {
+          if (!obj)
+            return {
+              x: null,
+              y: null,
+              vx: null,
+              vy: null,
+              KE: null,
+              PE: null,
+              ME: null,
             };
+
+          if (obj.stopped) {
+            return {
+              x: null,
+              y: null,
+              vx: null,
+              vy: null,
+              KE: null,
+              PE: null,
+              ME: null,
+            };
+          }
+
+          const v2 = obj.vx * obj.vx + obj.vy * obj.vy;
+          const KE = 0.5 * obj.mass * v2;
+          const PE = obj.mass * gravity * Math.max(0, obj.y);
+
+          return {
+            x: obj.x,
+            y: obj.y,
+            vx: obj.vx,
+            vy: obj.vy,
+            KE,
+            PE,
+            ME: KE + PE,
+          };
+        };
+
+        const b = getStats(ball);
+        const p = getStats(plane);
+        const pc = getStats(parcel);
 
         const carData = car.stopped
-          ? {
-              car_x: null,
-              car_vx: null,
-            }
-          : {
-              car_x: car.x,
-              car_vx: car.vx,
-            };
+          ? { car_x: null, car_vx: null }
+          : { car_x: car.x, car_vx: car.vx };
 
-        // Only record if at least one object is still running, or just push nulls to show time passing?
-        // Usually better to push nulls so X-axis (Time) keeps moving for the other object.
         setHistory((prev) => {
-          if (prev.length > 500) return prev;
-          return [...prev, { time: t, ...ballData, ...carData }];
+          if (prev.length > 800) return prev;
+          return [
+            ...prev,
+            {
+              time: t,
+              ball_x: b.x,
+              ball_y: b.y,
+              ball_vx: b.vx,
+              ball_vy: b.vy,
+              ball_KE: b.KE,
+              ball_PE: b.PE,
+              ball_ME: b.ME,
+              plane_x: p.x,
+              plane_y: p.y,
+              plane_vx: p.vx,
+              plane_vy: p.vy,
+              plane_KE: p.KE,
+              plane_PE: p.PE,
+              plane_ME: p.ME,
+              parcel_x: pc.x,
+              parcel_y: pc.y,
+              parcel_vx: pc.vx,
+              parcel_vy: pc.vy,
+              parcel_KE: pc.KE,
+              parcel_PE: pc.PE,
+              parcel_ME: pc.ME,
+              ...carData,
+            },
+          ];
         });
 
         return currentObjs;
@@ -175,7 +272,7 @@ const MotionSimulator = () => {
     return () => clearInterval(interval);
   }, [isSimulating, gravity]);
 
-  // --- RENDER LOOP ---
+  // --- ANIMATION LOOP ---
   const animate = useCallback(() => {
     if (isSimulating) updatePhysics();
     else lastTimeRef.current = Date.now();
@@ -194,23 +291,28 @@ const MotionSimulator = () => {
       Draw.drawEnvironment(ctx, view, width, height);
 
       if (showTrails) {
-        const ball = objects.find((o) => o.id === "ball");
-        // Only draw live trail if ball hasn't stopped yet
-        if (!ball.stopped) {
-          const liveTrail = [
-            ...visualTrailRef.current,
-            { x: ball.x, y: ball.y },
-          ];
-          Draw.drawTrajectory(ctx, liveTrail, view, height);
-        } else {
-          // If stopped, just draw the static trail buffer
-          Draw.drawTrajectory(ctx, visualTrailRef.current, view, height);
-        }
+        const ballTrails = visualTrailRef.current.filter(
+          (t) => t.id === "ball"
+        );
+        const parcelTrails = visualTrailRef.current.filter(
+          (t) => t.id === "parcel"
+        );
+        if (ballTrails.length > 0)
+          Draw.drawTrajectory(ctx, ballTrails, view, height);
+        if (parcelTrails.length > 0)
+          Draw.drawTrajectory(ctx, parcelTrails, view, height);
       }
 
       objects.forEach((obj) => {
         Draw.drawObject(ctx, obj, view, height, vectorMode);
-        if (showInfo) Draw.drawModernHUD(ctx, obj, view, height);
+        if (showInfo) {
+          if (
+            obj.id === selectedObject ||
+            (obj.id === "parcel" && !obj.attached)
+          ) {
+            Draw.drawModernHUD(ctx, obj, view, height, gravity);
+          }
+        }
       });
     }
     requestRef.current = requestAnimationFrame(animate);
@@ -223,6 +325,8 @@ const MotionSimulator = () => {
     showTrails,
     canvasEl,
     viewRef,
+    gravity,
+    selectedObject,
   ]);
 
   useEffect(() => {
@@ -236,26 +340,25 @@ const MotionSimulator = () => {
     timeElapsedRef.current = 0;
     setHistory([]);
     visualTrailRef.current = [];
-    setObjects([
-      {
-        ...objects[0],
-        x: 0,
-        y: 20,
-        vx: 12,
-        vy: 10,
-        active: true,
-        stopped: false,
-      },
-      {
-        ...objects[1],
-        x: -15,
-        y: 0,
-        vx: 8,
-        ax: 3,
-        active: false,
-        stopped: false,
-      },
-    ]);
+    setObjects(
+      INITIAL_OBJECTS.map((obj) =>
+        obj.id === "ball" ? { ...obj, active: true } : { ...obj, active: false }
+      )
+    );
+    setSelectedObject("ball");
+    if (viewRef.current.resetView) viewRef.current.resetView();
+  };
+
+  const handleDropParcel = () => {
+    setObjects((prev) =>
+      prev.map((o) => {
+        if (o.id === "parcel" && o.attached) {
+          return { ...o, attached: false };
+        }
+        return o;
+      })
+    );
+    if (!isSimulating) setIsSimulating(true);
   };
 
   const updateObjectProperty = (prop, val) => {
@@ -271,115 +374,82 @@ const MotionSimulator = () => {
     [objects, selectedObject]
   );
 
-  const scrollbarStyles = {
-    "&::-webkit-scrollbar": { width: "8px" },
-    "&::-webkit-scrollbar-track": { background: "#0a0a12" },
-    "&::-webkit-scrollbar-thumb": { background: "#333", borderRadius: "4px" },
-    "&::-webkit-scrollbar-thumb:hover": { background: "#444" },
-  };
-
   return (
     <Box
       sx={{
         width: "100%",
         height: "100vh",
-        bgcolor: "#111",
+        bgcolor: "#0f1115",
         overflowY: "auto",
-        display: "flex",
-        flexDirection: "column",
-        ...scrollbarStyles,
+        "&::-webkit-scrollbar": { width: "10px" },
+        "&::-webkit-scrollbar-track": { background: "#0f1115" },
+        "&::-webkit-scrollbar-thumb": {
+          background: "#333",
+          borderRadius: "5px",
+        },
       }}
     >
       <Box
-        sx={{
-          display: "flex",
-          height: "95vh",
-          p: 2,
-          gap: 2,
-          flexShrink: 0,
-          minHeight: 600,
-        }}
+        sx={{ display: "flex", height: "95vh", p: 2, gap: 0, minHeight: 650 }}
       >
+        {/* CANVAS AREA - Sharp Corners */}
         <Box
           ref={containerRef}
           sx={{
             flex: 1,
             position: "relative",
-            borderRadius: 4,
+            borderRadius: 0, // Sharp corners requested
             overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.1)",
-            bgcolor: "#02030f",
+            border: "1px solid rgba(255,255,255,0.05)",
+            borderRight: "none",
+            bgcolor: "#000",
           }}
           onContextMenu={(e) => e.preventDefault()}
         >
           <canvas
             ref={setCanvasEl}
-            style={{ display: "block", cursor: "default" }}
+            style={{
+              display: "block",
+              cursor: "crosshair",
+              width: "100%",
+              height: "100%",
+            }}
           />
 
-          <Paper
-            elevation={6}
+          {/* HINT OVERLAY only */}
+          <Box
             sx={{
               position: "absolute",
-              top: 20,
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              gap: 2,
-              p: 0.8,
-              px: 2,
-              borderRadius: 10,
-              bgcolor: "rgba(30, 30, 45, 0.8)",
-              backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.15)",
-            }}
-          >
-            <Button
-              onClick={() => setIsSimulating(!isSimulating)}
-              color={isSimulating ? "warning" : "success"}
-              variant="contained"
-              size="small"
-              startIcon={isSimulating ? <PauseIcon /> : <PlayArrowIcon />}
-              sx={{
-                borderRadius: 8,
-                fontWeight: "bold",
-                minWidth: 100,
-                textTransform: "none",
-              }}
-            >
-              {isSimulating ? "Pause" : "Start"}
-            </Button>
-            <Divider
-              orientation="vertical"
-              flexItem
-              sx={{ borderColor: "rgba(255,255,255,0.2)", my: 1 }}
-            />
-            <Button
-              onClick={handleReset}
-              startIcon={<RestartAltIcon />}
-              size="small"
-              sx={{ color: "white", borderRadius: 8, textTransform: "none" }}
-            >
-              Reset
-            </Button>
-          </Paper>
-
-          <Typography
-            sx={{
-              position: "absolute",
-              bottom: 15,
+              bottom: 20,
               left: 20,
-              color: "rgba(255,255,255,0.3)",
-              fontSize: 11,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              opacity: 0.6,
+              color: "white",
               pointerEvents: "none",
             }}
           >
-            SCROLL TO ZOOM • RIGHT CLICK TO PAN
-          </Typography>
+            <MouseIcon sx={{ fontSize: 18 }} />
+            <Typography
+              variant="caption"
+              sx={{ fontSize: 11, fontWeight: 600, letterSpacing: 0.5 }}
+            >
+              SCROLL TO ZOOM • DRAG TO PAN
+            </Typography>
+          </Box>
         </Box>
 
-        <Box sx={{ width: 360, height: "100%" }}>
+        {/* SIDEBAR PANEL */}
+        <Box sx={{ width: 350, height: "100%", flexShrink: 0 }}>
           <ControlPanel
+            // Control Props
+            isSimulating={isSimulating}
+            onToggleSim={() => setIsSimulating(!isSimulating)}
+            onReset={handleReset}
+            onDrop={handleDropParcel}
+            time={timeElapsedRef.current}
+            // State Props
             currentObject={currentObject}
             objects={objects}
             setActiveObject={setSelectedObject}
@@ -398,7 +468,8 @@ const MotionSimulator = () => {
         </Box>
       </Box>
 
-      <Box sx={{ bgcolor: "#111", minHeight: "80vh" }}>
+      {/* GRAPH SECTION */}
+      <Box sx={{ minHeight: "80vh", p: 4, bgcolor: "#0f1115" }}>
         <GraphSection data={history} onClear={() => setHistory([])} />
       </Box>
     </Box>
