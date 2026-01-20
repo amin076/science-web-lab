@@ -39,3 +39,7 @@ out/
 # Optional: common local scratch outputs
 *.tmp
 *.temp
+# --- generated / local-only artifacts ---
+app-bundle.json
+packs/
+public/models/

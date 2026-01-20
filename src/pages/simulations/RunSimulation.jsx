@@ -1,10 +1,11 @@
 // src/pages/simulations/RunSimulation.jsx
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography } from "@mui/material";
 import SimulationLayout from "@/components/layout/SimulationLayout";
 import { simulationRegistry } from "@/simulations/registry";
 import { unlockScroll } from "@/utils/scrollLock";
+import { trackExperimentView } from "@/services/experimentStats";
 
 export default function RunSimulation() {
   const { id } = useParams();
@@ -12,12 +13,18 @@ export default function RunSimulation() {
 
   const SimulationComponent = simulationRegistry[id] || null;
 
+  useEffect(() => {
+    // Only track if the simulation exists in registry
+    if (SimulationComponent) {
+      trackExperimentView(id);
+    }
+  }, [id, SimulationComponent]);
+
   const handleBack = () => {
     unlockScroll(true);
     navigate("/experiments");
   };
 
-  // ✅ Full-screen wrapper: guarantees child can fill height
   return (
     <Box sx={{ height: "100dvh", overflow: "hidden" }}>
       <SimulationLayout onBack={handleBack} fullHeight>

@@ -1,11 +1,12 @@
-// src/context/ThemeModeContext.jsx
+// ✅ src/context/ThemeModeContext.jsx
 import { createContext, useContext } from "react";
 
-export const ThemeModeContext = createContext({
-  mode: "light",
-  toggleTheme: () => {},
-});
+export const ThemeModeContext = createContext(null);
 
 export function useThemeMode() {
-  return useContext(ThemeModeContext);
+  const ctx = useContext(ThemeModeContext);
+  if (!ctx) {
+    throw new Error("useThemeMode must be used within <ThemeModeProvider />");
+  }
+  return ctx;
 }

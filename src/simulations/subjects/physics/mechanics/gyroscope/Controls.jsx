@@ -1,145 +1,149 @@
 // src/simulations/subjects/physics/mechanics/gyroscope/Controls.jsx
 import React from "react";
+import { Play, Pause, RotateCcw, Eye, Activity } from "lucide-react";
 import { CONTROL_SCHEMA } from "./schema";
 import { clamp, formatNumber } from "./constants";
 
-export default function Controls({ params, setParam }) {
+export default function Controls({
+  params,
+  setParam,
+  running,
+  onStartStop,
+  onReset,
+  t,
+}) {
+  // Separate schema into categories for better layout
+  const toggles = CONTROL_SCHEMA.filter((c) => c.type === "toggle");
+  const sliders = CONTROL_SCHEMA.filter((c) => c.type === "number");
+
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-white font-black tracking-wide">Controls</div>
-        <div className="text-xs text-white/40 font-mono">
-          {CONTROL_SCHEMA.length} inputs
+    <div className="flex flex-col gap-4 font-sans text-slate-100">
+      {/* --- TOP DASHBOARD (Timer & Actions) --- */}
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <div className="text-center mb-4">
+          <div className="text-slate-400 text-xs font-bold tracking-wider uppercase mb-1">
+            Elapsed Time
+          </div>
+          <div className="text-4xl font-mono font-black text-cyan-400 tabular-nums">
+            {t.toFixed(2)}
+            <span className="text-lg text-slate-500 ml-1">s</span>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={onStartStop}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-black tracking-wide shadow-md transition-all active:scale-[0.98] ${
+              running
+                ? "bg-red-500 hover:bg-red-400 text-white"
+                : "bg-emerald-500 hover:bg-emerald-400 text-white"
+            }`}
+          >
+            {running ? (
+              <Pause size={20} fill="currentColor" />
+            ) : (
+              <Play size={20} fill="currentColor" />
+            )}
+            {running ? "PAUSE" : "START"}
+          </button>
+
+          <button
+            onClick={onReset}
+            className="w-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 transition-colors"
+            title="Reset Simulation"
+          >
+            <RotateCcw size={20} />
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {CONTROL_SCHEMA.map((c) => {
-          // ---- Toggle ----
-          if (c.type === "toggle") {
-            const checked = !!params[c.key];
+      {/* --- VISUAL OPTIONS (Toggles) --- */}
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+          View Options
+        </div>
+        <div className="flex gap-2">
+          {toggles.map((c) => {
+            const active = params[c.key];
+            // Custom Icons logic (optional)
+            const Icon = c.key === "showVectors" ? Eye : Activity;
 
             return (
-              <label
+              <button
                 key={c.key}
-                className="sm:col-span-2 flex items-center justify-between bg-black/20 border border-white/10 rounded-xl px-3 py-2"
+                onClick={() => setParam(c.key, !active)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-bold border transition-all ${
+                  active
+                    ? "bg-cyan-950 border-cyan-500/50 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.1)]"
+                    : "bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750"
+                }`}
               >
-                <div className="pr-3">
-                  <div className="text-white/80 text-sm font-bold">
-                    {c.label}
-                  </div>
-                  {c.help ? (
-                    <div className="text-white/35 text-xs mt-0.5">
-                      {c.help}
-                    </div>
-                  ) : null}
-                </div>
-
-                <button
-                  type="button"
-                  aria-pressed={checked}
-                  onClick={() => setParam(c.key, !checked)}
-                  className={`relative w-12 h-7 rounded-full border transition-all ${
-                    checked
-                      ? "bg-emerald-500/25 border-emerald-500/40"
-                      : "bg-white/5 border-white/15"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-1/2 -translate-y-1/2 block w-5 h-5 rounded-full bg-white transition-all ${
-                      checked ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
-              </label>
+                <Icon size={16} />
+                {c.label}
+              </button>
             );
-          }
+          })}
+        </div>
+      </div>
 
-          // ---- Select (optional) ----
-          if (c.type === "select") {
-            const value = params[c.key] ?? c.defaultValue ?? "";
+      {/* --- INITIAL CONDITIONS (Sliders) --- */}
+      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+            Initial Conditions
+          </div>
+          {/* Decorative chevron could go here if collapsible */}
+        </div>
 
-            return (
-              <div
-                key={c.key}
-                className="bg-black/20 border border-white/10 rounded-xl p-3"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="text-white/70 text-xs font-bold">
-                    {c.label}
-                  </div>
-                  <div className="text-white/50 text-xs font-mono">
-                    {String(value)}
-                  </div>
-                </div>
-
-                <select
-                  className="w-full mt-2 bg-black/30 border border-white/10 rounded-lg px-2 py-2 text-white/80 outline-none"
-                  value={value}
-                  onChange={(e) => setParam(c.key, e.target.value)}
-                >
-                  {(c.options || []).map((opt) => (
-                    <option key={String(opt.value)} value={opt.value}>
-                      {opt.label ?? String(opt.value)}
-                    </option>
-                  ))}
-                </select>
-
-                {c.help ? (
-                  <div className="text-white/35 text-xs mt-1">{c.help}</div>
-                ) : null}
-              </div>
-            );
-          }
-
-          // ---- Number (range slider) ----
-          const raw = params[c.key];
-          const display = Number.isFinite(raw) ? raw : c.defaultValue;
-
-          return (
-            <div
+        <div className="space-y-6">
+          {sliders.map((c) => (
+            <ModernSlider
               key={c.key}
-              className="bg-black/20 border border-white/10 rounded-xl p-3"
-            >
-              <div className="flex items-center justify-between">
-                <div className="text-white/70 text-xs font-bold">
-                  {c.label}
-                  {c.unit ? (
-                    <span className="text-white/35"> ({c.unit})</span>
-                  ) : null}
-                </div>
-                <div className="text-white/50 text-xs font-mono">
-                  {formatNumber(display, 3)}
-                </div>
-              </div>
+              label={c.label}
+              value={params[c.key]}
+              unit={c.unit}
+              min={c.min}
+              max={c.max}
+              step={c.step}
+              onChange={(v) => setParam(c.key, v)}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-              <div className="mt-2">
-                <input
-                  aria-label={c.label}
-                  className="w-full accent-cyan-300"
-                  type="range"
-                  min={c.min}
-                  max={c.max}
-                  step={c.step}
-                  value={display}
-                  onChange={(e) => {
-                    const num = parseFloat(e.target.value);
-                    const v = clamp(
-                      Number.isFinite(num) ? num : c.defaultValue,
-                      c.min,
-                      c.max
-                    );
-                    setParam(c.key, v);
-                  }}
-                />
-              </div>
+// --- SUBCOMPONENTS ---
 
-              {c.help ? (
-                <div className="text-white/35 text-xs mt-1">{c.help}</div>
-              ) : null}
-            </div>
-          );
-        })}
+function ModernSlider({ label, value, unit, min, max, step, onChange }) {
+  const displayValue = Number.isFinite(value) ? value : min;
+
+  return (
+    <div className="group">
+      <div className="flex justify-between items-end mb-2">
+        <label className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">
+          {label}
+        </label>
+        <div className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-xs font-mono text-cyan-400 min-w-[3rem] text-right">
+          {formatNumber(displayValue, step < 0.1 ? 2 : 1)}
+          {unit && <span className="text-slate-500 ml-0.5">{unit}</span>}
+        </div>
+      </div>
+
+      <div className="relative h-6 flex items-center">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={displayValue}
+          onChange={(e) => {
+            const num = parseFloat(e.target.value);
+            onChange(clamp(num, min, max));
+          }}
+          className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-cyan-400 hover:accent-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
+        />
       </div>
     </div>
   );

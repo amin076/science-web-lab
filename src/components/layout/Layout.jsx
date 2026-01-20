@@ -1,88 +1,92 @@
-// ✅ src/components/layout/Layout.jsx
-import { Box, Container } from "@mui/material";
+// src/components/layout/Layout.jsx
+import { Box } from "@mui/material";
 import Header from "./Header";
 import Footer from "./Footer";
 import { useThemeMode } from "@/context/ThemeModeContext";
 import { motion } from "framer-motion";
 import ThemeSwitcher from "@/components/common/ThemeSwitcher";
-import DashboardDrawer from "@/components/dashboard/DashboardDrawer"; // 🧩 اضافه شد
+import DashboardDrawer from "@/components/dashboard/DashboardDrawer";
 
-function Layout({ children }) {
+function Layout({
+  children,
+  layout = {
+    header: true,
+    footer: true,
+  },
+}) {
   const { mode } = useThemeMode();
   const isDark = mode === "dark";
+
+  const showHeader = layout?.header !== false;
+  const showFooter = layout?.footer !== false;
 
   return (
     <Box
       className="app-shell"
       sx={{
-        display: "flex",
-        flexDirection: "column",
         minHeight: "100vh",
         position: "relative",
         backgroundColor: (theme) => theme.palette.background.default,
-
         overflowX: "hidden",
-        overflowY: "auto",
       }}
     >
-      {/* 🌈 Glow Pulse Gradient Background */}
+      {/* Glow background */}
       <Box
         component={motion.div}
         animate={{
           backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-          opacity: [0.25, 0.35, 0.25],
+          opacity: [0.18, 0.28, 0.18],
         }}
-        transition={{
-          duration: 25,
-          ease: "easeInOut",
-          repeat: Infinity,
-        }}
+        transition={{ duration: 25, ease: "easeInOut", repeat: Infinity }}
         sx={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           zIndex: 0,
           background: isDark
-            ? "linear-gradient(120deg, #0f172a, #1e3a8a, #3b82f6, #60a5fa)"
-            : "linear-gradient(120deg, #e0f2fe, #bae6fd, #60a5fa, #38bdf8)",
+            ? "linear-gradient(120deg, #0b1220, #123a8a, #2563eb, #60a5fa)"
+            : "linear-gradient(120deg, #f1f5ff, #dbeafe, #60a5fa, #38bdf8)",
           backgroundSize: "400% 400%",
           filter: "blur(60px)",
-          opacity: 0.3,
-          transition: "opacity 1s ease-in-out",
+          pointerEvents: "none",
         }}
       />
 
-      {/* 🧭 Header */}
-      <Box sx={{ position: "relative", zIndex: 1 }}>
-        <Header />
-        <Box sx={{ position: "absolute", top: 16, right: 24, zIndex: 2 }}>
-          <ThemeSwitcher />
-        </Box>
-      </Box>
+      {/* Header (movable) */}
+      {showHeader && (
+        <Box sx={{ position: "relative", zIndex: 10 }}>
+          <Header />
 
-      {/* 🧱 Dashboard Drawer (شناور کنار صفحه) */}
-      <Box sx={{ position: "relative", zIndex: 2 }}>
+          {/* Theme switcher on header (always visible, but movable with header) */}
+          <Box
+            sx={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              zIndex: 20,
+              pointerEvents: "auto",
+            }}
+          >
+            <ThemeSwitcher />
+          </Box>
+        </Box>
+      )}
+
+      {/* Dashboard Drawer (floating is OK) */}
+      <Box sx={{ position: "fixed", right: 16, top: 120, zIndex: 50 }}>
         <DashboardDrawer />
       </Box>
 
-      {/* 📄 محتوای اصلی */}
-      <Box
-        component="main"
-        sx={{
-          flex: 1,
-          width: "100%",
-          maxWidth: "100%",
-          position: "relative",
-          zIndex: 1,
-          overflow: "visible", // ❗ مهم
-        }}
-      >
+      {/* Main */}
+      <Box component="main" sx={{ position: "relative", zIndex: 1 }}>
         {children}
       </Box>
 
-      {/* 📍 Footer */}
-      <Box sx={{ position: "relative", zIndex: 1 }}>
-        <Footer />
-      </Box>
+      {/* Footer (movable) */}
+      {showFooter && (
+        <Box sx={{ position: "relative", zIndex: 1, mt: 6 }}>
+          <Footer />
+        </Box>
+      )}
     </Box>
   );
 }

@@ -1,8 +1,7 @@
-// src/context/ThemeContext.jsx
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { lightTheme, darkTheme } from "@/theme";
-import { ThemeModeContext } from "./ThemeModeContext";
+import { ThemeModeContext } from "@/context/ThemeModeContext"; // ✅ alias ثابت
 
 export function ThemeModeProvider({ children }) {
   const [mode, setMode] = useState(
@@ -10,22 +9,20 @@ export function ThemeModeProvider({ children }) {
   );
 
   const toggleTheme = useCallback(() => {
-    setMode((prev) => {
-      const next = prev === "light" ? "dark" : "light";
-      localStorage.setItem("theme", next);
-      return next;
-    });
+    setMode((prev) => (prev === "light" ? "dark" : "light"));
   }, []);
 
   useEffect(() => {
+    localStorage.setItem("theme", mode);
     document.documentElement.setAttribute("data-theme", mode);
+    document.documentElement.style.colorScheme = mode;
+    console.log("[Theme] mode =", mode); // ✅ تست
   }, [mode]);
 
   const theme = useMemo(
     () => (mode === "light" ? lightTheme : darkTheme),
     [mode]
   );
-
   const value = useMemo(() => ({ mode, toggleTheme }), [mode, toggleTheme]);
 
   return (
@@ -37,3 +34,5 @@ export function ThemeModeProvider({ children }) {
     </ThemeModeContext.Provider>
   );
 }
+
+export default ThemeModeProvider;
