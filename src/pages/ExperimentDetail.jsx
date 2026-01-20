@@ -9,7 +9,7 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import { experimentsData } from "@/data/experiments";
+import { experimentsData } from "@/data/experiments/index";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import ScienceOutlinedIcon from "@mui/icons-material/ScienceOutlined";

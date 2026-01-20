@@ -5,11 +5,10 @@ export const simulationRegistry = {
     import("@/simulations/subjects/physics/mechanics/projectile-motion")
   ),
 
-  "coulomb-law-2d": lazyWithRetry(() =>
+  "physics.electricity.coulomb-law-2d": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/electricity/coulomb-law-2d")
   ),
-
-  "coulomb-law-3d": lazyWithRetry(() =>
+  "physics.electricity.coulomb-law-3d": lazyWithRetry(() =>
     import("@/simulations/subjects/physics/electricity/coulomb-law-3d")
   ),
 

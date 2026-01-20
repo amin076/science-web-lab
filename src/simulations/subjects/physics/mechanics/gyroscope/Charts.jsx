@@ -19,37 +19,10 @@ const fmt = (v, d = 3) =>
 
 const timeFmt = (v) => fmt(v, 2);
 
-/* ---------- derived quantities ---------- */
-/**
- * KE ≈ L² / (2I)
- * (I ثابت فرض شده – برای آموزش کاملاً مناسب)
- */
-function kineticEnergy(d) {
-  const I = 0.5; // مقدار نرمال‌شده آموزشی
-  return (d.L * d.L) / (2 * I);
-}
-
-/**
- * PE ≈ M g r cos(θ)
- * θ بر حسب درجه در داده‌ها
- */
-function potentialEnergy(d) {
-  const M = 1;
-  const g = 9.81;
-  const r = 1;
-  const theta = (d.tilt * Math.PI) / 180;
-  return M * g * r * Math.cos(theta);
-}
-
 export default function Charts({ data }) {
   const d = Array.isArray(data) ? data : [];
 
-  const enriched = d.map((p) => ({
-    ...p,
-    KE: kineticEnergy(p),
-    PE: potentialEnergy(p),
-  }));
-
+  // Data is now pre-calculated in the loop, ensuring KE matches Mass/Radius inputs
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-6">
       <div className="text-white font-black tracking-wide text-lg">
@@ -59,21 +32,27 @@ export default function Charts({ data }) {
       {/* ---------- θ(t) + Ω(t) ---------- */}
       <ChartCard title="Tilt θ(t)  &  Precession Ω(t)">
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={enriched}>
+          <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
             <YAxis
               yAxisId="left"
-              tickFormatter={(v) => fmt(v, 3)}
+              tickFormatter={(v) => fmt(v, 1)}
               unit="°"
+              domain={["auto", "auto"]}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              tickFormatter={(v) => fmt(v, 4)}
+              tickFormatter={(v) => fmt(v, 2)}
               unit=" rad/s"
             />
             <Tooltip
+              contentStyle={{
+                backgroundColor: "#1e293b",
+                borderColor: "#334155",
+                color: "#f8fafc",
+              }}
               formatter={(v) => fmt(v, 4)}
               labelFormatter={(l) => `t = ${timeFmt(l)} s`}
             />
@@ -85,6 +64,7 @@ export default function Charts({ data }) {
               stroke="#22d3ee"
               strokeWidth={2}
               dot={false}
+              isAnimationActive={false}
             />
             <Line
               yAxisId="right"
@@ -93,6 +73,7 @@ export default function Charts({ data }) {
               stroke="#fbbf24"
               strokeWidth={2}
               dot={false}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -101,16 +82,28 @@ export default function Charts({ data }) {
       {/* ---------- Angular Momentum ---------- */}
       <ChartCard title="Angular Momentum L(t)">
         <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={enriched}>
+          <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
-            <YAxis tickFormatter={(v) => fmt(v, 3)} unit=" kg·m²/s" />
-            <Tooltip formatter={(v) => fmt(v, 4)} />
+            <YAxis
+              tickFormatter={(v) => fmt(v, 2)}
+              unit=" kg·m²/s"
+              domain={["auto", "auto"]}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1e293b",
+                borderColor: "#334155",
+                color: "#f8fafc",
+              }}
+              formatter={(v) => fmt(v, 4)}
+            />
             <Line
               dataKey="L"
               stroke="#60a5fa"
               strokeWidth={2}
               dot={false}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -119,23 +112,34 @@ export default function Charts({ data }) {
       {/* ---------- Energy ---------- */}
       <ChartCard title="Energy Exchange (KE & PE)">
         <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={enriched}>
+          <AreaChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
-            <YAxis tickFormatter={(v) => fmt(v, 3)} unit=" J" />
-            <Tooltip formatter={(v) => fmt(v, 4)} />
+            <YAxis tickFormatter={(v) => fmt(v, 1)} unit=" J" />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#1e293b",
+                borderColor: "#334155",
+                color: "#f8fafc",
+              }}
+              formatter={(v) => fmt(v, 4)}
+            />
             <Legend />
             <Area
+              type="monotone"
               dataKey="KE"
               name="Kinetic Energy"
               stroke="#34d399"
               fill="rgba(52,211,153,0.15)"
+              isAnimationActive={false}
             />
             <Area
+              type="monotone"
               dataKey="PE"
               name="Potential Energy"
               stroke="#f87171"
               fill="rgba(248,113,113,0.15)"
+              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -144,7 +148,6 @@ export default function Charts({ data }) {
   );
 }
 
-/* ---------- UI wrapper ---------- */
 function ChartCard({ title, children }) {
   return (
     <div className="bg-black/20 border border-white/10 rounded-2xl p-3">

@@ -1,12 +1,13 @@
 // src/simulations/subjects/physics/mechanics/gyroscope/schema.js
 
 export const DEFAULT_PARAMS = {
-  mass: 1.0,        // kg
-  diskRadius: 0.25, // m (matches our model visual)
-  rodLength: 0.4,   // m (matches our model visual)
-  spinSpeed: 10.0,  // rad/s
-  tilt: 30,         // degrees
+  mass: 1.0, // kg
+  diskRadius: 0.25, // m
+  rodLength: 0.4, // m
+  spinSpeed: 10.0, // rad/s
+  tilt: 30, // degrees
   showVectors: true,
+  showTrail: true, // <--- NEW PARAMETER
 };
 
 export const CONTROL_SCHEMA = [
@@ -43,6 +44,11 @@ export const CONTROL_SCHEMA = [
   {
     key: "showVectors",
     label: "Show Vectors",
+    type: "toggle",
+  },
+  {
+    key: "showTrail",
+    label: "Show Precession Path", // <--- NEW CONTROL
     type: "toggle",
   },
 ];

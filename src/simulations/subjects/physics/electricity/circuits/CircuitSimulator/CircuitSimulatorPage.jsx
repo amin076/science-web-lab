@@ -106,7 +106,7 @@ export default function CircuitSimulatorPage() {
   };
 
   return (
-    <div className="relative flex flex-col h-screen bg-[#1a1a2e] text-white font-sans overflow-hidden">
+    <div className="circuit-root relative flex flex-col h-screen bg-[#1a1a2e] text-white font-sans overflow-hidden">
       <CircuitHeader />
 
       {state.lab && (

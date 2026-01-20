@@ -16,7 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import { experimentsData } from "@/data/experiments";
+import { experimentsData } from "@/data/experiments/index";
 
 export default function AddExperimentModal({ open, onClose, classId, onAdded }) {
   const [tab, setTab] = useState(0);
