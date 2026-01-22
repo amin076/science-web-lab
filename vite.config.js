@@ -13,6 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+
+      // 🚨 THIS IS THE CRITICAL FIX FOR THE CRASH
+      three: path.resolve(__dirname, "node_modules/three"),
     },
   },
 });

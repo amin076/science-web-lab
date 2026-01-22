@@ -1,20 +1,20 @@
 // src/simulations/subjects/astronomy/space/solar-system/SolarSystemSimulator.jsx
-import React, { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  Suspense,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars } from "@react-three/drei";
+import { OrbitControls, Stars, Html } from "@react-three/drei";
 import * as THREE from "three";
 
-/**
- * Solar System (3D)
- * ID: astronomy.space.solar-system
- *
- * Rules:
- * - No routing
- * - No auth/firestore
- * - Assume fullscreen runtime shell (RunSimulation + SimulationLayout)
- */
+// ✅ XR (ONLY mounted after user clicks Enter AR/VR)
+import { XR, XROrigin, useXR, createXRStore } from "@react-three/xr";
 
-// Local components (place them under the paths below)
+// ✅ LOCAL COMPONENTS
 import Sun from "./components/bodies/Sun";
 import BasePlanet from "./components/bodies/BasePlanet";
 import BaseMoon from "./components/bodies/BaseMoon";
@@ -24,13 +24,21 @@ import TourHudPanel from "./components/panels/TourHudPanel";
 import SizeComparison3D from "./components/panels/SizeComparison3D";
 import SolarSystemControlPanel from "./components/panels/EntireSolarControlPanel";
 
-// Scale data (put the scale file here)
+// ✅ DATA
 import {
   ENTIRE_SOLAR_EDUCATIONAL,
   ENTIRE_SOLAR_SEMI_REALISTIC,
   ENTIRE_SOLAR_REALISTIC,
 } from "./physics/entireSolarScale";
 
+/* ------------------------------------------------------------------ */
+/* XR STORE (single instance) */
+/* ------------------------------------------------------------------ */
+const xrStore = createXRStore();
+
+/* ------------------------------------------------------------------ */
+/* CONFIG */
+/* ------------------------------------------------------------------ */
 const PLANET_CONFIG = [
   { id: "mercury", name: "Mercury" },
   { id: "venus", name: "Venus" },
@@ -42,36 +50,90 @@ const PLANET_CONFIG = [
   { id: "neptune", name: "Neptune", moonGroup: "neptuneMoons" },
 ];
 
-function PlaybackControls({ isSimulating, onStart, onPause, onReset }) {
+/* ------------------------------------------------------------------ */
+/* RESPONSIVE HOOK */
+/* ------------------------------------------------------------------ */
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia(query);
+    const onChange = () => setMatches(Boolean(mq.matches));
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, [query]);
+
+  return matches;
+}
+
+/* ------------------------------------------------------------------ */
+/* UI HELPERS */
+/* ------------------------------------------------------------------ */
+function PlaybackControls({
+  isSimulating,
+  onStart,
+  onPause,
+  onReset,
+  compact = false,
+}) {
+  const base =
+    "rounded-lg border border-white/15 text-white shadow-md transition-transform active:scale-95";
+  const pad = compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm";
+
   return (
     <div className="flex items-center gap-2">
       {isSimulating ? (
         <button
           onClick={onPause}
-          className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/15 text-white text-sm"
+          className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
         >
-          ⏸ Pause
+          ⏸ {compact ? "" : "Pause"}
         </button>
       ) : (
         <button
           onClick={onStart}
-          className="px-4 py-2 rounded-lg bg-emerald-500/80 hover:bg-emerald-600 border border-emerald-400/40 text-white text-sm font-semibold"
+          className={`${base} ${pad} bg-emerald-500/80 hover:bg-emerald-600 border-emerald-400/40 font-semibold`}
         >
-          ▶ Start
+          ▶ {compact ? "" : "Start"}
         </button>
       )}
 
       <button
         onClick={onReset}
-        className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 border border-white/15 text-white text-sm"
+        className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
       >
-        ↺ Reset
+        ↺ {compact ? "" : "Reset"}
       </button>
     </div>
   );
 }
 
-/* OrbitControls + smooth focus when NOT touring */
+function XRButtons({ onEnterAR, onEnterVR, compact = false }) {
+  const base =
+    "rounded-lg font-bold shadow-md transition-transform active:scale-95 text-white";
+  const pad = compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm";
+
+  return (
+    <div className="flex gap-2">
+      <button
+        onClick={onEnterAR}
+        className={`${base} ${pad} bg-blue-600 hover:bg-blue-500`}
+      >
+        📱 {compact ? "AR" : "Enter AR"}
+      </button>
+      <button
+        onClick={onEnterVR}
+        className={`${base} ${pad} bg-purple-600 hover:bg-purple-500`}
+      >
+        🥽 {compact ? "VR" : "Enter VR"}
+      </button>
+    </div>
+  );
+}
+
+/** OrbitControls + smooth focus */
 function ManualCameraController({
   focusTarget,
   targets,
@@ -115,7 +177,7 @@ function ManualCameraController({
   );
 }
 
-/* Pure React audio overlay (no R3F hooks) */
+/** Audio overlay (recommended: active during tour only) */
 function AudioOverlay({ active }) {
   const [isAudioBlocked, setIsAudioBlocked] = useState(false);
   const audioRef = useRef(null);
@@ -132,13 +194,13 @@ function AudioOverlay({ active }) {
 
     const audio = new Audio("/space-music.mp3");
     audio.loop = true;
-    audio.volume = 0.4;
+    audio.volume = 0.45;
     audioRef.current = audio;
 
     const p = audio.play();
     if (p !== undefined) {
       p.then(() => setIsAudioBlocked(false)).catch(() =>
-        setIsAudioBlocked(true)
+        setIsAudioBlocked(true),
       );
     }
 
@@ -163,7 +225,7 @@ function AudioOverlay({ active }) {
       {isAudioBlocked && (
         <button
           onClick={handleEnableAudio}
-          className="pointer-events-auto bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2"
+          className="pointer-events-auto bg-emerald-500/85 hover:bg-emerald-600 text-white px-4 py-2 rounded-full font-bold shadow-lg animate-bounce flex items-center gap-2"
         >
           🔊 Tap to Enable Cosmic Music
         </button>
@@ -172,7 +234,281 @@ function AudioOverlay({ active }) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* PLANET SYSTEM (shared renderer) */
+/* ------------------------------------------------------------------ */
+function SolarSystemBodies({
+  scale,
+  effectiveSpeed,
+  showAxis,
+  showTrails,
+  showOrbits,
+  planetPositions,
+  updatePos,
+}) {
+  // Stars size
+  const STAR_RADIUS = 20000;
+  const STAR_DEPTH = 40000;
+
+  return (
+    <>
+      <Stars
+        radius={STAR_RADIUS}
+        depth={STAR_DEPTH}
+        count={12000}
+        factor={5}
+        saturation={0}
+        fade
+      />
+
+      <Sun
+        speed={effectiveSpeed}
+        radius={scale.sun?.radius ?? 10}
+        rotationPeriod={scale.sun?.rotation ?? 27}
+        showAxis={showAxis}
+      />
+
+      {PLANET_CONFIG.map((planet) => {
+        const data = scale[planet.id];
+        if (!data) return null;
+
+        return (
+          <React.Fragment key={planet.id}>
+            <BasePlanet
+              name={planet.name}
+              data={data}
+              texturePath={`/textures/${planet.id}.jpg`}
+              speed={effectiveSpeed}
+              showTrails={showTrails}
+              showAxis={showAxis}
+              onPositionUpdate={(pos) => updatePos(planet.id, pos)}
+            >
+              {/* Explicit moons (Earth -> Moon) */}
+              {planet.moons?.map((moonDef) => (
+                <BaseMoon
+                  key={moonDef.id}
+                  name={moonDef.name}
+                  data={scale[moonDef.id]}
+                  speed={effectiveSpeed}
+                  texturePath={`/textures/${moonDef.id}.jpg`}
+                  onPositionUpdate={(pos) => updatePos(moonDef.id, pos)}
+                />
+              ))}
+
+              {/* Moon groups (Jupiter/Saturn/...) */}
+              {planet.moonGroup &&
+                scale[planet.moonGroup] &&
+                Object.entries(scale[planet.moonGroup]).map(
+                  ([key, moonData]) => (
+                    <BaseMoon
+                      key={key}
+                      name={key.charAt(0).toUpperCase() + key.slice(1)}
+                      data={moonData}
+                      speed={effectiveSpeed}
+                      color={moonData.color}
+                    />
+                  ),
+                )}
+            </BasePlanet>
+
+            {showOrbits && (
+              <EllipticalOrbitPath
+                semiMajorAxis={data.orbitMajor}
+                semiMinorAxis={data.orbitMinor}
+                focusOffset={data.focusOffset}
+                inclination={data.inclination}
+              />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* NON-XR SCENE (NO useXR hook) */
+/* ------------------------------------------------------------------ */
+function SolarSystemSceneNonXR({
+  scale,
+  effectiveSpeed,
+  showAxis,
+  showTrails,
+  showOrbits,
+  planetPositions,
+  updatePos,
+  scaleMode,
+  focusTarget,
+  isTouring,
+  setTourInfo,
+  setIsTouring,
+}) {
+  return (
+    <>
+      <SolarSystemBodies
+        scale={scale}
+        effectiveSpeed={effectiveSpeed}
+        showAxis={showAxis}
+        showTrails={showTrails}
+        showOrbits={showOrbits}
+        planetPositions={planetPositions}
+        updatePos={updatePos}
+      />
+
+      <ManualCameraController
+        focusTarget={focusTarget}
+        targets={planetPositions}
+        scaleMode={scaleMode}
+        isTouring={isTouring}
+      />
+
+      {isTouring && (
+        <CinematicTour
+          planetPositions={planetPositions}
+          scaleData={scale}
+          scaleMode={scaleMode}
+          onStop={() => setIsTouring(false)}
+          onInfo={(info) => setTourInfo(info)}
+        />
+      )}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* XR SCENE (useXR hook allowed) */
+/* ------------------------------------------------------------------ */
+function SolarSystemSceneXR({
+  xrIntent, // "ar" | "vr"
+  scale,
+  effectiveSpeed,
+  showAxis,
+  showTrails,
+  showOrbits,
+  planetPositions,
+  updatePos,
+  scaleMode,
+  focusTarget,
+  isTouring,
+  setTourInfo,
+  setIsTouring,
+}) {
+  const { isPresenting } = useXR();
+
+  const isAR = xrIntent === "ar" && isPresenting;
+  const groupScale = isAR ? 0.05 : 1;
+  const groupPosition = isAR ? [0, 1.2, -2] : [0, 0, 0];
+
+  return (
+    <>
+      <group scale={groupScale} position={groupPosition}>
+        {!isPresenting && (
+          <SolarSystemBodies
+            scale={scale}
+            effectiveSpeed={effectiveSpeed}
+            showAxis={showAxis}
+            showTrails={showTrails}
+            showOrbits={showOrbits}
+            planetPositions={planetPositions}
+            updatePos={updatePos}
+          />
+        )}
+
+        {isPresenting && (
+          <>
+            <Sun
+              speed={effectiveSpeed}
+              radius={scale.sun?.radius ?? 10}
+              rotationPeriod={scale.sun?.rotation ?? 27}
+              showAxis={showAxis}
+            />
+
+            {PLANET_CONFIG.map((planet) => {
+              const data = scale[planet.id];
+              if (!data) return null;
+
+              return (
+                <React.Fragment key={planet.id}>
+                  <BasePlanet
+                    name={planet.name}
+                    data={data}
+                    texturePath={`/textures/${planet.id}.jpg`}
+                    speed={effectiveSpeed}
+                    showTrails={showTrails}
+                    showAxis={showAxis}
+                    onPositionUpdate={(pos) => updatePos(planet.id, pos)}
+                  >
+                    {planet.moons?.map((moonDef) => (
+                      <BaseMoon
+                        key={moonDef.id}
+                        name={moonDef.name}
+                        data={scale[moonDef.id]}
+                        speed={effectiveSpeed}
+                        texturePath={`/textures/${moonDef.id}.jpg`}
+                        onPositionUpdate={(pos) => updatePos(moonDef.id, pos)}
+                      />
+                    ))}
+
+                    {planet.moonGroup &&
+                      scale[planet.moonGroup] &&
+                      Object.entries(scale[planet.moonGroup]).map(
+                        ([key, moonData]) => (
+                          <BaseMoon
+                            key={key}
+                            name={key.charAt(0).toUpperCase() + key.slice(1)}
+                            data={moonData}
+                            speed={effectiveSpeed}
+                            color={moonData.color}
+                          />
+                        ),
+                      )}
+                  </BasePlanet>
+
+                  {showOrbits && (
+                    <EllipticalOrbitPath
+                      semiMajorAxis={data.orbitMajor}
+                      semiMinorAxis={data.orbitMinor}
+                      focusOffset={data.focusOffset}
+                      inclination={data.inclination}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </>
+        )}
+
+        {!isPresenting && isTouring && (
+          <CinematicTour
+            planetPositions={planetPositions}
+            scaleData={scale}
+            scaleMode={scaleMode}
+            onStop={() => setIsTouring(false)}
+            onInfo={(info) => setTourInfo(info)}
+          />
+        )}
+      </group>
+
+      {!isPresenting && (
+        <ManualCameraController
+          focusTarget={focusTarget}
+          targets={planetPositions}
+          scaleMode={scaleMode}
+          isTouring={isTouring}
+        />
+      )}
+
+      <XROrigin />
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* MAIN COMPONENT */
+/* ------------------------------------------------------------------ */
 export default function SolarSystemSimulator() {
+  const isMobile = useMediaQuery("(max-width: 1023px)");
+
   const [isSimulating, setIsSimulating] = useState(true);
   const [speed, setSpeed] = useState(1);
 
@@ -193,6 +529,19 @@ export default function SolarSystemSimulator() {
     progress: 0,
   });
 
+  // ✅ XR only mounts after click
+  const [xrEnabled, setXrEnabled] = useState(false);
+  const [xrIntent, setXrIntent] = useState(null); // "ar" | "vr" | null
+
+  // ✅ Mobile: use a bottom-sheet controls drawer
+  const [controlsOpen, setControlsOpen] = useState(false);
+
+  useEffect(() => {
+    // Desktop: controls always visible
+    // Mobile: controls closed by default
+    setControlsOpen(!isMobile);
+  }, [isMobile]);
+
   const scale = useMemo(() => {
     if (scaleMode === "semiRealistic") return ENTIRE_SOLAR_SEMI_REALISTIC;
     if (scaleMode === "realistic") return ENTIRE_SOLAR_REALISTIC;
@@ -202,12 +551,12 @@ export default function SolarSystemSimulator() {
   const effectiveSpeed = isTouring
     ? Math.max(speed, 1)
     : isSimulating
-    ? speed
-    : 0;
+      ? speed
+      : 0;
 
-  const updatePos = (id, pos) => {
+  const updatePos = useCallback((id, pos) => {
     setPlanetPositions((prev) => ({ ...prev, [id]: pos }));
-  };
+  }, []);
 
   const handleStart = () => setIsSimulating(true);
   const handlePause = () => setIsSimulating(false);
@@ -231,22 +580,48 @@ export default function SolarSystemSimulator() {
     });
   };
 
-  // Big stars volume
-  const STAR_RADIUS = 20000;
-  const STAR_DEPTH = 40000;
+  const enterAR = async () => {
+    setXrIntent("ar");
+    setXrEnabled(true);
+    try {
+      const st = xrStore.getState();
+      if (!st.session) await xrStore.enterAR();
+    } catch (e) {
+      console.error(e);
+      setXrEnabled(false);
+      setXrIntent(null);
+    }
+  };
+
+  const enterVR = async () => {
+    setXrIntent("vr");
+    setXrEnabled(true);
+    try {
+      const st = xrStore.getState();
+      if (!st.session) await xrStore.enterVR();
+    } catch (e) {
+      console.error(e);
+      setXrEnabled(false);
+      setXrIntent(null);
+    }
+  };
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-black">
-      {/* 3D Canvas (fills the simulation container, not the whole app) */}
+    <div
+      className="relative h-full w-full bg-black overflow-hidden"
+      style={{
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
+    >
+      {/* 3D Canvas */}
       <div className="absolute inset-0 z-0">
         <Canvas
           shadows
           camera={{ position: [0, 60, 200], fov: 60, far: 50_000_000 }}
         >
-          <Suspense fallback={null}>
+          <Suspense fallback={<Html center>Loading...</Html>}>
             <color attach="background" args={["#050510"]} />
-
-            {/* Lighting */}
             <ambientLight intensity={0.05} />
             <pointLight
               position={[0, 0, 0]}
@@ -256,106 +631,49 @@ export default function SolarSystemSimulator() {
               distance={10_000_000}
             />
 
-            {/* Stars */}
-            <Stars
-              radius={STAR_RADIUS}
-              depth={STAR_DEPTH}
-              count={12000}
-              factor={5}
-              saturation={0}
-              fade
-            />
-
-            {/* Sun */}
-            <Sun
-              speed={effectiveSpeed}
-              radius={scale.sun?.radius ?? 10}
-              rotationPeriod={scale.sun?.rotation ?? 27}
-              showAxis={showAxis}
-            />
-
-            {/* Planets + Moons + Orbits */}
-            {PLANET_CONFIG.map((planet) => {
-              const data = scale[planet.id];
-              if (!data) return null;
-
-              return (
-                <React.Fragment key={planet.id}>
-                  <BasePlanet
-                    name={planet.name}
-                    data={data}
-                    texturePath={`/textures/${planet.id}.jpg`}
-                    speed={effectiveSpeed}
-                    showTrails={showTrails}
-                    showAxis={showAxis}
-                    onPositionUpdate={(pos) => updatePos(planet.id, pos)}
-                  >
-                    {/* Explicit moons (Earth -> Moon) */}
-                    {planet.moons?.map((moonDef) => (
-                      <BaseMoon
-                        key={moonDef.id}
-                        name={moonDef.name}
-                        data={scale[moonDef.id]}
-                        speed={effectiveSpeed}
-                        texturePath={`/textures/${moonDef.id}.jpg`}
-                        onPositionUpdate={(pos) => updatePos(moonDef.id, pos)}
-                      />
-                    ))}
-
-                    {/* Moon groups (Jupiter/Saturn/...) */}
-                    {planet.moonGroup &&
-                      scale[planet.moonGroup] &&
-                      Object.entries(scale[planet.moonGroup]).map(
-                        ([key, moonData]) => (
-                          <BaseMoon
-                            key={key}
-                            name={key.charAt(0).toUpperCase() + key.slice(1)}
-                            data={moonData}
-                            speed={effectiveSpeed}
-                            color={moonData.color}
-                          />
-                        )
-                      )}
-                  </BasePlanet>
-
-                  {showOrbits && (
-                    <EllipticalOrbitPath
-                      semiMajorAxis={data.orbitMajor}
-                      semiMinorAxis={data.orbitMinor}
-                      focusOffset={data.focusOffset}
-                      inclination={data.inclination}
-                      showDetails={false}
-                    />
-                  )}
-                </React.Fragment>
-              );
-            })}
-
-            {/* Mouse controls + smooth focus */}
-            <ManualCameraController
-              focusTarget={focusTarget}
-              targets={planetPositions}
-              scaleMode={scaleMode}
-              isTouring={isTouring}
-            />
-
-            {/* Cinematic tour owns the camera */}
-            {isTouring && (
-              <CinematicTour
+            {!xrEnabled ? (
+              <SolarSystemSceneNonXR
+                scale={scale}
+                effectiveSpeed={effectiveSpeed}
+                showAxis={showAxis}
+                showTrails={showTrails}
+                showOrbits={showOrbits}
                 planetPositions={planetPositions}
-                scaleData={scale}
+                updatePos={updatePos}
                 scaleMode={scaleMode}
-                onStop={() => setIsTouring(false)}
-                onInfo={(info) => setTourInfo(info)}
+                focusTarget={focusTarget}
+                isTouring={isTouring}
+                setTourInfo={setTourInfo}
+                setIsTouring={setIsTouring}
               />
+            ) : (
+              <XR store={xrStore}>
+                <SolarSystemSceneXR
+                  xrIntent={xrIntent}
+                  scale={scale}
+                  effectiveSpeed={effectiveSpeed}
+                  showAxis={showAxis}
+                  showTrails={showTrails}
+                  showOrbits={showOrbits}
+                  planetPositions={planetPositions}
+                  updatePos={updatePos}
+                  scaleMode={scaleMode}
+                  focusTarget={focusTarget}
+                  isTouring={isTouring}
+                  setTourInfo={setTourInfo}
+                  setIsTouring={setIsTouring}
+                />
+              </XR>
             )}
           </Suspense>
         </Canvas>
       </div>
 
-      {/* HUD (Tour) */}
+      {/* HUD (Responsive) */}
       {isTouring && (
-        <div className="absolute top-2 left-2 z-20 pointer-events-none">
+        <div
+          className={`absolute left-2 z-20 pointer-events-none ${isMobile ? "top-16" : "top-2"}`}
+        >
           <div className="pointer-events-auto">
             <TourHudPanel
               targetId={tourInfo.targetId}
@@ -366,33 +684,73 @@ export default function SolarSystemSimulator() {
         </div>
       )}
 
-      {/* Overlay UI */}
-      <div className="relative z-10 pointer-events-none p-4 pt-6 flex flex-col lg:flex-row gap-4 min-h-full">
-        {/* Left/top bar */}
-        <div className="flex-1 flex flex-col gap-4">
-          <div className="pointer-events-auto flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+      {/* TOP BAR (Responsive) */}
+      <div
+        className={`pointer-events-none relative z-30 ${
+          isMobile ? "pt-2 px-2" : "p-4 pt-6"
+        }`}
+      >
+        <div
+          className={`pointer-events-auto border border-white/10 bg-white/5 backdrop-blur-md ${
+            isMobile ? "rounded-2xl px-3 py-2" : "rounded-2xl px-4 py-3"
+          }`}
+        >
+          <div
+            className={`${isMobile ? "flex items-center justify-between gap-2" : "flex flex-col sm:flex-row items-center justify-between gap-3"}`}
+          >
+            {/* Left controls */}
             <PlaybackControls
               isSimulating={isSimulating}
               onStart={handleStart}
               onPause={handlePause}
               onReset={handleReset}
+              compact={isMobile}
             />
 
+            {/* Middle */}
+            <XRButtons
+              onEnterAR={enterAR}
+              onEnterVR={enterVR}
+              compact={isMobile}
+            />
+
+            {/* Right */}
             <button
               onClick={handleToggleTour}
-              className={`px-5 py-2 rounded-xl font-bold text-sm transition-all shadow-lg flex items-center gap-2 ${
+              className={`rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95 ${
+                isMobile ? "px-3 py-2 text-xs" : "px-5 py-2 text-sm"
+              } ${
                 isTouring
                   ? "bg-red-500/80 text-white hover:bg-red-600 border border-red-400/40 animate-pulse"
                   : "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:scale-[1.02] border border-white/10"
               }`}
             >
-              {isTouring ? "Stop Tour" : "🎬 Start Cinematic Tour"}
+              {isTouring
+                ? isMobile
+                  ? "Stop"
+                  : "Stop Tour"
+                : isMobile
+                  ? "🎬 Tour"
+                  : "🎬 Start Cinematic Tour"}
             </button>
+
+            {/* Mobile: open controls */}
+            {isMobile && (
+              <button
+                onClick={() => setControlsOpen(true)}
+                className="ml-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
+                title="Open controls"
+              >
+                ☰
+              </button>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Right panel */}
-        <div className="pointer-events-auto w-full lg:w-80 flex-shrink-0">
+      {/* Desktop right panel (same as before) */}
+      {!isMobile && (
+        <div className="absolute top-24 right-4 z-30 w-80 pointer-events-auto">
           <SolarSystemControlPanel
             speed={speed}
             setSpeed={setSpeed}
@@ -406,17 +764,76 @@ export default function SolarSystemSimulator() {
             setFocusTarget={setFocusTarget}
             scaleMode={scaleMode}
             setScaleMode={setScaleMode}
-            showComparison3D={showComparison3D}
             setShowComparison3D={setShowComparison3D}
           />
         </div>
-      </div>
+      )}
+
+      {/* Mobile bottom-sheet controls */}
+      {isMobile && (
+        <>
+          {/* Scrim */}
+          <div
+            className={`absolute inset-0 z-40 bg-black/50 transition-opacity ${
+              controlsOpen
+                ? "opacity-100 pointer-events-auto"
+                : "opacity-0 pointer-events-none"
+            }`}
+            onClick={() => setControlsOpen(false)}
+          />
+
+          {/* Drawer */}
+          <div
+            className={`absolute left-0 right-0 bottom-0 z-50 transition-transform duration-200 ${
+              controlsOpen ? "translate-y-0" : "translate-y-[105%]"
+            }`}
+            style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+          >
+            <div className="mx-2 mb-2 rounded-3xl border border-white/10 bg-black/65 backdrop-blur-xl shadow-[0_18px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+              {/* Handle + header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                <div className="flex items-center gap-2">
+                  <div className="h-1.5 w-10 rounded-full bg-white/20" />
+                  <span className="text-white/80 text-sm font-semibold">
+                    Controls
+                  </span>
+                </div>
+                <button
+                  onClick={() => setControlsOpen(false)}
+                  className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
+                >
+                  Close ✕
+                </button>
+              </div>
+
+              {/* Scroll area */}
+              <div className="max-h-[70vh] overflow-auto p-2">
+                <SolarSystemControlPanel
+                  speed={speed}
+                  setSpeed={setSpeed}
+                  showTrails={showTrails}
+                  setShowTrails={setShowTrails}
+                  showOrbits={showOrbits}
+                  setShowOrbits={setShowOrbits}
+                  showAxis={showAxis}
+                  setShowAxis={setShowAxis}
+                  focusTarget={focusTarget}
+                  setFocusTarget={setFocusTarget}
+                  scaleMode={scaleMode}
+                  setScaleMode={setScaleMode}
+                  setShowComparison3D={setShowComparison3D}
+                />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Size comparison overlay */}
       <SizeComparison3D
-        scaleData={ENTIRE_SOLAR_REALISTIC}
         visible={showComparison3D}
         onClose={() => setShowComparison3D(false)}
+        scaleData={ENTIRE_SOLAR_REALISTIC}
       />
 
       {/* Music prompt */}
