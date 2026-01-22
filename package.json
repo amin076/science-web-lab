@@ -22,6 +22,7 @@
     "@mui/material": "^7.3.4",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.4.2",
+    "@react-three/xr": "^6.6.29",
     "chart.js": "^4.5.0",
     "firebase": "^12.3.0",
     "framer-motion": "^12.23.22",

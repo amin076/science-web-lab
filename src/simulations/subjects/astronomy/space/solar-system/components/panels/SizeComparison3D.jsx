@@ -1,5 +1,5 @@
-// src/components/features/entireSolar/SizeComparison3D.jsx
-import React, { Suspense, useMemo, useRef } from "react";
+// src/simulations/subjects/astronomy/space/solar-system/components/panels/SizeComparison3D.jsx
+import React, { Suspense, useMemo, useRef, useEffect, useState } from "react";
 import { Canvas, useLoader, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, Billboard, Stars, Line } from "@react-three/drei";
 import { TextureLoader, DoubleSide, AdditiveBlending, BackSide } from "three";
@@ -10,7 +10,6 @@ import { TextureLoader, DoubleSide, AdditiveBlending, BackSide } from "three";
 const ComparisonPlanet = ({ obj }) => {
   const spinRef = useRef();
 
-  // 🔄 SPIN LOGIC
   useFrame((_, delta) => {
     if (spinRef.current && obj.rotation) {
       const rotationSpeed = 0.5 * delta * (1 / obj.rotation);
@@ -20,9 +19,7 @@ const ComparisonPlanet = ({ obj }) => {
 
   return (
     <group position={[obj.x, 0, 0]}>
-      {/* 1. TILT GROUP (Static) */}
       <group rotation={[0, 0, (obj.tilt * Math.PI) / 180]}>
-        {/* 📏 AXIS LINE */}
         <Line
           points={[
             [0, -obj.radius * 1.5, 0],
@@ -34,15 +31,12 @@ const ComparisonPlanet = ({ obj }) => {
           lineWidth={1}
         />
 
-        {/* 2. SPIN GROUP (Rotating) */}
         <group ref={spinRef}>
-          {/* Planet Sphere */}
           <mesh>
             <sphereGeometry args={[obj.radius, 64, 64]} />
             <meshStandardMaterial map={obj.texture} />
           </mesh>
 
-          {/* Sun Glow */}
           {obj.id === "sun" && (
             <mesh scale={[1.2, 1.2, 1.2]}>
               <sphereGeometry args={[obj.radius, 32, 32]} />
@@ -56,7 +50,6 @@ const ComparisonPlanet = ({ obj }) => {
             </mesh>
           )}
 
-          {/* Atmosphere Glow (Non-Sun) */}
           {obj.id !== "sun" && obj.id !== "moon" && (
             <mesh scale={[1.05, 1.05, 1.05]}>
               <sphereGeometry args={[obj.radius, 32, 32]} />
@@ -70,7 +63,7 @@ const ComparisonPlanet = ({ obj }) => {
             </mesh>
           )}
         </group>
-        {/* Rings */}
+
         {obj.rings && (
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <ringGeometry args={[obj.rings.inner, obj.rings.outer, 128]} />
@@ -84,7 +77,6 @@ const ComparisonPlanet = ({ obj }) => {
         )}
       </group>
 
-      {/* 3. LABELS (Upright) */}
       <Billboard position={[0, obj.radius * 1.2 + 8, 0]}>
         <Text
           fontSize={Math.max(4, obj.radius * 0.3)}
@@ -105,6 +97,17 @@ const ComparisonPlanet = ({ obj }) => {
 // ---------------------------------------------------------
 export default function SizeComparison3D({ scaleData, onClose, visible }) {
   const controlsRef = useRef();
+
+  // Responsive
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(max-width: 640px)");
+    const onChange = () => setIsMobile(Boolean(mq.matches));
+    onChange();
+    mq.addEventListener?.("change", onChange);
+    return () => mq.removeEventListener?.("change", onChange);
+  }, []);
 
   // Load Textures
   const textures = {
@@ -133,7 +136,6 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
     "neptune",
   ];
 
-  // Calculate Positions
   const objects = useMemo(() => {
     let currentX = 0;
     const result = [];
@@ -168,24 +170,27 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
         atmosphereColor: data.atmosphereColor,
       });
     });
+
     return result;
   }, [scaleData, textures]);
 
   const handleReset = () => {
-    if (controlsRef.current) {
-      controlsRef.current.reset();
-    }
+    if (controlsRef.current) controlsRef.current.reset();
   };
 
-  // ✅ MOVED OUTSIDE handleReset (Correct Scope)
   const focusOnPlanet = (xPosition, radius) => {
-    if (controlsRef.current) {
-      controlsRef.current.target.set(xPosition, 0, 0);
-      const zoomDistance = radius * 4 + 20;
-      controlsRef.current.object.position.set(xPosition, radius, zoomDistance);
-      controlsRef.current.update();
-    }
+    if (!controlsRef.current) return;
+    controlsRef.current.target.set(xPosition, 0, 0);
+    const zoomDistance = radius * 4 + 20;
+    controlsRef.current.object.position.set(xPosition, radius, zoomDistance);
+    controlsRef.current.update();
   };
+
+  const pad = isMobile ? 12 : 30;
+  const titleSize = isMobile ? 20 : 28;
+  const subSize = isMobile ? 12 : 14;
+  const btnPad = isMobile ? "8px 14px" : "10px 20px";
+  const bottomPad = isMobile ? 12 : 30;
 
   return (
     <div
@@ -199,94 +204,102 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
         background:
           "radial-gradient(circle at center, #1a1a2e 0%, #000000 100%)",
         zIndex: 9999,
+        paddingTop: "env(safe-area-inset-top)",
+        paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      {/* UI Overlay: Title */}
+      {/* Title */}
       <div
         style={{
           position: "absolute",
-          top: 30,
-          left: 30,
+          top: pad,
+          left: pad,
           color: "white",
           pointerEvents: "none",
           zIndex: 10001,
+          maxWidth: "70vw",
         }}
       >
         <h2
           style={{
             margin: 0,
-            fontSize: "28px",
+            fontSize: titleSize,
             fontWeight: "bold",
             textShadow: "0 0 10px black",
           }}
         >
           Size Comparison
         </h2>
-        <p style={{ margin: 0, opacity: 0.8, fontSize: "14px" }}>
+        <p style={{ margin: 0, opacity: 0.8, fontSize: subSize }}>
           True Scale Diameters • Aligned
         </p>
       </div>
 
-      {/* UI Overlay: Top Right Buttons */}
+      {/* Top Right Buttons */}
       <div
         style={{
           position: "absolute",
-          top: 30,
-          right: 30,
+          top: pad,
+          right: pad,
           display: "flex",
           gap: "10px",
           zIndex: 10001,
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+          maxWidth: isMobile ? "60vw" : "auto",
         }}
       >
         <button
           onClick={handleReset}
           style={{
-            padding: "10px 20px",
-            borderRadius: "8px",
+            padding: btnPad,
+            borderRadius: "10px",
             border: "1px solid rgba(255,255,255,0.2)",
             background: "rgba(255, 255, 255, 0.1)",
             color: "white",
             cursor: "pointer",
             backdropFilter: "blur(4px)",
+            fontSize: isMobile ? 12 : 14,
           }}
         >
-          ↺ Reset View
+          ↺ Reset
         </button>
 
         <button
           onClick={onClose}
           style={{
-            padding: "10px 20px",
-            borderRadius: "8px",
+            padding: btnPad,
+            borderRadius: "10px",
             border: "1px solid rgba(255,255,255,0.2)",
-            background: "rgba(255, 68, 68, 0.8)",
+            background: "rgba(255, 68, 68, 0.85)",
             color: "white",
             fontWeight: "bold",
             cursor: "pointer",
             backdropFilter: "blur(4px)",
+            fontSize: isMobile ? 12 : 14,
           }}
         >
           Close ✕
         </button>
       </div>
 
-      {/* ✅ MOVED OUTSIDE BUTTONS (Correct Nesting) */}
       {/* Quick Travel Bottom Bar */}
       <div
         style={{
           position: "absolute",
-          bottom: 30,
+          bottom: bottomPad,
           left: "50%",
           transform: "translateX(-50%)",
           display: "flex",
           gap: "8px",
           zIndex: 10001,
-          background: "rgba(0,0,0,0.5)",
-          padding: "10px",
+          background: "rgba(0,0,0,0.55)",
+          padding: isMobile ? "8px" : "10px",
           borderRadius: "16px",
           backdropFilter: "blur(8px)",
           maxWidth: "95vw",
           overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {objects.map((obj) => (
@@ -297,19 +310,13 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
               background: "rgba(255,255,255,0.1)",
               border: "1px solid rgba(255,255,255,0.2)",
               color: "white",
-              padding: "6px 12px",
-              borderRadius: "8px",
+              padding: isMobile ? "6px 10px" : "6px 12px",
+              borderRadius: "10px",
               cursor: "pointer",
-              fontSize: "12px",
+              fontSize: isMobile ? "11px" : "12px",
               whiteSpace: "nowrap",
               transition: "background 0.2s",
             }}
-            onMouseOver={(e) =>
-              (e.target.style.background = "rgba(255,255,255,0.3)")
-            }
-            onMouseOut={(e) =>
-              (e.target.style.background = "rgba(255,255,255,0.1)")
-            }
           >
             {obj.name}
           </button>
@@ -318,7 +325,12 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
 
       <Canvas
         frameloop={visible ? "always" : "never"}
-        camera={{ position: [100, 50, 400], fov: 45, near: 0.1, far: 1000000 }}
+        camera={{
+          position: [100, 50, 400],
+          fov: isMobile ? 55 : 45,
+          near: 0.1,
+          far: 1000000,
+        }}
       >
         <Stars
           radius={300}
@@ -328,7 +340,6 @@ export default function SizeComparison3D({ scaleData, onClose, visible }) {
           saturation={0}
           fade
         />
-
         <ambientLight intensity={0.6} />
         <pointLight position={[100, 50, 200]} intensity={1.5} />
         <pointLight

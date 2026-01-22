@@ -9,12 +9,8 @@ const phaseToLabel = (phase) => {
 };
 
 const phaseBadgeClasses = (phase) => {
-  if (phase === "SCANNING") {
-    return "text-green-400 bg-green-900/40";
-  }
-  if (phase === "DEPARTING") {
-    return "text-orange-400 bg-orange-900/40";
-  }
+  if (phase === "SCANNING") return "text-green-400 bg-green-900/40";
+  if (phase === "DEPARTING") return "text-orange-400 bg-orange-900/40";
   return "text-cyan-400 bg-cyan-900/40";
 };
 
@@ -36,9 +32,9 @@ export default function TourHudPanel({ targetId, phase, progress }) {
     typeof progress === "number" ? Math.max(0, Math.min(progress, 100)) : 0;
 
   return (
-    <div className="pointer-events-none fixed top-2 left-2 z-[9998]">
+    <div className="pointer-events-none">
       <div
-        className="pointer-events-auto rounded-2xl shadow-[0_18px_45px_rgba(0,0,0,0.65)] w-[340px] text-white border border-white/15"
+        className="pointer-events-auto rounded-2xl shadow-[0_18px_45px_rgba(0,0,0,0.65)] text-white border border-white/15 w-[min(340px,92vw)]"
         style={{
           background:
             "linear-gradient(135deg, rgba(6,15,30,0.0) 0%, rgba(8,18,38,0.96) 100%)",
@@ -67,7 +63,7 @@ export default function TourHudPanel({ targetId, phase, progress }) {
 
         {/* Name + type */}
         <div className="px-5 pt-3 pb-1">
-          <h2 className="text-3xl font-light tracking-[0.25em] uppercase drop-shadow-sm">
+          <h2 className="text-2xl sm:text-3xl font-light tracking-[0.25em] uppercase drop-shadow-sm">
             {facts.name}
           </h2>
           <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-sky-300/80">
