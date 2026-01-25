@@ -17,6 +17,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Chip,
+  Input, // Added Input
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
@@ -39,9 +40,21 @@ export default function SatellitesTelescopesControlPanel({
   simMode,
   setSimMode,
 }) {
+  // Slider handler
   const setNum = (k) => (_, v) => setSettings((p) => ({ ...p, [k]: v }));
+
+  // Toggle handler
   const setBool = (k) => (e) =>
     setSettings((p) => ({ ...p, [k]: e.target.checked }));
+
+  // Input handler for Time Dilation
+  const handleTimeInput = (event) => {
+    const val = event.target.value === "" ? 0 : Number(event.target.value);
+    setSettings((p) => ({
+      ...p,
+      timeScale: Math.max(1, Math.min(maxTimeScale, val)),
+    }));
+  };
 
   // In Realistic mode, allow huge time compression to see JWST orbit
   const maxTimeScale = simMode === "realistic" ? 500000 : 5000;
@@ -60,7 +73,8 @@ export default function SatellitesTelescopesControlPanel({
   const glassSx = {
     p: 2,
     borderRadius: 4,
-    background: "rgba(20, 20, 35, 0.25)",
+    // Use a solid color on mobile to prevent overlap issues, Glass on desktop
+    background: { xs: "#0b0c15", md: "rgba(20, 20, 35, 0.65)" },
     backdropFilter: "blur(12px)",
     border: "1px solid rgba(255,255,255,0.1)",
     boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
@@ -299,7 +313,9 @@ export default function SatellitesTelescopesControlPanel({
                   ? "rgba(255, 255, 255, 0.1)"
                   : "transparent",
               py: 0.5,
+              cursor: "pointer",
             }}
+            onClick={() => setFocusedBodyId(null)}
           >
             <Box
               sx={{
@@ -339,7 +355,11 @@ export default function SatellitesTelescopesControlPanel({
                     ? "rgba(255, 255, 255, 0.15)"
                     : "transparent",
                 py: 0.5,
+                cursor: "pointer",
               }}
+              onClick={() =>
+                setFocusedBodyId(focusedBodyId === "moon" ? null : "moon")
+              }
             >
               <Box
                 sx={{
@@ -384,7 +404,11 @@ export default function SatellitesTelescopesControlPanel({
                     ? "rgba(78, 205, 196, 0.15)"
                     : "transparent",
                 py: 0.5,
+                cursor: "pointer",
               }}
+              onClick={() =>
+                setFocusedBodyId(focusedBodyId === body.id ? null : body.id)
+              }
             >
               <Box
                 sx={{
@@ -404,17 +428,20 @@ export default function SatellitesTelescopesControlPanel({
                     {body.parent === "moon"
                       ? "Orbit: Moon"
                       : body.initialAlt > 100000000
-                      ? "Orbit: High Earth (L2 Sim)"
-                      : "Orbit: Earth"}
+                        ? "Orbit: High Earth (L2 Sim)"
+                        : "Orbit: Earth"}
                   </span>
                 }
               />
               <ListItemSecondaryAction>
                 <IconButton
                   size="small"
-                  onClick={() =>
-                    setFocusedBodyId(focusedBodyId === body.id ? null : body.id)
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFocusedBodyId(
+                      focusedBodyId === body.id ? null : body.id,
+                    );
+                  }}
                   sx={{
                     color:
                       focusedBodyId === body.id
@@ -432,7 +459,10 @@ export default function SatellitesTelescopesControlPanel({
                 </IconButton>
                 <IconButton
                   size="small"
-                  onClick={() => onRemoveBody(body.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRemoveBody(body.id);
+                  }}
                   sx={{
                     color: "rgba(255,255,255,0.2)",
                     padding: 0.5,
@@ -494,25 +524,51 @@ export default function SatellitesTelescopesControlPanel({
 
         <Typography sx={sectionTitleSx}>Time Dilation</Typography>
         <Box sx={{ px: 1 }}>
-          <Slider
-            value={settings.timeScale}
-            min={1}
-            max={maxTimeScale}
-            step={simMode === "realistic" ? 500 : 10}
-            size="small"
-            sx={{ color: "#4ECDC4", mb: 0 }}
-            onChange={setNum("timeScale")}
-          />
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              opacity: 0.6,
-            }}
-          >
-            <Typography variant="caption">1x</Typography>
-            <Typography variant="caption">{settings.timeScale}x</Typography>
-          </Box>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Slider
+              value={
+                typeof settings.timeScale === "number" ? settings.timeScale : 0
+              }
+              min={1}
+              max={maxTimeScale}
+              step={10} // Smooth slider movement
+              size="small"
+              sx={{ color: "#4ECDC4", flex: 1 }}
+              onChange={setNum("timeScale")}
+            />
+            <Input
+              value={settings.timeScale}
+              size="small"
+              onChange={handleTimeInput}
+              inputProps={{
+                step: 10, // Arrow key increment
+                min: 1,
+                max: maxTimeScale,
+                type: "number",
+                style: {
+                  textAlign: "right",
+                  color: "white",
+                  fontSize: "12px",
+                  padding: "0 4px",
+                  fontFamily: "monospace",
+                },
+              }}
+              sx={{
+                width: 60,
+                "&:before": { borderBottom: "1px solid rgba(255,255,255,0.3)" },
+                "&:after": { borderBottom: "2px solid #4ECDC4" },
+                "&:hover:not(.Mui-disabled):before": {
+                  borderBottom: "1px solid rgba(255,255,255,0.6)",
+                },
+              }}
+            />
+            <Typography
+              variant="caption"
+              sx={{ color: "rgba(255,255,255,0.5)" }}
+            >
+              x
+            </Typography>
+          </Stack>
         </Box>
       </Box>
     </Box>

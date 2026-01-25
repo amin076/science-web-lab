@@ -1,3 +1,4 @@
+// src/simulations/subjects/earth-science/geology/plate-tectonics/MagneticField.jsx
 import React, { useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Line } from "@react-three/drei";
@@ -5,15 +6,12 @@ import { useFrame } from "@react-three/fiber";
 
 /**
  * Physics-ish dipole magnetic field visualization.
- * - Build multiple field-line curves via streamline integration.
- * - Animate "flow" using dashed lines (dashOffset) + subtle breathing.
- *
- * Notes:
- * - This is a visualization (not full MHD). Looks much more physical than static meshes.
  */
 
+// --- PHYSICS HELPER FUNCTIONS ---
+
 function dipoleFieldDir(pos, mVec) {
-  // B = (3 r (m·r)/r^5) - (m/r^3)  (ignoring constant)
+  // B = (3 r (m·r)/r^5) - (m/r^3)
   const r = pos.clone();
   const rLen = r.length();
   if (rLen < 1e-6) return new THREE.Vector3(0, 1, 0);
@@ -25,7 +23,6 @@ function dipoleFieldDir(pos, mVec) {
   const term2 = mVec.clone();
 
   const B = term1.sub(term2).divideScalar(Math.pow(rLen, 3));
-  // direction only
   return B.normalize();
 }
 
@@ -54,7 +51,6 @@ function buildStreamline({
   return points;
 }
 
-// FIX: Added clippingPlanes and clipIntersection to props
 export default function MagneticField({
   earthRadius = 4.0,
   tiltDeg = 11,
@@ -67,32 +63,31 @@ export default function MagneticField({
 }) {
   const groupRef = useRef();
 
-  const { lines, dashMaterials } = useMemo(() => {
+  // 1. CALCULATION PHASE (Heavy Math)
+  // We separate this so changing clipping planes doesn't re-run the physics integration
+  const rawCurves = useMemo(() => {
     // Magnetic dipole moment vector with tilt
     const tilt = THREE.MathUtils.degToRad(tiltDeg);
     const mVec = new THREE.Vector3(
       Math.sin(tilt),
       Math.cos(tilt),
-      0
+      0,
     ).normalize();
 
-    // seeds: rings around the planet (north & south-ish)
+    // Generate Seeds
     const seeds = [];
     const rings = Math.max(2, Math.floor(Math.sqrt(lineCount)));
     const perRing = Math.max(6, Math.floor(lineCount / rings));
 
     for (let ri = 0; ri < rings; ri++) {
       const t = (ri + 1) / (rings + 1);
-      // latitude bias toward poles
       const lat = THREE.MathUtils.lerp(0.25, 1.2, t);
       for (let k = 0; k < perRing; k++) {
         const a = (k / perRing) * Math.PI * 2;
-        // seed around a tilted "magnetic" latitude band
         const x = Math.cos(a) * Math.sin(lat) * seedR;
         const y = Math.cos(lat) * seedR;
         const z = Math.sin(a) * Math.sin(lat) * seedR;
 
-        // make north + mirrored south seeds
         seeds.push(new THREE.Vector3(x, y, z));
         seeds.push(new THREE.Vector3(x, -y, z));
         if (seeds.length >= lineCount) break;
@@ -100,11 +95,8 @@ export default function MagneticField({
       if (seeds.length >= lineCount) break;
     }
 
-    const builtLines = [];
-    const mats = [];
-
-    seeds.slice(0, lineCount).forEach((seed, idx) => {
-      // forward and backward streamline, then merge for a full line
+    // Build Streamlines
+    return seeds.slice(0, lineCount).map((seed) => {
       const fwd = buildStreamline({
         seed,
         mVec,
@@ -125,42 +117,40 @@ export default function MagneticField({
       });
 
       const pts = bwd.reverse().concat(fwd);
-
-      // smooth the curve
+      // Smooth the curve
       const curve = new THREE.CatmullRomCurve3(pts);
-      const smoothPts = curve.getPoints(140);
+      return curve.getPoints(140);
+    });
+  }, [earthRadius, tiltDeg, lineCount, seedR, outerR]);
 
-      // each line has its own dash material so we can animate dashOffset
+  // 2. MATERIAL/RENDER PHASE (Lightweight)
+  // Re-runs only when visual properties or clipping changes
+  const { lines, dashMaterials } = useMemo(() => {
+    const builtLines = [];
+    const mats = [];
+
+    rawCurves.forEach((points, idx) => {
+      // Each line needs its own material instance for independent dash animation
       const mat = new THREE.LineDashedMaterial({
         color,
         transparent: true,
         opacity: 0.55,
         dashSize: 0.35,
         gapSize: 0.25,
-        // FIX: Apply clipping logic to materials
         clippingPlanes: clippingPlanes,
         clipIntersection: clipIntersection,
       });
 
-      builtLines.push({ points: smoothPts, mat, idx });
+      builtLines.push({ points, mat, idx });
       mats.push(mat);
     });
 
     return { lines: builtLines, dashMaterials: mats };
-  }, [
-    earthRadius,
-    tiltDeg,
-    lineCount,
-    seedR,
-    outerR,
-    color,
-    // FIX: Re-run memo if planes change (e.g. switching from Half to Quarter)
-    clippingPlanes,
-    clipIntersection,
-  ]);
+  }, [rawCurves, color, clippingPlanes, clipIntersection]);
 
+  // 3. ANIMATION LOOP
   useFrame((state, delta) => {
-    // subtle overall breathing + rotation
+    // Group Rotation & Breathing
     if (groupRef.current) {
       groupRef.current.rotation.y += delta * 0.06;
       const t = state.clock.elapsedTime;
@@ -168,16 +158,17 @@ export default function MagneticField({
       groupRef.current.scale.setScalar(s);
     }
 
-    // animate flow on each line
+    // Animate Dashes (Flow effect)
     const t = state.clock.elapsedTime;
     for (let i = 0; i < dashMaterials.length; i++) {
       const mat = dashMaterials[i];
-      // each line slightly different speed
-      const speed = 0.9 + (i % 7) * 0.08;
-      mat.dashOffset = -(t * speed);
-      // fade with a gentle shimmer
-      mat.opacity = 0.38 + 0.18 * Math.sin(t * 1.2 + i * 0.7);
-      mat.needsUpdate = true;
+      if (mat) {
+        const speed = 0.9 + (i % 7) * 0.08;
+        mat.dashOffset = -(t * speed);
+        mat.opacity = 0.38 + 0.18 * Math.sin(t * 1.2 + i * 0.7);
+        // Important: Three.js needs to know material changed
+        mat.needsUpdate = true;
+      }
     }
   });
 

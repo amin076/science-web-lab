@@ -1,7 +1,7 @@
 // src/simulations/subjects/astronomy/space/satellites-telescopes/satellites.physics.js
 import { vec } from "./satellites.math.js";
+import { MOON } from "./satellites.constants.js";
 
-// Earth constants
 export const EARTH = {
   radiusKm: 6371, // km
   muKm3s2: 398600.4418, // km^3 / s^2
@@ -45,17 +45,17 @@ export function rk4Step(state, dtS) {
   const dpos = vec.mul(
     vec.add(
       vec.add(k1.dpos, vec.mul(k2.dpos, 2)),
-      vec.add(vec.mul(k3.dpos, 2), k4.dpos)
+      vec.add(vec.mul(k3.dpos, 2), k4.dpos),
     ),
-    1 / 6
+    1 / 6,
   );
 
   const dvel = vec.mul(
     vec.add(
       vec.add(k1.dvel, vec.mul(k2.dvel, 2)),
-      vec.add(vec.mul(k3.dvel, 2), k4.dvel)
+      vec.add(vec.mul(k3.dvel, 2), k4.dvel),
     ),
-    1 / 6
+    1 / 6,
   );
 
   return {
@@ -78,13 +78,28 @@ export function makeCircularOrbit(altitudeKm, phaseDeg = 0) {
   return { pos, vel };
 }
 
+// ✅ NEW: Correct Analytic Moon Orbit (No RK4 drift)
+export function moonStateECI(tSec) {
+  const omega = (2 * Math.PI) / MOON.periodSec;
+  const theta = omega * tSec;
+  return {
+    pos: {
+      x: MOON.orbitRadiusKm * Math.cos(theta),
+      y: MOON.orbitRadiusKm * Math.sin(theta),
+    },
+    theta, // For tidal locking rotation
+  };
+}
+
 export function orbitalPeriodSec(radiusKm) {
-  // T = 2π * sqrt(a^3 / μ)
   return 2 * Math.PI * Math.sqrt(radiusKm ** 3 / EARTH.muKm3s2);
 }
 
-// Ground telescope on equator in this 2D model:
-// position rotates with Earth: θ = ω t + θ0
+export function orbitalPeriodMinutes(altitudeKm) {
+  const r = EARTH.radiusKm + altitudeKm;
+  return orbitalPeriodSec(r) / 60;
+}
+
 export function groundTelescopeECI(tSec, lon0Deg = 0) {
   const th0 = (lon0Deg * Math.PI) / 180;
   const th = EARTH.omegaRadS * tSec + th0;
@@ -95,8 +110,6 @@ export function groundTelescopeECI(tSec, lon0Deg = 0) {
   };
 }
 
-// Visible if satellite is above local horizon:
-// (sat - site) ⋅ normal > 0
 export function isVisibleFromGround(site, satPosKm) {
   const rel = vec.sub(satPosKm, site.pos);
   return vec.dot(rel, site.normal) > 0;
