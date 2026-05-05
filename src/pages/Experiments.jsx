@@ -242,6 +242,27 @@ export default function Experiments() {
           Browse by domain & topic. Jump fast, find quickly, and start learning.
         </Typography>
 
+        {/* ================= SEO INTRO ================= */}
+        <Box sx={{ maxWidth: 900, mx: "auto", mb: 5, textAlign: "center" }}>
+          <Typography variant="h2" fontWeight={800} sx={{ mb: 2 }}>
+            Interactive Science Simulations and Virtual Experiments
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "text.secondary",
+              fontSize: "1.1rem",
+              lineHeight: 1.8,
+            }}
+          >
+            Explore a growing collection of interactive science simulations and
+            virtual experiments across physics, astronomy, earth science,
+            mechanical engineering, and STEM education. Esbiko helps students
+            and teachers learn scientific concepts by adjusting variables,
+            observing results, and building intuition through browser-based
+            virtual labs.
+          </Typography>
+        </Box>
         {/* Search + Nav Drawer button */}
         <Box
           sx={{
@@ -387,7 +408,7 @@ export default function Experiments() {
           topics.sort(
             (a, b) =>
               (grouped[domain][b]?.length || 0) -
-              (grouped[domain][a]?.length || 0)
+              (grouped[domain][a]?.length || 0),
           );
 
           return (
