@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -17,11 +18,87 @@ import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
 import { motion } from "framer-motion";
 
+const DEFAULT_GRADIENT = "linear-gradient(135deg, #2563eb, #38bdf8)";
+
 export default function ExperimentDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const experiment = experimentsData.find((exp) => exp.id === id);
+
+  useEffect(() => {
+    if (!experiment) return;
+
+    const safeName = experiment.name || "Science Experiment";
+    const safeDesc =
+      experiment.desc ||
+      "Explore this interactive science simulation in Esbiko.";
+
+    const pageTitle = `${safeName} Simulation | Esbiko Virtual Lab`;
+    const pageDescription = `${safeName} simulation. ${safeDesc}`;
+
+    document.title = pageTitle;
+
+    let metaDescription = document.querySelector("meta[name='description']");
+    if (!metaDescription) {
+      metaDescription = document.createElement("meta");
+      metaDescription.setAttribute("name", "description");
+      document.head.appendChild(metaDescription);
+    }
+    metaDescription.setAttribute("content", pageDescription);
+
+    let canonical = document.querySelector("link[rel='canonical']");
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute(
+      "href",
+      `https://www.esbiko.com/experiments/${experiment.id}`,
+    );
+
+    const setOrCreateMeta = (selector, attrName, attrValue, content) => {
+      let tag = document.querySelector(selector);
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute(attrName, attrValue);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", content);
+    };
+
+    setOrCreateMeta(
+      "meta[property='og:title']",
+      "property",
+      "og:title",
+      pageTitle,
+    );
+    setOrCreateMeta(
+      "meta[property='og:description']",
+      "property",
+      "og:description",
+      pageDescription,
+    );
+    setOrCreateMeta(
+      "meta[property='og:url']",
+      "property",
+      "og:url",
+      `https://www.esbiko.com/experiments/${experiment.id}`,
+    );
+    setOrCreateMeta(
+      "meta[name='twitter:title']",
+      "name",
+      "twitter:title",
+      pageTitle,
+    );
+    setOrCreateMeta(
+      "meta[name='twitter:description']",
+      "name",
+      "twitter:description",
+      pageDescription,
+    );
+  }, [experiment]);
 
   if (!experiment) {
     return (
@@ -53,7 +130,16 @@ export default function ExperimentDetail() {
     );
   }
 
-  const { name, desc, Icon, gradient, subject } = experiment;
+  const {
+    name,
+    desc = "Explore this interactive science simulation in Esbiko.",
+    Icon,
+    gradient = DEFAULT_GRADIENT,
+    subject = "science",
+  } = experiment;
+
+  const safeGradient = gradient || DEFAULT_GRADIENT;
+  const safeSubject = subject || "science";
 
   // 🛠️ HELPER: Smartly render Image URL or MUI Component
   const renderIcon = (size = 60, isBackground = false) => {
@@ -119,7 +205,7 @@ export default function ExperimentDetail() {
             right: "-5%",
             width: "600px",
             height: "600px",
-            background: gradient,
+            background: safeGradient,
             filter: "blur(120px)",
             opacity: 0.15,
           }}
@@ -224,7 +310,7 @@ export default function ExperimentDetail() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                boxShadow: `0 0 40px ${gradient.split(",")[1]}40`,
+                boxShadow: "0 0 40px rgba(56,189,248,0.25)",
               }}
             >
               {/* ✅ Use Helper with Normal Size */}
@@ -240,7 +326,7 @@ export default function ExperimentDetail() {
                 bottom: -10,
                 left: "50%",
                 transform: "translateX(-50%)",
-                background: gradient,
+                background: safeGradient,
                 color: "white",
                 fontWeight: 700,
                 border: "2px solid #1e293b",
@@ -260,10 +346,11 @@ export default function ExperimentDetail() {
                 fontWeight: 700,
               }}
             >
-              {subject.toUpperCase()} LAB
+              {safeSubject.toUpperCase()} LAB
             </Typography>
 
             <Typography
+              component="h1"
               variant="h3"
               fontWeight={800}
               sx={{
@@ -273,7 +360,7 @@ export default function ExperimentDetail() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              {name}
+              {name} Simulation
             </Typography>
 
             <Stack
@@ -341,6 +428,25 @@ export default function ExperimentDetail() {
               {desc}
             </Typography>
 
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+                {name} Simulation Overview
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.7)",
+                  lineHeight: 1.8,
+                }}
+              >
+                This interactive {name.toLowerCase()} simulation allows students
+                to explore key concepts in {safeSubject}. By adjusting variables
+                and observing results in real time, learners can better
+                understand cause-and-effect relationships and develop intuition
+                in scientific experiments.
+              </Typography>
+            </Box>
+
             <Box
               sx={{
                 mt: 4,
@@ -363,7 +469,7 @@ export default function ExperimentDetail() {
                   color: "rgba(255,255,255,0.6)",
                 }}
               >
-                <li>Understand the fundamental principles of {subject}.</li>
+                <li>Understand the fundamental principles of {safeSubject}.</li>
                 <li>Observe real-time data visualization.</li>
                 <li>
                   Manipulate variables to see cause-and-effect relationships.
@@ -403,7 +509,7 @@ export default function ExperimentDetail() {
                 startIcon={<PlayArrowRoundedIcon />}
                 onClick={() => navigate(`/experiments/${id}/run`)}
                 sx={{
-                  background: gradient,
+                  background: safeGradient,
                   color: "white",
                   fontWeight: 800,
                   py: 1.5,
