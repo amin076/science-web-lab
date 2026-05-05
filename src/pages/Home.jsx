@@ -174,7 +174,7 @@ export default function Home() {
                 maxWidth: 900,
               }}
             >
-              Master Science with <br />
+              Esbiko Science Lab <br />
               <span
                 style={{
                   background:
@@ -183,7 +183,7 @@ export default function Home() {
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                Interactive Labs
+                Interactive Science Simulations
               </span>
             </Typography>
           </motion.div>
@@ -303,6 +303,43 @@ export default function Home() {
         </Stack>
       </Section>
 
+      {/* ================= SEO INTRO ================= */}
+      <Section>
+        <Box sx={{ maxWidth: 900, mx: "auto", textAlign: "center" }}>
+          <Typography variant="h2" fontWeight={800} sx={{ mb: 3 }}>
+            Interactive Science Simulations for Students and Teachers
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.75)",
+              fontSize: "1.1rem",
+              lineHeight: 1.8,
+              mb: 3,
+            }}
+          >
+            Esbiko is a virtual science lab platform where students and teachers
+            can explore physics, earth science, astronomy, and STEM concepts
+            through interactive simulations. Instead of only reading formulas or
+            static diagrams, learners can change variables, observe results, and
+            build scientific intuition through hands-on digital experiments.
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.7)",
+              fontSize: "1rem",
+              lineHeight: 1.8,
+            }}
+          >
+            The platform is designed to make science learning more visual,
+            accessible, and experiment-based. Students can investigate motion,
+            gravity, electricity, waves, planetary systems, and geological
+            processes directly in the browser, while teachers can use Esbiko as
+            a classroom demonstration tool or as a virtual lab resource.
+          </Typography>
+        </Box>
+      </Section>
       {/* ================= WORKFLOW ================= */}
       <Section>
         <Box sx={{ textAlign: "center", mb: 6 }}>
