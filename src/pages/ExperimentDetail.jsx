@@ -98,6 +98,44 @@ export default function ExperimentDetail() {
       "twitter:description",
       pageDescription,
     );
+        const safeSubject = experiment.subject || "science";
+        const schemaId = "experiment-detail-schema";
+
+        const existingSchema = document.getElementById(schemaId);
+        if (existingSchema) {
+          existingSchema.remove();
+        }
+
+        const schema = document.createElement("script");
+        schema.id = schemaId;
+        schema.type = "application/ld+json";
+        schema.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LearningResource",
+          name: pageTitle,
+          description: pageDescription,
+          url: `https://www.esbiko.com/experiments/${experiment.id}`,
+          image: "https://www.esbiko.com/esbiko-logo-512.png",
+          learningResourceType: "Simulation",
+          educationalUse: "Interactive learning",
+          educationalLevel: "Secondary school",
+          isAccessibleForFree: true,
+          provider: {
+            "@type": "Organization",
+            name: "Esbiko",
+            url: "https://www.esbiko.com/",
+            logo: "https://www.esbiko.com/esbiko-logo-512.png",
+          },
+          about: safeSubject,
+        });
+
+        document.head.appendChild(schema);
+        return () => {
+          const schemaToRemove = document.getElementById(schemaId);
+          if (schemaToRemove) {
+            schemaToRemove.remove();
+          }
+        };
   }, [experiment]);
 
   if (!experiment) {
