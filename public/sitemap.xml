@@ -5,11 +5,126 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://www.esbiko.com/experiments</loc>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://www.esbiko.com/about</loc>
     <priority>0.8</priority>
   </url>
+
   <url>
-    <loc>https://www.esbiko.com/experiments</loc>
-    <priority>0.9</priority>
+    <loc>https://www.esbiko.com/experiments/astronomy.space.satellites-telescopes</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/astronomy.kepler-lab</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/astronomy.space.earth-orbit-lab</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/astronomy.space.solar-system</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/earth-science.geology.plate-tectonics</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.electricity.circuits</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.electricity.coulomb-law-2d</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.electricity.coulomb-law-3d</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.collision</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.simple-pendulum</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.seesaw</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.spring-mass</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.projectile</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.circular-motion</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.gyroscope</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.gearbox-differential-3d</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.pulley-system</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.mechanics.two-body-gravity</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.optics.lens-mirror-2d</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.optics.lens-mirror-3d</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.optics.microscope</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.thermodynamics.gas</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.acoustics.doppler</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.acoustics.sound-waves</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.acoustics.spatial-audio</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.waves.surface-waves-double-slit</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.esbiko.com/experiments/physics.waves.multi-source-interference</loc>
+    <priority>0.8</priority>
   </url>
 </urlset>
