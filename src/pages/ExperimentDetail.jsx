@@ -1,3 +1,8 @@
+// src/pages/ExperimentDetail.jsx
+import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
+import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -98,44 +103,44 @@ export default function ExperimentDetail() {
       "twitter:description",
       pageDescription,
     );
-        const safeSubject = experiment.subject || "science";
-        const schemaId = "experiment-detail-schema";
+    const safeSubject = experiment.subject || "science";
+    const schemaId = "experiment-detail-schema";
 
-        const existingSchema = document.getElementById(schemaId);
-        if (existingSchema) {
-          existingSchema.remove();
-        }
+    const existingSchema = document.getElementById(schemaId);
+    if (existingSchema) {
+      existingSchema.remove();
+    }
 
-        const schema = document.createElement("script");
-        schema.id = schemaId;
-        schema.type = "application/ld+json";
-        schema.textContent = JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "LearningResource",
-          name: pageTitle,
-          description: pageDescription,
-          url: `https://www.esbiko.com/experiments/${experiment.id}`,
-          image: "https://www.esbiko.com/esbiko-logo-512.png",
-          learningResourceType: "Simulation",
-          educationalUse: "Interactive learning",
-          educationalLevel: "Secondary school",
-          isAccessibleForFree: true,
-          provider: {
-            "@type": "Organization",
-            name: "Esbiko",
-            url: "https://www.esbiko.com/",
-            logo: "https://www.esbiko.com/esbiko-logo-512.png",
-          },
-          about: safeSubject,
-        });
+    const schema = document.createElement("script");
+    schema.id = schemaId;
+    schema.type = "application/ld+json";
+    schema.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LearningResource",
+      name: pageTitle,
+      description: pageDescription,
+      url: `https://www.esbiko.com/experiments/${experiment.id}`,
+      image: "https://www.esbiko.com/esbiko-logo-512.png",
+      learningResourceType: "Simulation",
+      educationalUse: "Interactive learning",
+      educationalLevel: "Secondary school",
+      isAccessibleForFree: true,
+      provider: {
+        "@type": "Organization",
+        name: "Esbiko",
+        url: "https://www.esbiko.com/",
+        logo: "https://www.esbiko.com/esbiko-logo-512.png",
+      },
+      about: safeSubject,
+    });
 
-        document.head.appendChild(schema);
-        return () => {
-          const schemaToRemove = document.getElementById(schemaId);
-          if (schemaToRemove) {
-            schemaToRemove.remove();
-          }
-        };
+    document.head.appendChild(schema);
+    return () => {
+      const schemaToRemove = document.getElementById(schemaId);
+      if (schemaToRemove) {
+        schemaToRemove.remove();
+      }
+    };
   }, [experiment]);
 
   if (!experiment) {
@@ -171,6 +176,19 @@ export default function ExperimentDetail() {
   const {
     name,
     desc = "Explore this interactive science simulation in Esbiko.",
+    shortDesc,
+    yearLevel,
+    difficulty,
+    estimatedTime,
+    supportedDevices,
+    lessonType = [],
+    learningObjectives = [],
+    curriculumLinks = [],
+    classroomActivity,
+    discussionQuestions = [],
+    worksheet,
+    teacherGuide,
+    youtubeIdeas = [],
     Icon,
     gradient = DEFAULT_GRADIENT,
     subject = "science",
@@ -433,92 +451,328 @@ export default function ExperimentDetail() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "2fr 1fr" },
+            gridTemplateColumns: {
+              xs: "1fr",
+              md: "minmax(0, 2fr) minmax(320px, 1fr)",
+            },
             gap: 3,
+            alignItems: "start",
           }}
         >
-          {/* Main Description */}
-          <Box
-            component={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            sx={{
-              ...glassPanelStyle,
-              p: 4,
-            }}
-          >
-            <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
-              <ScienceOutlinedIcon sx={{ color: "primary.main" }} />
-              <Typography variant="h6" fontWeight={700}>
-                About this Experiment
-              </Typography>
-            </Stack>
-
-            <Typography
-              variant="body1"
+          {/* Main Content Column */}
+          <Stack spacing={3} sx={{ minWidth: 0 }}>
+            {/* Main Description */}
+            <Box
+              component={motion.div}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
               sx={{
-                color: "rgba(255,255,255,0.7)",
-                lineHeight: 1.8,
-                fontSize: "1.05rem",
+                ...glassPanelStyle,
+                p: 4,
               }}
             >
-              {desc}
-            </Typography>
-
-            <Box sx={{ mt: 4 }}>
-              <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
-                {name} Simulation Overview
-              </Typography>
+              <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
+                <ScienceOutlinedIcon sx={{ color: "primary.main" }} />
+                <Typography variant="h6" fontWeight={700}>
+                  About this Experiment
+                </Typography>
+              </Stack>
 
               <Typography
+                variant="body1"
                 sx={{
                   color: "rgba(255,255,255,0.7)",
                   lineHeight: 1.8,
+                  fontSize: "1.05rem",
                 }}
               >
-                This interactive {name.toLowerCase()} simulation allows students
-                to explore key concepts in {safeSubject}. By adjusting variables
-                and observing results in real time, learners can better
-                understand cause-and-effect relationships and develop intuition
-                in scientific experiments.
+                {desc}
               </Typography>
+
+              <Box sx={{ mt: 4 }}>
+                <Typography variant="h5" fontWeight={700} sx={{ mb: 2 }}>
+                  {name} Simulation Overview
+                </Typography>
+
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.7)", lineHeight: 1.8 }}
+                >
+                  This interactive {name.toLowerCase()} simulation allows
+                  students to explore key concepts in {safeSubject}. By
+                  adjusting variables and observing results in real time,
+                  learners can better understand cause-and-effect relationships
+                  and develop intuition in scientific experiments.
+                </Typography>
+              </Box>
+
+              {learningObjectives.length > 0 && (
+                <Box
+                  sx={{
+                    mt: 4,
+                    p: 3,
+                    borderRadius: 3,
+                    background: "rgba(0,0,0,0.2)",
+                    border: "1px dashed rgba(255,255,255,0.1)",
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "rgba(255,255,255,0.9)", mb: 2 }}
+                  >
+                    🎓 Learning Objectives
+                  </Typography>
+
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: 20,
+                      color: "rgba(255,255,255,0.7)",
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    {learningObjectives.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
             </Box>
 
-            <Box
-              sx={{
-                mt: 4,
-                p: 3,
-                borderRadius: 3,
-                background: "rgba(0,0,0,0.2)",
-                border: "1px dashed rgba(255,255,255,0.1)",
-              }}
-            >
-              <Typography
-                variant="subtitle2"
-                sx={{ color: "rgba(255,255,255,0.9)", mb: 1 }}
-              >
-                🎓 Learning Objectives:
-              </Typography>
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: 20,
-                  color: "rgba(255,255,255,0.6)",
-                }}
-              >
-                <li>Understand the fundamental principles of {safeSubject}.</li>
-                <li>Observe real-time data visualization.</li>
-                <li>
-                  Manipulate variables to see cause-and-effect relationships.
-                </li>
-              </ul>
-            </Box>
-          </Box>
+            {classroomActivity && (
+              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                  🧪 Classroom Activity
+                </Typography>
 
-          {/* Sidebar / Actions */}
-          <Stack spacing={3}>
-            {/* Action Card */}
+                <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 1 }}>
+                  {classroomActivity.title}
+                </Typography>
+
+                <Typography sx={{ color: "rgba(255,255,255,0.5)", mb: 2 }}>
+                  Duration: {classroomActivity.duration}
+                </Typography>
+
+                <ol
+                  style={{
+                    paddingLeft: 20,
+                    color: "rgba(255,255,255,0.7)",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  {classroomActivity.steps.map((step) => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+              </Box>
+            )}
+
+            {discussionQuestions.length > 0 && (
+              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                  💬 Discussion Questions
+                </Typography>
+
+                <ul
+                  style={{
+                    paddingLeft: 20,
+                    color: "rgba(255,255,255,0.7)",
+                    lineHeight: 1.8,
+                  }}
+                >
+                  {discussionQuestions.map((question) => (
+                    <li key={question}>{question}</li>
+                  ))}
+                </ul>
+              </Box>
+            )}
+
+            {teacherGuide && (
+              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                  👨‍🏫 Teacher Guide
+                </Typography>
+
+                <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 1 }}>
+                  <strong>Duration:</strong> {teacherGuide.duration}
+                </Typography>
+
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.9)", mt: 2, mb: 1 }}
+                >
+                  Prior Knowledge
+                </Typography>
+
+                <ul style={{ paddingLeft: 20, color: "rgba(255,255,255,0.7)" }}>
+                  {teacherGuide.priorKnowledge.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.9)", mt: 3, mb: 1 }}
+                >
+                  Common Misconceptions
+                </Typography>
+
+                <ul style={{ paddingLeft: 20, color: "rgba(255,255,255,0.7)" }}>
+                  {teacherGuide.misconceptions.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+
+                <Typography
+                  sx={{ color: "rgba(255,255,255,0.9)", mt: 3, mb: 1 }}
+                >
+                  Real World Examples
+                </Typography>
+
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                  {teacherGuide.realWorldExamples.map((item) => (
+                    <Chip
+                      key={item}
+                      label={item}
+                      size="small"
+                      sx={{
+                        background: "rgba(255,255,255,0.08)",
+                        color: "white",
+                      }}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            )}
+
+            {worksheet && (
+              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+                <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                  📝 Student Worksheet Preview
+                </Typography>
+
+                <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 1 }}>
+                  <strong>Aim:</strong> {worksheet.aim}
+                </Typography>
+
+                <Typography sx={{ color: "rgba(255,255,255,0.8)", mb: 2 }}>
+                  <strong>Prediction:</strong> {worksheet.prediction}
+                </Typography>
+
+                {worksheet.variables && (
+                  <Box sx={{ mb: 2 }}>
+                    <Typography sx={{ color: "white", mb: 1 }}>
+                      Variables
+                    </Typography>
+
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      <strong>Independent:</strong>{" "}
+                      {worksheet.variables.independent}
+                    </Typography>
+
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      <strong>Dependent:</strong>{" "}
+                      {worksheet.variables.dependent}
+                    </Typography>
+
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)" }}>
+                      <strong>Controlled:</strong>{" "}
+                      {worksheet.variables.controlled?.join(", ")}
+                    </Typography>
+                  </Box>
+                )}
+
+                {worksheet.questions?.length > 0 && (
+                  <>
+                    <Typography sx={{ color: "white", mt: 2, mb: 1 }}>
+                      Questions
+                    </Typography>
+
+                    <ol
+                      style={{
+                        paddingLeft: 20,
+                        color: "rgba(255,255,255,0.7)",
+                        lineHeight: 1.8,
+                      }}
+                    >
+                      {worksheet.questions.map((question) => (
+                        <li key={question}>{question}</li>
+                      ))}
+                    </ol>
+                  </>
+                )}
+
+                {worksheet.extension && (
+                  <Box
+                    sx={{
+                      mt: 3,
+                      p: 2,
+                      borderRadius: 2,
+                      background: "rgba(14,165,233,0.08)",
+                      border: "1px solid rgba(14,165,233,0.2)",
+                    }}
+                  >
+                    <Typography sx={{ color: "white", fontWeight: 700 }}>
+                      Extension Challenge
+                    </Typography>
+                    <Typography sx={{ color: "rgba(255,255,255,0.75)" }}>
+                      {worksheet.extension}
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+            )}
+          </Stack>
+
+          {/* Sidebar Column */}
+          <Stack spacing={3} sx={{ minWidth: 0 }}>
+            {(yearLevel || curriculumLinks.length > 0) && (
+              <Box sx={{ ...glassPanelStyle, p: 3 }}>
+                {yearLevel && (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "white", mb: 1 }}
+                    >
+                      📘 Recommended Level
+                    </Typography>
+
+                    <Typography sx={{ color: "rgba(255,255,255,0.7)", mb: 2 }}>
+                      {yearLevel}
+                    </Typography>
+                  </>
+                )}
+
+                {curriculumLinks.length > 0 && (
+                  <>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ color: "white", mb: 1 }}
+                    >
+                      🧠 Curriculum Topics
+                    </Typography>
+
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      {curriculumLinks.map((item) => (
+                        <Chip
+                          key={item}
+                          label={item}
+                          size="small"
+                          sx={{
+                            background: "rgba(255,255,255,0.08)",
+                            color: "white",
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </>
+                )}
+              </Box>
+            )}
+
             <Box
               component={motion.div}
               initial={{ opacity: 0, x: 20 }}
@@ -533,6 +787,7 @@ export default function ExperimentDetail() {
               <Typography variant="h6" fontWeight={700} gutterBottom>
                 Ready to explore?
               </Typography>
+
               <Typography
                 variant="body2"
                 sx={{ color: "rgba(255,255,255,0.5)", mb: 3 }}
@@ -565,17 +820,47 @@ export default function ExperimentDetail() {
               </Button>
             </Box>
 
-            {/* Technical Specs (Decorative) */}
-            <Box
-              component={motion.div}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              sx={{
-                ...glassPanelStyle,
-                p: 3,
-              }}
-            >
+            <Box sx={{ ...glassPanelStyle, p: 3 }}>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+                📚 Teacher Resources
+              </Typography>
+
+              <Stack spacing={1.5}>
+                <Button
+                  startIcon={<DescriptionRoundedIcon />}
+                  fullWidth
+                  variant="outlined"
+                >
+                  Download Worksheet
+                </Button>
+
+                <Button
+                  startIcon={<SchoolRoundedIcon />}
+                  fullWidth
+                  variant="outlined"
+                >
+                  Teacher Guide
+                </Button>
+
+                <Button
+                  startIcon={<DownloadRoundedIcon />}
+                  fullWidth
+                  variant="outlined"
+                >
+                  Classroom Activity PDF
+                </Button>
+
+                <Button
+                  startIcon={<GroupsRoundedIcon />}
+                  fullWidth
+                  variant="outlined"
+                >
+                  Share with Students
+                </Button>
+              </Stack>
+            </Box>
+
+            <Box sx={{ ...glassPanelStyle, p: 3 }}>
               <Typography
                 variant="subtitle2"
                 fontWeight={700}
@@ -583,6 +868,7 @@ export default function ExperimentDetail() {
               >
                 Simulation Specs
               </Typography>
+
               <Stack spacing={1.5}>
                 <Stack direction="row" justifyContent="space-between">
                   <Typography
@@ -592,9 +878,10 @@ export default function ExperimentDetail() {
                     Difficulty
                   </Typography>
                   <Typography variant="caption" sx={{ color: "white" }}>
-                    Intermediate
+                    {difficulty || "Intermediate"}
                   </Typography>
                 </Stack>
+
                 <Stack direction="row" justifyContent="space-between">
                   <Typography
                     variant="caption"
@@ -603,9 +890,10 @@ export default function ExperimentDetail() {
                     Est. Time
                   </Typography>
                   <Typography variant="caption" sx={{ color: "white" }}>
-                    10 - 15 Mins
+                    {estimatedTime || "15–30 mins"}
                   </Typography>
                 </Stack>
+
                 <Stack direction="row" justifyContent="space-between">
                   <Typography
                     variant="caption"
@@ -614,9 +902,43 @@ export default function ExperimentDetail() {
                     Device
                   </Typography>
                   <Typography variant="caption" sx={{ color: "white" }}>
-                    Desktop / Tablet
+                    {supportedDevices || "Desktop / Tablet"}
                   </Typography>
                 </Stack>
+
+                {lessonType.length > 0 && (
+                  <Box sx={{ pt: 1 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "rgba(255,255,255,0.5)",
+                        display: "block",
+                        mb: 1,
+                      }}
+                    >
+                      Lesson Type
+                    </Typography>
+
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      {lessonType.map((item) => (
+                        <Chip
+                          key={item}
+                          label={item}
+                          size="small"
+                          sx={{
+                            background: "rgba(255,255,255,0.08)",
+                            color: "white",
+                          }}
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                )}
               </Stack>
             </Box>
           </Stack>
