@@ -9,7 +9,6 @@ import {
   Outlet,
 } from "react-router-dom";
 import AuthProvider from "@/context/AuthProvider";
-
 import Layout from "@/components/layout/Layout";
 import ThemeSwitcher from "@/components/common/ThemeSwitcher";
 
@@ -30,6 +29,7 @@ import RunSimulation from "@/pages/simulations/RunSimulation";
 // 📄 Pages
 import Home from "@/pages/Home";
 import About from "@/pages/About";
+import Contact from "@/pages/Contact";
 import Experiments from "@/pages/Experiments";
 import ExperimentDetail from "@/pages/ExperimentDetail";
 import Login from "@/pages/Login";
@@ -83,6 +83,7 @@ export default function App() {
             <Route element={<LayoutShell />}>
               {/* 🔓 Public Pages */}
               <Route path="/" element={<Home />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Box, Typography, IconButton } from "@mui/material";
 import { motion } from "framer-motion";
-
+import ContactMailRoundedIcon from "@mui/icons-material/ContactMailRounded";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import PersonAddAltRoundedIcon from "@mui/icons-material/PersonAddAltRounded";
 import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
@@ -84,6 +84,7 @@ function Navbar({ onClose }) {
     >
       <LinkItem to="/" icon={HomeRoundedIcon} label="Home" />
       <LinkItem to="/about" icon={InfoRoundedIcon} label="About" />
+      <LinkItem to="/contact" icon={ContactMailRoundedIcon} label="Contact" />
       <LinkItem
         to="/experiments"
         icon={ScienceRoundedIcon}

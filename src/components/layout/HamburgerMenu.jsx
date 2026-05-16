@@ -1,3 +1,4 @@
+//src/components/layout/HamburgerMenu.jsx
 import { useState } from "react";
 import {
   Box,
@@ -20,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 const LINKS = [
   { to: "/", label: "Home" },
   { to: "/about", label: "About" },
+  { to: "/contact", label: "Contact" },
   { to: "/experiments", label: "Experiments" },
   { to: "/style-guide", label: "Style Guide" },
 ];
@@ -40,7 +42,10 @@ export default function HamburgerMenu() {
 
   // 🧠 گرفتن نام از email
   const displayName = user
-    ? user.email.split("@")[0].replace(/\./g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+    ? user.email
+        .split("@")[0]
+        .replace(/\./g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase())
     : "";
 
   return (
