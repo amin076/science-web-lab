@@ -5,6 +5,7 @@ import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
 import GroupsRoundedIcon from "@mui/icons-material/GroupsRounded";
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import {
   Box,
   Typography,

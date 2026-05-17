@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import ThemeModeProvider from "@/context/ThemeContext"; // ✅ FIX
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")).render(
   <ThemeModeProvider>
-    <App />
-  </ThemeModeProvider>
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  </ThemeModeProvider>,
 );
 
 // ✅ Register SW only in production

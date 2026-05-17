@@ -15,7 +15,6 @@ import {
 
 const COL = "experimentStats";
 
-// Track a view when a simulation is opened.
 export async function trackExperimentView(experimentId) {
   if (!experimentId) return;
 
@@ -26,27 +25,29 @@ export async function trackExperimentView(experimentId) {
       views: increment(1),
       lastViewedAt: serverTimestamp(),
     });
-  } catch (err) {
-    // Doc might not exist yet (or rules). Try creating it.
+  } catch {
     try {
       await setDoc(
         ref,
-        { views: 1, lastViewedAt: serverTimestamp() },
-        { merge: true }
+        {
+          views: 1,
+          lastViewedAt: serverTimestamp(),
+        },
+        { merge: true },
       );
-    } catch (_) {
-      // Silent fail: app must keep working even without analytics.
+    } catch {
+      // Public analytics must never break the simulation.
     }
   }
 }
 
-// Get top N most viewed experiment ids.
 export async function getPopularExperimentIds(topN = 3) {
   try {
     const q = query(collection(db, COL), orderBy("views", "desc"), limit(topN));
     const snap = await getDocs(q);
+
     return snap.docs.map((d) => d.id);
-  } catch (err) {
+  } catch {
     return [];
   }
 }

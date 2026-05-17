@@ -71,11 +71,9 @@ export default function App() {
             <Route
               path="/experiments/:id/run"
               element={
-                <ProtectedRoute>
-                  <SimulationBoundary>
-                    <RunSimulation />
-                  </SimulationBoundary>
-                </ProtectedRoute>
+                <SimulationBoundary>
+                  <RunSimulation />
+                </SimulationBoundary>
               }
             />
 
@@ -90,22 +88,8 @@ export default function App() {
               <Route path="/style-guide" element={<StyleGuide />} />
 
               {/* 🔒 Experiments */}
-              <Route
-                path="/experiments"
-                element={
-                  <ProtectedRoute>
-                    <Experiments />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/experiments/:id"
-                element={
-                  <ProtectedRoute>
-                    <ExperimentDetail />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="/experiments" element={<Experiments />} />
+              <Route path="/experiments/:id" element={<ExperimentDetail />} />
 
               {/* 🧑‍🏫 Teacher Dashboard */}
               <Route

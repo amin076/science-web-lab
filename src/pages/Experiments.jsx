@@ -16,7 +16,7 @@ import {
   Tooltip,
   Collapse,
 } from "@mui/material";
-
+import { Helmet } from "react-helmet-async";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
@@ -60,7 +60,7 @@ export default function Experiments() {
   // Build labels from catalogNav (no DOMAIN_LABELS/TOPIC_LABELS exports needed)
   const domainLabelMap = useMemo(() => {
     return new Map(
-      (catalogNav || []).map((d) => [d.domain, d.label || d.domain])
+      (catalogNav || []).map((d) => [d.domain, d.label || d.domain]),
     );
   }, []);
 
@@ -70,19 +70,19 @@ export default function Experiments() {
         (d.topics || []).map((t) => [
           `${d.domain}:${t.topic}`,
           t.label || t.topic,
-        ])
-      )
+        ]),
+      ),
     );
   }, []);
 
   const getDomainLabel = useCallback(
     (d) => domainLabelMap.get(d) || d,
-    [domainLabelMap]
+    [domainLabelMap],
   );
 
   const getTopicLabel = useCallback(
     (d, t) => topicLabelMap.get(`${d}:${t}`) || t,
-    [topicLabelMap]
+    [topicLabelMap],
   );
 
   const toggleDomainOpen = (domain) => {
@@ -96,18 +96,18 @@ export default function Experiments() {
 
   const handleStart = useCallback(
     (id) => navigate(`/experiments/${id}/run`),
-    [navigate]
+    [navigate],
   );
 
   const handleDetails = useCallback(
     (id) => navigate(`/experiments/${id}`),
-    [navigate]
+    [navigate],
   );
 
   // Fast id->experiment lookup (important for 500+)
   const expMap = useMemo(
     () => new Map(experimentsData.map((e) => [e.id, e])),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -163,7 +163,7 @@ export default function Experiments() {
     for (const d of Object.keys(grouped)) {
       totals[d] = Object.values(grouped[d]).reduce(
         (acc, arr) => acc + arr.length,
-        0
+        0,
       );
     }
     return totals;
@@ -216,348 +216,367 @@ export default function Experiments() {
   }, [grouped]);
 
   return (
-    <Box sx={{ py: 6 }}>
-      {/* Header */}
-      <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          fontWeight={800}
-          sx={{
-            textAlign: "center",
-            mb: 1,
-            background: "linear-gradient(90deg,#2563eb,#38bdf8)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Experiments Library
-        </Typography>
+    <>
+      <Helmet>
+        <title>Interactive Science Simulations | Esbiko Virtual Labs</title>
+        <meta
+          name="description"
+          content="Explore interactive science simulations, virtual physics experiments, astronomy labs, and STEM learning tools with Esbiko."
+        />
+      </Helmet>
 
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          sx={{ mb: 3, textAlign: "center" }}
-        >
-          Browse by domain & topic. Jump fast, find quickly, and start learning.
-        </Typography>
-
-        {/* ================= SEO INTRO ================= */}
-        <Box sx={{ maxWidth: 900, mx: "auto", mb: 5, textAlign: "center" }}>
-          <Typography variant="h2" fontWeight={800} sx={{ mb: 2 }}>
-            Interactive Science Simulations and Virtual Experiments
+      <Box sx={{ py: 6 }}>
+        {/* Header */}
+        <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
+          <Typography
+            variant="h4"
+            gutterBottom
+            fontWeight={800}
+            sx={{
+              textAlign: "center",
+              mb: 1,
+              background: "linear-gradient(90deg,#2563eb,#38bdf8)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Experiments Library
           </Typography>
 
           <Typography
-            sx={{
-              color: "text.secondary",
-              fontSize: "1.1rem",
-              lineHeight: 1.8,
-            }}
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3, textAlign: "center" }}
           >
-            Explore a growing collection of interactive science simulations and
-            virtual experiments across physics, astronomy, earth science,
-            mechanical engineering, and STEM education. Esbiko helps students
-            and teachers learn scientific concepts by adjusting variables,
-            observing results, and building intuition through browser-based
-            virtual labs.
+            Browse by domain & topic. Jump fast, find quickly, and start
+            learning.
           </Typography>
-        </Box>
-        {/* Search + Nav Drawer button */}
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1.5,
-            alignItems: "center",
-            justifyContent: "center",
-            flexWrap: "wrap",
-            mb: 3,
-          }}
-        >
-          <TextField
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search experiments (e.g. pendulum, optics, orbit...)"
-            size="small"
-            sx={{
-              width: { xs: "100%", sm: 520 },
-              "& .MuiOutlinedInput-root": {
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.06)",
-                backdropFilter: "blur(10px)",
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
 
-          <Tooltip title={drawerOpen ? "Close index" : "Open index"}>
-            <IconButton
-              onClick={() => setDrawerOpen((v) => !v)}
+          {/* ================= SEO INTRO ================= */}
+          <Box sx={{ maxWidth: 900, mx: "auto", mb: 5, textAlign: "center" }}>
+            <Typography variant="h2" fontWeight={800} sx={{ mb: 2 }}>
+              Interactive Science Simulations and Virtual Experiments
+            </Typography>
+
+            <Typography
               sx={{
-                width: 44,
-                height: 44,
-                borderRadius: 999,
-                color: "#fff",
-                background: "linear-gradient(135deg,#2563eb,#38bdf8)",
-                boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-                "&:hover": { filter: "brightness(1.08)" },
+                color: "text.secondary",
+                fontSize: "1.1rem",
+                lineHeight: 1.8,
               }}
             >
-              {drawerOpen ? <CloseRoundedIcon /> : <MenuRoundedIcon />}
-            </IconButton>
-          </Tooltip>
-        </Box>
-
-        {/* Domain chips (quick filter + jump) */}
-        <Stack
-          direction="row"
-          spacing={1}
-          useFlexGap
-          flexWrap="wrap"
-          justifyContent="center"
-          sx={{ mb: 4 }}
-        >
-          {domainOrder.map((d) => (
-            <Chip
-              key={d}
-              label={`${getDomainLabel(d)} (${domainTotals[d] || 0})`}
-              onClick={() => {
-                setActiveDomain(d);
-                const topics = Object.keys(grouped[d] || {});
-                if (topics.length) scrollToAnchor(makeAnchor(d, topics[0]));
-              }}
-              sx={{
-                borderRadius: 999,
-                background:
-                  activeDomain === d
-                    ? "linear-gradient(135deg, rgba(37,99,235,0.35), rgba(56,189,248,0.20))"
-                    : "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.10)",
-                backdropFilter: "blur(10px)",
-              }}
-            />
-          ))}
-        </Stack>
-
-        {/* Popular Top 3 (hide when searching) */}
-        {!q.trim() && (
+              Explore a growing collection of interactive science simulations
+              and virtual experiments across physics, astronomy, earth science,
+              mechanical engineering, and STEM education. Esbiko helps students
+              and teachers learn scientific concepts by adjusting variables,
+              observing results, and building intuition through browser-based
+              virtual labs.
+            </Typography>
+          </Box>
+          {/* Search + Nav Drawer button */}
           <Box
             sx={{
-              borderRadius: 4,
-              p: { xs: 2, md: 3 },
-              mb: 5,
-              border: "1px solid rgba(255,255,255,0.10)",
-              background: "rgba(0,0,0,0.18)",
-              backdropFilter: "blur(12px)",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
+              display: "flex",
+              gap: 1.5,
+              alignItems: "center",
+              justifyContent: "center",
+              flexWrap: "wrap",
+              mb: 3,
             }}
           >
-            <Box
+            <TextField
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search experiments (e.g. pendulum, optics, orbit...)"
+              size="small"
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                mb: 2,
-                justifyContent: "center",
+                width: { xs: "100%", sm: 520 },
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(10px)",
+                },
               }}
-            >
-              <TrendingUpRoundedIcon />
-              <Typography variant="h6" fontWeight={800}>
-                Popular right now
-              </Typography>
-            </Box>
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-            <Box
-              component={motion.div}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              sx={{
-                display: "grid",
-                gap: 3,
-                gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
-              }}
-            >
-              {popular.map((exp) => (
-                <ExperimentCard
-                  key={exp.id}
-                  {...exp}
-                  onStart={() => handleStart(exp.id)}
-                  onDetails={() => handleDetails(exp.id)}
-                />
-              ))}
-            </Box>
+            <Tooltip title={drawerOpen ? "Close index" : "Open index"}>
+              <IconButton
+                onClick={() => setDrawerOpen((v) => !v)}
+                sx={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 999,
+                  color: "#fff",
+                  background: "linear-gradient(135deg,#2563eb,#38bdf8)",
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                  "&:hover": { filter: "brightness(1.08)" },
+                }}
+              >
+                {drawerOpen ? <CloseRoundedIcon /> : <MenuRoundedIcon />}
+              </IconButton>
+            </Tooltip>
           </Box>
-        )}
 
-        <Divider sx={{ opacity: 0.15, mb: 5 }} />
-      </Box>
+          {/* Domain chips (quick filter + jump) */}
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+            justifyContent="center"
+            sx={{ mb: 4 }}
+          >
+            {domainOrder.map((d) => (
+              <Chip
+                key={d}
+                label={`${getDomainLabel(d)} (${domainTotals[d] || 0})`}
+                onClick={() => {
+                  setActiveDomain(d);
+                  const topics = Object.keys(grouped[d] || {});
+                  if (topics.length) scrollToAnchor(makeAnchor(d, topics[0]));
+                }}
+                sx={{
+                  borderRadius: 999,
+                  background:
+                    activeDomain === d
+                      ? "linear-gradient(135deg, rgba(37,99,235,0.35), rgba(56,189,248,0.20))"
+                      : "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  backdropFilter: "blur(10px)",
+                }}
+              />
+            ))}
+          </Stack>
 
-      {/* Sections: Domain -> Topic -> Cards */}
-      <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
-        {domainOrder.map((domain) => {
-          const topics = Object.keys(grouped[domain] || {});
-          if (!topics.length) return null;
+          {/* Popular Top 3 (hide when searching) */}
+          {!q.trim() && (
+            <Box
+              sx={{
+                borderRadius: 4,
+                p: { xs: 2, md: 3 },
+                mb: 5,
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(0,0,0,0.18)",
+                backdropFilter: "blur(12px)",
+                boxShadow: "0 16px 40px rgba(0,0,0,0.25)",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  mb: 2,
+                  justifyContent: "center",
+                }}
+              >
+                <TrendingUpRoundedIcon />
+                <Typography variant="h6" fontWeight={800}>
+                  Popular right now
+                </Typography>
+              </Box>
 
-          topics.sort(
-            (a, b) =>
-              (grouped[domain][b]?.length || 0) -
-              (grouped[domain][a]?.length || 0),
-          );
+              <Box
+                component={motion.div}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                sx={{
+                  display: "grid",
+                  gap: 3,
+                  gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+                }}
+              >
+                {popular.map((exp) => (
+                  <ExperimentCard
+                    key={exp.id}
+                    {...exp}
+                    onStart={() => handleStart(exp.id)}
+                    onDetails={() => handleDetails(exp.id)}
+                  />
+                ))}
+              </Box>
+            </Box>
+          )}
 
-          return (
-            <Box key={domain} sx={{ mb: 6 }}>
-              <Typography variant="h5" fontWeight={900} sx={{ mb: 1 }}>
-                {getDomainLabel(domain)}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Explore {getDomainLabel(domain)} topics and simulations.
-              </Typography>
+          <Divider sx={{ opacity: 0.15, mb: 5 }} />
+        </Box>
 
-              {topics.map((topic) => {
-                const items = grouped[domain][topic] || [];
-                const anchorId = makeAnchor(domain, topic);
+        {/* Sections: Domain -> Topic -> Cards */}
+        <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
+          {domainOrder.map((domain) => {
+            const topics = Object.keys(grouped[domain] || {});
+            if (!topics.length) return null;
+
+            topics.sort(
+              (a, b) =>
+                (grouped[domain][b]?.length || 0) -
+                (grouped[domain][a]?.length || 0),
+            );
+
+            return (
+              <Box key={domain} sx={{ mb: 6 }}>
+                <Typography variant="h5" fontWeight={900} sx={{ mb: 1 }}>
+                  {getDomainLabel(domain)}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 3 }}
+                >
+                  Explore {getDomainLabel(domain)} topics and simulations.
+                </Typography>
+
+                {topics.map((topic) => {
+                  const items = grouped[domain][topic] || [];
+                  const anchorId = makeAnchor(domain, topic);
+
+                  return (
+                    <Box
+                      key={`${domain}-${topic}`}
+                      id={anchorId}
+                      ref={(el) => (sectionRefs.current[anchorId] = el)}
+                      sx={{ mb: 4 }}
+                    >
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight={800}
+                        sx={{ mb: 2, opacity: 0.95 }}
+                      >
+                        {getTopicLabel(domain, topic)}{" "}
+                        <Box
+                          component="span"
+                          sx={{ opacity: 0.6, fontWeight: 700 }}
+                        >
+                          ({items.length})
+                        </Box>
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gap: 3,
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "repeat(2, 1fr)",
+                            md: "repeat(3, 1fr)",
+                            lg: "repeat(4, 1fr)",
+                          },
+                        }}
+                      >
+                        {items.map((exp) => (
+                          <ExperimentCard
+                            key={exp.id}
+                            {...exp}
+                            onStart={() => handleStart(exp.id)}
+                            onDetails={() => handleDetails(exp.id)}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* Drawer: Domain + Topic index */}
+        <Drawer
+          anchor="right"
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          PaperProps={{
+            className: "custom-scrollbar",
+            sx: {
+              width: 340,
+              background: "linear-gradient(180deg,#0b1220,#0f1b33,#102a4d)",
+              color: "#e5e7eb",
+              borderLeft: "1px solid rgba(255,255,255,0.08)",
+            },
+          }}
+        >
+          <Box sx={{ p: 2.5 }}>
+            <Typography variant="h6" fontWeight={900} sx={{ mb: 1 }}>
+              Jump to topic
+            </Typography>
+            <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
+              Domains & topics (filtered by your search).
+            </Typography>
+
+            <List sx={{ p: 0 }}>
+              {navForFiltered.map((d) => {
+                const isOpen = openDomains.has(d.domain);
 
                 return (
-                  <Box
-                    key={`${domain}-${topic}`}
-                    id={anchorId}
-                    ref={(el) => (sectionRefs.current[anchorId] = el)}
-                    sx={{ mb: 4 }}
-                  >
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight={800}
-                      sx={{ mb: 2, opacity: 0.95 }}
-                    >
-                      {getTopicLabel(domain, topic)}{" "}
-                      <Box
-                        component="span"
-                        sx={{ opacity: 0.6, fontWeight: 700 }}
-                      >
-                        ({items.length})
-                      </Box>
-                    </Typography>
-
-                    <Box
+                  <Box key={d.domain} sx={{ mb: 0.5 }}>
+                    <ListItemButton
+                      onClick={() => toggleDomainOpen(d.domain)}
                       sx={{
-                        display: "grid",
-                        gap: 3,
-                        gridTemplateColumns: {
-                          xs: "1fr",
-                          sm: "repeat(2, 1fr)",
-                          md: "repeat(3, 1fr)",
-                          lg: "repeat(4, 1fr)",
+                        borderRadius: 2,
+                        mb: 0.5,
+                        "&:hover": {
+                          backgroundColor: "rgba(255,255,255,0.08)",
                         },
                       }}
                     >
-                      {items.map((exp) => (
-                        <ExperimentCard
-                          key={exp.id}
-                          {...exp}
-                          onStart={() => handleStart(exp.id)}
-                          onDetails={() => handleDetails(exp.id)}
-                        />
-                      ))}
-                    </Box>
+                      <ListItemText
+                        primary={`${d.label || getDomainLabel(d.domain)}`}
+                        secondary={`${d.count} simulations`}
+                        secondaryTypographyProps={{ sx: { opacity: 0.7 } }}
+                      />
+                      {isOpen ? (
+                        <ExpandLessRoundedIcon />
+                      ) : (
+                        <ExpandMoreRoundedIcon />
+                      )}
+                    </ListItemButton>
+
+                    <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                      <Box sx={{ pl: 1.25, pb: 0.5 }}>
+                        {(d.topics || []).map((t) => (
+                          <ListItemButton
+                            key={`${d.domain}:${t.topic}`}
+                            onClick={() => {
+                              setActiveDomain(d.domain);
+                              scrollToAnchor(makeAnchor(d.domain, t.topic));
+                            }}
+                            sx={{
+                              borderRadius: 2,
+                              mb: 0.5,
+                              py: 0.75,
+                              "&:hover": {
+                                backgroundColor: "rgba(255,255,255,0.08)",
+                              },
+                            }}
+                          >
+                            <ListItemText
+                              primary={`${
+                                t.label || getTopicLabel(d.domain, t.topic)
+                              }`}
+                              secondary={`${t.count} items`}
+                              secondaryTypographyProps={{
+                                sx: { opacity: 0.7 },
+                              }}
+                            />
+                          </ListItemButton>
+                        ))}
+                      </Box>
+                    </Collapse>
                   </Box>
                 );
               })}
-            </Box>
-          );
-        })}
+            </List>
+          </Box>
+        </Drawer>
       </Box>
-
-      {/* Drawer: Domain + Topic index */}
-      <Drawer
-        anchor="right"
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        PaperProps={{
-          className: "custom-scrollbar",
-          sx: {
-            width: 340,
-            background: "linear-gradient(180deg,#0b1220,#0f1b33,#102a4d)",
-            color: "#e5e7eb",
-            borderLeft: "1px solid rgba(255,255,255,0.08)",
-          },
-        }}
-      >
-        <Box sx={{ p: 2.5 }}>
-          <Typography variant="h6" fontWeight={900} sx={{ mb: 1 }}>
-            Jump to topic
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.8, mb: 2 }}>
-            Domains & topics (filtered by your search).
-          </Typography>
-
-          <List sx={{ p: 0 }}>
-            {navForFiltered.map((d) => {
-              const isOpen = openDomains.has(d.domain);
-
-              return (
-                <Box key={d.domain} sx={{ mb: 0.5 }}>
-                  <ListItemButton
-                    onClick={() => toggleDomainOpen(d.domain)}
-                    sx={{
-                      borderRadius: 2,
-                      mb: 0.5,
-                      "&:hover": { backgroundColor: "rgba(255,255,255,0.08)" },
-                    }}
-                  >
-                    <ListItemText
-                      primary={`${d.label || getDomainLabel(d.domain)}`}
-                      secondary={`${d.count} simulations`}
-                      secondaryTypographyProps={{ sx: { opacity: 0.7 } }}
-                    />
-                    {isOpen ? (
-                      <ExpandLessRoundedIcon />
-                    ) : (
-                      <ExpandMoreRoundedIcon />
-                    )}
-                  </ListItemButton>
-
-                  <Collapse in={isOpen} timeout="auto" unmountOnExit>
-                    <Box sx={{ pl: 1.25, pb: 0.5 }}>
-                      {(d.topics || []).map((t) => (
-                        <ListItemButton
-                          key={`${d.domain}:${t.topic}`}
-                          onClick={() => {
-                            setActiveDomain(d.domain);
-                            scrollToAnchor(makeAnchor(d.domain, t.topic));
-                          }}
-                          sx={{
-                            borderRadius: 2,
-                            mb: 0.5,
-                            py: 0.75,
-                            "&:hover": {
-                              backgroundColor: "rgba(255,255,255,0.08)",
-                            },
-                          }}
-                        >
-                          <ListItemText
-                            primary={`${
-                              t.label || getTopicLabel(d.domain, t.topic)
-                            }`}
-                            secondary={`${t.count} items`}
-                            secondaryTypographyProps={{ sx: { opacity: 0.7 } }}
-                          />
-                        </ListItemButton>
-                      ))}
-                    </Box>
-                  </Collapse>
-                </Box>
-              );
-            })}
-          </List>
-        </Box>
-      </Drawer>
-    </Box>
+    </>
   );
 }

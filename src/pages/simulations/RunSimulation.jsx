@@ -14,10 +14,17 @@ export default function RunSimulation() {
   const SimulationComponent = simulationRegistry[id] || null;
 
   useEffect(() => {
-    // Only track if the simulation exists in registry
-    if (SimulationComponent) {
-      trackExperimentView(id);
-    }
+    if (!id || !SimulationComponent) return;
+
+    const trackView = async () => {
+      try {
+        await trackExperimentView(id);
+      } catch (error) {
+        console.warn("Experiment view tracking failed:", error);
+      }
+    };
+
+    trackView();
   }, [id, SimulationComponent]);
 
   const handleBack = () => {
@@ -42,6 +49,7 @@ export default function RunSimulation() {
               <Typography variant="h6" fontWeight={700} color="error">
                 Simulation not found
               </Typography>
+
               <Typography variant="body2" sx={{ mt: 1 }} color="text.secondary">
                 No simulation is registered for id: <b>{id}</b>
               </Typography>
@@ -71,6 +79,7 @@ export default function RunSimulation() {
                   <Typography variant="h6" fontWeight={700}>
                     Loading simulation...
                   </Typography>
+
                   <Typography
                     variant="body2"
                     color="text.secondary"

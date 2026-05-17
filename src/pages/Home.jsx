@@ -6,7 +6,6 @@ import {
   Button,
   Chip,
   Stack,
-  Grid,
   Card,
   Avatar,
   TextField,
@@ -23,17 +22,20 @@ import {
   ArrowForwardRounded,
   CheckCircleRounded,
   BoltRounded,
-  PlayCircleFilledRounded,
   RocketLaunchRounded,
+  ScienceRounded,
+  AutoStoriesRounded,
+  ExploreRounded,
+  WorkspacePremiumRounded,
+  DescriptionRounded,
+  AssignmentRounded,
+  ShowChartRounded,
+  PsychologyRounded,
+  DevicesRounded,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-// ✅ IMPORTANT: use the correct path where you created it
 import SolarCinematicHero from "@/pages/home/SolarCinematicHero";
-
-/* ============================= */
-/* Layout Primitives             */
-/* ============================= */
 
 const Page = ({ children }) => (
   <Box
@@ -50,32 +52,49 @@ const Page = ({ children }) => (
   </Box>
 );
 
-const Section = ({ children, noPadding = false }) => (
+const Section = ({ children, compact = false }) => (
   <Box
     component="section"
     sx={{
       width: "100%",
-      py: noPadding ? 0 : { xs: 8, md: 12 },
+      py: compact ? { xs: 5, md: 7 } : { xs: 7, md: 10 },
     }}
   >
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: 3 }}>{children}</Box>
+    <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2.5, md: 3 } }}>
+      {children}
+    </Box>
   </Box>
 );
 
-// Flexible Glass Card (used in other sections)
-const GlassCard = ({ children, sx, hoverEffect = false }) => (
+const CardGrid = ({ children, columns = 3, sx }) => (
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        md: `repeat(${columns}, minmax(0, 1fr))`,
+      },
+      gap: 4,
+      ...sx,
+    }}
+  >
+    {children}
+  </Box>
+);
+
+const GlassCard = ({ children, sx, hoverEffect = true }) => (
   <Card
     component={motion.div}
     whileHover={hoverEffect ? { y: -5 } : {}}
     elevation={0}
     sx={{
       borderRadius: 4,
-      background: "rgba(15,23,42,0.6)",
+      background: "rgba(15,23,42,0.66)",
       backdropFilter: "blur(20px)",
       border: "1px solid rgba(255,255,255,0.08)",
-      boxShadow: "0 20px 50px rgba(0,0,0,0.2)",
-      overflow: "hidden",
+      boxShadow: "0 20px 50px rgba(0,0,0,0.22)",
       transition: "all 0.3s ease",
+      overflow: "hidden",
       ...sx,
     }}
   >
@@ -86,31 +105,109 @@ const GlassCard = ({ children, sx, hoverEffect = false }) => (
 export default function Home() {
   const navigate = useNavigate();
 
+  const featuredLabs = useMemo(
+    () => [
+      {
+        title: "Projectile Motion",
+        desc: "Investigate velocity, gravity, trajectories, vectors, motion trails, and real-time data graphs.",
+        tag: "Classroom Ready",
+        icon: <RocketLaunchRounded />,
+        color: "#38bdf8",
+        href: "/experiments/physics.mechanics.projectile",
+      },
+      {
+        title: "Optics Bench",
+        desc: "Explore lenses, mirrors, light rays, image formation, and ray behaviour through visual experiments.",
+        tag: "Physics Lab",
+        icon: <ScienceRounded />,
+        color: "#a78bfa",
+        href: "/experiments",
+      },
+      {
+        title: "Solar System",
+        desc: "Visualise planets, moons, orbital motion, space scale, and astronomy concepts.",
+        tag: "Space Demo",
+        icon: <PublicRounded />,
+        color: "#f59e0b",
+        href: "/experiments",
+      },
+    ],
+    [],
+  );
+
+  const whyEsbiko = useMemo(
+    () => [
+      {
+        title: "Learn by experimenting",
+        desc: "Students can change variables, observe outcomes, and build intuition instead of only memorising formulas.",
+        icon: <PsychologyRounded />,
+        color: "#38bdf8",
+      },
+      {
+        title: "Classroom-ready direction",
+        desc: "Esbiko is being shaped around teacher guides, worksheets, guided investigations, and classroom activities.",
+        icon: <SchoolRounded />,
+        color: "#818cf8",
+      },
+      {
+        title: "Science for everyone",
+        desc: "Teachers and students are central, but Esbiko is also open to curious minds who simply enjoy science.",
+        icon: <ExploreRounded />,
+        color: "#22c55e",
+      },
+    ],
+    [],
+  );
+
+  const resources = useMemo(
+    () => [
+      {
+        title: "Teacher Guides",
+        desc: "Support classroom demonstrations with lesson flow, teaching notes, misconceptions, and discussion prompts.",
+        icon: <DescriptionRounded />,
+        color: "#60a5fa",
+      },
+      {
+        title: "Student Worksheets",
+        desc: "Printable activities with predictions, variables, observations, data tables, and reflection questions.",
+        icon: <AssignmentRounded />,
+        color: "#f472b6",
+      },
+      {
+        title: "Graphs and Data",
+        desc: "Help learners connect visual motion with position, velocity, energy, and scientific reasoning.",
+        icon: <ShowChartRounded />,
+        color: "#34d399",
+      },
+    ],
+    [],
+  );
+
   const steps = useMemo(
     () => [
       {
         n: "01",
-        title: "Pick a topic",
-        desc: "Physics, Chem, or Math.",
-        icon: <SearchRounded fontSize="small" />,
+        title: "Choose a simulation",
+        desc: "Start with motion, optics, space, waves, electricity, or earth science.",
+        icon: <SearchRounded />,
         color: "#38bdf8",
       },
       {
         n: "02",
-        title: "Run Simulation",
-        desc: "Adjust variables live.",
-        icon: <InsightsRounded fontSize="small" />,
+        title: "Experiment visually",
+        desc: "Change variables, run experiments, compare outcomes, and observe patterns.",
+        icon: <InsightsRounded />,
         color: "#f472b6",
       },
       {
         n: "03",
-        title: "Analyze Data",
-        desc: "Export graphs & results.",
-        icon: <VerifiedRounded fontSize="small" />,
+        title: "Discuss and explain",
+        desc: "Use questions, graphs, worksheets, and teacher notes to support learning.",
+        icon: <VerifiedRounded />,
         color: "#34d399",
       },
     ],
-    []
+    [],
   );
 
   const audiences = useMemo(
@@ -119,410 +216,688 @@ export default function Home() {
         title: "Teachers",
         color: "#3b82f6",
         icon: <SchoolRounded fontSize="large" />,
-        tag: "Classroom Mode",
-        desc: "Demonstrate complex concepts safely. Assign labs and track student progress in real time.",
-        points: ["No setup or cleanup", "Standardized experiments"],
+        tag: "Classroom Ready",
+        desc: "Use Esbiko to demonstrate science concepts, guide investigations, and support classroom discussion.",
+        points: [
+          "Interactive classroom demonstrations",
+          "Teacher guides and worksheets",
+          "Inquiry-based science activities",
+        ],
       },
       {
         title: "Students",
         color: "#ec4899",
-        icon: <PublicRounded fontSize="large" />,
+        icon: <AutoStoriesRounded fontSize="large" />,
         tag: "Self-paced Learning",
-        desc: "Explore science anywhere. Visualize physics and math with instant feedback.",
-        points: ["Works on any device", "Visual data export"],
+        desc: "Explore science by changing variables, observing patterns, and connecting visual experiments with data.",
+        points: [
+          "Learn by experimenting",
+          "Visualise difficult concepts",
+          "Use graphs and real-time feedback",
+        ],
+      },
+      {
+        title: "Science Enthusiasts",
+        color: "#22c55e",
+        icon: <ExploreRounded fontSize="large" />,
+        tag: "Explore Freely",
+        desc: "Esbiko is also for curious minds who enjoy physics, astronomy, earth science, and STEM exploration.",
+        points: [
+          "Explore science for fun",
+          "Discover real-world phenomena",
+          "No classroom required",
+        ],
       },
     ],
-    []
+    [],
   );
 
   return (
     <Page>
-      {/* ================= HERO SECTION ================= */}
-      <Section>
+      {/* ================= HERO ================= */}
+      <Section compact>
         <Stack spacing={4} alignItems="center" sx={{ textAlign: "center" }}>
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Chip
-              label="New: Multiplayer Labs available v2.0"
-              icon={<BoltRounded sx={{ fontSize: "16px !important" }} />}
-              sx={{
-                bgcolor: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#94a3b8",
-                backdropFilter: "blur(10px)",
-                height: 32,
-              }}
-            />
-          </motion.div>
+          <Chip
+            label="Free public beta for teachers, students, and curious minds"
+            icon={<BoltRounded sx={{ fontSize: "16px !important" }} />}
+            sx={{
+              bgcolor: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "#cbd5e1",
+              height: 34,
+              px: 1,
+            }}
+          />
 
-          {/* Headline */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+          <Typography
+            variant="h1"
+            sx={{
+              fontWeight: 900,
+              lineHeight: 1.04,
+              fontSize: { xs: "2.6rem", sm: "3.6rem", md: "5.2rem" },
+              maxWidth: 1050,
+            }}
           >
-            <Typography
-              variant="h1"
+            Interactive Science Labs <br />
+            <Box
+              component="span"
               sx={{
-                fontWeight: 800,
-                lineHeight: 1.05,
-                fontSize: { xs: "3rem", md: "5.5rem" },
-                maxWidth: 900,
+                background: "linear-gradient(90deg, #38bdf8, #818cf8, #c084fc)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
               }}
             >
-              Esbiko Science Lab <br />
-              <span
-                style={{
+              for classrooms, students, and curious minds
+            </Box>
+          </Typography>
+
+          <Typography
+            sx={{
+              maxWidth: 760,
+              color: "rgba(255,255,255,0.74)",
+              fontSize: { xs: "1rem", md: "1.15rem" },
+              lineHeight: 1.75,
+            }}
+          >
+            Esbiko is a virtual science lab where learners can explore physics,
+            astronomy, earth science, and STEM concepts through interactive
+            simulations, visual data, and guided learning activities.
+          </Typography>
+
+          <Stack spacing={3} alignItems="center" sx={{ width: "100%" }}>
+            <Box sx={{ width: "100%", maxWidth: 520 }}>
+              <TextField
+                fullWidth
+                placeholder="Search simulations: gravity, optics, waves, space..."
+                onFocus={() => navigate("/experiments")}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 999,
+                    bgcolor: "rgba(30,41,59,0.65)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "white",
+                    pr: 1,
+                  },
+                  "& input": { color: "white" },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchRounded sx={{ color: "#94a3b8" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <Button
+                      variant="contained"
+                      onClick={() => navigate("/experiments")}
+                      sx={{
+                        minWidth: 40,
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        p: 0,
+                      }}
+                    >
+                      <ArrowForwardRounded fontSize="small" />
+                    </Button>
+                  ),
+                }}
+              />
+            </Box>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={2}
+              justifyContent="center"
+            >
+              <Button
+                variant="contained"
+                size="large"
+                startIcon={<RocketLaunchRounded />}
+                onClick={() => navigate("/experiments")}
+                sx={{
+                  borderRadius: 999,
+                  px: 4,
+                  py: 1.4,
+                  fontWeight: 900,
                   background:
                     "linear-gradient(90deg, #38bdf8, #818cf8, #c084fc)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                  color: "white",
                 }}
               >
-                Interactive Science Simulations
-              </span>
-            </Typography>
-          </motion.div>
+                Explore Simulations
+              </Button>
 
-          {/* Subtitle */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Typography
-              sx={{
-                maxWidth: 600,
-                color: "rgba(255,255,255,0.7)",
-                fontSize: "1.1rem",
-                lineHeight: 1.6,
-              }}
-            >
-              Forget static diagrams. Build intuition by playing with variables
-              in real-time physics, chemistry, and math simulations.
-            </Typography>
-          </motion.div>
-
-          {/* Search & Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            style={{ width: "100%" }}
-          >
-            <Stack spacing={3} alignItems="center" sx={{ width: "100%" }}>
-              <Box sx={{ width: "100%", maxWidth: 460 }}>
-                <TextField
-                  fullWidth
-                  placeholder="Try searching 'Gravity' or 'Optics'..."
-                  onFocus={() => navigate("/experiments")}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: 999,
-                      bgcolor: "rgba(30,41,59,0.6)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      color: "white",
-                      paddingRight: 1,
-                    },
-                  }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchRounded sx={{ color: "#94a3b8" }} />
-                      </InputAdornment>
-                    ),
-                    endAdornment: (
-                      <Button
-                        variant="contained"
-                        onClick={() => navigate("/experiments")}
-                        sx={{
-                          minWidth: 40,
-                          width: 40,
-                          height: 40,
-                          borderRadius: "50%",
-                          p: 0,
-                        }}
-                      >
-                        <ArrowForwardRounded fontSize="small" />
-                      </Button>
-                    ),
-                  }}
-                />
-              </Box>
-
-              <Stack direction="row" spacing={2}>
-                <Button
-                  startIcon={<PlayCircleFilledRounded />}
-                  sx={{
-                    color: "#fff",
-                    opacity: 0.8,
-                    "&:hover": { opacity: 1 },
-                  }}
-                  onClick={() => navigate("/about")}
-                >
-                  Watch Demo
-                </Button>
-                <Button
-                  startIcon={<RocketLaunchRounded />}
-                  sx={{
-                    color: "#fff",
-                    opacity: 0.8,
-                    "&:hover": { opacity: 1 },
-                  }}
-                  onClick={() => navigate("/experiments")}
-                >
-                  All Experiments
-                </Button>
-              </Stack>
+              <Button
+                variant="outlined"
+                size="large"
+                startIcon={<WorkspacePremiumRounded />}
+                onClick={() =>
+                  navigate("/experiments/physics.mechanics.projectile")
+                }
+                sx={{
+                  borderRadius: 999,
+                  px: 4,
+                  py: 1.4,
+                  fontWeight: 900,
+                  color: "white",
+                  borderColor: "rgba(255,255,255,0.22)",
+                  "&:hover": {
+                    borderColor: "#38bdf8",
+                    bgcolor: "rgba(56,189,248,0.08)",
+                  },
+                }}
+              >
+                Launch Demo Lab
+              </Button>
             </Stack>
-          </motion.div>
+          </Stack>
 
-          {/* ================= HERO DEMO (NO BLUR WRAPPER) ================= */}
-          <motion.div
-            initial={{ opacity: 0, y: 40, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            style={{ width: "100%", marginTop: "60px" }}
+          <Box
+            sx={{
+              width: "100%",
+              mt: { xs: 4, md: 5 },
+              borderRadius: 6,
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.10)",
+              boxShadow: "0 30px 90px rgba(0,0,0,0.55)",
+              background: "rgba(2,6,23,0.35)",
+              "& > div": {
+                height: { xs: "320px !important", md: "430px !important" },
+              },
+            }}
           >
-            <Box
-              sx={{
-                borderRadius: 6,
-                overflow: "hidden",
-                border: "1px solid rgba(255,255,255,0.10)",
-                boxShadow: "0 30px 90px rgba(0,0,0,0.55)",
-                background: "rgba(2,6,23,0.35)", // ✅ no backdrop blur here
-              }}
-            >
-              <SolarCinematicHero />
-            </Box>
-          </motion.div>
+            <SolarCinematicHero />
+          </Box>
         </Stack>
       </Section>
 
-      {/* ================= SEO INTRO ================= */}
-      <Section>
-        <Box sx={{ maxWidth: 900, mx: "auto", textAlign: "center" }}>
-          <Typography variant="h2" fontWeight={800} sx={{ mb: 3 }}>
-            Interactive Science Simulations for Students and Teachers
+      {/* ================= WHY ESBIKO ================= */}
+      <Section compact>
+        <Box sx={{ maxWidth: 900, mx: "auto", textAlign: "center", mb: 6 }}>
+          <Typography variant="h2" fontWeight={900} sx={{ mb: 2 }}>
+            A virtual science lab for teaching, learning, and exploration
           </Typography>
 
           <Typography
             sx={{
-              color: "rgba(255,255,255,0.75)",
-              fontSize: "1.1rem",
-              lineHeight: 1.8,
-              mb: 3,
-            }}
-          >
-            Esbiko is a virtual science lab platform where students and teachers
-            can explore physics, earth science, astronomy, and STEM concepts
-            through interactive simulations. Instead of only reading formulas or
-            static diagrams, learners can change variables, observe results, and
-            build scientific intuition through hands-on digital experiments.
-          </Typography>
-
-          <Typography
-            sx={{
-              color: "rgba(255,255,255,0.7)",
-              fontSize: "1rem",
+              color: "rgba(255,255,255,0.72)",
+              fontSize: "1.05rem",
               lineHeight: 1.8,
             }}
           >
-            The platform is designed to make science learning more visual,
-            accessible, and experiment-based. Students can investigate motion,
-            gravity, electricity, waves, planetary systems, and geological
-            processes directly in the browser, while teachers can use Esbiko as
-            a classroom demonstration tool or as a virtual lab resource.
+            Esbiko helps learners move beyond static diagrams. Students can
+            change variables, observe results, compare outcomes, and connect
+            visual experiments with scientific explanations.
           </Typography>
         </Box>
+
+        <CardGrid columns={3}>
+          {whyEsbiko.map((item) => (
+            <GlassCard key={item.title} sx={{ p: 4, height: "100%" }}>
+              <Avatar
+                sx={{
+                  width: 58,
+                  height: 58,
+                  bgcolor: alpha(item.color, 0.16),
+                  color: item.color,
+                  border: `1px solid ${alpha(item.color, 0.28)}`,
+                  mb: 2,
+                }}
+              >
+                {item.icon}
+              </Avatar>
+
+              <Typography variant="h5" fontWeight={900} sx={{ mb: 1.5 }}>
+                {item.title}
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.68)",
+                  lineHeight: 1.75,
+                }}
+              >
+                {item.desc}
+              </Typography>
+            </GlassCard>
+          ))}
+        </CardGrid>
       </Section>
-      {/* ================= WORKFLOW ================= */}
-      <Section>
+
+      {/* ================= FEATURED LABS ================= */}
+      <Section compact>
         <Box sx={{ textAlign: "center", mb: 6 }}>
           <Typography
             variant="overline"
-            sx={{ color: "#38bdf8", letterSpacing: 1.5, fontWeight: 700 }}
+            sx={{ color: "#38bdf8", letterSpacing: 1.5, fontWeight: 900 }}
           >
-            Workflow
+            Start here
           </Typography>
-          <Typography variant="h3" fontWeight={800} sx={{ mt: 1 }}>
-            Three steps to learning
+
+          <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>
+            Featured science labs
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.65)",
+              mt: 2,
+              maxWidth: 680,
+              mx: "auto",
+              lineHeight: 1.7,
+            }}
+          >
+            Begin with a few strong simulations while Esbiko grows into a
+            broader classroom-ready science platform.
           </Typography>
         </Box>
 
-        <Grid container spacing={4} justifyContent="center">
-          {steps.map((s, i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
-              <GlassCard
-                hoverEffect
+        <CardGrid columns={3}>
+          {featuredLabs.map((lab) => (
+            <GlassCard
+              key={lab.title}
+              sx={{
+                p: 4,
+                minHeight: 310,
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              <Avatar
                 sx={{
-                  p: 4,
-                  height: "100%",
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
+                  width: 60,
+                  height: 60,
+                  bgcolor: alpha(lab.color, 0.16),
+                  color: lab.color,
+                  mb: 2.5,
+                  border: `1px solid ${alpha(lab.color, 0.28)}`,
                 }}
               >
-                <Box
-                  sx={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: "50%",
-                    bgcolor: alpha(s.color, 0.1),
-                    color: s.color,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    mb: 2,
-                    border: `1px solid ${alpha(s.color, 0.2)}`,
-                  }}
-                >
-                  {s.icon}
-                </Box>
-                <Typography variant="h5" fontWeight={700} gutterBottom>
-                  {s.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {s.desc}
-                </Typography>
-              </GlassCard>
-            </Grid>
-          ))}
-        </Grid>
-      </Section>
+                {lab.icon}
+              </Avatar>
 
-      {/* ================= AUDIENCE ================= */}
-      <Section>
-        <Typography
-          variant="h3"
-          sx={{ textAlign: "center", fontWeight: 800, mb: 6 }}
-        >
-          Who is this for?
-        </Typography>
-
-        <Grid
-          container
-          spacing={4}
-          justifyContent="center"
-          alignItems="stretch"
-        >
-          {audiences.map((a) => (
-            <Grid key={a.title} item xs={12} md={6}>
-              <GlassCard
-                hoverEffect
-                sx={{
-                  p: 5,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                }}
-              >
-                <Avatar
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    bgcolor: alpha(a.color, 0.2),
-                    color: a.color,
-                    mb: 2,
-                  }}
-                >
-                  {a.icon}
-                </Avatar>
-
-                <Typography variant="h5" fontWeight={800}>
-                  {a.title}
+              <Stack direction="row" alignItems="center" spacing={1} mb={1.5}>
+                <Typography variant="h5" fontWeight={900}>
+                  {lab.title}
                 </Typography>
 
                 <Chip
-                  label={a.tag}
+                  label={lab.tag}
                   size="small"
                   sx={{
-                    mt: 1,
-                    mb: 3,
-                    bgcolor: alpha(a.color, 0.2),
-                    color: a.color,
+                    bgcolor: alpha(lab.color, 0.14),
+                    color: lab.color,
+                    fontWeight: 800,
                   }}
                 />
+              </Stack>
 
-                <Typography
-                  sx={{ maxWidth: 420, color: "rgba(255,255,255,0.7)", mb: 4 }}
-                >
-                  {a.desc}
-                </Typography>
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.68)",
+                  lineHeight: 1.75,
+                  mb: 3,
+                  flex: 1,
+                }}
+              >
+                {lab.desc}
+              </Typography>
 
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    flexDirection: "column",
-                    gap: 1.5,
-                    textAlign: "left",
-                  }}
-                >
-                  {a.points.map((p) => (
-                    <Stack
-                      key={p}
-                      direction="row"
-                      spacing={1.5}
-                      alignItems="center"
-                    >
-                      <CheckCircleRounded
-                        sx={{ color: a.color, fontSize: 20 }}
-                      />
-                      <Typography variant="body2" fontWeight={500}>
-                        {p}
-                      </Typography>
-                    </Stack>
-                  ))}
-                </Box>
-              </GlassCard>
-            </Grid>
+              <Button
+                endIcon={<ArrowForwardRounded />}
+                onClick={() => navigate(lab.href)}
+                sx={{
+                  alignSelf: "flex-start",
+                  color: lab.color,
+                  fontWeight: 900,
+                }}
+              >
+                Open Lab
+              </Button>
+            </GlassCard>
           ))}
-        </Grid>
+        </CardGrid>
+      </Section>
+
+      {/* ================= CLASSROOM RESOURCES ================= */}
+      <Section compact>
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography
+            variant="overline"
+            sx={{ color: "#38bdf8", letterSpacing: 1.5, fontWeight: 900 }}
+          >
+            Classroom support
+          </Typography>
+
+          <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>
+            Designed to support real teaching
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.65)",
+              mt: 2,
+              maxWidth: 760,
+              mx: "auto",
+              lineHeight: 1.7,
+            }}
+          >
+            Esbiko is not only a collection of simulations. The goal is to
+            provide teacher-friendly resources that make science easier to
+            demonstrate, investigate, and discuss.
+          </Typography>
+        </Box>
+
+        <CardGrid columns={3}>
+          {resources.map((item) => (
+            <GlassCard key={item.title} sx={{ p: 4, height: "100%" }}>
+              <Avatar
+                sx={{
+                  width: 58,
+                  height: 58,
+                  bgcolor: alpha(item.color, 0.16),
+                  color: item.color,
+                  border: `1px solid ${alpha(item.color, 0.28)}`,
+                  mb: 2,
+                }}
+              >
+                {item.icon}
+              </Avatar>
+
+              <Typography variant="h5" fontWeight={900} sx={{ mb: 1.5 }}>
+                {item.title}
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.68)",
+                  lineHeight: 1.75,
+                }}
+              >
+                {item.desc}
+              </Typography>
+            </GlassCard>
+          ))}
+        </CardGrid>
+      </Section>
+
+      {/* ================= LEARNING FLOW ================= */}
+      <Section compact>
+        <Box sx={{ textAlign: "center", mb: 6 }}>
+          <Typography
+            variant="overline"
+            sx={{ color: "#38bdf8", letterSpacing: 1.5, fontWeight: 900 }}
+          >
+            Learning flow
+          </Typography>
+
+          <Typography variant="h3" fontWeight={900} sx={{ mt: 1 }}>
+            Three steps to active science learning
+          </Typography>
+        </Box>
+
+        <CardGrid columns={3}>
+          {steps.map((s) => (
+            <GlassCard
+              key={s.n}
+              sx={{
+                p: 4,
+                minHeight: 270,
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 64,
+                  height: 64,
+                  bgcolor: alpha(s.color, 0.12),
+                  color: s.color,
+                  border: `1px solid ${alpha(s.color, 0.25)}`,
+                  mb: 2,
+                }}
+              >
+                {s.icon}
+              </Avatar>
+
+              <Typography
+                variant="caption"
+                sx={{ color: s.color, fontWeight: 900, letterSpacing: 1 }}
+              >
+                {s.n}
+              </Typography>
+
+              <Typography variant="h5" fontWeight={900} sx={{ mb: 1.5 }}>
+                {s.title}
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.65)",
+                  lineHeight: 1.7,
+                }}
+              >
+                {s.desc}
+              </Typography>
+            </GlassCard>
+          ))}
+        </CardGrid>
+      </Section>
+
+      {/* ================= AUDIENCE ================= */}
+      <Section compact>
+        <Typography
+          variant="h3"
+          sx={{ textAlign: "center", fontWeight: 900, mb: 2 }}
+        >
+          Built for classrooms and beyond
+        </Typography>
+
+        <Typography
+          sx={{
+            textAlign: "center",
+            color: "rgba(255,255,255,0.65)",
+            maxWidth: 760,
+            mx: "auto",
+            mb: 6,
+            lineHeight: 1.7,
+          }}
+        >
+          Esbiko is mainly designed for education, but science is not only for
+          schools. Anyone who enjoys learning can explore.
+        </Typography>
+
+        <CardGrid columns={3}>
+          {audiences.map((a) => (
+            <GlassCard
+              key={a.title}
+              sx={{
+                p: 4,
+                minHeight: 420,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+              }}
+            >
+              <Avatar
+                sx={{
+                  width: 64,
+                  height: 64,
+                  bgcolor: alpha(a.color, 0.18),
+                  color: a.color,
+                  mb: 2,
+                  border: `1px solid ${alpha(a.color, 0.25)}`,
+                }}
+              >
+                {a.icon}
+              </Avatar>
+
+              <Typography variant="h5" fontWeight={900}>
+                {a.title}
+              </Typography>
+
+              <Chip
+                label={a.tag}
+                size="small"
+                sx={{
+                  mt: 1,
+                  mb: 3,
+                  bgcolor: alpha(a.color, 0.16),
+                  color: a.color,
+                  fontWeight: 800,
+                }}
+              />
+
+              <Typography
+                sx={{
+                  color: "rgba(255,255,255,0.68)",
+                  mb: 4,
+                  lineHeight: 1.7,
+                }}
+              >
+                {a.desc}
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  flexDirection: "column",
+                  gap: 1.5,
+                  textAlign: "left",
+                  width: "100%",
+                  mt: "auto",
+                }}
+              >
+                {a.points.map((p) => (
+                  <Stack key={p} direction="row" spacing={1.5}>
+                    <CheckCircleRounded sx={{ color: a.color, fontSize: 20 }} />
+                    <Typography variant="body2" fontWeight={700}>
+                      {p}
+                    </Typography>
+                  </Stack>
+                ))}
+              </Box>
+            </GlassCard>
+          ))}
+        </CardGrid>
+      </Section>
+
+      {/* ================= TECH / TRUST ================= */}
+      <Section compact>
+        <CardGrid columns={4}>
+          {[
+            "Browser-based labs",
+            "No installation required",
+            "Desktop and tablet friendly",
+            "Built for visual STEM learning",
+          ].map((item) => (
+            <GlassCard
+              key={item}
+              sx={{
+                p: 3,
+                textAlign: "center",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 1.2,
+              }}
+            >
+              <DevicesRounded sx={{ color: "#38bdf8" }} />
+              <Typography fontWeight={800}>{item}</Typography>
+            </GlassCard>
+          ))}
+        </CardGrid>
       </Section>
 
       {/* ================= CTA ================= */}
-      <Section>
+      <Section compact>
         <Box
           sx={{
-            maxWidth: 900,
+            maxWidth: 940,
             mx: "auto",
             textAlign: "center",
             p: { xs: 4, md: 6 },
             borderRadius: 4,
             background:
-              "linear-gradient(180deg, rgba(56,189,248,0.15), rgba(0,0,0,0))",
+              "linear-gradient(180deg, rgba(56,189,248,0.16), rgba(129,140,248,0.06), rgba(0,0,0,0))",
             border: "1px solid rgba(56,189,248,0.25)",
           }}
         >
-          <Typography variant="h4" fontWeight={800} mb={2}>
-            Ready to start experimenting?
-          </Typography>
-          <Typography color="text.secondary" mb={4}>
-            Join the lab today. It's free for individual students.
-          </Typography>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => navigate("/login")}
+          <Chip
+            label="Public beta"
             sx={{
-              borderRadius: 999,
-              px: 6,
-              py: 1.8,
-              background: "white",
-              color: "black",
-              fontWeight: 700,
-              fontSize: "1.1rem",
-              "&:hover": { bgcolor: "#f1f5f9" },
+              bgcolor: "rgba(56,189,248,0.12)",
+              color: "#7dd3fc",
+              fontWeight: 900,
+              mb: 2,
+            }}
+          />
+
+          <Typography variant="h4" fontWeight={900} mb={2}>
+            Start exploring Esbiko for free
+          </Typography>
+
+          <Typography
+            sx={{
+              color: "rgba(255,255,255,0.68)",
+              mb: 4,
+              lineHeight: 1.8,
+              maxWidth: 700,
+              mx: "auto",
             }}
           >
-            Create Account
-          </Button>
+            Esbiko is currently growing as a free public beta. Try the
+            simulations, use them in learning, and help shape the future of
+            classroom-ready virtual science labs.
+          </Typography>
+
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={2}
+            justifyContent="center"
+          >
+            <Button
+              variant="contained"
+              size="large"
+              onClick={() => navigate("/experiments")}
+              sx={{
+                borderRadius: 999,
+                px: 5,
+                py: 1.6,
+                background: "white",
+                color: "black",
+                fontWeight: 900,
+                fontSize: "1rem",
+                "&:hover": { bgcolor: "#f1f5f9" },
+              }}
+            >
+              Explore Simulations
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={() => navigate("/about")}
+              sx={{
+                borderRadius: 999,
+                px: 5,
+                py: 1.6,
+                color: "white",
+                borderColor: "rgba(255,255,255,0.22)",
+                fontWeight: 900,
+                "&:hover": {
+                  borderColor: "#38bdf8",
+                  bgcolor: "rgba(56,189,248,0.08)",
+                },
+              }}
+            >
+              Learn About Esbiko
+            </Button>
+          </Stack>
         </Box>
       </Section>
     </Page>

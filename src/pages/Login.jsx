@@ -12,14 +12,18 @@ import { motion } from "framer-motion";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/firebaseConfig";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,32 +31,40 @@ export default function Login() {
     setError("");
 
     try {
-      // ✅ 1. ورود به Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
+
       const user = userCredential.user;
 
-      // ✅ 2. گرفتن نقش از Firestore
       const docRef = doc(db, "users", user.uid);
       const docSnap = await getDoc(docRef);
 
+      // ✅ If user came from a protected page, return them there
+      if (from) {
+        navigate(from, { replace: true });
+        return;
+      }
+
+      // ✅ Otherwise redirect based on role
       if (docSnap.exists()) {
         const userData = docSnap.data();
-        console.log("✅ Logged in as:", userData.role);
 
-        // ✅ هدایت بر اساس نقش
-        if (userData.role === "teacher") navigate("/dashboard/teacher");
-        else if (userData.role === "student") navigate("/dashboard/student");
-        else navigate("/");
+        if (userData.role === "teacher") {
+          navigate("/dashboard/teacher", { replace: true });
+        } else if (userData.role === "student") {
+          navigate("/dashboard/student", { replace: true });
+        } else {
+          navigate("/", { replace: true });
+        }
       } else {
-        console.warn("⚠️ No Firestore data found for user.");
-        navigate("/");
+        navigate("/", { replace: true });
       }
     } catch (err) {
-      setError(err.message);
+      console.error("Login error:", err);
+      setError("Login failed. Please check your email and password.");
     } finally {
       setLoading(false);
     }
@@ -85,8 +97,9 @@ export default function Login() {
         <Typography variant="h5" fontWeight={700} gutterBottom>
           Welcome Back
         </Typography>
+
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Login to your Science Web Lab account
+          Login to your Esbiko account
         </Typography>
 
         {error && (
