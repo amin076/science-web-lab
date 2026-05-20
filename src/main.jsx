@@ -4,6 +4,9 @@ import "./index.css";
 import App from "./App.jsx";
 import ThemeModeProvider from "@/context/ThemeContext"; // ✅ FIX
 import { HelmetProvider } from "react-helmet-async";
+import { initAnalytics } from "./services/analytics";
+
+initAnalytics();
 
 createRoot(document.getElementById("root")).render(
   <ThemeModeProvider>

@@ -1,4 +1,7 @@
 // ✅ src/App.jsx
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { trackPageView } from "./services/analytics";
 import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 import SimulationBoundary from "@/components/system/SimulationBoundary";
 import { Box } from "@mui/material"; // Removed ThemeProvider, CssBaseline
@@ -57,6 +60,16 @@ function LayoutShell() {
   );
 }
 
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    trackPageView(location.pathname + location.search);
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   // 🗑️ DELETED: Local state, useEffect, and handleThemeToggle.
   // The ThemeModeProvider in main.jsx handles all of this now.
@@ -66,6 +79,7 @@ export default function App() {
     <AuthProvider>
       <AppErrorBoundary>
         <Router>
+          <AnalyticsTracker />
           <Routes>
             {/* ✅ Fullscreen routes */}
             <Route
