@@ -5,8 +5,10 @@ import App from "./App.jsx";
 import ThemeModeProvider from "@/context/ThemeContext"; // ✅ FIX
 import { HelmetProvider } from "react-helmet-async";
 import { initAnalytics } from "./services/analytics";
+import { initClarity } from "./services/clarity";
 
 initAnalytics();
+initClarity();
 
 createRoot(document.getElementById("root")).render(
   <ThemeModeProvider>
