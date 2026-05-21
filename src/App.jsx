@@ -27,6 +27,8 @@ import StudentExperiment from "@/pages/dashboard/StudentExperiment";
 import TeacherClassDetail from "@/pages/dashboard/TeacherClassDetail";
 import AdminRoute from "./components/common/AdminRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminMessages from "./pages/admin/AdminMessages";
 
 // ▶️ Run Simulation (Fullscreen)
 import RunSimulation from "@/pages/simulations/RunSimulation";
@@ -84,6 +86,22 @@ export default function App() {
           <AnalyticsTracker />
           <Routes>
             {/* ✅ Admin routes */}
+<Route
+  path="/admin/messages"
+  element={
+    <AdminRoute>
+      <AdminMessages />
+    </AdminRoute>
+  }
+/>
+<Route
+  path="/admin/users"
+  element={
+    <AdminRoute>
+      <AdminUsers />
+    </AdminRoute>
+  }
+/>
             <Route
               path="/admin"
               element={
