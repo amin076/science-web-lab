@@ -25,6 +25,8 @@ import CreateClassForm from "@/pages/dashboard/CreateClassForm";
 import StudentClassDetail from "@/pages/dashboard/StudentClassDetail";
 import StudentExperiment from "@/pages/dashboard/StudentExperiment";
 import TeacherClassDetail from "@/pages/dashboard/TeacherClassDetail";
+import AdminRoute from "./components/common/AdminRoute";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // ▶️ Run Simulation (Fullscreen)
 import RunSimulation from "@/pages/simulations/RunSimulation";
@@ -81,6 +83,15 @@ export default function App() {
         <Router>
           <AnalyticsTracker />
           <Routes>
+            {/* ✅ Admin routes */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              }
+            />
             {/* ✅ Fullscreen routes */}
             <Route
               path="/experiments/:id/run"
