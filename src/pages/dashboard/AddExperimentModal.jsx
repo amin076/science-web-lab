@@ -43,15 +43,21 @@ export default function AddExperimentModal({ open, onClose, classId, onAdded }) 
         "experiment";
 
       await addDoc(collection(db, "classes", classId, "experiments"), {
-        title: selectedExp.name,
-        description: selectedExp.desc,
-        subject: selectedExp.subject,
+        experimentId: expId,
+        title: selectedExp.name || "Untitled Experiment",
+        description: selectedExp.desc || selectedExp.description || "",
+        subject: selectedExp.subject || selectedExp.domain || "",
+        topic: selectedExp.topic || "",
         path: `/experiments/${expId}`,
-        guideText: guide,
-        taskText: task,
-        videoUrl,
-        imageUrl,
-        audioUrl,
+
+        guideText: guide || "",
+        taskText: task || "",
+        videoUrl: videoUrl || "",
+        imageUrl: imageUrl || "",
+        audioUrl: audioUrl || "",
+
+        source: "library",
+        status: "assigned",
         createdAt: serverTimestamp(),
       });
 
@@ -64,8 +70,8 @@ export default function AddExperimentModal({ open, onClose, classId, onAdded }) 
       setImageUrl("");
       setAudioUrl("");
     } catch (err) {
-      console.error(err);
-      setError("Failed to add experiment from library");
+      console.error("❌ Failed to add experiment from library:", err);
+      setError(`Failed to add experiment from library: ${err.message}`);
     } finally {
       setLoading(false);
     }

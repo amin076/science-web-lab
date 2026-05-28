@@ -55,10 +55,12 @@ export default function StudentClassDetail() {
         // ✅ Fetch experiments
         const expsRef = collection(db, "classes", id, "experiments");
         const expsSnap = await getDocs(expsRef);
+
         const fetchedExperiments = expsSnap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
         }));
+
         setExperiments(fetchedExperiments);
       } catch (err) {
         console.error("❌ Error fetching class data:", err);
@@ -76,9 +78,11 @@ export default function StudentClassDetail() {
         <Typography variant="h5" color="error" gutterBottom>
           🚫 Access Denied
         </Typography>
+
         <Typography variant="body1">
           You are not enrolled in this class.
         </Typography>
+
         <Button
           variant="contained"
           color="primary"
@@ -109,6 +113,7 @@ export default function StudentClassDetail() {
       <Typography variant="h4" fontWeight={700} gutterBottom>
         🧪 {classData.name}
       </Typography>
+
       <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
         {classData.description || "No description provided."}
       </Typography>
@@ -118,6 +123,7 @@ export default function StudentClassDetail() {
         <Typography variant="h6" gutterBottom>
           Assigned Experiments
         </Typography>
+
         <Divider sx={{ mb: 3 }} />
 
         {experiments.length > 0 ? (
@@ -138,6 +144,7 @@ export default function StudentClassDetail() {
                       <Typography variant="subtitle1" fontWeight={700}>
                         {exp.title}
                       </Typography>
+
                       <Typography
                         variant="body2"
                         color="text.secondary"
@@ -196,16 +203,37 @@ export default function StudentClassDetail() {
                       )}
                     </Box>
 
-                    <Button
-                      component={Link}
-                      to={exp.path}
-                      variant="contained"
-                      color="success"
-                      size="small"
-                      sx={{ mt: 2 }}
+                    {/* ✅ UPDATED BUTTONS */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        mt: 2,
+                        flexWrap: "wrap",
+                      }}
                     >
-                      Run Simulation
-                    </Button>
+                      {/* ▶️ Public Simulation */}
+                      <Button
+                        component={Link}
+                        to={exp.path}
+                        variant="contained"
+                        color="success"
+                        size="small"
+                      >
+                        Run Simulation
+                      </Button>
+
+                      {/* 📝 LMS Submission Page */}
+                      <Button
+                        component={Link}
+                        to={`/dashboard/student/class/${id}/experiment/${exp.id}`}
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                      >
+                        Submit Work
+                      </Button>
+                    </Box>
                   </Box>
                 </CardWrapper>
               </Grid>
