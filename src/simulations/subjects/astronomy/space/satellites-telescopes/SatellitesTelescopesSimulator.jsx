@@ -68,6 +68,45 @@ const getTouchDist = (t1, t2) => {
   return Math.hypot(dx, dy);
 };
 
+const EDUCATIONAL_ORBIT_RADIUS_KM = {
+  MOON: 32000,
+  JWST: 60000,
+};
+
+function getVisualPosition(object, mode) {
+  if (mode !== VIEW_MODES.EDUCATIONAL) return object.state.pos;
+
+  if (object.type === "MOON" || object.type === "JWST") {
+    const visualRadiusKm = EDUCATIONAL_ORBIT_RADIUS_KM[object.type];
+    return vec.mul(vec.norm(object.state.pos), visualRadiusKm);
+  }
+
+  return object.state.pos;
+}
+function drawVisibleOrbitPath(ctx, cx, cy, radiusPx, type) {
+  ctx.save();
+
+  if (type === "MOON") {
+    ctx.strokeStyle = "rgba(160, 220, 255, 0.85)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+  } else if (type === "JWST") {
+    ctx.strokeStyle = "rgba(255, 193, 7, 0.45)";
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([10, 8]);
+  } else {
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.22)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([8, 8]);
+  }
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radiusPx, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 export default function SatellitesTelescopesSimulator() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -96,7 +135,7 @@ export default function SatellitesTelescopesSimulator() {
   });
 
   const sim = useRef({ t: 0, objects: [] });
-  const viewRef = useRef({ x: 0, y: 0, k: 0.15 });
+  const viewRef = useRef({ x: 0, y: 0, k: 0.08 });
 
   const dragRef = useRef({
     active: false,
@@ -191,7 +230,7 @@ export default function SatellitesTelescopesSimulator() {
     });
     accRef.current = 0;
     lastRef.current = performance.now();
-    viewRef.current = { x: 0, y: 0, k: 0.15 };
+    viewRef.current = { x: 0, y: 0, k: 0.08 };
     setUiTime(0);
     setObjectsList([...sim.current.objects]);
     requestAnimationFrame(() => setRunning(true));
@@ -275,15 +314,16 @@ export default function SatellitesTelescopesSimulator() {
       if (selectedObjId && selectedObjId !== "EARTH") {
         const target = sim.current.objects.find((o) => o.id === selectedObjId);
         if (target) {
-          let trackPos = target.state.pos;
-          if (
+          const visualTargetPos = getVisualPosition(target, settings.mode);
+
+          // In educational mode, frame Earth + Moon/JWST together.
+          // Centering directly on the object hides the orbit center (Earth).
+          const trackPos =
             settings.mode === VIEW_MODES.EDUCATIONAL &&
             (target.type === "MOON" || target.type === "JWST")
-          ) {
-            const dir = vec.norm(trackPos);
-            const dist = target.type === "MOON" ? 50000 : 80000;
-            trackPos = vec.mul(dir, dist);
-          }
+              ? vec.mul(visualTargetPos, 0.5)
+              : visualTargetPos;
+
           viewRef.current.x = -trackPos.x * kmToPx;
           viewRef.current.y = -trackPos.y * kmToPx;
         }
@@ -341,16 +381,14 @@ export default function SatellitesTelescopesSimulator() {
       sim.current.objects.forEach((o) => {
         if (o.hidden) return;
 
-        let pos = o.state.pos;
-        if (settings.mode === VIEW_MODES.EDUCATIONAL) {
-          if (o.type === "MOON") pos = vec.mul(vec.norm(pos), 50000);
-          if (o.type === "JWST") pos = vec.mul(vec.norm(pos), 80000);
-        }
+        const pos = getVisualPosition(o, settings.mode);
 
         const px = { x: cx + pos.x * kmToPx, y: cy + pos.y * kmToPx };
         const dist = vec.len(pos);
 
-        if (settings.showOrbits) drawOrbitPath(ctx, cx, cy, dist * kmToPx);
+        if (settings.showOrbits) {
+          drawVisibleOrbitPath(ctx, cx, cy, dist * kmToPx, o.type);
+        }
 
         if (settings.showTrails && o.trail.length > 1 && o.type !== "MOON") {
           ctx.strokeStyle = o.color;
@@ -369,7 +407,7 @@ export default function SatellitesTelescopesSimulator() {
         if (o.type === "MOON") {
           const moonPx =
             settings.mode === VIEW_MODES.EDUCATIONAL
-              ? earthPx * 0.4
+              ? earthPx * 0.28
               : o.radius * kmToPx;
           drawMoon(ctx, px.x, px.y, moonPx, moonImg, o.theta || 0);
         } else {
@@ -413,11 +451,7 @@ export default function SatellitesTelescopesSimulator() {
         if (selectedObjId !== "EARTH") {
           const obj = sim.current.objects.find((o) => o.id === selectedObjId);
           if (obj) {
-            let pos = obj.state.pos;
-            if (settings.mode === VIEW_MODES.EDUCATIONAL) {
-              if (obj.type === "MOON") pos = vec.mul(vec.norm(pos), 50000);
-              if (obj.type === "JWST") pos = vec.mul(vec.norm(pos), 80000);
-            }
+            const pos = getVisualPosition(obj, settings.mode);
             px = { x: cx + pos.x * kmToPx, y: cy + pos.y * kmToPx };
             radius = 25;
           }
@@ -468,7 +502,7 @@ export default function SatellitesTelescopesSimulator() {
 
   const recenterView = () => {
     setSelectedObjId(null);
-    viewRef.current = { x: 0, y: 0, k: 0.15 };
+    viewRef.current = { x: 0, y: 0, k: 0.08 };
   };
   const handleZoomIn = () => {
     viewRef.current.k = Math.min(20, viewRef.current.k * 1.2);
@@ -492,11 +526,7 @@ export default function SatellitesTelescopesSimulator() {
     const kmToPx = earthPx / EARTH.radiusKm;
     for (let o of sim.current.objects) {
       if (o.hidden) continue;
-      let pos = o.state.pos;
-      if (settings.mode === VIEW_MODES.EDUCATIONAL) {
-        if (o.type === "MOON") pos = vec.mul(vec.norm(pos), 50000);
-        if (o.type === "JWST") pos = vec.mul(vec.norm(pos), 80000);
-      }
+      const pos = getVisualPosition(o, settings.mode);
       const px = cx + pos.x * kmToPx;
       const py = cy + pos.y * kmToPx;
       if (Math.hypot(mx - px, my - py) < 30) {
