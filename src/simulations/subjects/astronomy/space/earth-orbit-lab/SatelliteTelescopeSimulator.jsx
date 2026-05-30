@@ -119,6 +119,22 @@ export default function SatelliteTelescopeSimulator() {
     if (simMode === "semi") return realRadius * 1.5;
     return realRadius;
   }, [simMode, mPerUnit]);
+  const moonOrbitPath = useMemo(() => {
+    const points = [];
+    const r = DISTANCE_EARTH_MOON_M;
+    const inc = (5.14 * Math.PI) / 180;
+
+    for (let i = 0; i <= 256; i++) {
+      const a = (i / 256) * Math.PI * 2;
+      points.push([
+        r * Math.cos(a),
+        r * Math.sin(a) * Math.cos(inc),
+        r * Math.sin(a) * Math.sin(inc),
+      ]);
+    }
+
+    return points;
+  }, []);
 
   // Actions
   const addBody = useCallback((cfg) => {
@@ -375,6 +391,14 @@ export default function SatelliteTelescopeSimulator() {
               />
             ))}
 
+          {settings.showMoon && settings.showOrbits && (
+            <OrbitPathVisual
+              pathData={moonOrbitPath}
+              mPerUnit={mPerUnit}
+              color="#9AD7FF"
+              opacity={0.9}
+            />
+          )}
           {settings.showMoon && (
             <group ref={moonVisualRef}>
               <MoonVisual
