@@ -405,6 +405,20 @@ function SolarSystemBodies({
                       showOrbit={showOrbits}
                       speed={effectiveSpeed}
                       color={moonData.color}
+                      texturePath={
+                        [
+                          "phobos",
+                          "deimos",
+                          "io",
+                          "europa",
+                          "ganymede",
+                          "callisto",
+                          "titan",
+                          "triton",
+                        ].includes(key)
+                          ? `/textures/${key}.jpg`
+                          : "/textures/moon.jpg"
+                      }
                       showLabels={showLabels}
                     />
                   ),
@@ -574,6 +588,20 @@ function SolarSystemSceneXR({
                             showOrbit={showOrbits}
                             speed={effectiveSpeed}
                             color={moonData.color}
+                            texturePath={
+                              [
+                                "phobos",
+                                "deimos",
+                                "io",
+                                "europa",
+                                "ganymede",
+                                "callisto",
+                                "titan",
+                                "triton",
+                              ].includes(key)
+                                ? `/textures/${key}.jpg`
+                                : "/textures/moon.jpg"
+                            }
                             showLabels={showLabels}
                           />
                         ),
