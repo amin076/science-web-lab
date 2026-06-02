@@ -41,7 +41,14 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     atmosphereColor: "#4ca6ff",
     trailColor: "#4ca6ff",
   },
-  moon: { radius: 0.22, orbitRadius: 2.5, period: 27.3, inclination: 5.1 },
+  moon: {
+    radius: 0.22,
+    orbitRadius: 2.5,
+    period: 27.3,
+    inclination: 5.1,
+    tidalLock: true,
+    tidalLockOffset: -Math.PI / 2,
+  },
 
   mars: {
     radius: 0.6,
@@ -50,15 +57,32 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     rotation: 1.03,
     year: 687,
     tilt: 25,
-    tidalLock: true,
-    tidalLockOffset: -Math.PI / 2,
+
     atmosphereColor: "#ff5722",
     trailColor: "#ff8a50",
   },
   // 🆕 MARS MOONS (Educational)
   marsMoons: {
-    phobos: { radius: 0.1, orbitRadius: 1.2, period: 0.3, color: "#8d8276" },
-    deimos: { radius: 0.08, orbitRadius: 1.8, period: 1.2, color: "#a59483" },
+    phobos: {
+      radius: 0.1,
+      orbitRadius: 1.2,
+      period: 0.3,
+      color: "#8d8276",
+      orbitColor: "#f59e0b",
+      labelColor: "#f59e0b",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
+    },
+    deimos: {
+      radius: 0.08,
+      orbitRadius: 1.8,
+      period: 1.2,
+      color: "#a59483",
+      orbitColor: "#38bdf8",
+      labelColor: "#38bdf8",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
+    },
   },
 
   jupiter: {
@@ -170,14 +194,19 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     atmosphereColor: "#4ca6ff",
     trailColor: "#4ca6ff",
   },
-  moon: { radius: 0.27, orbitRadius: 4, period: 27.3, inclination: 5.1 },
+  moon: {
+    radius: 0.27,
+    orbitRadius: 4,
+    period: 27.3,
+    inclination: 5.1,
+    tidalLock: true,
+    tidalLockOffset: -Math.PI / 2,
+  },
 
   mars: {
     radius: 0.53,
     ...calcOrbit(1.524, 0.093, SEMI_SCALE),
     inclination: 1.85,
-    tidalLock: true,
-    tidalLockOffset: -Math.PI / 2,
     rotation: 1.03,
     year: 687,
     tilt: 25,
@@ -185,8 +214,26 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     trailColor: "#ff8a50",
   },
   marsMoons: {
-    phobos: { radius: 0.15, orbitRadius: 1.5, period: 0.3, color: "#8d8276" },
-    deimos: { radius: 0.12, orbitRadius: 2.5, period: 1.2, color: "#a59483" },
+    phobos: {
+      radius: 0.15,
+      orbitRadius: 1.5,
+      period: 0.3,
+      color: "#8d8276",
+      orbitColor: "#f59e0b",
+      labelColor: "#f59e0b",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
+    },
+    deimos: {
+      radius: 0.12,
+      orbitRadius: 2.5,
+      period: 1.2,
+      color: "#a59483",
+      orbitColor: "#38bdf8",
+      labelColor: "#38bdf8",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
+    },
   },
 
   jupiter: {
@@ -318,12 +365,20 @@ export const ENTIRE_SOLAR_REALISTIC = {
       orbitRadius: 2.5 * R_EARTH,
       period: 0.3,
       color: "#8d8276",
+      orbitColor: "#f59e0b",
+      labelColor: "#f59e0b",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
     }, // Approx
     deimos: {
       radius: 0.005 * R_EARTH,
       orbitRadius: 3.5 * R_EARTH,
       period: 1.2,
       color: "#a59483",
+      orbitColor: "#38bdf8",
+      labelColor: "#38bdf8",
+      labelSize: 0.11,
+      labelOffset: [0, 0.18, 0],
     },
   },
 
