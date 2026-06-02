@@ -15,6 +15,8 @@ const EntireSolarControlPanel = ({
   setShowAxis,
   showStars,
   setShowStars,
+  showLabels,
+  setShowLabels,
   focusTarget,
   setFocusTarget,
   scaleMode,
@@ -100,6 +102,7 @@ const EntireSolarControlPanel = ({
             { label: "Show Orbits", val: showOrbits, set: setShowOrbits },
             { label: "Show Axes", val: showAxis, set: setShowAxis },
             { label: "Show Stars", val: showStars, set: setShowStars },
+            { label: "Show Labels", val: showLabels, set: setShowLabels },
           ].map((item, idx) => (
             <label
               key={idx}
