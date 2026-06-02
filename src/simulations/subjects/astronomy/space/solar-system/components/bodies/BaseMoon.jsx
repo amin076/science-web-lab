@@ -4,6 +4,11 @@ import { TextureLoader } from "three";
 import { Billboard, Text, Line } from "@react-three/drei";
 import * as THREE from "three";
 
+function getStableLabelAngle(name) {
+  const seed = Array.from(name).reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return ((seed % 360) * Math.PI) / 180;
+}
+
 export default function BaseMoon({
   name,
   data,
@@ -72,6 +77,15 @@ export default function BaseMoon({
 
   // Determine color safely (fallback if no texture)
   const moonColor = color || data.color || "#cccccc";
+  const labelAngle = data.labelAngle ?? getStableLabelAngle(name);
+  const labelDistance = data.labelOrbitRadius ?? data.orbitRadius;
+  const labelHeight = data.labelHeight ?? data.radius + 0.14;
+  const labelPosition = data.labelPosition || [
+    labelDistance * Math.cos(labelAngle),
+    labelHeight,
+    labelDistance * Math.sin(labelAngle),
+  ];
+  const labelSize = Math.min(data.labelSize ?? 0.045, data.maxLabelSize ?? 0.06);
 
   return (
     <group rotation={[0, 0, ((data.inclination || 0) * Math.PI) / 180]}>
@@ -86,7 +100,7 @@ export default function BaseMoon({
               data.orbitRadius * Math.sin(angle),
             ];
           })}
-          color="#ffffff"
+          color={data.orbitColor || "#ffffff"}
           lineWidth={0.6}
           transparent
           opacity={0.22}
@@ -106,22 +120,23 @@ export default function BaseMoon({
           </mesh>
         </group>
 
-        {/* Text Label */}
-        {showLabels && (
-          <Billboard position={[0, data.radius + 0.2, 0]}>
-            <Text
-              fontSize={Math.max(0.3, data.radius * 1.5)}
-              color="white"
-              anchorX="center"
-              anchorY="bottom"
-              outlineWidth={0.02}
-              outlineColor="black"
-            >
-              {name}
-            </Text>
-          </Billboard>
-        )}
       </group>
+
+      {/* Fixed moon label: anchored to the moon's orbit instead of the moving moon. */}
+      {showLabels && (
+        <Billboard position={labelPosition}>
+          <Text
+            fontSize={labelSize}
+            color={data.labelColor || "#ffffff"}
+            anchorX="center"
+            anchorY="bottom"
+            outlineWidth={0.005}
+            outlineColor="black"
+          >
+            {name}
+          </Text>
+        </Billboard>
+      )}
     </group>
   );
 }
