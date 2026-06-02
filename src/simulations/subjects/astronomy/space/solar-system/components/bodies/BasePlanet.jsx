@@ -163,9 +163,8 @@ export default function BasePlanet({
                 radius={data.radius}
                 color={data.atmosphereColor || "white"}
               />
-
-              {children}
             </group>
+            {children}
           </group>
         </group>
       </group>

@@ -39,10 +39,18 @@ export default function BaseMoon({
     if (groupRef.current) {
       // Set local position
       groupRef.current.position.set(x, 0, z);
+
       if (spinRef.current) {
+        const isTidallyLocked = data.tidalLock === true;
         const rotationPeriod = data.rotation || data.period || 1;
-        spinRef.current.rotation.y +=
-          0.01 * (1 / Math.abs(rotationPeriod)) * speed;
+
+        if (isTidallyLocked) {
+          const tidalLockOffset = data.tidalLockOffset ?? -Math.PI / 2;
+          spinRef.current.rotation.y = -Math.atan2(x, z) + tidalLockOffset;
+        } else {
+          spinRef.current.rotation.y +=
+            -0.1 * (1 / Math.abs(rotationPeriod)) * speed;
+        }
       }
 
       // 2. Calculate World Position
