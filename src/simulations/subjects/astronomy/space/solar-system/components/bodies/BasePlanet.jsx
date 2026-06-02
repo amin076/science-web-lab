@@ -15,6 +15,7 @@ export default function BasePlanet({
   speed = 1,
   showTrails = false,
   showAxis = false,
+  showLabels = true,
   onPositionUpdate,
   overridePosition,
   children,
@@ -46,7 +47,7 @@ export default function BasePlanet({
       overrideVecRef.current.set(
         overridePosition[0] || 0,
         overridePosition[1] || 0,
-        overridePosition[2] || 0
+        overridePosition[2] || 0,
       );
       groupRef.current.position.lerp(overrideVecRef.current, 0.1);
 
@@ -66,7 +67,7 @@ export default function BasePlanet({
       orbitProgress,
       data.orbitMajor,
       data.orbitMinor,
-      data.focusOffset
+      data.focusOffset,
     );
 
     groupRef.current.position.set(x, 0, z);
@@ -158,11 +159,13 @@ export default function BasePlanet({
               </group>
 
               {/* Label */}
-              <PlanetLabel
-                name={name}
-                radius={data.radius}
-                color={data.atmosphereColor || "white"}
-              />
+              {showLabels && (
+                <PlanetLabel
+                  name={name}
+                  radius={data.radius}
+                  color={data.atmosphereColor || "white"}
+                />
+              )}
             </group>
             {children}
           </group>

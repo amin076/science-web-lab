@@ -11,6 +11,7 @@ export default function BaseMoon({
   color,
   texturePath,
   showOrbit = true,
+  showLabels = true,
   onPositionUpdate,
 }) {
   const groupRef = useRef();
@@ -106,18 +107,20 @@ export default function BaseMoon({
         </group>
 
         {/* Text Label */}
-        <Billboard position={[0, data.radius + 0.2, 0]}>
-          <Text
-            fontSize={Math.max(0.3, data.radius * 1.5)}
-            color="white"
-            anchorX="center"
-            anchorY="bottom"
-            outlineWidth={0.02}
-            outlineColor="black"
-          >
-            {name}
-          </Text>
-        </Billboard>
+        {showLabels && (
+          <Billboard position={[0, data.radius + 0.2, 0]}>
+            <Text
+              fontSize={Math.max(0.3, data.radius * 1.5)}
+              color="white"
+              anchorX="center"
+              anchorY="bottom"
+              outlineWidth={0.02}
+              outlineColor="black"
+            >
+              {name}
+            </Text>
+          </Billboard>
+        )}
       </group>
     </group>
   );
