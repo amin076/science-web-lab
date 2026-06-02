@@ -79,7 +79,7 @@ export default function BaseMoon({
   const moonColor = color || data.color || "#cccccc";
   const labelAngle = data.labelAngle ?? getStableLabelAngle(name);
   const labelDistance = data.labelOrbitRadius ?? data.orbitRadius;
-  const labelHeight = data.labelHeight ?? data.radius + 0.14;
+  const labelHeight = data.labelHeight ?? 0;
   const labelPosition = data.labelPosition || [
     labelDistance * Math.cos(labelAngle),
     labelHeight,

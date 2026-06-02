@@ -5,6 +5,15 @@ const calcOrbit = (a_au, e, scaleConstant) => {
   return { orbitMajor: a, orbitMinor: b, focusOffset: c };
 };
 
+const MOON_ORBIT_PLANE = {
+  earth: { inclination: 5.1, labelHeight: 0 },
+  mars: { inclination: 25.2, labelHeight: 0 },
+  jupiter: { inclination: 3.1, labelHeight: 0 },
+  saturn: { inclination: 26.7, labelHeight: 0 },
+  uranus: { inclination: 97.8, labelHeight: 0 },
+  neptune: { inclination: 156.8, labelHeight: 0 },
+};
+
 // ==========================================
 // 1. EDUCATIONAL
 // ==========================================
@@ -45,7 +54,7 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     radius: 0.22,
     orbitRadius: 2.5,
     period: 27.3,
-    inclination: 5.1,
+    ...MOON_ORBIT_PLANE.earth,
     tidalLock: true,
     tidalLockOffset: -Math.PI / 2,
   },
@@ -72,6 +81,7 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
       labelColor: "#f59e0b",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     },
     deimos: {
       radius: 0.08,
@@ -82,6 +92,7 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
       labelColor: "#38bdf8",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     },
   },
 
@@ -96,14 +107,15 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     trailColor: "#ffd54f",
   },
   jupiterMoons: {
-    io: { radius: 0.15, orbitRadius: 3.5, period: 1.8, color: "#ffcc33" },
-    europa: { radius: 0.14, orbitRadius: 4.5, period: 3.5, color: "#d0e4ff" },
-    ganymede: { radius: 0.2, orbitRadius: 5.8, period: 7.2, color: "#c0b090" },
+    io: { radius: 0.15, orbitRadius: 3.5, period: 1.8, color: "#ffcc33", ...MOON_ORBIT_PLANE.jupiter },
+    europa: { radius: 0.14, orbitRadius: 4.5, period: 3.5, color: "#d0e4ff", ...MOON_ORBIT_PLANE.jupiter },
+    ganymede: { radius: 0.2, orbitRadius: 5.8, period: 7.2, color: "#c0b090", ...MOON_ORBIT_PLANE.jupiter },
     callisto: {
       radius: 0.18,
       orbitRadius: 7.0,
       period: 16.7,
       color: "#a1887f",
+      ...MOON_ORBIT_PLANE.jupiter,
     },
   },
 
@@ -120,8 +132,8 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
   },
   // 🆕 SATURN MOONS (Educational)
   saturnMoons: {
-    titan: { radius: 0.4, orbitRadius: 6.0, period: 16, color: "#e3bb76" },
-    enceladus: { radius: 0.1, orbitRadius: 3.5, period: 1.3, color: "#ffffff" },
+    titan: { radius: 0.4, orbitRadius: 6.0, period: 16, color: "#e3bb76", ...MOON_ORBIT_PLANE.saturn },
+    enceladus: { radius: 0.1, orbitRadius: 3.5, period: 1.3, color: "#ffffff", ...MOON_ORBIT_PLANE.saturn },
   },
 
   uranus: {
@@ -136,11 +148,11 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
   },
   // 🆕 URANUS MOONS (Educational)
   uranusMoons: {
-    miranda: { radius: 0.08, orbitRadius: 2.2, period: 1.4, color: "#b9c7d6" },
-    ariel: { radius: 0.12, orbitRadius: 3.0, period: 2.5, color: "#d8d8d8" },
-    umbriel: { radius: 0.12, orbitRadius: 3.8, period: 4.1, color: "#8f8f8f" },
-    titania: { radius: 0.16, orbitRadius: 4.8, period: 8.7, color: "#c7b7a3" },
-    oberon: { radius: 0.15, orbitRadius: 5.8, period: 13.5, color: "#a89580" },
+    miranda: { radius: 0.08, orbitRadius: 2.2, period: 1.4, color: "#b9c7d6", ...MOON_ORBIT_PLANE.uranus },
+    ariel: { radius: 0.12, orbitRadius: 3.0, period: 2.5, color: "#d8d8d8", ...MOON_ORBIT_PLANE.uranus },
+    umbriel: { radius: 0.12, orbitRadius: 3.8, period: 4.1, color: "#8f8f8f", ...MOON_ORBIT_PLANE.uranus },
+    titania: { radius: 0.16, orbitRadius: 4.8, period: 8.7, color: "#c7b7a3", ...MOON_ORBIT_PLANE.uranus },
+    oberon: { radius: 0.15, orbitRadius: 5.8, period: 13.5, color: "#a89580", ...MOON_ORBIT_PLANE.uranus },
   },
   neptune: {
     radius: 1.4,
@@ -154,7 +166,7 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
   },
   // 🆕 NEPTUNE MOONS (Educational)
   neptuneMoons: {
-    triton: { radius: 0.25, orbitRadius: 3.5, period: -5.8, color: "#f4d6d6" }, // Negative = Retrograde
+    triton: { radius: 0.25, orbitRadius: 3.5, period: -5.8, color: "#f4d6d6", ...MOON_ORBIT_PLANE.neptune }, // Negative = Retrograde
   },
 };
 
@@ -198,7 +210,7 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     radius: 0.27,
     orbitRadius: 4,
     period: 27.3,
-    inclination: 5.1,
+    ...MOON_ORBIT_PLANE.earth,
     tidalLock: true,
     tidalLockOffset: -Math.PI / 2,
   },
@@ -223,6 +235,7 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
       labelColor: "#f59e0b",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     },
     deimos: {
       radius: 0.12,
@@ -233,6 +246,7 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
       labelColor: "#38bdf8",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     },
   },
 
@@ -247,10 +261,10 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     trailColor: "#ffd54f",
   },
   jupiterMoons: {
-    io: { radius: 0.28, orbitRadius: 15, period: 1.8, color: "#ffcc33" },
-    europa: { radius: 0.24, orbitRadius: 20, period: 3.5, color: "#d0e4ff" },
-    ganymede: { radius: 0.41, orbitRadius: 25, period: 7.2, color: "#c0b090" },
-    callisto: { radius: 0.37, orbitRadius: 35, period: 16.7, color: "#a1887f" },
+    io: { radius: 0.28, orbitRadius: 15, period: 1.8, color: "#ffcc33", ...MOON_ORBIT_PLANE.jupiter },
+    europa: { radius: 0.24, orbitRadius: 20, period: 3.5, color: "#d0e4ff", ...MOON_ORBIT_PLANE.jupiter },
+    ganymede: { radius: 0.41, orbitRadius: 25, period: 7.2, color: "#c0b090", ...MOON_ORBIT_PLANE.jupiter },
+    callisto: { radius: 0.37, orbitRadius: 35, period: 16.7, color: "#a1887f", ...MOON_ORBIT_PLANE.jupiter },
   },
 
   saturn: {
@@ -265,8 +279,8 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     rings: { inner: 11, outer: 18, color: "#c5a16f" },
   },
   saturnMoons: {
-    titan: { radius: 0.45, orbitRadius: 22, period: 16, color: "#e3bb76" },
-    enceladus: { radius: 0.15, orbitRadius: 14, period: 1.3, color: "#ffffff" },
+    titan: { radius: 0.45, orbitRadius: 22, period: 16, color: "#e3bb76", ...MOON_ORBIT_PLANE.saturn },
+    enceladus: { radius: 0.15, orbitRadius: 14, period: 1.3, color: "#ffffff", ...MOON_ORBIT_PLANE.saturn },
   },
 
   uranus: {
@@ -281,11 +295,11 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
   },
   // 🆕 URANUS MOONS (Semi-Realistic)
   uranusMoons: {
-    miranda: { radius: 0.08, orbitRadius: 7, period: 1.4, color: "#b9c7d6" },
-    ariel: { radius: 0.12, orbitRadius: 10, period: 2.5, color: "#d8d8d8" },
-    umbriel: { radius: 0.12, orbitRadius: 13, period: 4.1, color: "#8f8f8f" },
-    titania: { radius: 0.16, orbitRadius: 17, period: 8.7, color: "#c7b7a3" },
-    oberon: { radius: 0.15, orbitRadius: 22, period: 13.5, color: "#a89580" },
+    miranda: { radius: 0.08, orbitRadius: 7, period: 1.4, color: "#b9c7d6", ...MOON_ORBIT_PLANE.uranus },
+    ariel: { radius: 0.12, orbitRadius: 10, period: 2.5, color: "#d8d8d8", ...MOON_ORBIT_PLANE.uranus },
+    umbriel: { radius: 0.12, orbitRadius: 13, period: 4.1, color: "#8f8f8f", ...MOON_ORBIT_PLANE.uranus },
+    titania: { radius: 0.16, orbitRadius: 17, period: 8.7, color: "#c7b7a3", ...MOON_ORBIT_PLANE.uranus },
+    oberon: { radius: 0.15, orbitRadius: 22, period: 13.5, color: "#a89580", ...MOON_ORBIT_PLANE.uranus },
   },
   neptune: {
     radius: 3.9,
@@ -298,7 +312,7 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     trailColor: "#536dfe",
   },
   neptuneMoons: {
-    triton: { radius: 0.35, orbitRadius: 10, period: -5.8, color: "#f4d6d6" },
+    triton: { radius: 0.35, orbitRadius: 10, period: -5.8, color: "#f4d6d6", ...MOON_ORBIT_PLANE.neptune },
   },
 };
 
@@ -344,7 +358,7 @@ export const ENTIRE_SOLAR_REALISTIC = {
     radius: 0.273 * R_EARTH,
     orbitRadius: 60.3 * R_EARTH,
     period: 27.3,
-    inclination: 5.1,
+    ...MOON_ORBIT_PLANE.earth,
     tidalLock: true,
     tidalLockOffset: -Math.PI / 2,
   },
@@ -369,6 +383,7 @@ export const ENTIRE_SOLAR_REALISTIC = {
       labelColor: "#f59e0b",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     }, // Approx
     deimos: {
       radius: 0.005 * R_EARTH,
@@ -379,6 +394,7 @@ export const ENTIRE_SOLAR_REALISTIC = {
       labelColor: "#38bdf8",
       labelSize: 0.11,
       labelOffset: [0, 0.18, 0],
+      ...MOON_ORBIT_PLANE.mars,
     },
   },
 
@@ -398,24 +414,28 @@ export const ENTIRE_SOLAR_REALISTIC = {
       orbitRadius: 66.2 * R_EARTH,
       period: 1.77,
       color: "#ffcc33",
+      ...MOON_ORBIT_PLANE.jupiter,
     },
     europa: {
       radius: 0.24 * R_EARTH,
       orbitRadius: 105.3 * R_EARTH,
       period: 3.55,
       color: "#d0e4ff",
+      ...MOON_ORBIT_PLANE.jupiter,
     },
     ganymede: {
       radius: 0.41 * R_EARTH,
       orbitRadius: 168.0 * R_EARTH,
       period: 7.15,
       color: "#c0b090",
+      ...MOON_ORBIT_PLANE.jupiter,
     },
     callisto: {
       radius: 0.37 * R_EARTH,
       orbitRadius: 295.5 * R_EARTH,
       period: 16.69,
       color: "#a1887f",
+      ...MOON_ORBIT_PLANE.jupiter,
     },
   },
 
@@ -436,12 +456,14 @@ export const ENTIRE_SOLAR_REALISTIC = {
       orbitRadius: 190.0 * R_EARTH,
       period: 16,
       color: "#e3bb76",
+      ...MOON_ORBIT_PLANE.saturn,
     },
     enceladus: {
       radius: 0.04 * R_EARTH,
       orbitRadius: 37.0 * R_EARTH,
       period: 1.3,
       color: "#ffffff",
+      ...MOON_ORBIT_PLANE.saturn,
     },
   },
 
@@ -462,30 +484,35 @@ export const ENTIRE_SOLAR_REALISTIC = {
       orbitRadius: 32 * R_EARTH,
       period: 1.41,
       color: "#b9c7d6",
+      ...MOON_ORBIT_PLANE.uranus,
     },
     ariel: {
       radius: 0.091 * R_EARTH,
       orbitRadius: 53 * R_EARTH,
       period: 2.52,
       color: "#d8d8d8",
+      ...MOON_ORBIT_PLANE.uranus,
     },
     umbriel: {
       radius: 0.092 * R_EARTH,
       orbitRadius: 74 * R_EARTH,
       period: 4.14,
       color: "#8f8f8f",
+      ...MOON_ORBIT_PLANE.uranus,
     },
     titania: {
       radius: 0.124 * R_EARTH,
       orbitRadius: 109 * R_EARTH,
       period: 8.71,
       color: "#c7b7a3",
+      ...MOON_ORBIT_PLANE.uranus,
     },
     oberon: {
       radius: 0.119 * R_EARTH,
       orbitRadius: 146 * R_EARTH,
       period: 13.46,
       color: "#a89580",
+      ...MOON_ORBIT_PLANE.uranus,
     },
   },
   neptune: {
@@ -504,6 +531,7 @@ export const ENTIRE_SOLAR_REALISTIC = {
       orbitRadius: 55.0 * R_EARTH,
       period: -5.8,
       color: "#f4d6d6",
+      ...MOON_ORBIT_PLANE.neptune,
     },
   },
 };
