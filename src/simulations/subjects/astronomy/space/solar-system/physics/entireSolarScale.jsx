@@ -50,6 +50,8 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     rotation: 1.03,
     year: 687,
     tilt: 25,
+    tidalLock: true,
+    tidalLockOffset: -Math.PI / 2,
     atmosphereColor: "#ff5722",
     trailColor: "#ff8a50",
   },
@@ -174,6 +176,8 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     radius: 0.53,
     ...calcOrbit(1.524, 0.093, SEMI_SCALE),
     inclination: 1.85,
+    tidalLock: true,
+    tidalLockOffset: -Math.PI / 2,
     rotation: 1.03,
     year: 687,
     tilt: 25,
@@ -294,6 +298,8 @@ export const ENTIRE_SOLAR_REALISTIC = {
     orbitRadius: 60.3 * R_EARTH,
     period: 27.3,
     inclination: 5.1,
+    tidalLock: true,
+    tidalLockOffset: -Math.PI / 2,
   },
 
   mars: {
