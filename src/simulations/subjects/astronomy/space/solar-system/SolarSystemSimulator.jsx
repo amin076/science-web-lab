@@ -136,25 +136,117 @@ function XRButtons({ onEnterAR, onEnterVR, compact = false }) {
 /** OrbitControls + smooth focus */
 function ManualCameraController({
   focusTarget,
+  focusRequestId,
   targets,
+  scale,
   scaleMode,
   isTouring,
 }) {
   const controlsRef = useRef(null);
   const tempTarget = useMemo(() => new THREE.Vector3(), []);
+  const lastControlTarget = useMemo(() => new THREE.Vector3(), []);
+  const targetDelta = useMemo(() => new THREE.Vector3(), []);
+  const focusOffset = useMemo(
+    () => new THREE.Vector3(1, 0.45, 1).normalize(),
+    [],
+  );
+  const desiredCameraPosition = useMemo(() => new THREE.Vector3(), []);
+  const previousFocusKey = useRef(
+    `${scaleMode}:${focusTarget}:${focusRequestId}`,
+  );
+  const focusTransitionRef = useRef(0);
 
-  useFrame(() => {
+  const getFocusDistance = useCallback(
+    (targetId) => {
+      if (targetId === "sun") {
+        return scaleMode === "realistic" ? 2500 : 120;
+      }
+
+      const radius = Math.max(scale?.[targetId]?.radius ?? 1, 0.2);
+      const multiplier = targetId === "saturn" ? 7 : radius < 1 ? 5 : 6;
+      const minDistance =
+        scaleMode === "realistic" && radius < 1
+          ? 0.8
+          : scaleMode === "realistic"
+            ? 2.5
+            : 4;
+
+      return Math.max(radius * multiplier, radius + minDistance);
+    },
+    [scale, scaleMode],
+  );
+
+  const getFocusOffset = useCallback(
+    (targetId) => {
+      if (scaleMode === "realistic" && targetId !== "sun") {
+        return focusOffset.set(0.9, 0.35, 1).normalize();
+      }
+
+      return focusOffset;
+    },
+    [focusOffset, scaleMode],
+  );
+
+  useFrame(({ camera }, delta) => {
     if (!controlsRef.current) return;
     if (isTouring) return;
+    const controls = controlsRef.current;
 
+    let targetIsReady = focusTarget === "sun";
     tempTarget.set(0, 0, 0);
     if (focusTarget !== "sun" && targets[focusTarget]) {
       const p = targets[focusTarget];
       tempTarget.set(p[0] || 0, p[1] || 0, p[2] || 0);
+      targetIsReady = true;
     }
 
-    controlsRef.current.target.lerp(tempTarget, 0.1);
-    controlsRef.current.update();
+    if (!targetIsReady) {
+      controls.update();
+      return;
+    }
+
+    const focusKey = `${scaleMode}:${focusTarget}:${focusRequestId}`;
+    let shouldSnapToFocus = false;
+    if (previousFocusKey.current !== focusKey) {
+      focusOffset.copy(camera.position).sub(controls.target);
+      if (focusOffset.lengthSq() < 0.001) {
+        focusOffset.set(1, 0.45, 1);
+      }
+      focusOffset.normalize();
+      getFocusOffset(focusTarget);
+      focusTransitionRef.current = 2.2;
+      shouldSnapToFocus = scaleMode === "realistic";
+      previousFocusKey.current = focusKey;
+    }
+
+    lastControlTarget.copy(controls.target);
+
+    const targetLerp = 1 - Math.exp(-5 * delta);
+
+    if (focusTransitionRef.current > 0.001) {
+      controls.target.copy(tempTarget);
+      desiredCameraPosition
+        .copy(tempTarget)
+        .addScaledVector(focusOffset, getFocusDistance(focusTarget));
+
+      if (shouldSnapToFocus) {
+        camera.position.copy(desiredCameraPosition);
+        focusTransitionRef.current = 0;
+      } else {
+        const cameraLerp = 1 - Math.exp(-4.2 * delta);
+        camera.position.lerp(desiredCameraPosition, cameraLerp);
+        focusTransitionRef.current = Math.max(
+          0,
+          focusTransitionRef.current - delta,
+        );
+      }
+    } else {
+      controls.target.lerp(tempTarget, targetLerp);
+      targetDelta.copy(controls.target).sub(lastControlTarget);
+      camera.position.add(targetDelta);
+    }
+
+    controls.update();
   });
 
   const maxDist = scaleMode === "realistic" ? 50_000_000 : 50_000;
@@ -245,7 +337,6 @@ function SolarSystemBodies({
   showOrbits,
   showStars,
   showLabels,
-  planetPositions,
   updatePos,
 }) {
   // Stars size
@@ -348,6 +439,7 @@ function SolarSystemSceneNonXR({
   updatePos,
   scaleMode,
   focusTarget,
+  focusRequestId,
   isTouring,
   setTourInfo,
   showStars,
@@ -370,7 +462,9 @@ function SolarSystemSceneNonXR({
 
       <ManualCameraController
         focusTarget={focusTarget}
+        focusRequestId={focusRequestId}
         targets={planetPositions}
+        scale={scale}
         scaleMode={scaleMode}
         isTouring={isTouring}
       />
@@ -399,10 +493,12 @@ function SolarSystemSceneXR({
   showTrails,
   showOrbits,
   showStars,
+  showLabels,
   planetPositions,
   updatePos,
   scaleMode,
   focusTarget,
+  focusRequestId,
   isTouring,
   setTourInfo,
   setIsTouring,
@@ -452,6 +548,7 @@ function SolarSystemSceneXR({
                     speed={effectiveSpeed}
                     showTrails={showTrails}
                     showAxis={showAxis}
+                    showLabels={showLabels}
                     onPositionUpdate={(pos) => updatePos(planet.id, pos)}
                   >
                     {planet.moons?.map((moonDef) => (
@@ -511,7 +608,9 @@ function SolarSystemSceneXR({
       {!isPresenting && (
         <ManualCameraController
           focusTarget={focusTarget}
+          focusRequestId={focusRequestId}
           targets={planetPositions}
+          scale={scale}
           scaleMode={scaleMode}
           isTouring={isTouring}
         />
@@ -537,6 +636,7 @@ export default function SolarSystemSimulator() {
   const [showStars, setShowStars] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
   const [focusTarget, setFocusTarget] = useState("sun");
+  const [focusRequestId, setFocusRequestId] = useState(0);
   const [scaleMode, setScaleMode] = useState("educational");
 
   const [planetPositions, setPlanetPositions] = useState({});
@@ -568,6 +668,15 @@ export default function SolarSystemSimulator() {
     return ENTIRE_SOLAR_EDUCATIONAL;
   }, [scaleMode]);
 
+  useEffect(() => {
+    setPlanetPositions({});
+  }, [scaleMode]);
+
+  const handleFocusTarget = useCallback((id) => {
+    setFocusTarget(id);
+    setFocusRequestId((prev) => prev + 1);
+  }, []);
+
   const effectiveSpeed = isTouring
     ? Math.max(speed, 1)
     : isSimulating
@@ -585,6 +694,7 @@ export default function SolarSystemSimulator() {
     setIsSimulating(false);
     setSpeed(1);
     setFocusTarget("sun");
+    setFocusRequestId((prev) => prev + 1);
     setIsTouring(false);
     setTourInfo({ phase: "APPROACH", targetId: "sun", progress: 0 });
   };
@@ -664,6 +774,7 @@ export default function SolarSystemSimulator() {
                 updatePos={updatePos}
                 scaleMode={scaleMode}
                 focusTarget={focusTarget}
+                focusRequestId={focusRequestId}
                 isTouring={isTouring}
                 setTourInfo={setTourInfo}
                 setIsTouring={setIsTouring}
@@ -678,10 +789,12 @@ export default function SolarSystemSimulator() {
                   showTrails={showTrails}
                   showStars={showStars}
                   showOrbits={showOrbits}
+                  showLabels={showLabels}
                   planetPositions={planetPositions}
                   updatePos={updatePos}
                   scaleMode={scaleMode}
                   focusTarget={focusTarget}
+                  focusRequestId={focusRequestId}
                   isTouring={isTouring}
                   setTourInfo={setTourInfo}
                   setIsTouring={setIsTouring}
@@ -788,7 +901,7 @@ export default function SolarSystemSimulator() {
             showLabels={showLabels}
             setShowLabels={setShowLabels}
             focusTarget={focusTarget}
-            setFocusTarget={setFocusTarget}
+            setFocusTarget={handleFocusTarget}
             scaleMode={scaleMode}
             setScaleMode={setScaleMode}
             setShowComparison3D={setShowComparison3D}
@@ -849,7 +962,7 @@ export default function SolarSystemSimulator() {
                   showLabels={showLabels}
                   setShowLabels={setShowLabels}
                   focusTarget={focusTarget}
-                  setFocusTarget={setFocusTarget}
+                  setFocusTarget={handleFocusTarget}
                   scaleMode={scaleMode}
                   setScaleMode={setScaleMode}
                   setShowComparison3D={setShowComparison3D}
