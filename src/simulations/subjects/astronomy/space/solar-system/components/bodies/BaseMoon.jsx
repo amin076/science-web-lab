@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { TextureLoader } from "three";
-import { Billboard, Text } from "@react-three/drei";
+import { Billboard, Text, Line } from "@react-three/drei";
 import * as THREE from "three";
 
 export default function BaseMoon({
@@ -9,7 +9,8 @@ export default function BaseMoon({
   data,
   speed,
   color,
-  texturePath, // 🆕 Added Prop
+  texturePath,
+  showOrbit = true,
   onPositionUpdate,
 }) {
   const groupRef = useRef();
@@ -59,30 +60,50 @@ export default function BaseMoon({
   const moonColor = color || data.color || "#cccccc";
 
   return (
-    <group ref={groupRef}>
-      <mesh>
-        <sphereGeometry args={[data.radius, 16, 16]} />
-        <meshStandardMaterial
-          map={hasTexture ? texture : null}
-          color={hasTexture ? "white" : moonColor}
-          emissive={hasTexture ? "black" : moonColor}
-          emissiveIntensity={hasTexture ? 0 : 0.2}
+    <>
+      {/* Moon Orbit Path - centered around parent planet */}
+      {showOrbit && (
+        <Line
+          points={Array.from({ length: 129 }, (_, i) => {
+            const angle = (i / 128) * Math.PI * 2;
+            return [
+              data.orbitRadius * Math.cos(angle),
+              0,
+              data.orbitRadius * Math.sin(angle),
+            ];
+          })}
+          color="#ffffff"
+          lineWidth={0.6}
+          transparent
+          opacity={0.22}
         />
-      </mesh>
+      )}
 
-      {/* Text Label */}
-      <Billboard position={[0, data.radius + 0.2, 0]}>
-        <Text
-          fontSize={Math.max(0.3, data.radius * 1.5)}
-          color="white"
-          anchorX="center"
-          anchorY="bottom"
-          outlineWidth={0.02}
-          outlineColor="black"
-        >
-          {name}
-        </Text>
-      </Billboard>
-    </group>
+      <group ref={groupRef}>
+        <mesh>
+          <sphereGeometry args={[data.radius, 16, 16]} />
+          <meshStandardMaterial
+            map={hasTexture ? texture : null}
+            color={hasTexture ? "white" : moonColor}
+            emissive={hasTexture ? "black" : moonColor}
+            emissiveIntensity={hasTexture ? 0 : 0.2}
+          />
+        </mesh>
+
+        {/* Text Label */}
+        <Billboard position={[0, data.radius + 0.2, 0]}>
+          <Text
+            fontSize={Math.max(0.3, data.radius * 1.5)}
+            color="white"
+            anchorX="center"
+            anchorY="bottom"
+            outlineWidth={0.02}
+            outlineColor="black"
+          >
+            {name}
+          </Text>
+        </Billboard>
+      </group>
+    </>
   );
 }

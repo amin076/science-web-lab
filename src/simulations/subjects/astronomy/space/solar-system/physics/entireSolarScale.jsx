@@ -108,7 +108,14 @@ export const ENTIRE_SOLAR_EDUCATIONAL = {
     atmosphereColor: "#a7d1d6",
     trailColor: "#80deea",
   },
-
+  // 🆕 URANUS MOONS (Educational)
+  uranusMoons: {
+    miranda: { radius: 0.08, orbitRadius: 2.2, period: 1.4, color: "#b9c7d6" },
+    ariel: { radius: 0.12, orbitRadius: 3.0, period: 2.5, color: "#d8d8d8" },
+    umbriel: { radius: 0.12, orbitRadius: 3.8, period: 4.1, color: "#8f8f8f" },
+    titania: { radius: 0.16, orbitRadius: 4.8, period: 8.7, color: "#c7b7a3" },
+    oberon: { radius: 0.15, orbitRadius: 5.8, period: 13.5, color: "#a89580" },
+  },
   neptune: {
     radius: 1.4,
     ...calcOrbit(30.069, 0.009, EDU_SCALE),
@@ -221,7 +228,14 @@ export const ENTIRE_SOLAR_SEMI_REALISTIC = {
     atmosphereColor: "#a7d1d6",
     trailColor: "#80deea",
   },
-
+  // 🆕 URANUS MOONS (Semi-Realistic)
+  uranusMoons: {
+    miranda: { radius: 0.08, orbitRadius: 7, period: 1.4, color: "#b9c7d6" },
+    ariel: { radius: 0.12, orbitRadius: 10, period: 2.5, color: "#d8d8d8" },
+    umbriel: { radius: 0.12, orbitRadius: 13, period: 4.1, color: "#8f8f8f" },
+    titania: { radius: 0.16, orbitRadius: 17, period: 8.7, color: "#c7b7a3" },
+    oberon: { radius: 0.15, orbitRadius: 22, period: 13.5, color: "#a89580" },
+  },
   neptune: {
     radius: 3.9,
     ...calcOrbit(30.069, 0.009, SEMI_SCALE),
@@ -380,7 +394,39 @@ export const ENTIRE_SOLAR_REALISTIC = {
     atmosphereColor: "#a7d1d6",
     trailColor: "#80deea",
   },
-
+  //uranus moons (Realistic)
+  uranusMoons: {
+    miranda: {
+      radius: 0.037 * R_EARTH,
+      orbitRadius: 32 * R_EARTH,
+      period: 1.41,
+      color: "#b9c7d6",
+    },
+    ariel: {
+      radius: 0.091 * R_EARTH,
+      orbitRadius: 53 * R_EARTH,
+      period: 2.52,
+      color: "#d8d8d8",
+    },
+    umbriel: {
+      radius: 0.092 * R_EARTH,
+      orbitRadius: 74 * R_EARTH,
+      period: 4.14,
+      color: "#8f8f8f",
+    },
+    titania: {
+      radius: 0.124 * R_EARTH,
+      orbitRadius: 109 * R_EARTH,
+      period: 8.71,
+      color: "#c7b7a3",
+    },
+    oberon: {
+      radius: 0.119 * R_EARTH,
+      orbitRadius: 146 * R_EARTH,
+      period: 13.46,
+      color: "#a89580",
+    },
+  },
   neptune: {
     radius: 3.88 * R_EARTH,
     ...calcOrbit(30.069, 0.009, AU_REAL),
