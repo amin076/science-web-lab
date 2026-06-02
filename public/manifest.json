@@ -1,7 +1,7 @@
 {
-  "name": "Science Web Lab",
-  "short_name": "SWL",
-  "description": "Virtual Physics Experiments for Students and Teachers",
+  "name": "Esbiko",
+  "short_name": "Esbiko",
+  "description": "Interactive science simulations and virtual labs for students and teachers",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#e8f0fe",

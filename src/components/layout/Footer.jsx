@@ -9,12 +9,10 @@ import {
   Stack,
   Chip,
   IconButton,
-  Button,
 } from "@mui/material";
 
 import { useTheme, alpha } from "@mui/material/styles";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
 
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
@@ -41,28 +39,27 @@ const socialLinks = [
   {
     label: "YouTube",
     href: "https://www.youtube.com/@Esbiko-Science",
-    Icon: YouTubeIcon,
+    icon: <YouTubeIcon fontSize="small" />,
   },
   {
     label: "LinkedIn",
     href: "https://www.linkedin.com/company/esbiko",
-    Icon: LinkedInIcon,
+    icon: <LinkedInIcon fontSize="small" />,
   },
   {
     label: "Instagram",
     href: "https://www.instagram.com/esbiko.science",
-    Icon: InstagramIcon,
+    icon: <InstagramIcon fontSize="small" />,
   },
   {
     label: "GitHub",
     href: "https://github.com/amin076/science-web-lab",
-    Icon: GitHubIcon,
+    icon: <GitHubIcon fontSize="small" />,
   },
 ];
 
 export default function Footer() {
   const theme = useTheme();
-  const navigate = useNavigate();
 
   const isDark = theme.palette.mode === "dark";
 
@@ -213,7 +210,7 @@ export default function Footer() {
                       lineHeight: 1,
                     }}
                   >
-                    Science Web Lab
+                    Esbiko
                   </Typography>
 
                   <Typography
@@ -222,7 +219,7 @@ export default function Footer() {
                       color: mutedColor,
                     }}
                   >
-                    Powered by Esbiko
+                    Interactive Science Labs
                   </Typography>
                 </Box>
               </Stack>
@@ -339,7 +336,7 @@ export default function Footer() {
               </Typography>
 
               <Stack direction="row" spacing={1} mt={1}>
-                {socialLinks.map(({ label, href, Icon }) => (
+                {socialLinks.map(({ label, href, icon }) => (
                   <IconButton
                     key={label}
                     component="a"
@@ -369,7 +366,7 @@ export default function Footer() {
                       },
                     }}
                   >
-                    <Icon fontSize="small" />
+                    {icon}
                   </IconButton>
                 ))}
               </Stack>
