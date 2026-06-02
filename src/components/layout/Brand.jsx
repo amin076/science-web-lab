@@ -41,7 +41,7 @@ export default function Brand() {
       {/* 🔵 Brand Logo Image */}
       <motion.img
         src="/favicon.svg"
-        alt="Science Web Lab Logo"
+        alt="Esbiko Logo"
         initial={{ rotate: 0 }}
         animate={{
           rotate: [0, 10, -10, 0],
@@ -89,7 +89,7 @@ export default function Brand() {
           WebkitTextFillColor: "transparent",
         }}
       >
-        Science Web Lab
+        Esbiko
       </Typography>
     </Box>
   );

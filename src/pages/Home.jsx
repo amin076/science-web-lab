@@ -329,6 +329,7 @@ export default function Home() {
                   endAdornment: (
                     <Button
                       variant="contained"
+                      aria-label="Search simulations"
                       onClick={() => navigate("/experiments")}
                       sx={{
                         minWidth: 40,

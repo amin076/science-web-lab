@@ -83,7 +83,7 @@ export default function Register() {
           Create an Account
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          Join Science Web Lab — pick your role and start learning!
+          Join Esbiko — pick your role and start learning!
         </Typography>
 
         {error && (
