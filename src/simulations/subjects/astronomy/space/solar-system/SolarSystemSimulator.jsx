@@ -46,7 +46,7 @@ const PLANET_CONFIG = [
   { id: "mars", name: "Mars", moonGroup: "marsMoons" },
   { id: "jupiter", name: "Jupiter", moonGroup: "jupiterMoons" },
   { id: "saturn", name: "Saturn", moonGroup: "saturnMoons" },
-  { id: "uranus", name: "Uranus" },
+  { id: "uranus", name: "Uranus", moonGroup: "uranusMoons" },
   { id: "neptune", name: "Neptune", moonGroup: "neptuneMoons" },
 ];
 
@@ -243,6 +243,7 @@ function SolarSystemBodies({
   showAxis,
   showTrails,
   showOrbits,
+  showStars,
   planetPositions,
   updatePos,
 }) {
@@ -252,14 +253,16 @@ function SolarSystemBodies({
 
   return (
     <>
-      <Stars
-        radius={STAR_RADIUS}
-        depth={STAR_DEPTH}
-        count={12000}
-        factor={5}
-        saturation={0}
-        fade
-      />
+      {showStars && (
+        <Stars
+          radius={200_000}
+          depth={400_000}
+          count={12000}
+          factor={5}
+          saturation={0}
+          fade
+        />
+      )}
 
       <Sun
         speed={effectiveSpeed}
@@ -290,6 +293,7 @@ function SolarSystemBodies({
                   name={moonDef.name}
                   data={scale[moonDef.id]}
                   speed={effectiveSpeed}
+                  showOrbit={showOrbits}
                   texturePath={`/textures/${moonDef.id}.jpg`}
                   onPositionUpdate={(pos) => updatePos(moonDef.id, pos)}
                 />
@@ -304,6 +308,7 @@ function SolarSystemBodies({
                       key={key}
                       name={key.charAt(0).toUpperCase() + key.slice(1)}
                       data={moonData}
+                      showOrbit={showOrbits}
                       speed={effectiveSpeed}
                       color={moonData.color}
                     />
@@ -341,6 +346,7 @@ function SolarSystemSceneNonXR({
   focusTarget,
   isTouring,
   setTourInfo,
+  showStars,
   setIsTouring,
 }) {
   return (
@@ -351,6 +357,7 @@ function SolarSystemSceneNonXR({
         showAxis={showAxis}
         showTrails={showTrails}
         showOrbits={showOrbits}
+        showStars={showStars}
         planetPositions={planetPositions}
         updatePos={updatePos}
       />
@@ -385,6 +392,7 @@ function SolarSystemSceneXR({
   showAxis,
   showTrails,
   showOrbits,
+  showStars,
   planetPositions,
   updatePos,
   scaleMode,
@@ -409,6 +417,7 @@ function SolarSystemSceneXR({
             showAxis={showAxis}
             showTrails={showTrails}
             showOrbits={showOrbits}
+            showStars={showStars}
             planetPositions={planetPositions}
             updatePos={updatePos}
           />
@@ -444,6 +453,7 @@ function SolarSystemSceneXR({
                         name={moonDef.name}
                         data={scale[moonDef.id]}
                         speed={effectiveSpeed}
+                        showOrbit={showOrbits}
                         texturePath={`/textures/${moonDef.id}.jpg`}
                         onPositionUpdate={(pos) => updatePos(moonDef.id, pos)}
                       />
@@ -457,6 +467,7 @@ function SolarSystemSceneXR({
                             key={key}
                             name={key.charAt(0).toUpperCase() + key.slice(1)}
                             data={moonData}
+                            showOrbit={showOrbits}
                             speed={effectiveSpeed}
                             color={moonData.color}
                           />
@@ -515,6 +526,7 @@ export default function SolarSystemSimulator() {
   const [showTrails, setShowTrails] = useState(true);
   const [showOrbits, setShowOrbits] = useState(true);
   const [showAxis, setShowAxis] = useState(true);
+  const [showStars, setShowStars] = useState(true);
 
   const [focusTarget, setFocusTarget] = useState("sun");
   const [scaleMode, setScaleMode] = useState("educational");
@@ -638,6 +650,7 @@ export default function SolarSystemSimulator() {
                 showAxis={showAxis}
                 showTrails={showTrails}
                 showOrbits={showOrbits}
+                showStars={showStars}
                 planetPositions={planetPositions}
                 updatePos={updatePos}
                 scaleMode={scaleMode}
@@ -654,6 +667,7 @@ export default function SolarSystemSimulator() {
                   effectiveSpeed={effectiveSpeed}
                   showAxis={showAxis}
                   showTrails={showTrails}
+                  showStars={showStars}
                   showOrbits={showOrbits}
                   planetPositions={planetPositions}
                   updatePos={updatePos}
@@ -759,6 +773,8 @@ export default function SolarSystemSimulator() {
             showOrbits={showOrbits}
             setShowOrbits={setShowOrbits}
             showAxis={showAxis}
+            showStars={showStars}
+            setShowStars={setShowStars}
             setShowAxis={setShowAxis}
             focusTarget={focusTarget}
             setFocusTarget={setFocusTarget}
@@ -816,6 +832,8 @@ export default function SolarSystemSimulator() {
                   showOrbits={showOrbits}
                   setShowOrbits={setShowOrbits}
                   showAxis={showAxis}
+                  showStars={showStars}
+                  setShowStars={setShowStars}
                   setShowAxis={setShowAxis}
                   focusTarget={focusTarget}
                   setFocusTarget={setFocusTarget}

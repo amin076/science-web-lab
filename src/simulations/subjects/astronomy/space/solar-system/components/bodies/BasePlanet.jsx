@@ -115,12 +115,7 @@ export default function BasePlanet({
             rotation={[0, 0, -(((data.inclination || 0) * Math.PI) / 180)]}
           >
             <group rotation={[0, 0, ((data.tilt || 0) * Math.PI) / 180]}>
-              {showAxis && (
-                <SharedRotationAxis
-                  radius={data.radius}
-                  tilt={data.tilt || 0}
-                />
-              )}
+              {showAxis && <SharedRotationAxis radius={data.radius} />}
 
               <group ref={spinRef}>
                 <mesh castShadow receiveShadow>
