@@ -14,7 +14,7 @@ export default function BaseMoon({
   onPositionUpdate,
 }) {
   const groupRef = useRef();
-
+  const spinRef = useRef();
   // Create a reusable vector to prevent memory leaks
   const worldPos = useRef(new THREE.Vector3());
 
@@ -39,6 +39,11 @@ export default function BaseMoon({
     if (groupRef.current) {
       // Set local position
       groupRef.current.position.set(x, 0, z);
+      if (spinRef.current) {
+        const rotationPeriod = data.rotation || data.period || 1;
+        spinRef.current.rotation.y +=
+          0.01 * (1 / Math.abs(rotationPeriod)) * speed;
+      }
 
       // 2. Calculate World Position
       groupRef.current.getWorldPosition(worldPos.current);
@@ -60,7 +65,7 @@ export default function BaseMoon({
   const moonColor = color || data.color || "#cccccc";
 
   return (
-    <>
+    <group rotation={[0, 0, ((data.inclination || 0) * Math.PI) / 180]}>
       {/* Moon Orbit Path - centered around parent planet */}
       {showOrbit && (
         <Line
@@ -80,15 +85,17 @@ export default function BaseMoon({
       )}
 
       <group ref={groupRef}>
-        <mesh>
-          <sphereGeometry args={[data.radius, 16, 16]} />
-          <meshStandardMaterial
-            map={hasTexture ? texture : null}
-            color={hasTexture ? "white" : moonColor}
-            emissive={hasTexture ? "black" : moonColor}
-            emissiveIntensity={hasTexture ? 0 : 0.2}
-          />
-        </mesh>
+        <group ref={spinRef}>
+          <mesh>
+            <sphereGeometry args={[data.radius, 16, 16]} />
+            <meshStandardMaterial
+              map={hasTexture ? texture : null}
+              color={hasTexture ? "white" : moonColor}
+              emissive={hasTexture ? "black" : moonColor}
+              emissiveIntensity={hasTexture ? 0 : 0.2}
+            />
+          </mesh>
+        </group>
 
         {/* Text Label */}
         <Billboard position={[0, data.radius + 0.2, 0]}>
@@ -104,6 +111,6 @@ export default function BaseMoon({
           </Text>
         </Billboard>
       </group>
-    </>
+    </group>
   );
 }
