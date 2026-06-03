@@ -22,6 +22,7 @@ const EntireSolarControlPanel = ({
   scaleMode,
   setScaleMode,
   setShowComparison3D,
+  setShowPlanetMoonComparison,
 }) => {
   const [expandedSection, setExpandedSection] = React.useState("settings");
 
@@ -171,6 +172,13 @@ const EntireSolarControlPanel = ({
             className="p-2 rounded text-sm bg-white/10 text-gray-200 hover:bg-white/20 transition-all"
           >
             🔍 Compare Planet Sizes (3D)
+          </button>
+
+          <button
+            onClick={() => setShowPlanetMoonComparison(true)}
+            className="p-2 rounded text-sm bg-white/10 text-gray-200 hover:bg-white/20 transition-all"
+          >
+            🌙 Compare Planet & Moon Families
           </button>
 
           <p className="text-xs text-gray-400">

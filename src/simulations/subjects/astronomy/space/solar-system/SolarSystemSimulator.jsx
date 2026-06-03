@@ -10,6 +10,7 @@ import React, {
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Html } from "@react-three/drei";
 import * as THREE from "three";
+import PlanetMoonComparison3D from "./components/panels/PlanetMoonComparison3D";
 
 // ✅ XR (ONLY mounted after user clicks Enter AR/VR)
 import { XR, XROrigin, useXR, createXRStore } from "@react-three/xr";
@@ -669,6 +670,9 @@ export default function SolarSystemSimulator() {
 
   const [planetPositions, setPlanetPositions] = useState({});
   const [showComparison3D, setShowComparison3D] = useState(false);
+  const [showPlanetMoonComparison, setShowPlanetMoonComparison] =
+    useState(false);
+
   const [isTouring, setIsTouring] = useState(false);
 
   const [tourInfo, setTourInfo] = useState({
@@ -933,6 +937,7 @@ export default function SolarSystemSimulator() {
             scaleMode={scaleMode}
             setScaleMode={setScaleMode}
             setShowComparison3D={setShowComparison3D}
+            setShowPlanetMoonComparison={setShowPlanetMoonComparison}
           />
         </div>
       )}
@@ -1007,7 +1012,12 @@ export default function SolarSystemSimulator() {
         onClose={() => setShowComparison3D(false)}
         scaleData={ENTIRE_SOLAR_REALISTIC}
       />
-
+      <PlanetMoonComparison3D
+        visible={showPlanetMoonComparison}
+        onClose={() => setShowPlanetMoonComparison(false)}
+        scaleData={scale}
+        scaleMode={scaleMode}
+      />
       {/* Music prompt */}
       <AudioOverlay active={isTouring} />
     </div>
