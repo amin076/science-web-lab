@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useRef, useState } from "react";
+﻿import React, { Suspense, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Text } from "@react-three/drei";
 import { TextureLoader } from "three";
@@ -68,17 +68,31 @@ const TEXTURED_MOONS = new Set([
   "triton",
 ]);
 
+function getMoonData(scaleData, moonId) {
+  if (moonId === "moon") return scaleData.moon || {};
+
+  return (
+    scaleData.marsMoons?.[moonId] ||
+    scaleData.jupiterMoons?.[moonId] ||
+    scaleData.saturnMoons?.[moonId] ||
+    scaleData.uranusMoons?.[moonId] ||
+    scaleData.neptuneMoons?.[moonId] ||
+    {}
+  );
+}
+
 function ComparisonBody({ body, onSelect }) {
   const spinRef = useRef(null);
 
   useFrame((_, delta) => {
     if (!spinRef.current) return;
-    const rotationPeriod = body.rotation || 1;
-    spinRef.current.rotation.y +=
-      body.rotationDirection * 0.35 * delta * (1 / Math.abs(rotationPeriod));
-  });
 
-  const labelSize = body.isMoon ? 0.75 : body.id === "sun" ? 4 : 1.1;
+    const rotationPeriod = body.rotation || 1;
+    const direction = body.rotationDirection || 1;
+
+    spinRef.current.rotation.y +=
+      direction * 0.35 * delta * (1 / Math.abs(rotationPeriod));
+  });
 
   return (
     <group position={body.position}>
@@ -86,26 +100,27 @@ function ComparisonBody({ body, onSelect }) {
         <group ref={spinRef}>
           <mesh onClick={() => onSelect(body)}>
             <sphereGeometry args={[body.radius, 48, 48]} />
-            <meshStandardMaterial map={body.texture} color={body.color || "white"} />
+            <meshStandardMaterial
+              map={body.texture}
+              color={body.color || "white"}
+            />
           </mesh>
         </group>
       </group>
 
       <Text
-  position={[
-    body.isMoon ? body.radius + 0.45 : -body.radius - 2.2,
-    0,
-    0,
-  ]}
-  fontSize={body.isMoon ? 0.22 : body.id === "sun" ? 4 : 1.1}
-  color={body.isMoon ? "#CBD5E1" : body.id === "sun" ? "#FCD34D" : "#E5E7EB"}
-  outlineWidth={body.isMoon ? 0.008 : 0.035}
-  outlineColor="#020617"
-  anchorX={body.isMoon ? "left" : "right"}
-  anchorY="middle"
->
-  {body.name}
-</Text>
+        position={[body.isMoon ? body.radius + 0.45 : -body.radius - 2.2, 0, 0]}
+        fontSize={body.isMoon ? 0.22 : body.id === "sun" ? 4 : 1.1}
+        color={
+          body.isMoon ? "#CBD5E1" : body.id === "sun" ? "#FCD34D" : "#E5E7EB"
+        }
+        outlineWidth={body.isMoon ? 0.008 : 0.035}
+        outlineColor="#020617"
+        anchorX={body.isMoon ? "left" : "right"}
+        anchorY="middle"
+      >
+        {body.name}
+      </Text>
     </group>
   );
 }
@@ -217,7 +232,9 @@ function Scene({ scaleData, onSelect }) {
           rotation: moonData.rotation || moonData.period || 1,
           rotationDirection: moonData.period && moonData.period < 0 ? -1 : 1,
           tilt: moonData.tilt || 0,
-          texture: TEXTURED_MOONS.has(moonId) ? textures[moonId] : textures.moon,
+          texture: TEXTURED_MOONS.has(moonId)
+            ? textures[moonId]
+            : textures.moon,
           color: moonData.color,
           position: [x + radius + 6 + index * 6, isSun ? 0 : y, 0],
           raw: moonData,
@@ -242,6 +259,7 @@ function Scene({ scaleData, onSelect }) {
         {bodies.map((body) => (
           <React.Fragment key={body.id}>
             <ComparisonBody body={body} onSelect={onSelect} />
+
             {body.moons?.map((moon) => (
               <ComparisonBody key={moon.id} body={moon} onSelect={onSelect} />
             ))}
@@ -249,20 +267,15 @@ function Scene({ scaleData, onSelect }) {
         ))}
       </Suspense>
 
-      <OrbitControls minDistance={5} maxDistance={800} />
+      <OrbitControls
+        enabled
+        minDistance={5}
+        maxDistance={800}
+        enablePan
+        enableRotate
+        enableZoom
+      />
     </>
-  );
-}
-function getMoonData(scaleData, moonId) {
-  if (moonId === "moon") return scaleData.moon || {};
-
-  return (
-    scaleData.marsMoons?.[moonId] ||
-    scaleData.jupiterMoons?.[moonId] ||
-    scaleData.saturnMoons?.[moonId] ||
-    scaleData.uranusMoons?.[moonId] ||
-    scaleData.neptuneMoons?.[moonId] ||
-    {}
   );
 }
 
@@ -281,7 +294,8 @@ export default function PlanetMoonComparison3D({
       style={{
         position: "fixed",
         inset: 0,
-        background: "radial-gradient(circle at center, #101827 0%, #020617 100%)",
+        background:
+          "radial-gradient(circle at center, #101827 0%, #020617 100%)",
         zIndex: 9999,
       }}
     >
@@ -296,10 +310,10 @@ export default function PlanetMoonComparison3D({
         }}
       >
         <h2 style={{ margin: 0, fontSize: 28 }}>
-          Planet–Moon Family Comparison
+          Planet-Moon Family Comparison
         </h2>
         <p style={{ margin: "6px 0 0", opacity: 0.78, fontSize: 14 }}>
-          Scale mode: {scaleMode} • planet axes and rotation preview
+          Scale mode: {scaleMode} | planet axes and rotation preview
         </p>
       </div>
 
@@ -339,49 +353,54 @@ export default function PlanetMoonComparison3D({
             cursor: "pointer",
           }}
         >
-          Close ✕
+          Close X
         </button>
       </div>
 
       {selected &&
         (() => {
           const facts = selected.isMoon
-  ? MOON_FACTS[selected.id] || {}
-  : PLANET_FACTS[selected.id] || {};
+            ? MOON_FACTS[selected.id] || {}
+            : PLANET_FACTS[selected.id] || {};
 
-         const rows = selected.isMoon
-  ? [
-      ["Parent Planet", facts.parent],
-      ["Type", facts.type],
-      ["Radius (km)", facts.radiusKm?.toLocaleString()],
-      ["Radius vs Earth", facts.radiusVsEarth],
-      ["Orbit Period", facts.orbitPeriod],
-      ["Rotation Period", facts.rotationPeriod],
-      ["Distance from Parent", facts.distanceFromParent],
-      ["Temperature", facts.surfaceTemp],
-      ["Average Density", facts.density],
-      ["Atmosphere", facts.atmosphere],
-      ["Discovery", facts.discovery],
-      ["Name Meaning", facts.nameMeaning],
-      ["Interesting Fact", facts.interesting],
-    ]
-  : [
-      ["Position from Sun", facts.orderFromSun],
-      ["Type", facts.type],
-      ["Radius (km)", facts.radiusKm?.toLocaleString()],
-      ["Radius vs Earth", facts.radiusVsEarth],
-      ["Radius vs Sun", facts.radiusVsSun],
-      ["Distance from Sun", facts.distanceFromSunAU != null ? `${facts.distanceFromSunAU} AU` : undefined],
-      ["Year", facts.year],
-      ["Day / Rotation", facts.day],
-      ["Temperature", facts.surfaceTemp],
-      ["Average Density", facts.density],
-      ["Atmosphere", facts.atmosphere],
-      ["Moons", facts.moons],
-      ["Age", facts.age],
-      ["Name Meaning", facts.nameMeaning],
-      ["Interesting Fact", facts.interesting],
-    ];
+          const rows = selected.isMoon
+            ? [
+                ["Parent Planet", facts.parent],
+                ["Type", facts.type],
+                ["Radius (km)", facts.radiusKm?.toLocaleString()],
+                ["Radius vs Earth", facts.radiusVsEarth],
+                ["Orbit Period", facts.orbitPeriod],
+                ["Rotation Period", facts.rotationPeriod],
+                ["Distance from Parent", facts.distanceFromParent],
+                ["Temperature", facts.surfaceTemp],
+                ["Average Density", facts.density],
+                ["Atmosphere", facts.atmosphere],
+                ["Discovery", facts.discovery],
+                ["Name Meaning", facts.nameMeaning],
+                ["Interesting Fact", facts.interesting],
+              ]
+            : [
+                ["Position from Sun", facts.orderFromSun],
+                ["Type", facts.type],
+                ["Radius (km)", facts.radiusKm?.toLocaleString()],
+                ["Radius vs Earth", facts.radiusVsEarth],
+                ["Radius vs Sun", facts.radiusVsSun],
+                [
+                  "Distance from Sun",
+                  facts.distanceFromSunAU != null
+                    ? `${facts.distanceFromSunAU} AU`
+                    : undefined,
+                ],
+                ["Year", facts.year],
+                ["Day / Rotation", facts.day],
+                ["Temperature", facts.surfaceTemp],
+                ["Average Density", facts.density],
+                ["Atmosphere", facts.atmosphere],
+                ["Moons", facts.moons],
+                ["Age", facts.age],
+                ["Name Meaning", facts.nameMeaning],
+                ["Interesting Fact", facts.interesting],
+              ];
 
           return (
             <div
@@ -430,7 +449,7 @@ export default function PlanetMoonComparison3D({
                   }}
                   title="Close HUD"
                 >
-                  ×
+                  X
                 </button>
               </div>
 
@@ -454,7 +473,14 @@ export default function PlanetMoonComparison3D({
           );
         })()}
 
-      <Canvas camera={{ position: [35, -35, 75], fov: 45, near: 0.1, far: 2000 }}>
+      <Canvas
+        camera={{
+          position: [35, -35, 75],
+          fov: 45,
+          near: 0.1,
+          far: 5000,
+        }}
+      >
         <Scene scaleData={scaleData} onSelect={setSelected} />
       </Canvas>
     </div>
