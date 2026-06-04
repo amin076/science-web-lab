@@ -159,6 +159,11 @@ function ManualCameraController({
 
   const getFocusDistance = useCallback(
     (targetId) => {
+      if (targetId === "system") {
+        if (scaleMode === "realistic") return 12000;
+        if (scaleMode === "semiRealistic") return 500;
+        return 250;
+      }
       if (targetId === "sun") {
         return scaleMode === "realistic" ? 2500 : 120;
       }
@@ -193,11 +198,19 @@ function ManualCameraController({
     if (isTouring) return;
     const controls = controlsRef.current;
 
-    let targetIsReady = focusTarget === "sun";
+    let targetIsReady = focusTarget === "sun" || focusTarget === "system";
+
     tempTarget.set(0, 0, 0);
-    if (focusTarget !== "sun" && targets[focusTarget]) {
+
+    if (
+      focusTarget !== "sun" &&
+      focusTarget !== "system" &&
+      targets[focusTarget]
+    ) {
       const p = targets[focusTarget];
+
       tempTarget.set(p[0] || 0, p[1] || 0, p[2] || 0);
+
       targetIsReady = true;
     }
 
@@ -664,7 +677,7 @@ export default function SolarSystemSimulator() {
   const [showAxis, setShowAxis] = useState(true);
   const [showStars, setShowStars] = useState(true);
   const [showLabels, setShowLabels] = useState(true);
-  const [focusTarget, setFocusTarget] = useState("sun");
+  const [focusTarget, setFocusTarget] = useState("system");
   const [focusRequestId, setFocusRequestId] = useState(0);
   const [scaleMode, setScaleMode] = useState("educational");
 
@@ -725,7 +738,7 @@ export default function SolarSystemSimulator() {
   const handleReset = () => {
     setIsSimulating(false);
     setSpeed(1);
-    setFocusTarget("sun");
+    setFocusTarget("system");
     setFocusRequestId((prev) => prev + 1);
     setIsTouring(false);
     setTourInfo({ phase: "APPROACH", targetId: "sun", progress: 0 });
