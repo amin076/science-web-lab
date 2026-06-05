@@ -115,10 +115,39 @@ export default function SatelliteTelescopeSimulator() {
 
   const moonVisualRadius = useMemo(() => {
     const realRadius = toRenderUnits([R_MOON_M, 0, 0], mPerUnit)[0];
-    if (simMode === "educational") return realRadius * 2.5;
-    if (simMode === "semi") return realRadius * 1.5;
+
+    if (simMode === "educational") return realRadius * 2.8;
+    if (simMode === "semi") return realRadius * 1.6;
+
+    // Real mode: true Moon/Earth size ratio
     return realRadius;
   }, [simMode, mPerUnit]);
+  const getVisualDistanceScale = useCallback(
+    (bodyOrName) => {
+      const name =
+        typeof bodyOrName === "string"
+          ? bodyOrName.toLowerCase()
+          : bodyOrName?.name?.toLowerCase() || "";
+
+      if (simMode === "educational") {
+        if (name.includes("moon")) return 0.18;
+        if (name.includes("james webb")) return 0.08;
+        if (name.includes("gps")) return 0.65;
+        return 1;
+      }
+
+      if (simMode === "semi") {
+        if (name.includes("moon")) return 0.45;
+        if (name.includes("james webb")) return 0.25;
+        if (name.includes("gps")) return 0.85;
+        return 1;
+      }
+
+      // Real mode: true distances
+      return 1;
+    },
+    [simMode],
+  );
   const moonOrbitPath = useMemo(() => {
     const points = [];
     const r = DISTANCE_EARTH_MOON_M;
@@ -328,7 +357,14 @@ export default function SatelliteTelescopeSimulator() {
 
       if (moonVisualRef.current && sim.moonState) {
         const mR = toRenderUnits(sim.moonState.r, mPerUnit);
-        moonVisualRef.current.position.set(mR[0], mR[1], mR[2]);
+
+        const moonScale = getVisualDistanceScale("moon");
+
+        moonVisualRef.current.position.set(
+          mR[0] * moonScale,
+          mR[1] * moonScale,
+          mR[2] * moonScale,
+        );
       }
     });
     return null;
@@ -382,6 +418,7 @@ export default function SatelliteTelescopeSimulator() {
                 key={b.id}
                 body={b}
                 mPerUnit={mPerUnit}
+                distanceScale={getVisualDistanceScale(b)}
                 observerMetersRef={observerMetersRef}
                 showLabels={simMode !== "realistic"}
                 showOrbits={!!settings.showOrbits}
@@ -393,10 +430,12 @@ export default function SatelliteTelescopeSimulator() {
 
           {settings.showMoon && settings.showOrbits && (
             <OrbitPathVisual
+              key={`moon-orbit-${simMode}-${getVisualDistanceScale("moon")}`}
               pathData={moonOrbitPath}
               mPerUnit={mPerUnit}
               color="#9AD7FF"
               opacity={0.9}
+              distanceScale={getVisualDistanceScale("moon")}
             />
           )}
           {settings.showMoon && (
@@ -412,6 +451,7 @@ export default function SatelliteTelescopeSimulator() {
                     key={b.id}
                     body={b}
                     mPerUnit={mPerUnit}
+                    distanceScale={getVisualDistanceScale(b)}
                     observerMetersRef={null}
                     showLabels={simMode !== "realistic"}
                     showOrbits={!!settings.showOrbits}

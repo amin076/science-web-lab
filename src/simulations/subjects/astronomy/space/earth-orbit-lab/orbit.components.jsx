@@ -156,14 +156,24 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
   );
 }
 
-export function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
+export function OrbitPathVisual({
+  pathData,
+  mPerUnit,
+  color,
+  opacity = 0.3,
+  distanceScale = 1,
+}) {
   const points = useMemo(
     () =>
       pathData.map((p) => {
         const r = toRenderUnits(p, mPerUnit);
-        return new THREE.Vector3(r[0], r[1], r[2]);
+        return new THREE.Vector3(
+          r[0] * distanceScale,
+          r[1] * distanceScale,
+          r[2] * distanceScale,
+        );
       }),
-    [pathData, mPerUnit],
+    [pathData, mPerUnit, distanceScale],
   );
 
   return (
@@ -394,6 +404,7 @@ export function SatelliteBody({
   showOnlyVisible,
   velocityVisualScale = 200,
   visualScale = 1,
+  distanceScale = 1,
 }) {
   const groupRef = useRef();
   const meshRef = useRef();
@@ -418,7 +429,13 @@ export function SatelliteBody({
 
   useFrame(() => {
     if (!meshRef.current || !groupRef.current) return;
-    const p = toRenderUnits(body.state.r, mPerUnit);
+    const pRaw = toRenderUnits(body.state.r, mPerUnit);
+    const p = [
+      pRaw[0] * distanceScale,
+      pRaw[1] * distanceScale,
+      pRaw[2] * distanceScale,
+    ];
+
     meshRef.current.position.set(p[0], p[1], p[2]);
 
     const obs = observerMetersRef ? observerMetersRef.current : null;
@@ -461,6 +478,7 @@ export function SatelliteBody({
           mPerUnit={mPerUnit}
           color={getOrbitColor(body)}
           opacity={getOrbitOpacity(body)}
+          distanceScale={distanceScale}
         />
       )}
       <mesh ref={meshRef}>
