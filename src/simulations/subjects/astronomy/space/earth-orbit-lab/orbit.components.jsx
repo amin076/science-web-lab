@@ -371,6 +371,19 @@ function getOrbitOpacity(body) {
 
   return 0.5;
 }
+
+function shouldShowLabel(body, visualScale) {
+  const name = body.name?.toLowerCase() || "";
+
+  // Always important
+  if (name.includes("james webb")) return true;
+  if (name.includes("gateway")) return true;
+  if (name.includes("moon")) return true;
+
+  // Show others only when zoomed in
+  return visualScale > 0.35;
+}
+
 export function SatelliteBody({
   body,
   mPerUnit,
@@ -457,7 +470,7 @@ export function SatelliteBody({
           scaleFactor={visualScale}
         />
       </mesh>
-      {showLabels && visualScale > 0.1 && (
+      {showLabels && shouldShowLabel(body, visualScale) && (
         <Html
           center
           position={[0, 0.12 * visualScale, 0]}
