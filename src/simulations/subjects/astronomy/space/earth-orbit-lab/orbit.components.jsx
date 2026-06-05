@@ -25,7 +25,10 @@ export function CameraController({
     const dest = new THREE.Vector3(0, 0, 0);
 
     if (focusedBodyId === "moon" && moonRef.current) {
-      dest.copy(moonRef.current.position);
+      // Frame the Earth-Moon system instead of zooming directly onto the Moon.
+      // Earth is at origin, Moon is at moonRef.current.position.
+      // Target the midpoint so both Earth and Moon stay visible.
+      dest.copy(moonRef.current.position).multiplyScalar(0.5);
     } else if (focusedBodyId) {
       const body = bodies.find((b) => b.id === focusedBodyId);
       if (body) {
@@ -42,31 +45,47 @@ export function CameraController({
 
     // 2. Snap / Auto-Zoom on Focus Change
     if (focusedBodyId !== previousId.current) {
-      if (focusedBodyId && focusedBodyId !== "moon") {
+      if (focusedBodyId === "moon" && moonRef.current) {
+        const moonPos = moonRef.current.position.clone();
+        const moonDistance = moonPos.length();
+
+        const viewDistance = Math.max(moonDistance * 1.25, 8);
+        const offset = new THREE.Vector3(
+          viewDistance * 0.2,
+          viewDistance * 0.35,
+          viewDistance,
+        );
+
+        camera.position.copy(dest).add(offset);
+        targetVec.current.copy(dest);
+        controlsRef.current.target.copy(dest);
+      } else if (focusedBodyId) {
         const dir = dest.clone().normalize();
-        
-        // MUCH Closer offset for "Chase Cam" feel
-        // Previous was ~0.05, now ~0.008 to match small satellite scale
+
         const offset = new THREE.Vector3(0.004, 0.002, 0.006).applyQuaternion(
-           new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1), dir)
+          new THREE.Quaternion().setFromUnitVectors(
+            new THREE.Vector3(0, 0, 1),
+            dir,
+          ),
         );
 
         camera.position.copy(dest).add(offset);
         targetVec.current.copy(dest);
         controlsRef.current.target.copy(dest);
       }
+
       previousId.current = focusedBodyId;
     }
 
     // 3. Chase Logic
     const prevTarget = targetVec.current.clone();
-    targetVec.current.lerp(dest, 0.1); 
+    targetVec.current.lerp(dest, 0.1);
     const delta = new THREE.Vector3().subVectors(targetVec.current, prevTarget);
-    
+
     if (focusedBodyId) {
-        camera.position.add(delta);
+      camera.position.add(delta);
     }
-    
+
     controlsRef.current.target.copy(targetVec.current);
     controlsRef.current.update();
   });
@@ -144,7 +163,7 @@ export function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
         const r = toRenderUnits(p, mPerUnit);
         return new THREE.Vector3(r[0], r[1], r[2]);
       }),
-    [pathData, mPerUnit]
+    [pathData, mPerUnit],
   );
 
   return (
@@ -196,28 +215,28 @@ export function OrbitalTrail({ body, mPerUnit, color, visible }) {
     // 2. Add current live position as the final point to close the gap
     const currentPos = toRenderUnits(body.state.r, mPerUnit);
     // If it's a moon satellite, add moon pos
-    // (Note: For simplicity here, assuming logic is handled in simulator or passed down. 
+    // (Note: For simplicity here, assuming logic is handled in simulator or passed down.
     // To keep it simple, we just use the trail data structure which is already world space in the simulator.)
-    
+
     // Actually, in the simulator loop, trail is pushed. But there's a frame delay.
     // We will cheat and overwrite the last+1 point with current position.
     // However, we need world position. The simulator calculated `trail` in world space.
     // But `body.state.r` is relative.
     // We need the world position logic here or pass it.
     // Simpler fix: Just draw to the last known trail point? No, that causes the gap.
-    
+
     // Let's assume the trail logic in simulator pushes world coords.
     // We will just draw the trail as is. If the gap persists, we need to push to trail more often or interpolate.
     // Actually, simply setting DrawRange to count is correct.
     // The "Gap" usually happens because the line isn't updated to the *interpolated* frame position.
-    
+
     // To truly fix it without passing parent refs:
     // We will rely on the fact that `body.trail` contains the history.
     // We won't add the extra point here to avoid complex coordinate transforms inside this component.
-    // Instead, we trust the simulator pushes frequent enough updates. 
+    // Instead, we trust the simulator pushes frequent enough updates.
     // If the user sees a gap, it's because the physics step is ahead of the render? No.
     // It's because the visual mesh moves in `useFrame`, but trail only updates on physics tick.
-    
+
     lineRef.current.geometry.setDrawRange(0, count);
     lineRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -294,7 +313,7 @@ export function LOSLine({
     }
     if (lineRef.current.material?.color?.set) {
       lineRef.current.material.color.set(
-        toBody.lastVisible ? "#4ECDC4" : "#ef4444"
+        toBody.lastVisible ? "#4ECDC4" : "#ef4444",
       );
     }
   });
@@ -316,6 +335,53 @@ export function LOSLine({
       gapSize={0.12}
     />
   );
+}
+function getOrbitColor(body) {
+  const name = body.name?.toLowerCase() || "";
+
+  // Moon satellites
+  if (body.parent === "moon") {
+    return "#C0C0C0";
+  }
+
+  // LEO
+  if (name.includes("iss")) return "#00E5FF";
+  if (name.includes("tiangong")) return "#00BCD4";
+  if (name.includes("hubble")) return "#7C4DFF";
+
+  // MEO
+  if (name.includes("gps")) return "#FFD54F";
+
+  // Deep Space
+  if (name.includes("james webb")) return "#FF9800";
+
+  // Starlink
+  if (name.includes("starlink")) return "#4CAF50";
+
+  return body.color;
+}
+
+function getOrbitOpacity(body) {
+  if (body.parent === "moon") return 0.9;
+
+  const name = body.name?.toLowerCase() || "";
+
+  if (name.includes("gps")) return 0.8;
+  if (name.includes("james webb")) return 0.8;
+
+  return 0.5;
+}
+
+function shouldShowLabel(body, visualScale) {
+  const name = body.name?.toLowerCase() || "";
+
+  // Always important
+  if (name.includes("james webb")) return true;
+  if (name.includes("gateway")) return true;
+  if (name.includes("moon")) return true;
+
+  // Show others only when zoomed in
+  return visualScale > 0.35;
 }
 
 export function SatelliteBody({
@@ -340,7 +406,7 @@ export function SatelliteBody({
       new THREE.Vector3(1, 0, 0),
       new THREE.Vector3(0, 0, 0),
       0.2,
-      body.color
+      body.color,
     );
     arrow.visible = false;
     arrowRef.current = arrow;
@@ -379,7 +445,7 @@ export function SatelliteBody({
         arrowRef.current.setLength(
           THREE.MathUtils.clamp(speed * velocityVisualScale, 0.08, 0.65),
           0.06,
-          0.035
+          0.035,
         );
       } else {
         arrowRef.current.visible = false;
@@ -393,8 +459,8 @@ export function SatelliteBody({
         <OrbitPathVisual
           pathData={body.orbitPath}
           mPerUnit={mPerUnit}
-          color={body.color}
-          opacity={visualScale < 0.5 ? 0.6 : 0.2}
+          color={getOrbitColor(body)}
+          opacity={getOrbitOpacity(body)}
         />
       )}
       <mesh ref={meshRef}>
@@ -404,7 +470,7 @@ export function SatelliteBody({
           scaleFactor={visualScale}
         />
       </mesh>
-      {showLabels && visualScale > 0.1 && (
+      {showLabels && shouldShowLabel(body, visualScale) && (
         <Html
           center
           position={[0, 0.12 * visualScale, 0]}
