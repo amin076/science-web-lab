@@ -25,7 +25,10 @@ export function CameraController({
     const dest = new THREE.Vector3(0, 0, 0);
 
     if (focusedBodyId === "moon" && moonRef.current) {
-      dest.copy(moonRef.current.position);
+      // Frame the Earth-Moon system instead of zooming directly onto the Moon.
+      // Earth is at origin, Moon is at moonRef.current.position.
+      // Target the midpoint so both Earth and Moon stay visible.
+      dest.copy(moonRef.current.position).multiplyScalar(0.5);
     } else if (focusedBodyId) {
       const body = bodies.find((b) => b.id === focusedBodyId);
       if (body) {
@@ -42,11 +45,23 @@ export function CameraController({
 
     // 2. Snap / Auto-Zoom on Focus Change
     if (focusedBodyId !== previousId.current) {
-      if (focusedBodyId && focusedBodyId !== "moon") {
+      if (focusedBodyId === "moon" && moonRef.current) {
+        const moonPos = moonRef.current.position.clone();
+        const moonDistance = moonPos.length();
+
+        const viewDistance = Math.max(moonDistance * 1.25, 8);
+        const offset = new THREE.Vector3(
+          viewDistance * 0.2,
+          viewDistance * 0.35,
+          viewDistance,
+        );
+
+        camera.position.copy(dest).add(offset);
+        targetVec.current.copy(dest);
+        controlsRef.current.target.copy(dest);
+      } else if (focusedBodyId) {
         const dir = dest.clone().normalize();
 
-        // MUCH Closer offset for "Chase Cam" feel
-        // Previous was ~0.05, now ~0.008 to match small satellite scale
         const offset = new THREE.Vector3(0.004, 0.002, 0.006).applyQuaternion(
           new THREE.Quaternion().setFromUnitVectors(
             new THREE.Vector3(0, 0, 1),
@@ -58,6 +73,7 @@ export function CameraController({
         targetVec.current.copy(dest);
         controlsRef.current.target.copy(dest);
       }
+
       previousId.current = focusedBodyId;
     }
 
