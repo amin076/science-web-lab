@@ -1,4 +1,5 @@
 // src/simulations/subjects/astronomy/space/earth-orbit-lab/SatelliteTelescopeSimulator.jsx
+
 import React, {
   useMemo,
   useRef,
@@ -34,6 +35,12 @@ import {
   makeCircularOrbitState,
   stepVelocityVerlet,
 } from "./orbit.physics";
+
+import {
+  SUN_EARTH_L2_DISTANCE_M,
+  getEarthMoonLagrangePointsMeters,
+} from "./orbit.lagrange";
+
 import { latLonToECEF, ecefToInertial } from "./orbit.visibility";
 import { makeBody } from "./orbit.factory";
 
@@ -45,6 +52,7 @@ import {
   OrbitalTrail,
   OrbitPathVisual,
   CameraController,
+  LagrangePointMarkers,
 } from "./orbit.components";
 
 /* =========================
@@ -56,7 +64,7 @@ export default function SatelliteTelescopeSimulator() {
 
   const [settings, setSettings] = useState({
     timeScale: 200,
-    dt: 1,
+    dt: 0.05,
     showTrails: true,
     showVectors: false,
     showLOS: false,
@@ -66,6 +74,8 @@ export default function SatelliteTelescopeSimulator() {
     showMoon: true,
     telescopeLat: -37.8136,
     telescopeLon: 144.9631,
+    showLagrangePoints: true,
+    showLabels: true,
   });
 
   const [simMode, setSimMode] = useState("educational");
@@ -75,16 +85,24 @@ export default function SatelliteTelescopeSimulator() {
   const [uiT, setUiT] = useState(0);
 
   // Physics Refs
-  const simRef = useRef({ t: 0, accumulator: 0, bodies: [], moonState: null });
+  const simRef = useRef({
+    t: 0,
+    accumulator: 0,
+    bodies: [],
+    moonState: null,
+  });
+
   const uiThrottleRef = useRef(0);
   const controlsRef = useRef();
 
   // Visual Refs
   const earthRenderRadius = 1;
+
   const mPerUnit = useMemo(
     () => metersPerRenderUnit(earthRenderRadius),
     [earthRenderRadius],
   );
+
   const observerMetersRef = useRef(null);
   const observerRenderRef = useRef(null);
   const moonVisualRef = useRef(null);
@@ -100,11 +118,13 @@ export default function SatelliteTelescopeSimulator() {
 
   // Mode Switching
   useEffect(() => {
-    if (simMode === "educational")
+    if (simMode === "educational") {
       setSettings((p) => ({ ...p, timeScale: 200 }));
-    else if (simMode === "semi") setSettings((p) => ({ ...p, timeScale: 100 }));
-    else if (simMode === "realistic")
+    } else if (simMode === "semi") {
+      setSettings((p) => ({ ...p, timeScale: 100 }));
+    } else if (simMode === "realistic") {
       setSettings((p) => ({ ...p, timeScale: 1 }));
+    }
   }, [simMode]);
 
   const satVisualScale = useMemo(() => {
@@ -116,12 +136,12 @@ export default function SatelliteTelescopeSimulator() {
   const moonVisualRadius = useMemo(() => {
     const realRadius = toRenderUnits([R_MOON_M, 0, 0], mPerUnit)[0];
 
-    if (simMode === "educational") return realRadius * 2.8;
-    if (simMode === "semi") return realRadius * 1.6;
+    if (simMode === "educational") return realRadius * 1.2;
+    if (simMode === "semi") return realRadius;
 
-    // Real mode: true Moon/Earth size ratio
     return realRadius;
   }, [simMode, mPerUnit]);
+
   const getVisualDistanceScale = useCallback(
     (bodyOrName) => {
       const name =
@@ -129,25 +149,47 @@ export default function SatelliteTelescopeSimulator() {
           ? bodyOrName.toLowerCase()
           : bodyOrName?.name?.toLowerCase() || "";
 
+      const parent =
+        typeof bodyOrName === "object" ? bodyOrName?.parent || "" : "";
+
       if (simMode === "educational") {
         if (name.includes("moon")) return 0.18;
-        if (name.includes("james webb")) return 0.08;
+        if (parent === "sun-earth-l2" || name.includes("james webb")) {
+          return 0.055;
+        }
         if (name.includes("gps")) return 0.65;
         return 1;
       }
 
       if (simMode === "semi") {
         if (name.includes("moon")) return 0.45;
-        if (name.includes("james webb")) return 0.25;
+        if (parent === "sun-earth-l2" || name.includes("james webb")) {
+          return 0.14;
+        }
         if (name.includes("gps")) return 0.85;
         return 1;
       }
 
-      // Real mode: true distances
       return 1;
     },
     [simMode],
   );
+
+  const getObjectVisualScale = useCallback(
+    (body) => {
+      const name = body?.name?.toLowerCase() || "";
+
+      if (body?.parent === "sun-earth-l2" || name.includes("james webb")) {
+        if (simMode === "educational") return 2.2;
+        if (simMode === "semi") return 1.5;
+        return 1.0;
+      }
+
+      return satVisualScale;
+    },
+    [simMode, satVisualScale],
+  );
+
   const moonOrbitPath = useMemo(() => {
     const points = [];
     const r = DISTANCE_EARTH_MOON_M;
@@ -155,6 +197,7 @@ export default function SatelliteTelescopeSimulator() {
 
     for (let i = 0; i <= 256; i++) {
       const a = (i / 256) * Math.PI * 2;
+
       points.push([
         r * Math.cos(a),
         r * Math.sin(a) * Math.cos(inc),
@@ -164,6 +207,11 @@ export default function SatelliteTelescopeSimulator() {
 
     return points;
   }, []);
+
+  const earthMoonLPoints = useMemo(
+    () => getEarthMoonLagrangePointsMeters(),
+    [],
+  );
 
   // Actions
   const addBody = useCallback((cfg) => {
@@ -175,7 +223,10 @@ export default function SatelliteTelescopeSimulator() {
     (id) => {
       simRef.current.bodies = simRef.current.bodies.filter((b) => b.id !== id);
       setBodyList([...simRef.current.bodies]);
-      if (focusedBodyId === id) setFocusedBodyId(null);
+
+      if (focusedBodyId === id) {
+        setFocusedBodyId(null);
+      }
     },
     [focusedBodyId],
   );
@@ -189,17 +240,20 @@ export default function SatelliteTelescopeSimulator() {
         "James Webb",
         "Lunar Gateway",
       ];
+
       let targetName = null;
+
       if (key === "ISS") targetName = "ISS";
       if (key === "CSS") targetName = "Tiangong";
       if (key === "HST") targetName = "Hubble";
       if (key === "JWST") targetName = "James Webb";
       if (key === "Gateway") targetName = "Lunar Gateway";
 
-      if (targetName) {
+      if (targetName && uniqueNames.includes(targetName)) {
         const existing = simRef.current.bodies.find(
           (b) => b.name === targetName,
         );
+
         if (existing) {
           setFocusedBodyId(existing.id);
           return;
@@ -216,6 +270,7 @@ export default function SatelliteTelescopeSimulator() {
             type: "station",
           });
           break;
+
         case "CSS":
           addBody({
             name: "Tiangong",
@@ -225,6 +280,7 @@ export default function SatelliteTelescopeSimulator() {
             type: "station",
           });
           break;
+
         case "HST":
           addBody({
             name: "Hubble",
@@ -234,8 +290,10 @@ export default function SatelliteTelescopeSimulator() {
             type: "telescope",
           });
           break;
+
         case "Starlink": {
           const r = Math.random() * 360;
+
           for (let i = 0; i < 5; i++) {
             addBody({
               name: `Starlink-${i}`,
@@ -246,8 +304,10 @@ export default function SatelliteTelescopeSimulator() {
               trueAnomalyDeg: i * 2,
             });
           }
+
           break;
         }
+
         case "GPS":
           addBody({
             name: "GPS",
@@ -257,6 +317,7 @@ export default function SatelliteTelescopeSimulator() {
             type: "satellite",
           });
           break;
+
         case "Gateway":
           addBody({
             name: "Lunar Gateway",
@@ -267,15 +328,17 @@ export default function SatelliteTelescopeSimulator() {
             parent: "moon",
           });
           break;
+
         case "JWST":
           addBody({
             name: "James Webb",
             color: "#FFA726",
-            altitudeM: 1_500_000_000,
-            inclinationDeg: 5,
-            type: "telescope",
+            type: "fixed-point",
+            parent: "sun-earth-l2",
+            fixedPositionM: [SUN_EARTH_L2_DISTANCE_M, 0, 0],
           });
           break;
+
         default:
           break;
       }
@@ -287,24 +350,31 @@ export default function SatelliteTelescopeSimulator() {
     simRef.current.t = 0;
     simRef.current.accumulator = 0;
     simRef.current.bodies = [];
+
     setFocusedBodyId(null);
+
     onAddPreset("ISS");
+
     setBodyList([...simRef.current.bodies]);
   }, [onAddPreset]);
 
   useEffect(() => {
-    if (simRef.current.bodies.length === 0) resetSim();
-  }, []);
+    if (simRef.current.bodies.length === 0) {
+      resetSim();
+    }
+  }, [resetSim]);
 
-  // Physics Loop (Controller)
+  // Physics Loop
   function PhysicsStepper() {
     useFrame((state, delta) => {
       const sim = simRef.current;
+
       const ecef = latLonToECEF(
         settings.telescopeLat,
         settings.telescopeLon,
         R_EARTH_M,
       );
+
       const obsMeters = settings.earthRotationOn
         ? ecefToInertial(ecef, sim.t)
         : ecef;
@@ -313,6 +383,7 @@ export default function SatelliteTelescopeSimulator() {
       observerRenderRef.current = toRenderUnits(obsMeters, mPerUnit);
 
       const now = state.clock.elapsedTime;
+
       if (now - uiThrottleRef.current > 0.05) {
         setUiT(sim.t);
         uiThrottleRef.current = now;
@@ -320,44 +391,68 @@ export default function SatelliteTelescopeSimulator() {
 
       if (!isRunning) return;
 
-      sim.accumulator += delta * Number(settings.timeScale);
+      const safeDelta = Math.min(delta, 0.05);
+      sim.accumulator += safeDelta * Number(settings.timeScale);
+
       const dt = Number(settings.dt);
       let steps = 0;
 
-      while (sim.accumulator >= dt && steps < 120) {
+      while (sim.accumulator >= dt && steps < 70) {
         sim.accumulator -= dt;
         sim.t += dt;
+
         sim.moonState = stepVelocityVerlet(sim.moonState, dt, MU_EARTH);
+
         const rMoon = sim.moonState.r;
 
         for (const b of sim.bodies) {
+          if (b.type === "fixed-point") {
+            b.state = {
+              r: [...b.fixedPositionM],
+              v: [0, 0, 0],
+            };
+
+            b.trail.length = 0;
+            continue;
+          }
+
           if (b.parent === "moon") {
             b.state = stepVelocityVerlet(b.state, dt, MU_MOON);
+
             if (settings.showTrails) {
               const relPos = toRenderUnits(b.state.r, mPerUnit);
               const moonPos = toRenderUnits(rMoon, mPerUnit);
+
               const worldPos = [
                 moonPos[0] + relPos[0],
                 moonPos[1] + relPos[1],
                 moonPos[2] + relPos[2],
               ];
+
               b.trail.push(worldPos);
-              if (b.trail.length > 500) b.trail.shift();
+
+              if (b.trail.length > 500) {
+                b.trail.shift();
+              }
             }
           } else {
             b.state = stepVelocityVerlet(b.state, dt, MU_EARTH);
+
             if (settings.showTrails) {
               b.trail.push(toRenderUnits(b.state.r, mPerUnit));
-              if (b.trail.length > 900) b.trail.shift();
+
+              if (b.trail.length > 900) {
+                b.trail.shift();
+              }
             }
           }
         }
+
         steps++;
       }
 
       if (moonVisualRef.current && sim.moonState) {
         const mR = toRenderUnits(sim.moonState.r, mPerUnit);
-
         const moonScale = getVisualDistanceScale("moon");
 
         moonVisualRef.current.position.set(
@@ -367,6 +462,7 @@ export default function SatelliteTelescopeSimulator() {
         );
       }
     });
+
     return null;
   }
 
@@ -382,12 +478,25 @@ export default function SatelliteTelescopeSimulator() {
       }}
     >
       <Box
-        sx={{ flex: 1, position: "relative", minHeight: { xs: "55vh", md: 0 } }}
+        sx={{
+          flex: 1,
+          position: "relative",
+          minHeight: { xs: "55vh", md: 0 },
+        }}
       >
         <Canvas
           dpr={[1, 2]}
-          gl={{ antialias: true, alpha: false, logarithmicDepthBuffer: true }}
-          camera={{ position: [0, 5, 20], fov: 45, near: 0.001, far: 5000000 }} // Reduced near clip
+          gl={{
+            antialias: true,
+            alpha: false,
+            logarithmicDepthBuffer: true,
+          }}
+          camera={{
+            position: [0, 5, 20],
+            fov: 45,
+            near: 0.001,
+            far: 5000000,
+          }}
         >
           <color attach="background" args={["#02030f"]} />
           <directionalLight position={[100, 50, 50]} intensity={2.5} />
@@ -395,20 +504,24 @@ export default function SatelliteTelescopeSimulator() {
           <Stars radius={20000} depth={5000} count={8000} factor={6} fade />
 
           <PhysicsStepper />
+
           <CameraController
             focusedBodyId={focusedBodyId}
             bodies={simRef.current.bodies}
             moonRef={moonVisualRef}
             mPerUnit={mPerUnit}
             controlsRef={controlsRef}
+            getBodyDistanceScale={getVisualDistanceScale}
           />
+
           <EarthVisual
             radius={earthRenderRadius}
             simTime={uiT}
             showClouds
             showAtmosphere
-            showLabel={simMode !== "realistic"}
+            showLabel={settings.showLabels}
           />
+
           <GroundTelescope observerRenderRef={observerRenderRef} />
 
           {simRef.current.bodies
@@ -420,11 +533,11 @@ export default function SatelliteTelescopeSimulator() {
                 mPerUnit={mPerUnit}
                 distanceScale={getVisualDistanceScale(b)}
                 observerMetersRef={observerMetersRef}
-                showLabels={simMode !== "realistic"}
+                showLabels={settings.showLabels}
                 showOrbits={!!settings.showOrbits}
                 showVelocityVectors={!!settings.showVectors}
                 showOnlyVisible={!!settings.showOnlyVisible}
-                visualScale={satVisualScale}
+                visualScale={getObjectVisualScale(b)}
               />
             ))}
 
@@ -438,12 +551,23 @@ export default function SatelliteTelescopeSimulator() {
               distanceScale={getVisualDistanceScale("moon")}
             />
           )}
+
+          <LagrangePointMarkers
+            pointsMeters={earthMoonLPoints}
+            mPerUnit={mPerUnit}
+            distanceScale={getVisualDistanceScale("moon")}
+            visible={settings.showMoon && settings.showLagrangePoints}
+            onSelect={setFocusedBodyId}
+          />
+
           {settings.showMoon && (
             <group ref={moonVisualRef}>
               <MoonVisual
                 radius={moonVisualRadius}
                 rotationScale={Number(settings.timeScale)}
+                showLabel={settings.showLabels}
               />
+
               {simRef.current.bodies
                 .filter((b) => b.parent === "moon")
                 .map((b) => (
@@ -453,7 +577,7 @@ export default function SatelliteTelescopeSimulator() {
                     mPerUnit={mPerUnit}
                     distanceScale={getVisualDistanceScale(b)}
                     observerMetersRef={null}
-                    showLabels={simMode !== "realistic"}
+                    showLabels={settings.showLabels}
                     showOrbits={!!settings.showOrbits}
                     showVelocityVectors={!!settings.showVectors}
                     showOnlyVisible={false}
@@ -464,35 +588,39 @@ export default function SatelliteTelescopeSimulator() {
           )}
 
           {settings.showTrails &&
-            simRef.current.bodies.map((b) => (
-              <OrbitalTrail
-                key={`trail-${b.id}`}
-                body={b} // ✅ Passed body for live connection
-                mPerUnit={mPerUnit}
-                color="#FFD700" // ✅ Yellow Trail
-                visible={!settings.showOnlyVisible || b.lastVisible}
-              />
-            ))}
+            simRef.current.bodies
+              .filter((b) => b.type !== "fixed-point")
+              .map((b) => (
+                <OrbitalTrail
+                  key={`trail-${b.id}`}
+                  body={b}
+                  color="#FFD700"
+                  visible={!settings.showOnlyVisible || b.lastVisible}
+                  distanceScale={getVisualDistanceScale(b)}
+                />
+              ))}
 
           {settings.showLOS &&
-            simRef.current.bodies.map((b) => (
-              <LOSLine
-                key={`los-${b.id}`}
-                fromRef={observerRenderRef}
-                toBody={b}
-                parentRef={b.parent === "moon" ? moonVisualRef : null}
-                mPerUnit={mPerUnit}
-                enabled
-                showOnlyVisible={!!settings.showOnlyVisible}
-              />
-            ))}
+            simRef.current.bodies
+              .filter((b) => b.type !== "fixed-point")
+              .map((b) => (
+                <LOSLine
+                  key={`los-${b.id}`}
+                  fromRef={observerRenderRef}
+                  toBody={b}
+                  parentRef={b.parent === "moon" ? moonVisualRef : null}
+                  mPerUnit={mPerUnit}
+                  enabled
+                  showOnlyVisible={!!settings.showOnlyVisible}
+                />
+              ))}
 
           <OrbitControls
             ref={controlsRef}
             makeDefault
             enableDamping
             dampingFactor={0.08}
-            minDistance={1.002} // ✅ Extra close zoom allowed
+            minDistance={0.02}
             maxDistance={5000000}
           />
         </Canvas>
