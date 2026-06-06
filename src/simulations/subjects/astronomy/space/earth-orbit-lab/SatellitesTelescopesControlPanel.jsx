@@ -427,8 +427,8 @@ export default function SatellitesTelescopesControlPanel({
                   <span style={{ opacity: 0.6, fontSize: 9 }}>
                     {body.parent === "moon"
                       ? "Orbit: Moon"
-                      : body.initialAlt > 100000000
-                        ? "Orbit: High Earth (L2 Sim)"
+                      : body.parent === "sun-earth-l2"
+                        ? "Location: Sun-Earth L2"
                         : "Orbit: Earth"}
                   </span>
                 }
@@ -490,6 +490,7 @@ export default function SatellitesTelescopesControlPanel({
             }
             label={<Typography fontSize={10}>Orbits</Typography>}
           />
+
           <FormControlLabel
             control={
               <Switch
@@ -500,6 +501,7 @@ export default function SatellitesTelescopesControlPanel({
             }
             label={<Typography fontSize={10}>Trails</Typography>}
           />
+
           <FormControlLabel
             control={
               <Switch
@@ -510,6 +512,7 @@ export default function SatellitesTelescopesControlPanel({
             }
             label={<Typography fontSize={10}>Ground LOS</Typography>}
           />
+
           <FormControlLabel
             control={
               <Switch
@@ -519,6 +522,28 @@ export default function SatellitesTelescopesControlPanel({
               />
             }
             label={<Typography fontSize={10}>Visible Only</Typography>}
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={!!settings.showLagrangePoints}
+                onChange={setBool("showLagrangePoints")}
+              />
+            }
+            label={<Typography fontSize={10}>Lagrange</Typography>}
+          />
+
+          <FormControlLabel
+            control={
+              <Switch
+                size="small"
+                checked={!!settings.showLabels}
+                onChange={setBool("showLabels")}
+              />
+            }
+            label={<Typography fontSize={10}>Labels</Typography>}
           />
         </Box>
 

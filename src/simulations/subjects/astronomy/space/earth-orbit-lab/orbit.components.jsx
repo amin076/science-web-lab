@@ -1,8 +1,9 @@
 // src/simulations/subjects/astronomy/space/earth-orbit-lab/orbit.components.jsx
+
 import React, { useMemo, useRef, useEffect } from "react";
 import * as THREE from "three";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Html, Line as DreiLine } from "@react-three/drei";
+import { Html, Line as DreiLine, useGLTF } from "@react-three/drei";
 import { toRenderUnits, R_EARTH_M } from "./orbit.physics";
 import { hasLineOfSight, elevationDeg } from "./orbit.visibility";
 
@@ -13,6 +14,7 @@ export function CameraController({
   moonRef,
   mPerUnit,
   controlsRef,
+  getBodyDistanceScale = () => 1,
 }) {
   const { camera } = useThree();
   const targetVec = useRef(new THREE.Vector3(0, 0, 0));
@@ -21,18 +23,25 @@ export function CameraController({
   useFrame(() => {
     if (!controlsRef.current) return;
 
-    // 1. Determine Desired Target Position
     const dest = new THREE.Vector3(0, 0, 0);
+    let targetResolved = !focusedBodyId;
 
     if (focusedBodyId === "moon" && moonRef.current) {
-      // Frame the Earth-Moon system instead of zooming directly onto the Moon.
-      // Earth is at origin, Moon is at moonRef.current.position.
-      // Target the midpoint so both Earth and Moon stay visible.
       dest.copy(moonRef.current.position).multiplyScalar(0.5);
+      targetResolved = true;
     } else if (focusedBodyId) {
       const body = bodies.find((b) => b.id === focusedBodyId);
+
       if (body) {
-        const rRel = toRenderUnits(body.state.r, mPerUnit);
+        const distanceScale = getBodyDistanceScale(body);
+        const rRaw = toRenderUnits(body.state.r, mPerUnit);
+
+        const rRel = [
+          rRaw[0] * distanceScale,
+          rRaw[1] * distanceScale,
+          rRaw[2] * distanceScale,
+        ];
+
         if (body.parent === "moon" && moonRef.current) {
           dest
             .copy(moonRef.current.position)
@@ -40,16 +49,22 @@ export function CameraController({
         } else {
           dest.set(rRel[0], rRel[1], rRel[2]);
         }
+
+        targetResolved = true;
       }
     }
 
-    // 2. Snap / Auto-Zoom on Focus Change
+    if (focusedBodyId && !targetResolved) {
+      previousId.current = focusedBodyId;
+      return;
+    }
+
     if (focusedBodyId !== previousId.current) {
       if (focusedBodyId === "moon" && moonRef.current) {
         const moonPos = moonRef.current.position.clone();
         const moonDistance = moonPos.length();
-
         const viewDistance = Math.max(moonDistance * 1.25, 8);
+
         const offset = new THREE.Vector3(
           viewDistance * 0.2,
           viewDistance * 0.35,
@@ -60,9 +75,37 @@ export function CameraController({
         targetVec.current.copy(dest);
         controlsRef.current.target.copy(dest);
       } else if (focusedBodyId) {
-        const dir = dest.clone().normalize();
+        const body = bodies.find((b) => b.id === focusedBodyId);
+        const isJWST =
+          body?.parent === "sun-earth-l2" ||
+          body?.name?.toLowerCase().includes("james webb");
 
-        const offset = new THREE.Vector3(0.004, 0.002, 0.006).applyQuaternion(
+        const dir =
+          dest.length() > 0.0001
+            ? dest.clone().normalize()
+            : new THREE.Vector3(0, 0, 1);
+
+        const name = body?.name?.toLowerCase() || "";
+
+        let offsetBase;
+
+        if (isJWST) {
+          offsetBase = new THREE.Vector3(
+            Math.max(dest.length() * 0.08, 8),
+            Math.max(dest.length() * 0.04, 4),
+            Math.max(dest.length() * 0.16, 16),
+          );
+        } else if (name.includes("gps")) {
+          offsetBase = new THREE.Vector3(0.08, 0.04, 0.12);
+        } else if (name.includes("iss")) {
+          offsetBase = new THREE.Vector3(0.06, 0.035, 0.09);
+        } else if (name.includes("hubble")) {
+          offsetBase = new THREE.Vector3(0.045, 0.025, 0.07);
+        } else if (name.includes("starlink")) {
+          offsetBase = new THREE.Vector3(0.035, 0.02, 0.055);
+        }
+
+        const offset = offsetBase.applyQuaternion(
           new THREE.Quaternion().setFromUnitVectors(
             new THREE.Vector3(0, 0, 1),
             dir,
@@ -77,14 +120,12 @@ export function CameraController({
       previousId.current = focusedBodyId;
     }
 
-    // 3. Chase Logic
     const prevTarget = targetVec.current.clone();
     targetVec.current.lerp(dest, 0.1);
+
     const delta = new THREE.Vector3().subVectors(targetVec.current, prevTarget);
 
-    if (focusedBodyId) {
-      camera.position.add(delta);
-    }
+    if (focusedBodyId) camera.position.add(delta);
 
     controlsRef.current.target.copy(targetVec.current);
     controlsRef.current.update();
@@ -92,6 +133,18 @@ export function CameraController({
 
   return null;
 }
+
+function GLBModel({ url, scale = 1, rotation = [0, 0, 0] }) {
+  const { scene } = useGLTF(url);
+  const clonedScene = useMemo(() => scene.clone(true), [scene]);
+
+  return <primitive object={clonedScene} scale={scale} rotation={rotation} />;
+}
+
+useGLTF.preload("/JamesWebb.glb");
+useGLTF.preload("/Hubble.glb");
+useGLTF.preload("/iss.glb");
+useGLTF.preload("/gps.glb");
 
 /* --- Visuals --- */
 function SatelliteVisual({ type, color, scaleFactor = 1 }) {
@@ -105,10 +158,12 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
           <cylinderGeometry args={[0.08, 0.08, 0.5, 8]} />
           <meshStandardMaterial color="#ccc" />
         </mesh>
+
         <mesh>
           <boxGeometry args={[0.8, 0.05, 0.05]} />
           <meshStandardMaterial color="#888" />
         </mesh>
+
         {[-0.4, -0.25, 0.25, 0.4].map((x, i) => (
           <mesh key={i} position={[x, 0, 0]}>
             <boxGeometry args={[0.1, 0.4, 0.01]} />
@@ -126,10 +181,12 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
           <cylinderGeometry args={[0.1, 0.1, 0.4, 16]} />
           <meshStandardMaterial color="silver" />
         </mesh>
+
         <mesh position={[0.25, 0, 0]}>
           <boxGeometry args={[0.3, 0.15, 0.01]} />
           <meshStandardMaterial color="#1a237e" />
         </mesh>
+
         <mesh position={[-0.25, 0, 0]}>
           <boxGeometry args={[0.3, 0.15, 0.01]} />
           <meshStandardMaterial color="#1a237e" />
@@ -144,10 +201,12 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
         <boxGeometry args={[0.15, 0.15, 0.15]} />
         <meshStandardMaterial color={color} />
       </mesh>
+
       <mesh position={[-0.25, 0, 0]}>
         <boxGeometry args={[0.2, 0.2, 0.01]} />
         <meshStandardMaterial color="#1a237e" side={THREE.DoubleSide} />
       </mesh>
+
       <mesh position={[0.25, 0, 0]}>
         <boxGeometry args={[0.2, 0.2, 0.01]} />
         <meshStandardMaterial color="#1a237e" side={THREE.DoubleSide} />
@@ -156,14 +215,36 @@ function SatelliteVisual({ type, color, scaleFactor = 1 }) {
   );
 }
 
-export function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
+function getModelScale(body, visualScale) {
+  const name = body.name?.toLowerCase() || "";
+
+  if (name.includes("james webb")) return 0.0002 * visualScale;
+  if (name.includes("hubble")) return 0.00002 * visualScale;
+  if (name.includes("iss")) return 0.00045 * visualScale;
+  if (name.includes("gps")) return 0.00025 * visualScale;
+
+  return 1 * visualScale;
+}
+
+export function OrbitPathVisual({
+  pathData,
+  mPerUnit,
+  color,
+  opacity = 0.3,
+  distanceScale = 1,
+}) {
   const points = useMemo(
     () =>
       pathData.map((p) => {
         const r = toRenderUnits(p, mPerUnit);
-        return new THREE.Vector3(r[0], r[1], r[2]);
+
+        return new THREE.Vector3(
+          r[0] * distanceScale,
+          r[1] * distanceScale,
+          r[2] * distanceScale,
+        );
       }),
-    [pathData, mPerUnit],
+    [pathData, mPerUnit, distanceScale],
   );
 
   return (
@@ -176,6 +257,7 @@ export function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
           itemSize={3}
         />
       </bufferGeometry>
+
       <lineBasicMaterial
         color={color}
         opacity={opacity}
@@ -186,56 +268,29 @@ export function OrbitPathVisual({ pathData, mPerUnit, color, opacity = 0.3 }) {
   );
 }
 
-// ✅ FIX: Gapless Trail using live position
-export function OrbitalTrail({ body, mPerUnit, color, visible }) {
+export function OrbitalTrail({ body, color, visible, distanceScale = 1 }) {
   const lineRef = useRef();
-  const maxPoints = 800;
+  const maxPoints = 900;
 
   const geometry = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    // +1 for the live connection point
     const positions = new Float32Array((maxPoints + 1) * 3);
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     return geo;
-  }, [maxPoints]);
+  }, []);
 
   useFrame(() => {
     if (!lineRef.current || !visible || !body) return;
+
     const positions = lineRef.current.geometry.attributes.position.array;
     const trailData = body.trail;
-    const count = trailData.length;
+    const count = Math.min(trailData.length, maxPoints);
 
-    // 1. Copy history points
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = trailData[i][0];
-      positions[i * 3 + 1] = trailData[i][1];
-      positions[i * 3 + 2] = trailData[i][2];
+      positions[i * 3] = trailData[i][0] * distanceScale;
+      positions[i * 3 + 1] = trailData[i][1] * distanceScale;
+      positions[i * 3 + 2] = trailData[i][2] * distanceScale;
     }
-
-    // 2. Add current live position as the final point to close the gap
-    const currentPos = toRenderUnits(body.state.r, mPerUnit);
-    // If it's a moon satellite, add moon pos
-    // (Note: For simplicity here, assuming logic is handled in simulator or passed down.
-    // To keep it simple, we just use the trail data structure which is already world space in the simulator.)
-
-    // Actually, in the simulator loop, trail is pushed. But there's a frame delay.
-    // We will cheat and overwrite the last+1 point with current position.
-    // However, we need world position. The simulator calculated `trail` in world space.
-    // But `body.state.r` is relative.
-    // We need the world position logic here or pass it.
-    // Simpler fix: Just draw to the last known trail point? No, that causes the gap.
-
-    // Let's assume the trail logic in simulator pushes world coords.
-    // We will just draw the trail as is. If the gap persists, we need to push to trail more often or interpolate.
-    // Actually, simply setting DrawRange to count is correct.
-    // The "Gap" usually happens because the line isn't updated to the *interpolated* frame position.
-
-    // To truly fix it without passing parent refs:
-    // We will rely on the fact that `body.trail` contains the history.
-    // We won't add the extra point here to avoid complex coordinate transforms inside this component.
-    // Instead, we trust the simulator pushes frequent enough updates.
-    // If the user sees a gap, it's because the physics step is ahead of the render? No.
-    // It's because the visual mesh moves in `useFrame`, but trail only updates on physics tick.
 
     lineRef.current.geometry.setDrawRange(0, count);
     lineRef.current.geometry.attributes.position.needsUpdate = true;
@@ -259,8 +314,11 @@ export function GroundTelescope({ observerRenderRef }) {
 
   useFrame(() => {
     if (!meshRef.current || !observerRenderRef.current) return;
+
     const p = observerRenderRef.current;
+
     meshRef.current.position.set(p[0], p[1], p[2]);
+
     const normal = new THREE.Vector3(p[0], p[1], p[2]).normalize();
     meshRef.current.quaternion.setFromUnitVectors(up, normal);
   });
@@ -289,13 +347,16 @@ export function LOSLine({
 
   useFrame(() => {
     if (!enabled || !lineRef.current || !fromRef.current) return;
+
     const shouldShow = showOnlyVisible ? !!toBody.lastVisible : true;
     lineRef.current.visible = shouldShow;
+
     if (!shouldShow) return;
 
     const a = fromRef.current;
     const relPos = toRenderUnits(toBody.state.r, mPerUnit);
     let b = relPos;
+
     if (parentRef && parentRef.current) {
       const pPos = parentRef.current.position;
       b = [pPos.x + relPos[0], pPos.y + relPos[1], pPos.z + relPos[2]];
@@ -311,6 +372,7 @@ export function LOSLine({
         b[2],
       ]);
     }
+
     if (lineRef.current.material?.color?.set) {
       lineRef.current.material.color.set(
         toBody.lastVisible ? "#4ECDC4" : "#ef4444",
@@ -319,6 +381,7 @@ export function LOSLine({
   });
 
   if (!enabled) return null;
+
   return (
     <DreiLine
       ref={lineRef}
@@ -336,26 +399,15 @@ export function LOSLine({
     />
   );
 }
+
 function getOrbitColor(body) {
   const name = body.name?.toLowerCase() || "";
 
-  // Moon satellites
-  if (body.parent === "moon") {
-    return "#C0C0C0";
-  }
-
-  // LEO
+  if (body.parent === "moon") return "#C0C0C0";
   if (name.includes("iss")) return "#00E5FF";
   if (name.includes("tiangong")) return "#00BCD4";
   if (name.includes("hubble")) return "#7C4DFF";
-
-  // MEO
   if (name.includes("gps")) return "#FFD54F";
-
-  // Deep Space
-  if (name.includes("james webb")) return "#FF9800";
-
-  // Starlink
   if (name.includes("starlink")) return "#4CAF50";
 
   return body.color;
@@ -367,7 +419,6 @@ function getOrbitOpacity(body) {
   const name = body.name?.toLowerCase() || "";
 
   if (name.includes("gps")) return 0.8;
-  if (name.includes("james webb")) return 0.8;
 
   return 0.5;
 }
@@ -375,12 +426,11 @@ function getOrbitOpacity(body) {
 function shouldShowLabel(body, visualScale) {
   const name = body.name?.toLowerCase() || "";
 
-  // Always important
+  if (body.parent === "sun-earth-l2") return true;
   if (name.includes("james webb")) return true;
   if (name.includes("gateway")) return true;
   if (name.includes("moon")) return true;
 
-  // Show others only when zoomed in
   return visualScale > 0.35;
 }
 
@@ -394,39 +444,70 @@ export function SatelliteBody({
   showOnlyVisible,
   velocityVisualScale = 200,
   visualScale = 1,
+  distanceScale = 1,
 }) {
   const groupRef = useRef();
-  const meshRef = useRef();
+  const objectRef = useRef();
   const arrowRef = useRef(null);
+  const smoothPosRef = useRef(new THREE.Vector3());
+  
+  const isJWST =
+    body.parent === "sun-earth-l2" ||
+    body.name?.toLowerCase().includes("james webb");
 
   useEffect(() => {
     const group = groupRef.current;
     if (!group) return;
+
     const arrow = new THREE.ArrowHelper(
       new THREE.Vector3(1, 0, 0),
       new THREE.Vector3(0, 0, 0),
       0.2,
       body.color,
     );
+
     arrow.visible = false;
     arrowRef.current = arrow;
     group.add(arrow);
+
     return () => {
       if (arrowRef.current) group.remove(arrowRef.current);
     };
   }, [body.color]);
 
   useFrame(() => {
-    if (!meshRef.current || !groupRef.current) return;
-    const p = toRenderUnits(body.state.r, mPerUnit);
-    meshRef.current.position.set(p[0], p[1], p[2]);
+    if (!objectRef.current || !groupRef.current) return;
+
+    const pRaw = toRenderUnits(body.state.r, mPerUnit);
+
+    const p = [
+      pRaw[0] * distanceScale,
+      pRaw[1] * distanceScale,
+      pRaw[2] * distanceScale,
+    ];
+
+    const targetPos = new THREE.Vector3(p[0], p[1], p[2]);
+
+    if (smoothPosRef.current.lengthSq() === 0) {
+      smoothPosRef.current.copy(targetPos);
+    } else {
+      smoothPosRef.current.lerp(targetPos, 0.18);
+    }
+
+    objectRef.current.position.copy(smoothPosRef.current);
 
     const obs = observerMetersRef ? observerMetersRef.current : null;
+
     let visible = true;
-    if (obs && body.parent !== "moon") {
+
+    if (obs && body.parent === "earth" && !isJWST) {
       visible = hasLineOfSight(obs, body.state.r, R_EARTH_M);
-      if (elevationDeg(obs, body.state.r) <= 0) visible = false;
+
+      if (elevationDeg(obs, body.state.r) <= 0) {
+        visible = false;
+      }
     }
+
     body.lastVisible = visible;
     groupRef.current.visible = showOnlyVisible ? visible : true;
 
@@ -434,14 +515,17 @@ export function SatelliteBody({
       const vRender = toRenderUnits(body.state.v, mPerUnit);
       const vVec = new THREE.Vector3(vRender[0], vRender[1], vRender[2]);
       const speed = vVec.length();
+
       if (
         showVelocityVectors &&
         speed > 1e-6 &&
-        (!showOnlyVisible || visible)
+        (!showOnlyVisible || visible) &&
+        body.type !== "fixed-point"
       ) {
         arrowRef.current.visible = true;
         arrowRef.current.position.set(p[0], p[1], p[2]);
         arrowRef.current.setDirection(vVec.normalize());
+
         arrowRef.current.setLength(
           THREE.MathUtils.clamp(speed * velocityVisualScale, 0.08, 0.65),
           0.06,
@@ -455,42 +539,158 @@ export function SatelliteBody({
 
   return (
     <group ref={groupRef}>
-      {showOrbits && (
+      {showOrbits && body.type !== "fixed-point" && (
         <OrbitPathVisual
           pathData={body.orbitPath}
           mPerUnit={mPerUnit}
           color={getOrbitColor(body)}
           opacity={getOrbitOpacity(body)}
+          distanceScale={distanceScale}
         />
       )}
-      <mesh ref={meshRef}>
-        <SatelliteVisual
-          type={body.type}
-          color={body.color}
-          scaleFactor={visualScale}
-        />
-      </mesh>
-      {showLabels && shouldShowLabel(body, visualScale) && (
-        <Html
-          center
-          position={[0, 0.12 * visualScale, 0]}
-          style={{ pointerEvents: "none" }}
-        >
-          <div
-            style={{
-              padding: "2px 6px",
-              borderRadius: 8,
-              background: "rgba(0,0,0,0.6)",
-              color: body.color,
-              fontSize: 10,
-              border: `1px solid ${body.color}`,
-              whiteSpace: "nowrap",
+
+      <group ref={objectRef}>
+        {isJWST ? (
+          <GLBModel
+            url="/JamesWebb.glb"
+            scale={getModelScale(body, visualScale)}
+            rotation={[0.4, -0.6, 0.2]}
+          />
+        ) : body.name?.toLowerCase().includes("hubble") ? (
+          <GLBModel
+            url="/Hubble.glb"
+            scale={getModelScale(body, visualScale)}
+            rotation={[0.4, -0.6, 0.2]}
+          />
+        ) : body.name?.toLowerCase().includes("iss") ? (
+          <GLBModel
+            url="/iss.glb"
+            scale={getModelScale(body, visualScale)}
+            rotation={[0.4, -0.6, 0.2]}
+          />
+        ) : body.name?.toLowerCase().includes("gps") ? (
+          <GLBModel
+            url="/gps.glb"
+            scale={getModelScale(body, visualScale)}
+            rotation={[0.4, -0.6, 0.2]}
+          />
+        ) : (
+          <SatelliteVisual
+            type={body.type}
+            color={body.color}
+            scaleFactor={visualScale}
+          />
+        )}
+
+        {showLabels && shouldShowLabel(body, visualScale) && (
+          <Html
+            center
+            position={[0, isJWST ? 0.28 : 0.12 * visualScale, 0]}
+            style={{ pointerEvents: "none" }}
+          >
+            <div
+              style={{
+                padding: "2px 6px",
+                borderRadius: 8,
+                background: isJWST ? "rgba(20,12,0,0.78)" : "rgba(0,0,0,0.6)",
+                color: isJWST ? "#FFA726" : body.color,
+                fontSize: isJWST ? 11 : 10,
+                fontWeight: isJWST ? 800 : 600,
+                border: `1px solid ${isJWST ? "#FFA726" : body.color}`,
+                whiteSpace: "nowrap",
+                boxShadow: isJWST ? "0 0 10px #FFA726" : "none",
+              }}
+            >
+              {isJWST ? "JWST at Sun–Earth L2" : body.name}
+            </div>
+          </Html>
+        )}
+      </group>
+    </group>
+  );
+}
+
+export function LagrangePointMarkers({
+  pointsMeters = [],
+  mPerUnit,
+  distanceScale = 1,
+  visible = true,
+  onSelect,
+}) {
+  const points = useMemo(
+    () =>
+      pointsMeters.map((p) => {
+        const r = toRenderUnits(p.pos, mPerUnit);
+
+        return {
+          ...p,
+          pos: [
+            r[0] * distanceScale,
+            r[1] * distanceScale,
+            r[2] * distanceScale,
+          ],
+        };
+      }),
+    [pointsMeters, mPerUnit, distanceScale],
+  );
+
+  if (!visible) return null;
+
+  return (
+    <group>
+      {points.map((p) => (
+        <group key={p.id} position={p.pos}>
+          {/* Tiny beacon point */}
+          <mesh
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect?.(p.id);
             }}
           >
-            {body.name}
-          </div>
-        </Html>
-      )}
+            <sphereGeometry args={[0.018, 12, 12]} />
+            <meshBasicMaterial color={p.color} />
+          </mesh>
+
+          {/* Soft glow ring */}
+          <mesh>
+            <sphereGeometry args={[0.04, 16, 16]} />
+            <meshBasicMaterial
+              color={p.color}
+              transparent
+              opacity={0.18}
+              depthWrite={false}
+            />
+          </mesh>
+
+          {/* Label */}
+          <Html
+            center
+            position={[0, 0.09, 0]}
+            style={{ pointerEvents: "auto", cursor: "pointer" }}
+          >
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect?.(p.id);
+              }}
+              style={{
+                padding: "1px 5px",
+                borderRadius: 6,
+                background: "rgba(0,0,0,0.65)",
+                color: p.color,
+                fontSize: 10,
+                fontWeight: 800,
+                border: `1px solid ${p.color}`,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+                boxShadow: `0 0 8px ${p.color}`,
+              }}
+            >
+              {p.id}
+            </div>
+          </Html>
+        </group>
+      ))}
     </group>
   );
 }

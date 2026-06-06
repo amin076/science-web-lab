@@ -1,4 +1,5 @@
 // src/simulations/subjects/astronomy/space/earth-orbit-lab/orbit.factory.js
+
 import * as THREE from "three";
 import {
   R_EARTH_M,
@@ -18,43 +19,90 @@ function calculateOrbitPath(initialState, mu) {
   const rVec = new THREE.Vector3(
     initialState.r[0],
     initialState.r[1],
-    initialState.r[2]
+    initialState.r[2],
   );
+
   const rMag = rVec.length();
   const period = orbitalPeriod(rMag, mu);
+
   const segments = 120;
   const dt = period / segments;
 
   const path = [];
-  let simState = { r: [...initialState.r], v: [...initialState.v] };
+
+  let simState = {
+    r: [...initialState.r],
+    v: [...initialState.v],
+  };
 
   for (let i = 0; i <= segments; i++) {
-    path.push(simState.r);
+    path.push([...simState.r]);
     simState = stepVelocityVerlet(simState, dt, mu);
   }
-  path.push(path[0]);
+
+  path.push([...path[0]]);
+
   return path;
 }
 
 export function makeBody({
   name,
   color,
-  altitudeM,
-  inclinationDeg,
+  altitudeM = 0,
+  inclinationDeg = 0,
   type = "satellite",
   parent = "earth",
   raanDeg,
   trueAnomalyDeg,
+
+  // NEW
+  fixedPositionM = [0, 0, 0],
 }) {
+  /* ==========================================
+     FIXED OBJECTS (JWST, future Lagrange probes)
+     ========================================== */
+  if (type === "fixed-point") {
+    return {
+      id: `${name}-${Math.random().toString(16).slice(2)}`,
+
+      name,
+      color,
+      type,
+      parent,
+
+      initialAlt: 0,
+
+      fixedPositionM: [...fixedPositionM],
+
+      state: {
+        r: [...fixedPositionM],
+        v: [0, 0, 0],
+      },
+
+      orbitPath: [],
+      trail: [],
+      lastVisible: true,
+    };
+  }
+
+  /* ==========================================
+     NORMAL ORBITERS
+     ========================================== */
+
   const isMoonOrbit = parent === "moon";
+
   const MU = isMoonOrbit ? MU_MOON : MU_EARTH;
   const PARENT_R = isMoonOrbit ? R_MOON_M : R_EARTH_M;
 
   const state = makeCircularOrbitState({
     altitudeM,
     inclinationDeg,
-    raanDeg: raanDeg ?? rand(0, 360),
-    trueAnomalyDeg: trueAnomalyDeg ?? rand(0, 360),
+
+    raanDeg: raanDeg !== undefined ? raanDeg : rand(0, 360),
+
+    trueAnomalyDeg:
+      trueAnomalyDeg !== undefined ? trueAnomalyDeg : rand(0, 360),
+
     mu: MU,
     radiusOfParent: PARENT_R,
   });
@@ -63,13 +111,17 @@ export function makeBody({
 
   return {
     id: `${name}-${Math.random().toString(16).slice(2)}`,
+
     name,
     color,
     type,
     parent,
+
     initialAlt: altitudeM,
+
     state,
     orbitPath,
+
     trail: [],
     lastVisible: true,
   };
