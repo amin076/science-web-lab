@@ -1,4 +1,28 @@
-//src/simulations/subjects/physics/acoustics/Doppler/utils/dopplerPhysics.js
+// src/simulations/subjects/physics/acoustics/Doppler/utils/dopplerPhysics.js
+
+export function calculateDopplerRatio({
+  sourceX,
+  sourceV,
+  observerX,
+  observerV,
+  speedOfSound,
+}) {
+  const dist = sourceX - observerX;
+
+  const observerTowardSource = observerV * (dist > 0 ? 1 : -1);
+  const sourceTowardObserver = sourceV * (dist > 0 ? -1 : 1);
+
+  const numerator = speedOfSound + observerTowardSource;
+  const denominator = speedOfSound - sourceTowardObserver;
+
+  const safeDenominator =
+    Math.abs(denominator) < 1 ? Math.sign(denominator || 1) * 1 : denominator;
+
+  const ratio = Math.abs(numerator / safeDenominator);
+
+  return Math.max(0.25, Math.min(4, ratio));
+}
+
 export function calculateDoppler({
   sourceX,
   sourceV,
@@ -7,26 +31,26 @@ export function calculateDoppler({
   baseFreq,
   speedOfSound,
 }) {
-  const dist = sourceX - observerX;
+  const ratio = calculateDopplerRatio({
+    sourceX,
+    sourceV,
+    observerX,
+    observerV,
+    speedOfSound,
+  });
 
-  const obsVelTowardsSource = observerV * (dist > 0 ? 1 : -1);
-  const srcVelTowardsObs = sourceV * (dist > 0 ? -1 : 1);
-
-  const num = speedOfSound + obsVelTowardsSource;
-  const den = speedOfSound - srcVelTowardsObs;
-  const safeDen = Math.abs(den) < 1 ? Math.sign(den || 1) * 1 : den;
-
-  const observedFreq = Math.min(3000, baseFreq * Math.abs(num / safeDen));
-  const shiftPercent = ((observedFreq - baseFreq) / baseFreq) * 100;
+  const observedFreq = Math.min(3000, baseFreq * ratio);
+  const shiftPercent = (ratio - 1) * 100;
 
   const motionStatus =
-    Math.abs(observedFreq - baseFreq) < 1
+    Math.abs(shiftPercent) < 1
       ? "No shift"
-      : observedFreq > baseFreq
+      : shiftPercent > 0
         ? "Approaching / Higher pitch"
         : "Receding / Lower pitch";
 
   return {
+    ratio,
     observedFreq,
     shiftPercent,
     motionStatus,
@@ -42,4 +66,8 @@ export function calculateAmplitude(distance) {
     amplitude,
     db: Math.max(0, db),
   };
+}
+
+export function isSampleInstrument(instrumentId) {
+  return instrumentId?.includes("engine") || instrumentId?.includes("siren");
 }

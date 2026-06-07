@@ -1,20 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+// src/simulations/subjects/physics/acoustics/Doppler/Dopplersimulator.jsx
+import { useEffect, useRef, useState } from "react";
 
 import { AudioVoice } from "./SoundEngine";
 import DopplerCanvas from "./components/DopplerCanvas";
 import DopplerControls from "./components/DopplerControls";
+import { useDopplerSimulation } from "./hooks/useDopplerSimulation";
 
-import {
-  SPEED_OF_SOUND,
-  MAX_DISTANCE,
-  WAVE_EMIT_INTERVAL,
-  MAX_WAVE_RADIUS,
-  MODES,
-  SOURCE_PRESETS,
-} from "./constants";
-
-import { calculateDoppler, calculateAmplitude } from "./utils/dopplerPhysics";
-
+import { MODES, SOURCE_PRESETS } from "./constants";
 const DopplerSimulator = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.5);
@@ -25,8 +17,6 @@ const DopplerSimulator = () => {
   const audioCtxRef = useRef(null);
   const masterGainRef = useRef(null);
   const voicesRef = useRef({});
-  const requestRef = useRef(null);
-  const lastTimeRef = useRef(null);
   const observerRef = useRef(observer);
 
   useEffect(() => {
@@ -48,7 +38,7 @@ const DopplerSimulator = () => {
     }
   };
 
-  const updateVoice = (sourceId, freq, vol, instrumentType) => {
+  const updateVoice = (sourceId, freq, vol, instrumentType, baseFreq) => {
     if (!audioCtxRef.current) return;
 
     let voice = voicesRef.current[sourceId];
@@ -65,7 +55,7 @@ const DopplerSimulator = () => {
       voicesRef.current[sourceId] = voice;
     }
 
-    voice.setFrequency(freq);
+    voice.setFrequency(freq, baseFreq);
     voice.setVolume(isRunning ? vol : 0);
   };
 
@@ -84,6 +74,15 @@ const DopplerSimulator = () => {
       delete voicesRef.current[sourceId];
     }
   };
+
+  useDopplerSimulation({
+    isRunning,
+    setObserver,
+    setSources,
+    observerRef,
+    updateVoice,
+    muteAllVoices,
+  });
 
   const createSource = (presetKey = null, selectedMode = mode) => {
     const preset = presetKey ? SOURCE_PRESETS[presetKey] : null;
@@ -105,105 +104,6 @@ const DopplerSimulator = () => {
       preset: presetKey,
     };
   };
-
-  const updateSimulation = useCallback(
-    (timeMs) => {
-      if (!isRunning) return;
-
-      const now = timeMs / 1000;
-      const last = lastTimeRef.current ?? now;
-      const dt = Math.min(0.05, now - last);
-      lastTimeRef.current = now;
-
-      setObserver((prevObs) => {
-        let newX = prevObs.x + prevObs.v * dt;
-
-        if (newX > MAX_DISTANCE) newX = 0;
-        if (newX < 0) newX = MAX_DISTANCE;
-
-        const nextObs = { ...prevObs, x: newX };
-        observerRef.current = nextObs;
-        return nextObs;
-      });
-
-      setSources((prevSources) =>
-        prevSources.map((source) => {
-          const currentObserver = observerRef.current;
-
-          let newX = source.x + source.v * dt;
-
-          if (newX > MAX_DISTANCE) newX = 0;
-          if (newX < 0) newX = MAX_DISTANCE;
-
-          const dist = newX - currentObserver.x;
-
-          const { observedFreq, shiftPercent, motionStatus } = calculateDoppler(
-            {
-              sourceX: newX,
-              sourceV: source.v,
-              observerX: currentObserver.x,
-              observerV: currentObserver.v,
-              baseFreq: source.baseFreq,
-              speedOfSound: SPEED_OF_SOUND,
-            },
-          );
-
-          const { amplitude, db } = calculateAmplitude(dist);
-
-          let waves = (source.waves || [])
-            .map((wave) => ({
-              ...wave,
-              r: wave.r + SPEED_OF_SOUND * dt,
-            }))
-            .filter((wave) => wave.r < MAX_WAVE_RADIUS);
-
-          const shouldEmitWave =
-            now - (source.lastWaveTime || 0) > WAVE_EMIT_INTERVAL;
-
-          if (shouldEmitWave) {
-            waves.push({
-              id: `${source.id}-${now}`,
-              x: newX,
-              r: 1,
-            });
-          }
-
-          updateVoice(
-            source.id,
-            observedFreq,
-            amplitude * 0.35,
-            source.instrument,
-          );
-
-          return {
-            ...source,
-            x: newX,
-            currentFreq: observedFreq,
-            shiftPercent,
-            motionStatus,
-            db,
-            waves,
-            lastWaveTime: shouldEmitWave ? now : source.lastWaveTime,
-          };
-        }),
-      );
-
-      requestRef.current = requestAnimationFrame(updateSimulation);
-    },
-    [isRunning],
-  );
-
-  useEffect(() => {
-    if (isRunning) {
-      lastTimeRef.current = null;
-      requestRef.current = requestAnimationFrame(updateSimulation);
-    } else {
-      cancelAnimationFrame(requestRef.current);
-      muteAllVoices();
-    }
-
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [isRunning, updateSimulation]);
 
   const togglePlay = () => {
     initAudio();
