@@ -1,39 +1,24 @@
-//src/simulations/subjects/physics/acoustics/Doppler/Dopplersimulator.jsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Plus,
-  Trash2,
-  Volume2,
-  Ear,
-  Activity,
-  Music,
-  ArrowRight,
-  Car,
-  FlaskConical,
-} from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-import { AudioVoice, INSTRUMENTS } from "./SoundEngine";
+import { AudioVoice } from "./SoundEngine";
 import DopplerCanvas from "./components/DopplerCanvas";
 import DopplerControls from "./components/DopplerControls";
 
-const SPEED_OF_SOUND = 343;
-const MAX_DISTANCE = 1000;
-const WAVE_EMIT_INTERVAL = 0.12;
-const MAX_WAVE_RADIUS = 200;
+import {
+  SPEED_OF_SOUND,
+  MAX_DISTANCE,
+  WAVE_EMIT_INTERVAL,
+  MAX_WAVE_RADIUS,
+  MODES,
+  SOURCE_PRESETS,
+} from "./constants";
 
-const SOURCE_PRESETS = {
-  city: { label: "City Car", v: 15, baseFreq: 250, instrument: "saw" },
-  highway: { label: "Highway", v: 35, baseFreq: 400, instrument: "saw" },
-  race: { label: "Race Car", v: 80, baseFreq: 700, instrument: "saw" },
-};
+import { calculateDoppler, calculateAmplitude } from "./utils/dopplerPhysics";
 
 const DopplerSimulator = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.5);
-  const [mode, setMode] = useState("scientific");
+  const [mode, setMode] = useState(MODES.SCIENTIFIC);
   const [observer, setObserver] = useState({ x: 500, v: 0 });
   const [sources, setSources] = useState([]);
 
@@ -84,6 +69,43 @@ const DopplerSimulator = () => {
     voice.setVolume(isRunning ? vol : 0);
   };
 
+  const stopAllVoices = () => {
+    Object.values(voicesRef.current).forEach((voice) => voice.stop());
+    voicesRef.current = {};
+  };
+
+  const muteAllVoices = () => {
+    Object.values(voicesRef.current).forEach((voice) => voice.setVolume(0));
+  };
+
+  const stopVoice = (sourceId) => {
+    if (voicesRef.current[sourceId]) {
+      voicesRef.current[sourceId].stop();
+      delete voicesRef.current[sourceId];
+    }
+  };
+
+  const createSource = (presetKey = null, selectedMode = mode) => {
+    const preset = presetKey ? SOURCE_PRESETS[presetKey] : null;
+    const isCarMode = selectedMode === MODES.CAR;
+
+    return {
+      id: Date.now(),
+      x: isCarMode ? 150 : 200,
+      v: preset?.v ?? (isCarMode ? 35 : 80),
+      baseFreq: preset?.baseFreq ?? (isCarMode ? 400 : 440),
+      currentFreq: preset?.baseFreq ?? (isCarMode ? 400 : 440),
+      shiftPercent: 0,
+      motionStatus: "No shift",
+      db: 0,
+      instrument: preset?.instrument ?? "saw",
+      color: isCarMode ? "#22c55e" : `hsl(${Math.random() * 360}, 80%, 62%)`,
+      waves: [],
+      lastWaveTime: 0,
+      preset: presetKey,
+    };
+  };
+
   const updateSimulation = useCallback(
     (timeMs) => {
       if (!isRunning) return;
@@ -114,31 +136,19 @@ const DopplerSimulator = () => {
           if (newX < 0) newX = MAX_DISTANCE;
 
           const dist = newX - currentObserver.x;
-          const absDist = Math.abs(dist);
 
-          const obsVelTowardsSource = currentObserver.v * (dist > 0 ? 1 : -1);
-          const srcVelTowardsObs = source.v * (dist > 0 ? -1 : 1);
+          const { observedFreq, shiftPercent, motionStatus } = calculateDoppler(
+            {
+              sourceX: newX,
+              sourceV: source.v,
+              observerX: currentObserver.x,
+              observerV: currentObserver.v,
+              baseFreq: source.baseFreq,
+              speedOfSound: SPEED_OF_SOUND,
+            },
+          );
 
-          const num = SPEED_OF_SOUND + obsVelTowardsSource;
-          const den = SPEED_OF_SOUND - srcVelTowardsObs;
-          const safeDen = Math.abs(den) < 1 ? Math.sign(den || 1) * 1 : den;
-
-          const freqShift = Math.abs(num / safeDen);
-          const newFreq = Math.min(3000, source.baseFreq * freqShift);
-
-          const shiftPercent =
-            ((newFreq - source.baseFreq) / source.baseFreq) * 100;
-
-          const motionStatus =
-            Math.abs(newFreq - source.baseFreq) < 1
-              ? "No shift"
-              : newFreq > source.baseFreq
-                ? "Approaching / Higher pitch"
-                : "Receding / Lower pitch";
-
-          const clampedDist = Math.max(absDist, 5);
-          const amplitude = Math.min(1, 900 / (clampedDist * clampedDist));
-          const db = 20 * Math.log10(amplitude) + 100;
+          const { amplitude, db } = calculateAmplitude(dist);
 
           let waves = (source.waves || [])
             .map((wave) => ({
@@ -158,15 +168,20 @@ const DopplerSimulator = () => {
             });
           }
 
-          updateVoice(source.id, newFreq, amplitude * 0.35, source.instrument);
+          updateVoice(
+            source.id,
+            observedFreq,
+            amplitude * 0.35,
+            source.instrument,
+          );
 
           return {
             ...source,
             x: newX,
-            currentFreq: newFreq,
+            currentFreq: observedFreq,
             shiftPercent,
             motionStatus,
-            db: Math.max(0, db),
+            db,
             waves,
             lastWaveTime: shouldEmitWave ? now : source.lastWaveTime,
           };
@@ -184,7 +199,7 @@ const DopplerSimulator = () => {
       requestRef.current = requestAnimationFrame(updateSimulation);
     } else {
       cancelAnimationFrame(requestRef.current);
-      Object.values(voicesRef.current).forEach((voice) => voice.setVolume(0));
+      muteAllVoices();
     }
 
     return () => cancelAnimationFrame(requestRef.current);
@@ -199,81 +214,53 @@ const DopplerSimulator = () => {
     setIsRunning(false);
     setObserver({ x: 500, v: 0 });
     setSources([]);
-
-    Object.values(voicesRef.current).forEach((v) => v.stop());
-    voicesRef.current = {};
-  };
-
-  const createSource = (presetKey = null) => {
-    const preset = presetKey ? SOURCE_PRESETS[presetKey] : null;
-
-    return {
-      id: Date.now(),
-      x: mode === "car" ? 150 : 200,
-      v: preset?.v ?? (mode === "car" ? 35 : 80),
-      baseFreq: preset?.baseFreq ?? (mode === "car" ? 400 : 440),
-      currentFreq: preset?.baseFreq ?? (mode === "car" ? 400 : 440),
-      shiftPercent: 0,
-      motionStatus: "No shift",
-      db: 0,
-      instrument: preset?.instrument ?? "saw",
-      color:
-        mode === "car" ? "#22c55e" : `hsl(${Math.random() * 360}, 80%, 62%)`,
-      waves: [],
-      lastWaveTime: 0,
-      preset: presetKey,
-    };
+    stopAllVoices();
   };
 
   const addSource = () => {
-    setSources((prev) => [...prev, createSource()]);
+    setSources((prev) => [...prev, createSource(null, mode)]);
     if (isRunning) initAudio();
   };
 
   const addCarPreset = (presetKey) => {
-    setMode("car");
-    setSources([createSource(presetKey)]);
+    setMode(MODES.CAR);
     setObserver({ x: 500, v: 0 });
+    setSources([createSource(presetKey, MODES.CAR)]);
+    stopAllVoices();
 
     if (isRunning) initAudio();
   };
 
   const removeSource = (id) => {
-    setSources((prev) => prev.filter((s) => s.id !== id));
-
-    if (voicesRef.current[id]) {
-      voicesRef.current[id].stop();
-      delete voicesRef.current[id];
-    }
+    setSources((prev) => prev.filter((source) => source.id !== id));
+    stopVoice(id);
   };
 
   const updateSourceVal = (id, key, val) => {
     setSources((prev) =>
-      prev.map((s) =>
-        s.id === id
+      prev.map((source) =>
+        source.id === id
           ? {
-              ...s,
+              ...source,
               [key]: val,
-              waves: key === "x" ? [] : s.waves,
-              lastWaveTime: key === "x" ? 0 : s.lastWaveTime,
+              waves: key === "x" ? [] : source.waves,
+              lastWaveTime: key === "x" ? 0 : source.lastWaveTime,
             }
-          : s,
+          : source,
       ),
     );
   };
 
   const handleModeChange = (nextMode) => {
     setMode(nextMode);
+    setObserver({ x: 500, v: 0 });
+    stopAllVoices();
 
-    if (nextMode === "car") {
-      setObserver({ x: 500, v: 0 });
-      setSources([createSource("highway")]);
+    if (nextMode === MODES.CAR) {
+      setSources([createSource("highway", MODES.CAR)]);
     } else {
       setSources([]);
     }
-
-    Object.values(voicesRef.current).forEach((v) => v.stop());
-    voicesRef.current = {};
   };
 
   return (
@@ -286,6 +273,7 @@ const DopplerSimulator = () => {
       `}</style>
 
       <DopplerCanvas mode={mode} observer={observer} sources={sources} />
+
       <DopplerControls
         mode={mode}
         isRunning={isRunning}
