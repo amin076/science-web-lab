@@ -10,6 +10,8 @@ import {
   Activity,
   Music,
   ArrowRight,
+  Car,
+  FlaskConical,
 } from "lucide-react";
 
 import { AudioVoice, INSTRUMENTS } from "./SoundEngine";
@@ -19,9 +21,16 @@ const MAX_DISTANCE = 1000;
 const WAVE_EMIT_INTERVAL = 0.12;
 const MAX_WAVE_RADIUS = 200;
 
+const SOURCE_PRESETS = {
+  city: { label: "City Car", v: 15, baseFreq: 250, instrument: "saw" },
+  highway: { label: "Highway", v: 35, baseFreq: 400, instrument: "saw" },
+  race: { label: "Race Car", v: 80, baseFreq: 700, instrument: "saw" },
+};
+
 const DopplerSimulator = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.5);
+  const [mode, setMode] = useState("scientific");
   const [observer, setObserver] = useState({ x: 500, v: 0 });
   const [sources, setSources] = useState([]);
 
@@ -30,7 +39,6 @@ const DopplerSimulator = () => {
   const voicesRef = useRef({});
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
-
   const observerRef = useRef(observer);
 
   useEffect(() => {
@@ -115,6 +123,16 @@ const DopplerSimulator = () => {
           const freqShift = Math.abs(num / safeDen);
           const newFreq = Math.min(3000, source.baseFreq * freqShift);
 
+          const shiftPercent =
+            ((newFreq - source.baseFreq) / source.baseFreq) * 100;
+
+          const motionStatus =
+            Math.abs(newFreq - source.baseFreq) < 1
+              ? "No shift"
+              : newFreq > source.baseFreq
+                ? "Approaching / Higher pitch"
+                : "Receding / Lower pitch";
+
           const clampedDist = Math.max(absDist, 5);
           const amplitude = Math.min(1, 900 / (clampedDist * clampedDist));
           const db = 20 * Math.log10(amplitude) + 100;
@@ -138,16 +156,6 @@ const DopplerSimulator = () => {
           }
 
           updateVoice(source.id, newFreq, amplitude * 0.35, source.instrument);
-
-          const shiftPercent =
-            ((newFreq - source.baseFreq) / source.baseFreq) * 100;
-
-          const motionStatus =
-            Math.abs(newFreq - source.baseFreq) < 1
-              ? "No shift"
-              : newFreq > source.baseFreq
-                ? "Approaching / Higher pitch"
-                : "Receding / Lower pitch";
 
           return {
             ...source,
@@ -193,21 +201,36 @@ const DopplerSimulator = () => {
     voicesRef.current = {};
   };
 
-  const addSource = () => {
-    const newSource = {
+  const createSource = (presetKey = null) => {
+    const preset = presetKey ? SOURCE_PRESETS[presetKey] : null;
+
+    return {
       id: Date.now(),
-      x: 200,
-      v: 80,
-      baseFreq: 440,
-      currentFreq: 440,
+      x: mode === "car" ? 150 : 200,
+      v: preset?.v ?? (mode === "car" ? 35 : 80),
+      baseFreq: preset?.baseFreq ?? (mode === "car" ? 400 : 440),
+      currentFreq: preset?.baseFreq ?? (mode === "car" ? 400 : 440),
+      shiftPercent: 0,
+      motionStatus: "No shift",
       db: 0,
-      instrument: "saw",
-      color: `hsl(${Math.random() * 360}, 80%, 62%)`,
+      instrument: preset?.instrument ?? "saw",
+      color:
+        mode === "car" ? "#22c55e" : `hsl(${Math.random() * 360}, 80%, 62%)`,
       waves: [],
       lastWaveTime: 0,
+      preset: presetKey,
     };
+  };
 
-    setSources((prev) => [...prev, newSource]);
+  const addSource = () => {
+    setSources((prev) => [...prev, createSource()]);
+    if (isRunning) initAudio();
+  };
+
+  const addCarPreset = (presetKey) => {
+    setMode("car");
+    setSources([createSource(presetKey)]);
+    setObserver({ x: 500, v: 0 });
 
     if (isRunning) initAudio();
   };
@@ -236,6 +259,20 @@ const DopplerSimulator = () => {
     );
   };
 
+  const handleModeChange = (nextMode) => {
+    setMode(nextMode);
+
+    if (nextMode === "car") {
+      setObserver({ x: 500, v: 0 });
+      setSources([createSource("highway")]);
+    } else {
+      setSources([]);
+    }
+
+    Object.values(voicesRef.current).forEach((v) => v.stop());
+    voicesRef.current = {};
+  };
+
   return (
     <div className="fixed inset-0 bg-slate-950 font-sans text-slate-200 overflow-hidden flex">
       <style>{`
@@ -257,7 +294,16 @@ const DopplerSimulator = () => {
           ))}
         </div>
 
-        {/* Real Doppler Wavefronts - SVG layer */}
+        {mode === "car" && (
+          <>
+            <div className="absolute left-0 right-0 top-1/2 h-28 -translate-y-1/2 bg-slate-800/30 border-y border-white/10 z-[1]" />
+            <div className="absolute left-0 right-0 top-1/2 border-t-2 border-dashed border-yellow-300/30 z-[2]" />
+            <div className="absolute left-6 top-[calc(50%-70px)] text-xs uppercase tracking-widest text-slate-500 z-[3]">
+              Road / Car Doppler Mode
+            </div>
+          </>
+        )}
+
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-10"
           viewBox={`0 0 ${MAX_DISTANCE} 500`}
@@ -283,7 +329,6 @@ const DopplerSimulator = () => {
           )}
         </svg>
 
-        {/* Observer */}
         <div
           className="absolute top-1/2 z-30 transition-transform will-change-transform"
           style={{
@@ -297,8 +342,10 @@ const DopplerSimulator = () => {
                 <Ear size={20} className="text-white" />
               </div>
 
-              {Math.abs(observer.v) > 0 && (
-                <div className="absolute inset-0 rounded-full border border-blue-500 animate-ping opacity-50" />
+              {mode === "car" && (
+                <div className="absolute -bottom-7 left-1/2 -translate-x-1/2 text-[10px] text-slate-300 whitespace-nowrap">
+                  roadside listener
+                </div>
               )}
             </div>
 
@@ -311,7 +358,6 @@ const DopplerSimulator = () => {
           </div>
         </div>
 
-        {/* Sources */}
         {sources.map((source) => (
           <div
             key={source.id}
@@ -328,22 +374,30 @@ const DopplerSimulator = () => {
                     size={34}
                     className="absolute -top-1/2 text-white/80"
                     style={{
-                      left: source.v > 0 ? "28px" : "-38px",
+                      left: source.v > 0 ? "38px" : "-42px",
                       transform: source.v < 0 ? "rotate(180deg)" : "none",
                     }}
                   />
                 )}
 
                 <div
-                  className="w-7 h-7 rounded-full shadow-lg border-2 border-white relative z-10"
+                  className={`flex items-center justify-center shadow-lg border-2 border-white relative z-10 ${
+                    mode === "car"
+                      ? "w-14 h-10 rounded-xl bg-slate-900"
+                      : "w-7 h-7 rounded-full"
+                  }`}
                   style={{
-                    backgroundColor: source.color,
+                    backgroundColor: mode === "car" ? "#0f172a" : source.color,
                     boxShadow: `0 0 24px ${source.color}`,
                   }}
-                />
+                >
+                  {mode === "car" ? (
+                    <Car size={30} style={{ color: source.color }} />
+                  ) : null}
+                </div>
               </div>
 
-              <div className="bg-slate-900/85 backdrop-blur-sm px-3 py-2 rounded border border-white/10 text-xs flex flex-col items-center min-w-[112px]">
+              <div className="bg-slate-900/85 backdrop-blur-sm px-3 py-2 rounded border border-white/10 text-xs flex flex-col items-center min-w-[136px]">
                 <div
                   className="font-mono font-bold"
                   style={{ color: source.color }}
@@ -354,6 +408,7 @@ const DopplerSimulator = () => {
                 <div className="text-[10px] text-slate-400">
                   emitted {source.baseFreq} Hz
                 </div>
+
                 <div
                   className={`text-[10px] font-bold mt-1 ${
                     source.currentFreq > source.baseFreq
@@ -370,6 +425,7 @@ const DopplerSimulator = () => {
                 <div className="text-[10px] text-slate-300 mt-1 text-center">
                   {source.motionStatus || "No shift"}
                 </div>
+
                 <div className="w-full bg-slate-700 h-1.5 rounded-full mt-1 overflow-hidden">
                   <div
                     className="h-full transition-all duration-75"
@@ -381,8 +437,10 @@ const DopplerSimulator = () => {
                 </div>
 
                 <div className="text-[10px] text-slate-400 mt-0.5">
-                  {INSTRUMENTS[source.instrument.toUpperCase()]?.name ||
-                    "Sound"}
+                  {mode === "car"
+                    ? "Car engine"
+                    : INSTRUMENTS[source.instrument.toUpperCase()]?.name ||
+                      "Sound"}
                 </div>
               </div>
             </div>
@@ -396,7 +454,31 @@ const DopplerSimulator = () => {
             <Activity className="text-blue-500" /> Doppler Lab
           </h2>
 
-          <div className="flex gap-2 mt-6">
+          <div className="grid grid-cols-2 gap-2 mt-5">
+            <button
+              onClick={() => handleModeChange("scientific")}
+              className={`py-2 rounded border text-xs font-bold flex items-center justify-center gap-2 ${
+                mode === "scientific"
+                  ? "bg-blue-500/20 border-blue-400 text-blue-300"
+                  : "bg-slate-900 border-white/10 text-slate-400"
+              }`}
+            >
+              <FlaskConical size={14} /> Scientific
+            </button>
+
+            <button
+              onClick={() => handleModeChange("car")}
+              className={`py-2 rounded border text-xs font-bold flex items-center justify-center gap-2 ${
+                mode === "car"
+                  ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
+                  : "bg-slate-900 border-white/10 text-slate-400"
+              }`}
+            >
+              <Car size={14} /> Car Mode
+            </button>
+          </div>
+
+          <div className="flex gap-2 mt-5">
             <button
               onClick={togglePlay}
               className={`flex-1 py-2 rounded font-bold flex items-center justify-center gap-2 transition-all ${
@@ -426,6 +508,26 @@ const DopplerSimulator = () => {
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+          {mode === "car" && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 uppercase tracking-wider">
+                <Car size={14} /> Car Presets
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(SOURCE_PRESETS).map(([key, preset]) => (
+                  <button
+                    key={key}
+                    onClick={() => addCarPreset(key)}
+                    className="text-[11px] rounded border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 py-2"
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-sm font-bold text-blue-400 uppercase tracking-wider">
               <Ear size={14} /> The Observer
@@ -483,15 +585,18 @@ const DopplerSimulator = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 uppercase tracking-wider">
-                <Volume2 size={14} /> Sound Sources
+                <Volume2 size={14} />{" "}
+                {mode === "car" ? "Car Source" : "Sound Sources"}
               </div>
 
-              <button
-                onClick={addSource}
-                className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded hover:bg-emerald-500/20 flex items-center gap-1"
-              >
-                <Plus size={12} /> Add
-              </button>
+              {mode !== "car" && (
+                <button
+                  onClick={addSource}
+                  className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/50 px-2 py-1 rounded hover:bg-emerald-500/20 flex items-center gap-1"
+                >
+                  <Plus size={12} /> Add
+                </button>
+              )}
             </div>
 
             {sources.length === 0 && (
@@ -508,38 +613,42 @@ const DopplerSimulator = () => {
               >
                 <div className="flex justify-between items-start">
                   <div className="text-xs font-bold text-slate-300">
-                    Source #{idx + 1}
+                    {mode === "car" ? "Car" : `Source #${idx + 1}`}
                   </div>
 
-                  <button
-                    onClick={() => removeSource(source.id)}
-                    className="text-slate-600 hover:text-red-400"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  {mode !== "car" && (
+                    <button
+                      onClick={() => removeSource(source.id)}
+                      className="text-slate-600 hover:text-red-400"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2 bg-slate-950 p-2 rounded border border-white/5">
-                  <Music size={14} className="text-slate-500" />
+                {mode !== "car" && (
+                  <div className="flex items-center gap-2 bg-slate-950 p-2 rounded border border-white/5">
+                    <Music size={14} className="text-slate-500" />
 
-                  <select
-                    value={source.instrument}
-                    onChange={(e) =>
-                      updateSourceVal(source.id, "instrument", e.target.value)
-                    }
-                    className="bg-transparent text-xs text-white w-full outline-none cursor-pointer"
-                  >
-                    {Object.values(INSTRUMENTS).map((inst) => (
-                      <option
-                        key={inst.id}
-                        value={inst.id}
-                        className="bg-slate-900"
-                      >
-                        {inst.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                    <select
+                      value={source.instrument}
+                      onChange={(e) =>
+                        updateSourceVal(source.id, "instrument", e.target.value)
+                      }
+                      className="bg-transparent text-xs text-white w-full outline-none cursor-pointer"
+                    >
+                      {Object.values(INSTRUMENTS).map((inst) => (
+                        <option
+                          key={inst.id}
+                          value={inst.id}
+                          className="bg-slate-900"
+                        >
+                          {inst.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <div className="flex justify-between text-[10px] mb-1 text-slate-400">
@@ -595,7 +704,7 @@ const DopplerSimulator = () => {
 
                 <div>
                   <div className="flex justify-between text-[10px] mb-1 text-slate-400">
-                    <span>Base Freq</span>
+                    <span>{mode === "car" ? "Engine Freq" : "Base Freq"}</span>
                     <span>{source.baseFreq} Hz</span>
                   </div>
 
@@ -615,6 +724,7 @@ const DopplerSimulator = () => {
                     style={{ accentColor: source.color }}
                   />
                 </div>
+
                 <div className="mt-3 rounded-lg bg-slate-950/70 border border-white/10 p-3 text-xs space-y-2">
                   <div className="flex justify-between">
                     <span className="text-slate-400">Emitted</span>
