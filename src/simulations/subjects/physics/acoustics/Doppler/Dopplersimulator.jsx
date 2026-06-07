@@ -139,10 +139,22 @@ const DopplerSimulator = () => {
 
           updateVoice(source.id, newFreq, amplitude * 0.35, source.instrument);
 
+          const shiftPercent =
+            ((newFreq - source.baseFreq) / source.baseFreq) * 100;
+
+          const motionStatus =
+            Math.abs(newFreq - source.baseFreq) < 1
+              ? "No shift"
+              : newFreq > source.baseFreq
+                ? "Approaching / Higher pitch"
+                : "Receding / Lower pitch";
+
           return {
             ...source,
             x: newX,
             currentFreq: newFreq,
+            shiftPercent,
+            motionStatus,
             db: Math.max(0, db),
             waves,
             lastWaveTime: shouldEmitWave ? now : source.lastWaveTime,
@@ -342,7 +354,22 @@ const DopplerSimulator = () => {
                 <div className="text-[10px] text-slate-400">
                   emitted {source.baseFreq} Hz
                 </div>
+                <div
+                  className={`text-[10px] font-bold mt-1 ${
+                    source.currentFreq > source.baseFreq
+                      ? "text-emerald-300"
+                      : source.currentFreq < source.baseFreq
+                        ? "text-amber-300"
+                        : "text-slate-300"
+                  }`}
+                >
+                  {source.shiftPercent > 0 ? "+" : ""}
+                  {Math.round(source.shiftPercent || 0)}% shift
+                </div>
 
+                <div className="text-[10px] text-slate-300 mt-1 text-center">
+                  {source.motionStatus || "No shift"}
+                </div>
                 <div className="w-full bg-slate-700 h-1.5 rounded-full mt-1 overflow-hidden">
                   <div
                     className="h-full transition-all duration-75"
@@ -587,6 +614,41 @@ const DopplerSimulator = () => {
                     className="w-full h-1 bg-slate-700 rounded appearance-none cursor-pointer"
                     style={{ accentColor: source.color }}
                   />
+                </div>
+                <div className="mt-3 rounded-lg bg-slate-950/70 border border-white/10 p-3 text-xs space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Emitted</span>
+                    <span className="font-mono text-slate-200">
+                      {Math.round(source.baseFreq)} Hz
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Observed</span>
+                    <span className="font-mono text-emerald-300">
+                      {Math.round(source.currentFreq)} Hz
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Shift</span>
+                    <span
+                      className={`font-mono ${
+                        source.currentFreq > source.baseFreq
+                          ? "text-emerald-300"
+                          : source.currentFreq < source.baseFreq
+                            ? "text-amber-300"
+                            : "text-slate-300"
+                      }`}
+                    >
+                      {source.shiftPercent > 0 ? "+" : ""}
+                      {Math.round(source.shiftPercent || 0)}%
+                    </span>
+                  </div>
+
+                  <div className="pt-2 border-t border-white/10 text-center font-bold">
+                    {source.motionStatus || "No shift"}
+                  </div>
                 </div>
               </div>
             ))}
