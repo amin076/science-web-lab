@@ -1,5 +1,6 @@
-//src/simulations/subjects/physics/gravity-comparison/hooks/useGravityComparison.js
-// Custom hook to manage the state and logic for the Gravity Comparison simulation.
+// src/simulations/subjects/physics/mechanics/gravity-comparison/hooks/useGravityComparison.js
+// Custom hook that manages animation timing, physics updates, and simulation state for the Gravity Comparison simulation.
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -8,20 +9,28 @@ import {
   DEFAULT_PROJECTILE_SETTINGS,
   DEFAULT_SIMULATION_MODE,
   GRAVITY_WORLDS,
-  SIMULATION_MODES,
 } from "../constants";
 
-import {
-  calculateMotionPosition,
-  updateTrailPoints,
-} from "../utils/gravityMotion";
+import { updateTrailPoints } from "../utils/gravityMotion";
 
 function createInitialBodies() {
   return GRAVITY_WORLDS.map((world) => ({
     ...world,
-    position: { x: 0, y: 0 },
+    position: {
+      x: 0,
+      y: DEFAULT_FREE_FALL_SETTINGS.height,
+    },
+    velocity: {
+      x: 0,
+      y: 0,
+    },
     hasLanded: false,
-    trail: [],
+    trail: [
+      {
+        x: 0,
+        y: DEFAULT_FREE_FALL_SETTINGS.height,
+      },
+    ],
   }));
 }
 
@@ -67,9 +76,21 @@ export function useGravityComparison() {
           ? {
               ...body,
               enabled: !body.enabled,
-              position: { x: 0, y: 0 },
+              position: {
+                x: 0,
+                y: DEFAULT_FREE_FALL_SETTINGS.height,
+              },
+              velocity: {
+                x: 0,
+                y: 0,
+              },
               hasLanded: false,
-              trail: [],
+              trail: [
+                {
+                  x: 0,
+                  y: DEFAULT_FREE_FALL_SETTINGS.height,
+                },
+              ],
             }
           : body,
       ),
@@ -97,28 +118,36 @@ export function useGravityComparison() {
               return body;
             }
 
-            const position = calculateMotionPosition({
-              mode,
-              world: body,
-              time: nextTime,
-              freeFallSettings,
-              projectileSettings,
-              simulationModes: SIMULATION_MODES,
-            });
+            const nextVelocity = {
+              x: body.velocity.x,
+              y: body.velocity.y - body.gravity * deltaSeconds,
+            };
+
+            const nextPosition = {
+              x: body.position.x + nextVelocity.x * deltaSeconds,
+              y: body.position.y + nextVelocity.y * deltaSeconds,
+            };
+
+            const hasLanded = nextPosition.y <= 0;
+
+            const safePosition = {
+              x: nextPosition.x,
+              y: hasLanded ? 0 : nextPosition.y,
+            };
 
             return {
               ...body,
-              position: {
-                x: position.x,
-                y: position.y,
-              },
-              hasLanded: position.hasLanded,
+              position: safePosition,
+              velocity: hasLanded
+                ? {
+                    x: 0,
+                    y: 0,
+                  }
+                : nextVelocity,
+              hasLanded,
               trail: updateTrailPoints({
                 trail: body.trail,
-                point: {
-                  x: position.x,
-                  y: position.y,
-                },
+                point: safePosition,
                 maxTrailPoints: ANIMATION_SETTINGS.maxTrailPoints,
               }),
             };
@@ -130,7 +159,7 @@ export function useGravityComparison() {
 
       animationRef.current = requestAnimationFrame(updateFrame);
     },
-    [freeFallSettings, mode, projectileSettings],
+    [],
   );
 
   useEffect(() => {
@@ -156,7 +185,8 @@ export function useGravityComparison() {
 
   const allEnabledBodiesHaveLanded = useMemo(
     () =>
-      enabledBodies.length > 0 && enabledBodies.every((body) => body.hasLanded),
+      enabledBodies.length > 0 &&
+      enabledBodies.every((body) => body.hasLanded),
     [enabledBodies],
   );
 
