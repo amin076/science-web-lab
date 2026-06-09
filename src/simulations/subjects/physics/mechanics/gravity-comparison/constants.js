@@ -1,5 +1,6 @@
-//src/simulations/subjects/physics/gravity-comparison/constants.js
-// Simulation Constants
+// src/simulations/subjects/physics/mechanics/gravity-comparison/constants.js
+// Constants and default settings for the Gravity Comparison simulation.
+
 export const SIMULATION_MODES = {
   FREE_FALL: "freeFall",
   PROJECTILE: "projectile",
@@ -13,7 +14,7 @@ export const GRAVITY_WORLDS = [
     name: "Sun",
     gravity: 274,
     color: "#FFD54F",
-    radius: 14,
+    radius: 13,
     enabled: false,
   },
   {
@@ -52,9 +53,25 @@ export const GRAVITY_WORLDS = [
     id: "mars",
     name: "Mars",
     gravity: 3.71,
-    color: "#D84315",
+    color: "#FF5722",
     radius: 10,
     enabled: true,
+  },
+  {
+    id: "phobos",
+    name: "Phobos",
+    gravity: 0.0057,
+    color: "#8D6E63",
+    radius: 7,
+    enabled: false,
+  },
+  {
+    id: "deimos",
+    name: "Deimos",
+    gravity: 0.003,
+    color: "#A1887F",
+    radius: 7,
+    enabled: false,
   },
   {
     id: "jupiter",
@@ -65,11 +82,59 @@ export const GRAVITY_WORLDS = [
     enabled: true,
   },
   {
+    id: "io",
+    name: "Io",
+    gravity: 1.8,
+    color: "#FBC02D",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "europa",
+    name: "Europa",
+    gravity: 1.31,
+    color: "#B0BEC5",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "ganymede",
+    name: "Ganymede",
+    gravity: 1.43,
+    color: "#90A4AE",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "callisto",
+    name: "Callisto",
+    gravity: 1.24,
+    color: "#795548",
+    radius: 9,
+    enabled: false,
+  },
+  {
     id: "saturn",
     name: "Saturn",
     gravity: 10.44,
     color: "#FDD835",
     radius: 11,
+    enabled: false,
+  },
+  {
+    id: "titan",
+    name: "Titan",
+    gravity: 1.35,
+    color: "#FFB300",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "enceladus",
+    name: "Enceladus",
+    gravity: 0.113,
+    color: "#E3F2FD",
+    radius: 7,
     enabled: false,
   },
   {
@@ -88,10 +153,26 @@ export const GRAVITY_WORLDS = [
     radius: 10,
     enabled: false,
   },
+  {
+    id: "triton",
+    name: "Triton",
+    gravity: 0.779,
+    color: "#B3E5FC",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "pluto",
+    name: "Pluto",
+    gravity: 0.62,
+    color: "#BCAAA4",
+    radius: 8,
+    enabled: false,
+  },
 ];
 
 export const DEFAULT_FREE_FALL_SETTINGS = {
-  height: 120,
+  height: 85,
 };
 
 export const DEFAULT_PROJECTILE_SETTINGS = {
@@ -101,9 +182,9 @@ export const DEFAULT_PROJECTILE_SETTINGS = {
 };
 
 export const ANIMATION_SETTINGS = {
-  pixelsPerMeter: 4,
+  pixelsPerMeter: 5.2,
   timeScale: 0.35,
-  groundPadding: 70,
-  leftPadding: 80,
-  maxTrailPoints: 180,
+  groundPadding: 62,
+  leftPadding: 100,
+  maxTrailPoints: 260,
 };
