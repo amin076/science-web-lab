@@ -481,7 +481,7 @@ export default function SatelliteTelescopeSimulator() {
         sx={{
           flex: 1,
           position: "relative",
-          minHeight: { xs: "55vh", md: 0 },
+          minHeight: { xs: "100vh", md: 0 },
         }}
       >
         <Canvas
@@ -689,7 +689,7 @@ export default function SatelliteTelescopeSimulator() {
       <Box
         sx={{
           width: { xs: "100%", md: 320 },
-          flex: { xs: 1, md: "none" },
+          flex: { xs: "none", md: "none" },
           overflowY: "auto",
           bgcolor: { xs: "#0b0c15", md: "transparent" },
           position: { xs: "relative", md: "absolute" },
