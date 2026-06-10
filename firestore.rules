@@ -1,0 +1,110 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ✅ USER PROFILES
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ✅ PUBLIC EXPERIMENT STATS
+    match /experimentStats/{experimentId} {
+      allow read: if true;
+
+      allow create, update: if request.auth != null &&
+        request.resource.data.keys().hasOnly(["views", "lastViewedAt"]) &&
+        request.resource.data.views is number;
+
+      allow delete: if false;
+    }
+
+    // ✅ CONTACT FORM MESSAGES
+    match /contactMessages/{messageId} {
+      allow create: if
+        request.resource.data.name is string &&
+        request.resource.data.email is string &&
+        request.resource.data.message is string &&
+        request.resource.data.name.size() >= 2 &&
+        request.resource.data.email.size() >= 5 &&
+        request.resource.data.message.size() >= 10 &&
+        request.resource.data.message.size() <= 2000;
+
+      allow read, update, delete: if request.auth != null
+        && request.auth.token.admin == true
+        && request.auth.token.role == "admin";
+    }
+
+    // ✅ CLASSES
+    match /classes/{classId} {
+
+      allow list: if request.auth != null;
+
+      allow read: if request.auth != null && (
+        resource.data.isPublic == true ||
+        request.auth.uid == resource.data.teacherId ||
+        exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+      );
+
+      allow create: if request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "teacher";
+
+      allow update, delete: if request.auth != null &&
+        request.auth.uid == resource.data.teacherId;
+
+      // ✅ STUDENTS SUBCOLLECTION
+      match /students/{studentId} {
+        allow create: if request.auth != null && (
+          (request.auth.uid == studentId &&
+            get(/databases/$(database)/documents/classes/$(classId)).data.isPublic == true) ||
+          (request.auth.uid ==
+            get(/databases/$(database)/documents/classes/$(classId)).data.teacherId)
+        );
+
+        allow read: if request.auth != null && (
+          request.auth.uid == studentId ||
+          request.auth.uid ==
+            get(/databases/$(database)/documents/classes/$(classId)).data.teacherId
+        );
+      }
+
+      // ✅ EXPERIMENTS SUBCOLLECTION
+      match /experiments/{expId} {
+        allow read: if request.auth != null && (
+          request.auth.uid ==
+            get(/databases/$(database)/documents/classes/$(classId)).data.teacherId ||
+          exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+        );
+
+        allow create, update, delete: if request.auth != null &&
+          request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId;
+
+        // ✅ ATTACHMENTS SUBCOLLECTION
+        match /attachments/{attachmentId} {
+          allow create, update, delete: if request.auth != null &&
+            request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId;
+
+          allow read: if request.auth != null && (
+            request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId ||
+            exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+          );
+        }
+
+        // ✅ SUBMISSIONS SUBCOLLECTION
+        match /submissions/{submissionId} {
+          allow create: if request.auth != null &&
+            exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid)) &&
+            request.resource.data.uid == request.auth.uid;
+
+          allow read: if request.auth != null && (
+            resource.data.uid == request.auth.uid ||
+            request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId
+          );
+
+          allow update, delete: if request.auth != null &&
+            request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId;
+        }
+      }
+    }
+  }
+}
