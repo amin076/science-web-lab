@@ -184,7 +184,14 @@ export const DEFAULT_PROJECTILE_SETTINGS = {
 export const ANIMATION_SETTINGS = {
   pixelsPerMeter: 5.2,
   timeScale: 0.35,
-  groundPadding: 62,
-  leftPadding: 100,
-  maxTrailPoints: 260,
+
+  groundPadding: 80,
+
+  leftPadding: 120,
+
+  maxTrailPoints: 900,
+
+  laneSpacing:65,
+
+  maxVisibleLanes: 6,
 };

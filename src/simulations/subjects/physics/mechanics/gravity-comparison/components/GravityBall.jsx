@@ -14,14 +14,6 @@ export default function GravityBall({
 
   return (
     <g opacity={opacity}>
-      <ellipse
-        cx={x + displayRadius * 0.45}
-        cy={y + displayRadius * 1.4}
-        rx={displayRadius * 1.25}
-        ry={displayRadius * 0.32}
-        fill="rgba(0,0,0,0.42)"
-      />
-
       <circle
         cx={x}
         cy={y}

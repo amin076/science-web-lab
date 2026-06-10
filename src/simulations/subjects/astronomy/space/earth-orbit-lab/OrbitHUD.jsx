@@ -82,21 +82,24 @@ if (focusedBodyId === "earth") {
         bodyRef.state.v[2] ** 2,
     );
 
-    if (bodyRef.parent === "sun-earth-l2") {
-      dynamicData = {
-        alt: r,
-        vel: 0,
-        vis: true,
-        label: "Distance from Earth",
-      };
-    } else {
-      dynamicData = {
-        alt: r - (bodyRef.parent === "moon" ? 1737400 : R_EARTH_M),
-        vel: v / 1000,
-        vis: bodyRef.lastVisible,
-        label: "Altitude",
-      };
-    }
+ if (
+   bodyRef.parent === "sun-earth-l2" ||
+   bodyRef.parent === "kepler-deep-space"
+ ) {
+   dynamicData = {
+     alt: r,
+     vel: 0,
+     vis: true,
+     label: "Distance from Earth",
+   };
+ } else {
+   dynamicData = {
+     alt: r - (bodyRef.parent === "moon" ? 1737400 : R_EARTH_M),
+     vel: v / 1000,
+     vis: bodyRef.lastVisible,
+     label: "Altitude",
+   };
+ }
   }
 }
 

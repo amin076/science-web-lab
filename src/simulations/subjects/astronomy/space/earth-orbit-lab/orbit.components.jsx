@@ -103,8 +103,9 @@ export function CameraController({
           offsetBase = new THREE.Vector3(0.045, 0.025, 0.07);
         } else if (name.includes("starlink")) {
           offsetBase = new THREE.Vector3(0.035, 0.02, 0.055);
+        } else if (name.includes("kepler")) {
+          offsetBase = new THREE.Vector3(0.12, 0.08, 0.18);
         }
-
         const offset = offsetBase.applyQuaternion(
           new THREE.Quaternion().setFromUnitVectors(
             new THREE.Vector3(0, 0, 1),
@@ -145,6 +146,7 @@ useGLTF.preload("/JamesWebb.glb");
 useGLTF.preload("/Hubble.glb");
 useGLTF.preload("/iss.glb");
 useGLTF.preload("/gps.glb");
+useGLTF.preload("/kepler.glb");
 
 /* --- Visuals --- */
 function SatelliteVisual({ type, color, scaleFactor = 1 }) {
@@ -222,7 +224,7 @@ function getModelScale(body, visualScale) {
   if (name.includes("hubble")) return 0.00002 * visualScale;
   if (name.includes("iss")) return 0.00045 * visualScale;
   if (name.includes("gps")) return 0.00025 * visualScale;
-
+  if (name.includes("kepler")) return 0.0008 * visualScale;
   return 1 * visualScale;
 }
 
@@ -428,6 +430,7 @@ function shouldShowLabel(body, visualScale) {
 
   if (body.parent === "sun-earth-l2") return true;
   if (name.includes("james webb")) return true;
+  if (name.includes("kepler")) return true;
   if (name.includes("gateway")) return true;
   if (name.includes("moon")) return true;
 
@@ -450,7 +453,7 @@ export function SatelliteBody({
   const objectRef = useRef();
   const arrowRef = useRef(null);
   const smoothPosRef = useRef(new THREE.Vector3());
-  
+
   const isJWST =
     body.parent === "sun-earth-l2" ||
     body.name?.toLowerCase().includes("james webb");
@@ -556,6 +559,12 @@ export function SatelliteBody({
             scale={getModelScale(body, visualScale)}
             rotation={[0.4, -0.6, 0.2]}
           />
+        ) : body.name?.toLowerCase().includes("kepler") ? (
+          <GLBModel
+            url="/kepler.glb"
+            scale={getModelScale(body, visualScale)}
+            rotation={[0.3, -0.5, 0.15]}
+          />
         ) : body.name?.toLowerCase().includes("hubble") ? (
           <GLBModel
             url="/Hubble.glb"
@@ -601,7 +610,11 @@ export function SatelliteBody({
                 boxShadow: isJWST ? "0 0 10px #FFA726" : "none",
               }}
             >
-              {isJWST ? "JWST at Sun–Earth L2" : body.name}
+              {isJWST
+                ? "JWST at Sun–Earth L2"
+                : body.name?.toLowerCase().includes("kepler")
+                  ? "Kepler Space Telescope"
+                  : body.name}
             </div>
           </Html>
         )}

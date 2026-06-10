@@ -298,4 +298,25 @@ export const OBJECT_INFO = {
       { label: "Type", value: "Triangular point" },
     ],
   },
+  Kepler: {
+    title: "Kepler Space Telescope",
+    subtitle: "Exoplanet Hunter",
+    category: "Space Telescope",
+    description:
+      "Kepler was a NASA space telescope designed to discover Earth-sized planets orbiting other stars. It monitored the brightness of thousands of stars to detect tiny dips caused by planets passing in front of them.",
+    educationalNote:
+      "In this simulation Kepler is shown as a deep-space telescope. Its real mission used a heliocentric Earth-trailing orbit, but because this Orbit Lab does not yet include the Sun, Kepler is represented as a distant fixed object.",
+    stats: [
+      { label: "Launch", value: "2009" },
+      { label: "Mission End", value: "2018" },
+      { label: "Main Goal", value: "Find exoplanets" },
+      { label: "Orbit Type", value: "Earth-trailing solar orbit" },
+    ],
+    details: [
+      { label: "Agency", value: "NASA" },
+      { label: "Discovery Method", value: "Transit photometry" },
+      { label: "Legacy", value: "Thousands of planet candidates" },
+      { label: "Status", value: "Retired" },
+    ],
+  },
 };
