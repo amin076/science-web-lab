@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // =========================
+    // CLASS ATTACHMENTS
+    // =========================
+    match /attachments/{classId}/{expId}/{fileName} {
+
+      allow write: if request.auth != null &&
+        get(/databases/(default)/documents/classes/$(classId)).data.teacherId
+          == request.auth.uid;
+
+      allow read: if request.auth != null && (
+        get(/databases/(default)/documents/classes/$(classId)).data.teacherId
+          == request.auth.uid ||
+
+        exists(
+          /databases/(default)/documents/classes/$(classId)/students/$(request.auth.uid)
+        )
+      );
+    }
+
+    // =========================
+    // STUDENT SUBMISSIONS
+    // =========================
+    match /submissions/{classId}/{expId}/{userId}/{fileName} {
+
+      allow write: if request.auth != null
+        && request.auth.uid == userId
+
+        // NEW SECURITY CHECK
+        && exists(
+          /databases/(default)/documents/classes/$(classId)/students/$(request.auth.uid)
+        );
+
+      allow read: if request.auth != null && (
+
+        request.auth.uid == userId ||
+
+        get(/databases/(default)/documents/classes/$(classId)).data.teacherId
+          == request.auth.uid
+      );
+    }
+
+    // =========================
+    // DEFAULT DENY
+    // =========================
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,4 +1,5 @@
 // src/simulations/subjects/astronomy/space/earth-orbit-lab/SatellitesTelescopesControlPanel.jsx
+
 import React from "react";
 import {
   Box,
@@ -17,7 +18,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   Chip,
-  Input, // Added Input
+  Input,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import CenterFocusStrongIcon from "@mui/icons-material/CenterFocusStrong";
@@ -40,14 +41,13 @@ export default function SatellitesTelescopesControlPanel({
   simMode,
   setSimMode,
 }) {
-  // Slider handler
   const setNum = (k) => (_, v) => setSettings((p) => ({ ...p, [k]: v }));
 
-  // Toggle handler
   const setBool = (k) => (e) =>
     setSettings((p) => ({ ...p, [k]: e.target.checked }));
 
-  // Input handler for Time Dilation
+  const maxTimeScale = simMode === "realistic" ? 500000 : 5000;
+
   const handleTimeInput = (event) => {
     const val = event.target.value === "" ? 0 : Number(event.target.value);
     setSettings((p) => ({
@@ -56,8 +56,12 @@ export default function SatellitesTelescopesControlPanel({
     }));
   };
 
-  // In Realistic mode, allow huge time compression to see JWST orbit
-  const maxTimeScale = simMode === "realistic" ? 500000 : 5000;
+  const getObjectLocationLabel = (body) => {
+    if (body.parent === "moon") return "Orbit: Moon";
+    if (body.parent === "sun-earth-l2") return "Location: Sun-Earth L2";
+    if (body.parent === "kepler-deep-space") return "Location: Deep Space";
+    return "Orbit: Earth";
+  };
 
   const sectionTitleSx = {
     fontWeight: 700,
@@ -73,7 +77,6 @@ export default function SatellitesTelescopesControlPanel({
   const glassSx = {
     p: 2,
     borderRadius: 4,
-    // Use a solid color on mobile to prevent overlap issues, Glass on desktop
     background: { xs: "#0b0c15", md: "rgba(20, 20, 35, 0.65)" },
     backdropFilter: "blur(12px)",
     border: "1px solid rgba(255,255,255,0.1)",
@@ -107,6 +110,7 @@ export default function SatellitesTelescopesControlPanel({
         >
           Orbit Lab
         </Typography>
+
         <Button
           size="small"
           variant="outlined"
@@ -189,6 +193,7 @@ export default function SatellitesTelescopesControlPanel({
             }}
             icon={<DarkModeIcon style={{ fontSize: 12, color: "inherit" }} />}
           />
+
           {settings.showMoon && (
             <Chip
               label="+ Lunar Gateway"
@@ -209,6 +214,7 @@ export default function SatellitesTelescopesControlPanel({
         >
           Stations & Telescopes
         </Typography>
+
         <Stack
           direction="row"
           spacing={0.5}
@@ -229,6 +235,7 @@ export default function SatellitesTelescopesControlPanel({
               <SatelliteAltIcon style={{ fontSize: 12, color: "inherit" }} />
             }
           />
+
           <Chip
             label="+ Tiangong"
             size="small"
@@ -239,6 +246,7 @@ export default function SatellitesTelescopesControlPanel({
               "&:hover": { bgcolor: "#FF6B6B", color: "black" },
             }}
           />
+
           <Chip
             label="+ Hubble"
             size="small"
@@ -249,6 +257,7 @@ export default function SatellitesTelescopesControlPanel({
               "&:hover": { bgcolor: "#A78BFA", color: "black" },
             }}
           />
+
           <Chip
             label="+ James Webb"
             size="small"
@@ -259,6 +268,17 @@ export default function SatellitesTelescopesControlPanel({
               "&:hover": { bgcolor: "#FFB74D", color: "black" },
             }}
           />
+
+          <Chip
+            label="+ Kepler"
+            size="small"
+            onClick={() => onAddPreset("Kepler")}
+            sx={{
+              bgcolor: "rgba(255,255,255,0.15)",
+              color: "white",
+              "&:hover": { bgcolor: "#38BDF8", color: "black" },
+            }}
+          />
         </Stack>
 
         <Typography
@@ -267,6 +287,7 @@ export default function SatellitesTelescopesControlPanel({
         >
           Constellations
         </Typography>
+
         <Stack
           direction="row"
           spacing={0.5}
@@ -284,6 +305,7 @@ export default function SatellitesTelescopesControlPanel({
               "&:hover": { bgcolor: "#4ECDC4", color: "black" },
             }}
           />
+
           <Chip
             label="+ GPS"
             size="small"
@@ -299,12 +321,12 @@ export default function SatellitesTelescopesControlPanel({
         <Typography sx={sectionTitleSx}>
           Active Objects ({bodyList.length + (settings.showMoon ? 1 : 0) + 1})
         </Typography>
+
         <List
           dense
           disablePadding
           sx={{ bgcolor: "rgba(0,0,0,0.2)", borderRadius: 2 }}
         >
-          {/* EARTH ENTRY */}
           <ListItem
             sx={{
               borderBottom: "1px solid rgba(255,255,255,0.05)",
@@ -324,13 +346,15 @@ export default function SatellitesTelescopesControlPanel({
                 borderRadius: "50%",
                 bgcolor: "#4ECDC4",
                 mr: 1.5,
-                boxShadow: `0 0 6px #4ECDC4`,
+                boxShadow: "0 0 6px #4ECDC4",
               }}
             />
+
             <ListItemText
               primary="Earth"
               primaryTypographyProps={{ fontSize: 11, fontWeight: 700 }}
             />
+
             <ListItemSecondaryAction>
               <IconButton
                 size="small"
@@ -345,7 +369,6 @@ export default function SatellitesTelescopesControlPanel({
             </ListItemSecondaryAction>
           </ListItem>
 
-          {/* MOON ENTRY */}
           {settings.showMoon && (
             <ListItem
               sx={{
@@ -368,13 +391,15 @@ export default function SatellitesTelescopesControlPanel({
                   borderRadius: "50%",
                   bgcolor: "#ccc",
                   mr: 1.5,
-                  boxShadow: `0 0 6px #ccc`,
+                  boxShadow: "0 0 6px #ccc",
                 }}
               />
+
               <ListItemText
                 primary="The Moon"
                 primaryTypographyProps={{ fontSize: 11, fontWeight: 700 }}
               />
+
               <ListItemSecondaryAction>
                 <IconButton
                   size="small"
@@ -420,19 +445,17 @@ export default function SatellitesTelescopesControlPanel({
                   boxShadow: `0 0 6px ${body.color}`,
                 }}
               />
+
               <ListItemText
                 primary={body.name}
                 primaryTypographyProps={{ fontSize: 11, fontWeight: 500 }}
                 secondary={
                   <span style={{ opacity: 0.6, fontSize: 9 }}>
-                    {body.parent === "moon"
-                      ? "Orbit: Moon"
-                      : body.parent === "sun-earth-l2"
-                        ? "Location: Sun-Earth L2"
-                        : "Orbit: Earth"}
+                    {getObjectLocationLabel(body)}
                   </span>
                 }
               />
+
               <ListItemSecondaryAction>
                 <IconButton
                   size="small"
@@ -457,6 +480,7 @@ export default function SatellitesTelescopesControlPanel({
                     <CenterFocusWeakIcon sx={{ fontSize: 16 }} />
                   )}
                 </IconButton>
+
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -479,6 +503,7 @@ export default function SatellitesTelescopesControlPanel({
         <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", my: 2 }} />
 
         <Typography sx={sectionTitleSx}>View Options</Typography>
+
         <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0.5 }}>
           <FormControlLabel
             control={
@@ -548,6 +573,7 @@ export default function SatellitesTelescopesControlPanel({
         </Box>
 
         <Typography sx={sectionTitleSx}>Time Dilation</Typography>
+
         <Box sx={{ px: 1 }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Slider
@@ -556,17 +582,18 @@ export default function SatellitesTelescopesControlPanel({
               }
               min={1}
               max={maxTimeScale}
-              step={10} // Smooth slider movement
+              step={10}
               size="small"
               sx={{ color: "#4ECDC4", flex: 1 }}
               onChange={setNum("timeScale")}
             />
+
             <Input
               value={settings.timeScale}
               size="small"
               onChange={handleTimeInput}
               inputProps={{
-                step: 10, // Arrow key increment
+                step: 10,
                 min: 1,
                 max: maxTimeScale,
                 type: "number",
@@ -587,6 +614,7 @@ export default function SatellitesTelescopesControlPanel({
                 },
               }}
             />
+
             <Typography
               variant="caption"
               sx={{ color: "rgba(255,255,255,0.5)" }}

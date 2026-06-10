@@ -1,94 +1,102 @@
+//src/simulations/registry/index.js
+// Central registry for all simulations in the Science Web Lab, using lazy loading for performance optimization.
 import lazyWithRetry from "@/components/system/lazyWithRetry";
 
 export const simulationRegistry = {
-  "physics.mechanics.projectile": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/projectile-motion")
+  "physics.mechanics.projectile": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/projectile-motion"),
+  ),
+  "physics.mechanics.gravity-comparison": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/gravity-comparison"),
+  ),
+  "physics.electricity.coulomb-law-2d": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/electricity/coulomb-law-2d"),
+  ),
+  "physics.electricity.coulomb-law-3d": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/electricity/coulomb-law-3d"),
   ),
 
-  "physics.electricity.coulomb-law-2d": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/electricity/coulomb-law-2d")
-  ),
-  "physics.electricity.coulomb-law-3d": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/electricity/coulomb-law-3d")
+  "earth-science.geology.plate-tectonics": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/earth-science/geology/plate-tectonics"),
   ),
 
-  "earth-science.geology.plate-tectonics": lazyWithRetry(() =>
-    import("@/simulations/subjects/earth-science/geology/plate-tectonics")
+  "astronomy.space.solar-system": lazyWithRetry(
+    () => import("@/simulations/subjects/astronomy/space/solar-system"),
+  ),
+  "physics.mechanics.spring-mass": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/spring-mass"),
+  ),
+  "physics.waves.surface-waves-double-slit": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/physics/waves/surface-waves-double-slit"),
+  ),
+  "astronomy.space.satellites-telescopes": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/astronomy/space/satellites-telescopes"),
+  ),
+  "astronomy.space.earth-orbit-lab": lazyWithRetry(
+    () => import("@/simulations/subjects/astronomy/space/earth-orbit-lab"),
+  ),
+  "physics.optics.lens-mirror-2d": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/optics/lens-mirror-2d"),
+  ),
+  "physics.optics.lens-mirror-3d": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/optics/lens-mirror-3d"),
   ),
 
-  "astronomy.space.solar-system": lazyWithRetry(() =>
-    import("@/simulations/subjects/astronomy/space/solar-system")
+  "physics.mechanics.seesaw": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/seesaw"),
   ),
-  "physics.mechanics.spring-mass": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/spring-mass")
+  "physics.electricity.circuits": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/electricity/circuits"),
   ),
-  "physics.waves.surface-waves-double-slit": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/waves/surface-waves-double-slit")
+  "physics.mechanics.collision": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/collision"),
   ),
-  "astronomy.space.satellites-telescopes": lazyWithRetry(() =>
-    import("@/simulations/subjects/astronomy/space/satellites-telescopes")
+  "physics.acoustics.doppler": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/acoustics/Doppler"),
   ),
-  "astronomy.space.earth-orbit-lab": lazyWithRetry(() =>
-    import("@/simulations/subjects/astronomy/space/earth-orbit-lab")
+  "physics.mechanics.simple-pendulum": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/pendulum"),
   ),
-  "physics.optics.lens-mirror-2d": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/optics/lens-mirror-2d")
+  "physics.thermodynamics.gas": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/thermodynamics/gas"),
   ),
-  "physics.optics.lens-mirror-3d": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/optics/lens-mirror-3d")
+  "physics.waves.multi-source-interference": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/physics/waves/multi-source-interference"),
   ),
-
-  "physics.mechanics.seesaw": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/seesaw")
+  "physics.fluid-mechanics.archimedes-principle": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/physics/fluid-mechanics/archimedes-principle"),
   ),
-  "physics.electricity.circuits": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/electricity/circuits")
+  "physics.acoustics.sound-waves": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/acoustics/SoundWaves"),
   ),
-  "physics.mechanics.collision": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/collision")
+  "physics.acoustics.spatial-audio": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/acoustics/spatial-audio"),
   ),
-  "physics.acoustics.doppler": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/acoustics/Doppler")
+  "astronomy.kepler-lab": lazyWithRetry(
+    () => import("@/simulations/subjects/astronomy/kepler"),
   ),
-  "physics.mechanics.simple-pendulum": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/pendulum")
+  "physics.mechanics.circular-motion": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/circular-motion"),
   ),
-  "physics.thermodynamics.gas": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/thermodynamics/gas")
+  "physics.mechanics.two-body-gravity": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/two-body-gravity"),
   ),
-  "physics.waves.multi-source-interference": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/waves/multi-source-interference")
+  "physics.mechanics.pulley-system": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/pulley-system"),
   ),
-  "physics.fluid-mechanics.archimedes-principle": lazyWithRetry(() =>
-    import(
-      "@/simulations/subjects/physics/fluid-mechanics/archimedes-principle"
-    )
+  "physics.mechanics.gearbox-differential-3d": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/physics/mechanics/gearbox-differential-3d"),
   ),
-  "physics.acoustics.sound-waves": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/acoustics/SoundWaves")
+  "physics.optics.microscope": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/optics/microscope"),
   ),
-  "physics.acoustics.spatial-audio": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/acoustics/spatial-audio")
-  ),
-  "astronomy.kepler-lab": lazyWithRetry(() =>
-    import("@/simulations/subjects/astronomy/kepler")
-  ),
-  "physics.mechanics.circular-motion": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/circular-motion")
-  ),
-  "physics.mechanics.two-body-gravity": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/two-body-gravity")
-  ),
-  "physics.mechanics.pulley-system": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/pulley-system")
-  ),
-  "physics.mechanics.gearbox-differential-3d": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/gearbox-differential-3d")
-  ),
-  "physics.optics.microscope": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/optics/microscope")
-  ),
-  "physics.mechanics.gyroscope": lazyWithRetry(() =>
-    import("@/simulations/subjects/physics/mechanics/gyroscope")
+  "physics.mechanics.gyroscope": lazyWithRetry(
+    () => import("@/simulations/subjects/physics/mechanics/gyroscope"),
   ),
 };

@@ -54,55 +54,37 @@ export function makeBody({
   parent = "earth",
   raanDeg,
   trueAnomalyDeg,
-
-  // NEW
   fixedPositionM = [0, 0, 0],
 }) {
-  /* ==========================================
-     FIXED OBJECTS (JWST, future Lagrange probes)
-     ========================================== */
   if (type === "fixed-point") {
     return {
       id: `${name}-${Math.random().toString(16).slice(2)}`,
-
       name,
       color,
       type,
       parent,
-
       initialAlt: 0,
-
       fixedPositionM: [...fixedPositionM],
-
       state: {
         r: [...fixedPositionM],
         v: [0, 0, 0],
       },
-
       orbitPath: [],
       trail: [],
       lastVisible: true,
     };
   }
 
-  /* ==========================================
-     NORMAL ORBITERS
-     ========================================== */
-
   const isMoonOrbit = parent === "moon";
-
   const MU = isMoonOrbit ? MU_MOON : MU_EARTH;
   const PARENT_R = isMoonOrbit ? R_MOON_M : R_EARTH_M;
 
   const state = makeCircularOrbitState({
     altitudeM,
     inclinationDeg,
-
     raanDeg: raanDeg !== undefined ? raanDeg : rand(0, 360),
-
     trueAnomalyDeg:
       trueAnomalyDeg !== undefined ? trueAnomalyDeg : rand(0, 360),
-
     mu: MU,
     radiusOfParent: PARENT_R,
   });
@@ -111,17 +93,13 @@ export function makeBody({
 
   return {
     id: `${name}-${Math.random().toString(16).slice(2)}`,
-
     name,
     color,
     type,
     parent,
-
     initialAlt: altitudeM,
-
     state,
     orbitPath,
-
     trail: [],
     lastVisible: true,
   };

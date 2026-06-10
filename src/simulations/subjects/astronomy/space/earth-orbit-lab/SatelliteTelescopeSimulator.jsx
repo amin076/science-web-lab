@@ -56,6 +56,11 @@ import {
 } from "./orbit.components";
 
 /* =========================
+   Constants
+========================= */
+const KEPLER_DISTANCE_FROM_EARTH_M = 2_500_000_000;
+
+/* =========================
    Main Simulator
 ========================= */
 export default function SatelliteTelescopeSimulator() {
@@ -84,7 +89,6 @@ export default function SatelliteTelescopeSimulator() {
   const [bodyList, setBodyList] = useState([]);
   const [uiT, setUiT] = useState(0);
 
-  // Physics Refs
   const simRef = useRef({
     t: 0,
     accumulator: 0,
@@ -95,7 +99,6 @@ export default function SatelliteTelescopeSimulator() {
   const uiThrottleRef = useRef(0);
   const controlsRef = useRef();
 
-  // Visual Refs
   const earthRenderRadius = 1;
 
   const mPerUnit = useMemo(
@@ -107,7 +110,6 @@ export default function SatelliteTelescopeSimulator() {
   const observerRenderRef = useRef(null);
   const moonVisualRef = useRef(null);
 
-  // Initialize Moon
   useEffect(() => {
     simRef.current.moonState = makeCircularOrbitState({
       altitudeM: DISTANCE_EARTH_MOON_M - R_EARTH_M,
@@ -116,7 +118,6 @@ export default function SatelliteTelescopeSimulator() {
     });
   }, []);
 
-  // Mode Switching
   useEffect(() => {
     if (simMode === "educational") {
       setSettings((p) => ({ ...p, timeScale: 200 }));
@@ -152,21 +153,33 @@ export default function SatelliteTelescopeSimulator() {
       const parent =
         typeof bodyOrName === "object" ? bodyOrName?.parent || "" : "";
 
+      if (parent === "kepler-deep-space" || name.includes("kepler")) {
+        if (simMode === "educational") return 0.035;
+        if (simMode === "semi") return 0.08;
+        return 0.25;
+      }
+
       if (simMode === "educational") {
         if (name.includes("moon")) return 0.18;
+
         if (parent === "sun-earth-l2" || name.includes("james webb")) {
           return 0.055;
         }
+
         if (name.includes("gps")) return 0.65;
+
         return 1;
       }
 
       if (simMode === "semi") {
         if (name.includes("moon")) return 0.45;
+
         if (parent === "sun-earth-l2" || name.includes("james webb")) {
           return 0.14;
         }
+
         if (name.includes("gps")) return 0.85;
+
         return 1;
       }
 
@@ -178,6 +191,12 @@ export default function SatelliteTelescopeSimulator() {
   const getObjectVisualScale = useCallback(
     (body) => {
       const name = body?.name?.toLowerCase() || "";
+
+      if (body?.parent === "kepler-deep-space" || name.includes("kepler")) {
+        if (simMode === "educational") return 1.4;
+        if (simMode === "semi") return 1.0;
+        return 0.65;
+      }
 
       if (body?.parent === "sun-earth-l2" || name.includes("james webb")) {
         if (simMode === "educational") return 2.2;
@@ -213,7 +232,6 @@ export default function SatelliteTelescopeSimulator() {
     [],
   );
 
-  // Actions
   const addBody = useCallback((cfg) => {
     simRef.current.bodies.push(makeBody(cfg));
     setBodyList([...simRef.current.bodies]);
@@ -239,6 +257,7 @@ export default function SatelliteTelescopeSimulator() {
         "Hubble",
         "James Webb",
         "Lunar Gateway",
+        "Kepler",
       ];
 
       let targetName = null;
@@ -248,6 +267,7 @@ export default function SatelliteTelescopeSimulator() {
       if (key === "HST") targetName = "Hubble";
       if (key === "JWST") targetName = "James Webb";
       if (key === "Gateway") targetName = "Lunar Gateway";
+      if (key === "Kepler") targetName = "Kepler";
 
       if (targetName && uniqueNames.includes(targetName)) {
         const existing = simRef.current.bodies.find(
@@ -339,6 +359,16 @@ export default function SatelliteTelescopeSimulator() {
           });
           break;
 
+        case "Kepler":
+          addBody({
+            name: "Kepler",
+            color: "#38BDF8",
+            type: "fixed-point",
+            parent: "kepler-deep-space",
+            fixedPositionM: [-KEPLER_DISTANCE_FROM_EARTH_M, 0, 0],
+          });
+          break;
+
         default:
           break;
       }
@@ -364,7 +394,6 @@ export default function SatelliteTelescopeSimulator() {
     }
   }, [resetSim]);
 
-  // Physics Loop
   function PhysicsStepper() {
     useFrame((state, delta) => {
       const sim = simRef.current;
@@ -622,6 +651,11 @@ export default function SatelliteTelescopeSimulator() {
             dampingFactor={0.08}
             minDistance={0.02}
             maxDistance={5000000}
+            enableRotate
+            enablePan
+            screenSpacePanning
+            minPolarAngle={0}
+            maxPolarAngle={Math.PI}
           />
         </Canvas>
 
