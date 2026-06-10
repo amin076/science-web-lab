@@ -74,7 +74,9 @@ export default function SatelliteTelescopeSimulator() {
     showMoon: true,
     telescopeLat: -37.8136,
     telescopeLon: 144.9631,
-    showLagrangePoints: true,
+    showLagrangePoints:
+      typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+
     showLabels: typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   });
 
@@ -469,11 +471,13 @@ export default function SatelliteTelescopeSimulator() {
   return (
     <Box
       sx={{
-        width: "100%",
-        height: "100%",
+        height: { xs: "auto", md: "100%" },
+        minHeight: { xs: "100dvh", md: "100%" },
+        overflowY: { xs: "auto", md: "hidden" },
+        overflowX: "hidden",
+
         display: "flex",
         flexDirection: { xs: "column", md: "row" },
-        overflow: "hidden",
         bgcolor: "#02030f",
       }}
     >
@@ -481,7 +485,9 @@ export default function SatelliteTelescopeSimulator() {
         sx={{
           flex: 1,
           position: "relative",
-          minHeight: { xs: "100vh", md: 0 },
+          height: { xs: "70dvh", md: "100%" },
+          minHeight: { xs: "70dvh", md: 0 },
+          flex: { xs: "none", md: 1 },
         }}
       >
         <Canvas
@@ -689,18 +695,30 @@ export default function SatelliteTelescopeSimulator() {
       <Box
         sx={{
           width: { xs: "100%", md: 320 },
-          flex: { xs: "none", md: "none" },
-          overflowY: "auto",
+
+          height: { xs: "50dvh", md: "calc(100% - 40px)" },
+
+          flexShrink: 0,
+
+          overflow: "hidden",
+
           bgcolor: { xs: "#0b0c15", md: "transparent" },
+
           position: { xs: "relative", md: "absolute" },
+
           top: { md: 20 },
           right: { md: 20 },
           bottom: { md: 20 },
+
           zIndex: 10,
-          pointerEvents: { md: "none" },
         }}
       >
-        <Box sx={{ height: "100%", pointerEvents: "auto" }}>
+        <Box
+          sx={{
+            height: "100%",
+            pointerEvents: "auto",
+          }}
+        >
           <SatellitesTelescopesControlPanel
             settings={settings}
             setSettings={setSettings}
