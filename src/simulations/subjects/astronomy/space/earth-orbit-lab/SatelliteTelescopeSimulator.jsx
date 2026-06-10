@@ -75,7 +75,7 @@ export default function SatelliteTelescopeSimulator() {
     telescopeLat: -37.8136,
     telescopeLon: 144.9631,
     showLagrangePoints: true,
-    showLabels: true,
+    showLabels: typeof window !== "undefined" ? window.innerWidth >= 768 : true,
   });
 
   const [simMode, setSimMode] = useState("educational");
