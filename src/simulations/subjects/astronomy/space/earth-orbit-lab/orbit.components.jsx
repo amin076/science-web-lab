@@ -6,7 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Html, Line as DreiLine, useGLTF } from "@react-three/drei";
 import { toRenderUnits, R_EARTH_M } from "./orbit.physics";
 import { hasLineOfSight, elevationDeg } from "./orbit.visibility";
-
+import { TiangongVisual } from "./orbit.tiangong";
 /* --- Camera Controller --- */
 export function CameraController({
   focusedBodyId,
@@ -17,119 +17,173 @@ export function CameraController({
   getBodyDistanceScale = () => 1,
 }) {
   const { camera } = useThree();
+
   const targetVec = useRef(new THREE.Vector3(0, 0, 0));
+  const cameraGoal = useRef(new THREE.Vector3(0, 5, 20));
   const previousId = useRef(null);
 
-  useFrame(() => {
-    if (!controlsRef.current) return;
+  const userInteractingRef = useRef(false);
 
-    const dest = new THREE.Vector3(0, 0, 0);
-    let targetResolved = !focusedBodyId;
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
 
-    if (focusedBodyId === "moon" && moonRef.current) {
-      dest.copy(moonRef.current.position).multiplyScalar(0.5);
-      targetResolved = true;
-    } else if (focusedBodyId) {
-      const body = bodies.find((b) => b.id === focusedBodyId);
+    const handleStart = () => {
+      userInteractingRef.current = true;
+    };
 
-      if (body) {
-        const distanceScale = getBodyDistanceScale(body);
-        const rRaw = toRenderUnits(body.state.r, mPerUnit);
+    const handleEnd = () => {
+      userInteractingRef.current = true;
+    };
 
-        const rRel = [
-          rRaw[0] * distanceScale,
-          rRaw[1] * distanceScale,
-          rRaw[2] * distanceScale,
-        ];
+    controls.addEventListener("start", handleStart);
+    controls.addEventListener("end", handleEnd);
 
-        if (body.parent === "moon" && moonRef.current) {
-          dest
-            .copy(moonRef.current.position)
-            .add(new THREE.Vector3(rRel[0], rRel[1], rRel[2]));
-        } else {
-          dest.set(rRel[0], rRel[1], rRel[2]);
-        }
+    return () => {
+      controls.removeEventListener("start", handleStart);
+      controls.removeEventListener("end", handleEnd);
+    };
+  }, [controlsRef]);
 
-        targetResolved = true;
-      }
+  function getFocusDistance(body) {
+    if (!body) return 4;
+
+    const name = body.name?.toLowerCase() || "";
+
+    if (body.parent === "sun-earth-l2" || name.includes("james webb")) {
+      return 0.28;
     }
 
-    if (focusedBodyId && !targetResolved) {
-      previousId.current = focusedBodyId;
+    if (name.includes("iss")) return 0.16;
+    if (name.includes("tiangong")) return 0.18;
+    if (name.includes("hubble")) return 0.11;
+    if (name.includes("gps")) return 0.13;
+    if (name.includes("starlink")) return 0.08;
+    if (name.includes("gateway")) return 0.16;
+
+    return 0.18;
+  }
+
+  function getBodyWorldPosition(body) {
+    const distanceScale = getBodyDistanceScale(body);
+    const rRaw = toRenderUnits(body.state.r, mPerUnit);
+
+    const rRel = new THREE.Vector3(
+      rRaw[0] * distanceScale,
+      rRaw[1] * distanceScale,
+      rRaw[2] * distanceScale,
+    );
+
+    if (body.parent === "moon" && moonRef.current) {
+      return moonRef.current.position.clone().add(rRel);
+    }
+
+    return rRel;
+  }
+
+  useFrame(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+
+    const focusChanged = focusedBodyId !== previousId.current;
+
+    // If user moved mouse, keep manual camera.
+    // But if a NEW object is selected, allow focus to run.
+    if (userInteractingRef.current && !focusChanged) {
+      controls.update();
       return;
     }
 
-    if (focusedBodyId !== previousId.current) {
-      if (focusedBodyId === "moon" && moonRef.current) {
-        const moonPos = moonRef.current.position.clone();
-        const moonDistance = moonPos.length();
-        const viewDistance = Math.max(moonDistance * 1.25, 8);
-
-        const offset = new THREE.Vector3(
-          viewDistance * 0.2,
-          viewDistance * 0.35,
-          viewDistance,
-        );
-
-        camera.position.copy(dest).add(offset);
-        targetVec.current.copy(dest);
-        controlsRef.current.target.copy(dest);
-      } else if (focusedBodyId) {
-        const body = bodies.find((b) => b.id === focusedBodyId);
-        const isJWST =
-          body?.parent === "sun-earth-l2" ||
-          body?.name?.toLowerCase().includes("james webb");
-
-        const dir =
-          dest.length() > 0.0001
-            ? dest.clone().normalize()
-            : new THREE.Vector3(0, 0, 1);
-
-        const name = body?.name?.toLowerCase() || "";
-
-        let offsetBase;
-
-        if (isJWST) {
-          offsetBase = new THREE.Vector3(
-            Math.max(dest.length() * 0.08, 8),
-            Math.max(dest.length() * 0.04, 4),
-            Math.max(dest.length() * 0.16, 16),
-          );
-        } else if (name.includes("gps")) {
-          offsetBase = new THREE.Vector3(0.08, 0.04, 0.12);
-        } else if (name.includes("iss")) {
-          offsetBase = new THREE.Vector3(0.06, 0.035, 0.09);
-        } else if (name.includes("hubble")) {
-          offsetBase = new THREE.Vector3(0.045, 0.025, 0.07);
-        } else if (name.includes("starlink")) {
-          offsetBase = new THREE.Vector3(0.035, 0.02, 0.055);
-        } else if (name.includes("kepler")) {
-          offsetBase = new THREE.Vector3(0.12, 0.08, 0.18);
-        }
-        const offset = offsetBase.applyQuaternion(
-          new THREE.Quaternion().setFromUnitVectors(
-            new THREE.Vector3(0, 0, 1),
-            dir,
-          ),
-        );
-
-        camera.position.copy(dest).add(offset);
-        targetVec.current.copy(dest);
-        controlsRef.current.target.copy(dest);
-      }
-
-      previousId.current = focusedBodyId;
+    if (focusChanged) {
+      userInteractingRef.current = false;
     }
 
-    const prevTarget = targetVec.current.clone();
-    targetVec.current.lerp(dest, 0.1);
+    const desiredTarget = new THREE.Vector3(0, 0, 0);
+    let desiredCamera = null;
 
-    const delta = new THREE.Vector3().subVectors(targetVec.current, prevTarget);
+    if (!focusedBodyId || focusedBodyId === "earth") {
+      desiredTarget.set(0, 0, 0);
+      desiredCamera = new THREE.Vector3(0, 2.2, 5.5);
+    } else if (focusedBodyId === "moon" && moonRef.current) {
+      desiredTarget.copy(moonRef.current.position);
 
-    if (focusedBodyId) camera.position.add(delta);
+      const moonDir =
+        desiredTarget.length() > 0.0001
+          ? desiredTarget.clone().normalize()
+          : new THREE.Vector3(0, 0, 1);
 
-    controlsRef.current.target.copy(targetVec.current);
-    controlsRef.current.update();
+      desiredCamera = desiredTarget
+        .clone()
+        .add(
+          new THREE.Vector3(0.5, 0.25, 0.9).applyQuaternion(
+            new THREE.Quaternion().setFromUnitVectors(
+              new THREE.Vector3(0, 0, 1),
+              moonDir,
+            ),
+          ),
+        );
+    } else {
+      const body = bodies.find((b) => b.id === focusedBodyId);
+      if (!body) return;
+
+      desiredTarget.copy(getBodyWorldPosition(body));
+
+      const name = body.name?.toLowerCase() || "";
+      const focusDistance = getFocusDistance(body);
+
+      const radialDir =
+        desiredTarget.length() > 0.0001
+          ? desiredTarget.clone().normalize()
+          : new THREE.Vector3(0, 0, 1);
+
+      let sideDir = new THREE.Vector3(0, 1, 0).cross(radialDir);
+
+      if (sideDir.lengthSq() < 0.001) {
+        sideDir = new THREE.Vector3(1, 0, 0);
+      } else {
+        sideDir.normalize();
+      }
+
+      const upDir = radialDir.clone().cross(sideDir).normalize();
+
+      const isJWST =
+        body.parent === "sun-earth-l2" || name.includes("james webb");
+
+      if (isJWST) {
+        desiredCamera = desiredTarget
+          .clone()
+          .add(sideDir.clone().multiplyScalar(focusDistance * 0.3))
+          .add(upDir.clone().multiplyScalar(focusDistance * 0.25))
+          .add(radialDir.clone().multiplyScalar(focusDistance));
+      } else {
+        desiredCamera = desiredTarget
+          .clone()
+          .add(radialDir.clone().multiplyScalar(focusDistance))
+          .add(upDir.clone().multiplyScalar(focusDistance * 0.45))
+          .add(sideDir.clone().multiplyScalar(focusDistance * 0.25));
+      }
+    }
+
+    if (!desiredCamera) return;
+
+    if (focusChanged) {
+      targetVec.current.copy(desiredTarget);
+      cameraGoal.current.copy(desiredCamera);
+
+      camera.position.copy(desiredCamera);
+      controls.target.copy(desiredTarget);
+
+      previousId.current = focusedBodyId;
+    } else {
+      targetVec.current.lerp(desiredTarget, 0.12);
+      cameraGoal.current.lerp(desiredCamera, 0.12);
+
+      camera.position.lerp(cameraGoal.current, 0.16);
+      controls.target.copy(targetVec.current);
+    }
+
+    camera.lookAt(targetVec.current);
+    controls.update();
   });
 
   return null;
@@ -146,7 +200,6 @@ useGLTF.preload("/JamesWebb.glb");
 useGLTF.preload("/Hubble.glb");
 useGLTF.preload("/iss.glb");
 useGLTF.preload("/gps.glb");
-useGLTF.preload("/kepler.glb");
 
 /* --- Visuals --- */
 function SatelliteVisual({ type, color, scaleFactor = 1 }) {
@@ -224,7 +277,7 @@ function getModelScale(body, visualScale) {
   if (name.includes("hubble")) return 0.00002 * visualScale;
   if (name.includes("iss")) return 0.00045 * visualScale;
   if (name.includes("gps")) return 0.00025 * visualScale;
-  if (name.includes("kepler")) return 0.0008 * visualScale;
+
   return 1 * visualScale;
 }
 
@@ -430,7 +483,6 @@ function shouldShowLabel(body, visualScale) {
 
   if (body.parent === "sun-earth-l2") return true;
   if (name.includes("james webb")) return true;
-  if (name.includes("kepler")) return true;
   if (name.includes("gateway")) return true;
   if (name.includes("moon")) return true;
 
@@ -557,25 +609,27 @@ export function SatelliteBody({
           <GLBModel
             url="/JamesWebb.glb"
             scale={getModelScale(body, visualScale)}
-            rotation={[0.4, -0.6, 0.2]}
+            rotation={[Math.PI / 2, Math.PI / 2, 0]}
           />
-        ) : body.name?.toLowerCase().includes("kepler") ? (
-          <GLBModel
-            url="/kepler.glb"
-            scale={getModelScale(body, visualScale)}
-            rotation={[0.3, -0.5, 0.15]}
-          />
+        ) : body.name?.toLowerCase().includes("tiangong") ? (
+          <TiangongVisual scale={0.008 * visualScale} />
         ) : body.name?.toLowerCase().includes("hubble") ? (
           <GLBModel
             url="/Hubble.glb"
             scale={getModelScale(body, visualScale)}
             rotation={[0.4, -0.6, 0.2]}
           />
+        ) : body.name?.toLowerCase().includes("gateway") ? (
+          <GLBModel
+            url="/Gateway.glb"
+            scale={0.0008 * visualScale}
+            rotation={[Math.PI / 2, Math.PI / 2, 0]}
+          />
         ) : body.name?.toLowerCase().includes("iss") ? (
           <GLBModel
             url="/iss.glb"
             scale={getModelScale(body, visualScale)}
-            rotation={[0.4, -0.6, 0.2]}
+            rotation={[Math.PI / 2, Math.PI / 2, 0]}
           />
         ) : body.name?.toLowerCase().includes("gps") ? (
           <GLBModel
@@ -610,11 +664,7 @@ export function SatelliteBody({
                 boxShadow: isJWST ? "0 0 10px #FFA726" : "none",
               }}
             >
-              {isJWST
-                ? "JWST at Sun–Earth L2"
-                : body.name?.toLowerCase().includes("kepler")
-                  ? "Kepler Space Telescope"
-                  : body.name}
+              {isJWST ? "JWST at Sun–Earth L2" : body.name}
             </div>
           </Html>
         )}
