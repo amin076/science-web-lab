@@ -1,283 +1,17 @@
-﻿import React, { Suspense, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, Text } from "@react-three/drei";
-import { TextureLoader } from "three";
+﻿// src/simulations/subjects/astronomy/space/solar-system/components/panels/PlanetMoonComparison3D.jsx
+import React, { useEffect, useState } from "react";
+import VideoSafeAreaOverlay from "@/components/shared/video/VideoSafeAreaOverlay.jsx";
 import { PLANET_FACTS } from "../../data/planetFacts";
 import { MOON_FACTS } from "../../data/moonFacts";
+import PlanetTourRecorder from "./planetMoonComparison/PlanetTourRecorder";
+import PlanetMoonComparisonScene from "./planetMoonComparison/PlanetMoonComparisonScene";
 
-const PLANET_ORDER = [
-  "sun",
-  "mercury",
-  "venus",
-  "earth",
-  "mars",
-  "jupiter",
-  "saturn",
-  "uranus",
-  "neptune",
-];
+import VisibilityControls, {
+  DEFAULT_VISIBILITY,
+  makeVisibility,
+} from "./planetMoonComparison/VisibilityControls";
 
-const PLANET_NAMES = {
-  sun: "Sun",
-  mercury: "Mercury",
-  venus: "Venus",
-  earth: "Earth",
-  mars: "Mars",
-  jupiter: "Jupiter",
-  saturn: "Saturn",
-  uranus: "Uranus",
-  neptune: "Neptune",
-};
-
-const PLANET_MOONS = {
-  earth: ["moon"],
-  mars: ["phobos", "deimos"],
-  jupiter: ["io", "europa", "ganymede", "callisto"],
-  saturn: ["titan", "enceladus"],
-  uranus: ["miranda", "ariel", "umbriel", "titania", "oberon"],
-  neptune: ["triton"],
-};
-
-const MOON_NAMES = {
-  moon: "Moon",
-  phobos: "Phobos",
-  deimos: "Deimos",
-  io: "Io",
-  europa: "Europa",
-  ganymede: "Ganymede",
-  callisto: "Callisto",
-  titan: "Titan",
-  enceladus: "Enceladus",
-  miranda: "Miranda",
-  ariel: "Ariel",
-  umbriel: "Umbriel",
-  titania: "Titania",
-  oberon: "Oberon",
-  triton: "Triton",
-};
-
-const TEXTURED_MOONS = new Set([
-  "moon",
-  "phobos",
-  "deimos",
-  "io",
-  "europa",
-  "ganymede",
-  "callisto",
-  "titan",
-  "triton",
-]);
-
-function getMoonData(scaleData, moonId) {
-  if (moonId === "moon") return scaleData.moon || {};
-
-  return (
-    scaleData.marsMoons?.[moonId] ||
-    scaleData.jupiterMoons?.[moonId] ||
-    scaleData.saturnMoons?.[moonId] ||
-    scaleData.uranusMoons?.[moonId] ||
-    scaleData.neptuneMoons?.[moonId] ||
-    {}
-  );
-}
-
-function ComparisonBody({ body, onSelect }) {
-  const spinRef = useRef(null);
-
-  useFrame((_, delta) => {
-    if (!spinRef.current) return;
-
-    const rotationPeriod = body.rotation || 1;
-    const direction = body.rotationDirection || 1;
-
-    spinRef.current.rotation.y +=
-      direction * 0.35 * delta * (1 / Math.abs(rotationPeriod));
-  });
-
-  return (
-    <group position={body.position}>
-      <group rotation={[0, 0, ((body.tilt || 0) * Math.PI) / 180]}>
-        <group ref={spinRef}>
-          <mesh onClick={() => onSelect(body)}>
-            <sphereGeometry args={[body.radius, 48, 48]} />
-            <meshStandardMaterial
-              map={body.texture}
-              color={body.color || "white"}
-            />
-          </mesh>
-        </group>
-      </group>
-
-      <Text
-        position={[body.isMoon ? body.radius + 0.45 : -body.radius - 2.2, 0, 0]}
-        fontSize={body.isMoon ? 0.22 : body.id === "sun" ? 4 : 1.1}
-        color={
-          body.isMoon ? "#CBD5E1" : body.id === "sun" ? "#FCD34D" : "#E5E7EB"
-        }
-        outlineWidth={body.isMoon ? 0.008 : 0.035}
-        outlineColor="#020617"
-        anchorX={body.isMoon ? "left" : "right"}
-        anchorY="middle"
-      >
-        {body.name}
-      </Text>
-    </group>
-  );
-}
-
-function Scene({ scaleData, onSelect }) {
-  const sunTexture = useLoader(TextureLoader, "/textures/sun.jpg");
-  const mercuryTexture = useLoader(TextureLoader, "/textures/mercury.jpg");
-  const venusTexture = useLoader(TextureLoader, "/textures/venus.jpg");
-  const earthTexture = useLoader(TextureLoader, "/textures/earth.jpg");
-  const marsTexture = useLoader(TextureLoader, "/textures/mars.jpg");
-  const jupiterTexture = useLoader(TextureLoader, "/textures/jupiter.jpg");
-  const saturnTexture = useLoader(TextureLoader, "/textures/saturn.jpg");
-  const uranusTexture = useLoader(TextureLoader, "/textures/uranus.jpg");
-  const neptuneTexture = useLoader(TextureLoader, "/textures/neptune.jpg");
-
-  const moonTexture = useLoader(TextureLoader, "/textures/moon.jpg");
-  const phobosTexture = useLoader(TextureLoader, "/textures/phobos.jpg");
-  const deimosTexture = useLoader(TextureLoader, "/textures/deimos.jpg");
-  const ioTexture = useLoader(TextureLoader, "/textures/io.jpg");
-  const europaTexture = useLoader(TextureLoader, "/textures/europa.jpg");
-  const ganymedeTexture = useLoader(TextureLoader, "/textures/ganymede.jpg");
-  const callistoTexture = useLoader(TextureLoader, "/textures/callisto.jpg");
-  const titanTexture = useLoader(TextureLoader, "/textures/titan.jpg");
-  const tritonTexture = useLoader(TextureLoader, "/textures/triton.jpg");
-
-  const textures = useMemo(
-    () => ({
-      sun: sunTexture,
-      mercury: mercuryTexture,
-      venus: venusTexture,
-      earth: earthTexture,
-      mars: marsTexture,
-      jupiter: jupiterTexture,
-      saturn: saturnTexture,
-      uranus: uranusTexture,
-      neptune: neptuneTexture,
-      moon: moonTexture,
-      phobos: phobosTexture,
-      deimos: deimosTexture,
-      io: ioTexture,
-      europa: europaTexture,
-      ganymede: ganymedeTexture,
-      callisto: callistoTexture,
-      titan: titanTexture,
-      triton: tritonTexture,
-    }),
-    [
-      sunTexture,
-      mercuryTexture,
-      venusTexture,
-      earthTexture,
-      marsTexture,
-      jupiterTexture,
-      saturnTexture,
-      uranusTexture,
-      neptuneTexture,
-      moonTexture,
-      phobosTexture,
-      deimosTexture,
-      ioTexture,
-      europaTexture,
-      ganymedeTexture,
-      callistoTexture,
-      titanTexture,
-      tritonTexture,
-    ],
-  );
-
-  const bodies = useMemo(() => {
-    let y = 42;
-    let previousRadius = 0;
-
-    return PLANET_ORDER.map((id) => {
-      const data = scaleData[id];
-      if (!data) return null;
-
-      const radius = Math.max(data.radius, 0.35);
-      const isSun = id === "sun";
-      const sunRadius = scaleData.sun?.radius ?? 10;
-
-      if (!isSun && previousRadius > 0) {
-        y -= previousRadius + radius + 3.5;
-      }
-
-      const x = isSun ? -sunRadius * 0.55 : sunRadius * 0.75;
-
-      const body = {
-        id,
-        name: PLANET_NAMES[id],
-        radius,
-        rotation: data.rotation,
-        rotationDirection: data.rotation && data.rotation < 0 ? -1 : 1,
-        tilt: data.tilt || 0,
-        texture: textures[id],
-        position: [x, isSun ? 0 : y, 0],
-        raw: data,
-        isMoon: false,
-      };
-
-      const moons = PLANET_MOONS[id] || [];
-      body.moons = moons.map((moonId, index) => {
-        const moonData = getMoonData(scaleData, moonId);
-        const moonRadius = moonData.radius ?? Math.max(radius * 0.08, 0.08);
-
-        return {
-          id: moonId,
-          name: MOON_NAMES[moonId] || moonId,
-          radius: moonRadius,
-          rotation: moonData.rotation || moonData.period || 1,
-          rotationDirection: moonData.period && moonData.period < 0 ? -1 : 1,
-          tilt: moonData.tilt || 0,
-          texture: TEXTURED_MOONS.has(moonId)
-            ? textures[moonId]
-            : textures.moon,
-          color: moonData.color,
-          position: [x + radius + 6 + index * 6, isSun ? 0 : y, 0],
-          raw: moonData,
-          isMoon: true,
-        };
-      });
-
-      if (!isSun) {
-        previousRadius = radius;
-      }
-
-      return body;
-    }).filter(Boolean);
-  }, [scaleData, textures]);
-
-  return (
-    <>
-      <ambientLight intensity={0.65} />
-      <pointLight position={[30, 50, 80]} intensity={1.6} />
-
-      <Suspense fallback={null}>
-        {bodies.map((body) => (
-          <React.Fragment key={body.id}>
-            <ComparisonBody body={body} onSelect={onSelect} />
-
-            {body.moons?.map((moon) => (
-              <ComparisonBody key={moon.id} body={moon} onSelect={onSelect} />
-            ))}
-          </React.Fragment>
-        ))}
-      </Suspense>
-
-      <OrbitControls
-        enabled
-        minDistance={5}
-        maxDistance={800}
-        enablePan
-        enableRotate
-        enableZoom
-      />
-    </>
-  );
-}
+const ENABLE_VIDEO_TOOLS = false;
 
 export default function PlanetMoonComparison3D({
   visible,
@@ -286,11 +20,102 @@ export default function PlanetMoonComparison3D({
   scaleMode,
 }) {
   const [selected, setSelected] = useState(null);
+  const [showLabels, setShowLabels] = useState(true);
+  const [tourEnabled, setTourEnabled] = useState(false);
+  const [shortsMode, setShortsMode] = useState(false);
+  const [spinMode, setSpinMode] = useState("slow");
+  const [tourInfo, setTourInfo] = useState(null);
+  const [visibleBodies, setVisibleBodies] = useState(DEFAULT_VISIBILITY);
+  const applyPreset = (ids) => {
+    setVisibleBodies(makeVisibility(ids));
+    setSelected(null);
+  };
+
+  const toggleBodyVisibility = (id) => {
+    setVisibleBodies((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const handleTourVisibilityChange = (ids) => {
+    setVisibleBodies(makeVisibility(ids));
+  };
+
+  useEffect(() => {
+    if (!visible) return;
+
+    // Production default: open Comparison3D normally.
+    // Video tools stay disabled unless ENABLE_VIDEO_TOOLS is true.
+    setShortsMode(false);
+    setTourEnabled(false);
+    setShowLabels(true);
+    setVisibleBodies(DEFAULT_VISIBILITY);
+    setSelected(null);
+
+    if (ENABLE_VIDEO_TOOLS) {
+      // Local video-production mode only.
+      // Keep false for production.
+      // setShortsMode(true);
+      // setTourEnabled(true);
+      // setShowLabels(false);
+      // setVisibleBodies(makeVisibility(["saturn"]));
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
+  const facts = selected?.isMoon
+    ? MOON_FACTS[selected.id] || {}
+    : selected
+      ? PLANET_FACTS[selected.id] || {}
+      : null;
+
+  const rows =
+    selected && selected.isMoon
+      ? [
+          ["Parent Planet", facts.parent],
+          ["Type", facts.type],
+          ["Radius (km)", facts.radiusKm?.toLocaleString()],
+          ["Radius vs Earth", facts.radiusVsEarth],
+          ["Orbit Period", facts.orbitPeriod],
+          ["Rotation Period", facts.rotationPeriod],
+          ["Distance from Parent", facts.distanceFromParent],
+          ["Temperature", facts.surfaceTemp],
+          ["Average Density", facts.density],
+          ["Atmosphere", facts.atmosphere],
+          ["Discovery", facts.discovery],
+          ["Name Meaning", facts.nameMeaning],
+          ["Interesting Fact", facts.interesting],
+        ]
+      : selected
+        ? [
+            ["Position from Sun", facts.orderFromSun],
+            ["Type", facts.type],
+            ["Radius (km)", facts.radiusKm?.toLocaleString()],
+            ["Radius vs Earth", facts.radiusVsEarth],
+            ["Radius vs Sun", facts.radiusVsSun],
+            [
+              "Distance from Sun",
+              facts.distanceFromSunAU != null
+                ? `${facts.distanceFromSunAU} AU`
+                : undefined,
+            ],
+            ["Year", facts.year],
+            ["Day / Rotation", facts.day],
+            ["Temperature", facts.surfaceTemp],
+            ["Average Density", facts.density],
+            ["Atmosphere", facts.atmosphere],
+            ["Moons", facts.moons],
+            ["Age", facts.age],
+            ["Name Meaning", facts.nameMeaning],
+            ["Interesting Fact", facts.interesting],
+          ]
+        : [];
+
   return (
     <div
+      id="planet-moon-comparison-root"
       style={{
         position: "fixed",
         inset: 0,
@@ -299,24 +124,27 @@ export default function PlanetMoonComparison3D({
         zIndex: 9999,
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          top: 24,
-          left: 24,
-          zIndex: 10001,
-          color: "white",
-          maxWidth: 420,
-        }}
-      >
-        <h2 style={{ margin: 0, fontSize: 28 }}>
-          Planet-Moon Family Comparison
-        </h2>
-        <p style={{ margin: "6px 0 0", opacity: 0.78, fontSize: 14 }}>
-          Scale mode: {scaleMode} | planet axes and rotation preview
-        </p>
-      </div>
+      {/* Title */}
+      {!shortsMode && (
+        <div
+          style={{
+            position: "absolute",
+            top: 24,
+            left: 24,
+            zIndex: 10001,
+            color: "white",
+          }}
+        >
+          <h2 style={{ margin: 0, fontSize: 28 }}>
+            Planet-Moon Family Comparison
+          </h2>
+          <p style={{ margin: "6px 0 0", opacity: 0.78, fontSize: 14 }}>
+            Scale mode: {scaleMode}
+          </p>
+        </div>
+      )}
 
+      {/* Top buttons */}
       <div
         style={{
           position: "absolute",
@@ -327,162 +155,265 @@ export default function PlanetMoonComparison3D({
           gap: 10,
         }}
       >
-        <button
-          onClick={() => setSelected(null)}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.2)",
-            background: "rgba(255,255,255,0.1)",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          Clear HUD
-        </button>
+        {!shortsMode && (
+          <button
+            onClick={() => setTourEnabled((prev) => !prev)}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: tourEnabled
+                ? "rgba(34,197,94,0.9)"
+                : "rgba(255,255,255,0.1)",
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            {tourEnabled ? "Stop Tour" : "Start Tour"}
+          </button>
+        )}
 
-        <button
-          onClick={onClose}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.2)",
-            background: "rgba(239,68,68,0.9)",
-            color: "white",
-            fontWeight: "bold",
-            cursor: "pointer",
-          }}
-        >
-          Close X
-        </button>
+        {ENABLE_VIDEO_TOOLS && (
+          <button
+            onClick={() => setShortsMode((prev) => !prev)}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: shortsMode
+                ? "rgba(59,130,246,0.9)"
+                : "rgba(255,255,255,0.1)",
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            {shortsMode ? "Exit Shorts" : "🎥 Shorts"}
+          </button>
+        )}
+
+        {ENABLE_VIDEO_TOOLS && shortsMode && (
+          <PlanetTourRecorder
+            onStartTour={() => setTourEnabled(true)}
+            onStopTour={() => setTourEnabled(false)}
+          />
+        )}
+
+        {!shortsMode && (
+          <button
+            onClick={() => setSelected(null)}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.1)",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Clear HUD
+          </button>
+        )}
+
+        {!shortsMode && (
+          <button
+            onClick={onClose}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(239,68,68,0.9)",
+              color: "white",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Close X
+          </button>
+        )}
       </div>
 
-      {selected &&
-        (() => {
-          const facts = selected.isMoon
-            ? MOON_FACTS[selected.id] || {}
-            : PLANET_FACTS[selected.id] || {};
+      {/* Visibility panel */}
+      {!shortsMode && (
+        <VisibilityControls
+          visibleBodies={visibleBodies}
+          onApplyPreset={applyPreset}
+          onToggleBody={toggleBodyVisibility}
+          showLabels={showLabels}
+          spinMode={spinMode}
+          setSpinMode={setSpinMode}
+          onToggleLabels={() => setShowLabels((prev) => !prev)}
+        />
+      )}
 
-          const rows = selected.isMoon
-            ? [
-                ["Parent Planet", facts.parent],
-                ["Type", facts.type],
-                ["Radius (km)", facts.radiusKm?.toLocaleString()],
-                ["Radius vs Earth", facts.radiusVsEarth],
-                ["Orbit Period", facts.orbitPeriod],
-                ["Rotation Period", facts.rotationPeriod],
-                ["Distance from Parent", facts.distanceFromParent],
-                ["Temperature", facts.surfaceTemp],
-                ["Average Density", facts.density],
-                ["Atmosphere", facts.atmosphere],
-                ["Discovery", facts.discovery],
-                ["Name Meaning", facts.nameMeaning],
-                ["Interesting Fact", facts.interesting],
-              ]
-            : [
-                ["Position from Sun", facts.orderFromSun],
-                ["Type", facts.type],
-                ["Radius (km)", facts.radiusKm?.toLocaleString()],
-                ["Radius vs Earth", facts.radiusVsEarth],
-                ["Radius vs Sun", facts.radiusVsSun],
-                [
-                  "Distance from Sun",
-                  facts.distanceFromSunAU != null
-                    ? `${facts.distanceFromSunAU} AU`
-                    : undefined,
-                ],
-                ["Year", facts.year],
-                ["Day / Rotation", facts.day],
-                ["Temperature", facts.surfaceTemp],
-                ["Average Density", facts.density],
-                ["Atmosphere", facts.atmosphere],
-                ["Moons", facts.moons],
-                ["Age", facts.age],
-                ["Name Meaning", facts.nameMeaning],
-                ["Interesting Fact", facts.interesting],
-              ];
+      {/* Tour HUD */}
+      {tourEnabled && tourInfo && !shortsMode && (
+        <div
+          style={{
+            position: "absolute",
+            left: 24,
+            bottom: 24,
+            zIndex: 10002,
+            color: "white",
+            padding: "14px 18px",
+            borderRadius: 16,
+            background: "rgba(2,6,23,0.72)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
+            minWidth: 260,
+          }}
+        >
+          <div style={{ fontSize: 12, opacity: 0.7, letterSpacing: 2 }}>
+            SATURN 60s VIDEO TOUR
+          </div>
 
-          return (
+          <div style={{ fontSize: 24, fontWeight: 700, marginTop: 4 }}>
+            {tourInfo.label}
+          </div>
+
+          <div
+            style={{
+              marginTop: 10,
+              height: 5,
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.14)",
+              overflow: "hidden",
+            }}
+          >
             <div
               style={{
-                position: "absolute",
-                left: "18%",
-                bottom: 24,
-                zIndex: 10001,
-                color: "white",
-                width: 420,
-                maxHeight: "52vh",
-                overflowY: "auto",
-                padding: 18,
-                borderRadius: 20,
-                background: "rgba(255, 255, 255, 0.035)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                backdropFilter: "blur(2px)",
-                WebkitBackdropFilter: "blur(2px)",
-                boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
+                height: "100%",
+                width: `${tourInfo.progress}%`,
+                background: "linear-gradient(90deg,#38bdf8,#a855f7,#f97316)",
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Info HUD */}
+      {selected && !shortsMode && (
+        <div
+          style={{
+            position: "absolute",
+            left: "18%",
+            bottom: 24,
+            zIndex: 10001,
+            color: "white",
+            width: 420,
+            maxHeight: "52vh",
+            overflowY: "auto",
+            padding: 18,
+            borderRadius: 20,
+            background: "rgba(255, 255, 255, 0.035)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(2px)",
+            WebkitBackdropFilter: "blur(2px)",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 10,
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 22 }}>
+              {facts.name || selected.name}
+            </h3>
+            {!shortsMode && (
+              <button
+                onClick={() => setSelected(null)}
+                style={{
+                  border: "none",
+                  background: "rgba(255,255,255,0.08)",
+                  color: "white",
+                  width: 28,
+                  height: 28,
+                  borderRadius: 999,
+                  cursor: "pointer",
+                  fontSize: 16,
+                  lineHeight: "28px",
+                }}
+                title="Close HUD"
+              >
+                X
+              </button>
+            )}
+          </div>
+
+          {rows.map(([label, value]) => (
+            <div
+              key={label}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "135px 1fr",
+                gap: 10,
+                padding: "6px 0",
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                fontSize: 13,
               }}
             >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 10,
-                }}
-              >
-                <h3 style={{ margin: 0, fontSize: 22 }}>
-                  {facts.name || selected.name}
-                </h3>
-
-                <button
-                  onClick={() => setSelected(null)}
-                  style={{
-                    border: "none",
-                    background: "rgba(255,255,255,0.08)",
-                    color: "white",
-                    width: 28,
-                    height: 28,
-                    borderRadius: 999,
-                    cursor: "pointer",
-                    fontSize: 16,
-                    lineHeight: "28px",
-                  }}
-                  title="Close HUD"
-                >
-                  X
-                </button>
-              </div>
-
-              {rows.map(([label, value]) => (
-                <div
-                  key={label}
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "135px 1fr",
-                    gap: 10,
-                    padding: "6px 0",
-                    borderBottom: "1px solid rgba(255,255,255,0.08)",
-                    fontSize: 13,
-                  }}
-                >
-                  <span style={{ opacity: 0.68 }}>{label}</span>
-                  <strong style={{ fontWeight: 600 }}>{value ?? "N/A"}</strong>
-                </div>
-              ))}
+              <span style={{ opacity: 0.68 }}>{label}</span>
+              <strong style={{ fontWeight: 600 }}>{value ?? "N/A"}</strong>
             </div>
-          );
-        })()}
+          ))}
+        </div>
+      )}
+      {ENABLE_VIDEO_TOOLS && shortsMode && (
+        <>
+          {/* Left cut area */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: "34.18%",
+              background: "rgba(0,0,0,0.45)",
+              pointerEvents: "none",
+              zIndex: 9998,
+            }}
+          />
 
-      <Canvas
-        camera={{
-          position: [35, -35, 75],
-          fov: 45,
-          near: 0.1,
-          far: 5000,
-        }}
-      >
-        <Scene scaleData={scaleData} onSelect={setSelected} />
-      </Canvas>
+          {/* Right cut area */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              right: 0,
+              width: "34.18%",
+              background: "rgba(0,0,0,0.45)",
+              pointerEvents: "none",
+              zIndex: 9998,
+            }}
+          />
+
+          {/* Safe Shorts Area */}
+          {shortsMode && (
+            <VideoSafeAreaOverlay mode="shorts" visible={shortsMode} />
+          )}
+        </>
+      )}
+      <PlanetMoonComparisonScene
+        scaleData={scaleData}
+        onSelect={setSelected}
+        tourEnabled={tourEnabled}
+        onTourInfo={setTourInfo}
+        onTourVisibilityChange={handleTourVisibilityChange}
+        visibleBodies={visibleBodies}
+        showLabels={showLabels}
+        selected={selected}
+        spinMode={spinMode}
+        setSpinMode={setSpinMode}
+        shortsMode={ENABLE_VIDEO_TOOLS && shortsMode}
+      />
     </div>
   );
 }
+
