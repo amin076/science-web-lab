@@ -24,7 +24,10 @@ import { R_EARTH_M } from "./orbit.physics";
 const fmt = (n) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
 
 export default function OrbitHUD({ focusedBodyId, bodies, moonState }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.matchMedia("(min-width: 768px)").matches;
+  });
 
   if (!focusedBodyId) return null;
 
