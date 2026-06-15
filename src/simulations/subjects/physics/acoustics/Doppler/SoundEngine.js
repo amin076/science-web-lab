@@ -1,6 +1,49 @@
 // SoundEngine.js
 
 export const INSTRUMENTS = {
+  CAR_ENGINE: {
+    id: "car_engine",
+    name: "Real Car Engine",
+    type: "sample",
+    url: "/audio/doppler/cityford_trimmed.mp3",
+  },
+  DIESEL_ENGINE: {
+    id: "diesel_engine",
+    name: "Diesel Engine",
+    type: "sample",
+    url: "/audio/doppler/citydiesiel_trimmed.mp3",
+  },
+  BUS_ENGINE: {
+    id: "bus_engine",
+    name: "Bus Engine",
+    type: "sample",
+    url: "/audio/doppler/citybus_trimmed.mp3",
+  },
+  TRACTOR_ENGINE: {
+    id: "tractor_engine",
+    name: "Tractor Engine",
+    type: "sample",
+    url: "/audio/doppler/tractor_trimmed.mp3",
+  },
+  AMBULANCE_SIREN: {
+    id: "ambulance_siren",
+    name: "Ambulance Siren",
+    type: "sample",
+    url: "/audio/doppler/ambulance_trimmed.mp3",
+  },
+  POLICE_SIREN: {
+    id: "police_siren",
+    name: "Police Siren",
+    type: "sample",
+    url: "/audio/doppler/police_trimmed.mp3",
+  },
+
+  ENGINE: {
+    id: "engine",
+    name: "Synthetic Car Engine",
+    type: "complex",
+  },
+
   SINE: { id: "sine", name: "Pure Tone (Sine)", type: "simple", shape: "sine" },
   SAW: {
     id: "saw",
@@ -19,37 +62,69 @@ export const INSTRUMENTS = {
   DRONE: { id: "drone", name: "Sci-Fi Drone", type: "complex" },
 };
 
+const getInstrumentById = (typeId) =>
+  Object.values(INSTRUMENTS).find((instrument) => instrument.id === typeId);
+
+const audioBufferCache = new Map();
+
+async function loadAudioBuffer(ctx, url) {
+  if (audioBufferCache.has(url)) {
+    return audioBufferCache.get(url);
+  }
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`Failed to load audio sample: ${url}`);
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+  audioBufferCache.set(url, audioBuffer);
+  return audioBuffer;
+}
+
 export class AudioVoice {
   constructor(audioCtx, destination, typeId) {
     this.ctx = audioCtx;
     this.typeId = typeId;
-    this.nodes = []; // Keep track of all oscillators/nodes
-
-    // Master Gain for this voice (controls volume)
+    this.nodes = [];
+    this.sampleSource = null;
+    this.sampleReady = false;
+    this.sampleLoadError = false;
+    this.lastFreq = 440;
+    this.lastBaseFreq = 440;
     this.output = this.ctx.createGain();
+    this.output.gain.value = 0;
     this.output.connect(destination);
 
+    this.instrument = getInstrumentById(this.typeId);
+    this.isSample = this.instrument?.type === "sample";
     this.setupVoice();
   }
 
   setupVoice() {
     const t = this.ctx.currentTime;
+    const instrument = getInstrumentById(this.typeId);
+
+    if (instrument?.type === "sample") {
+      this.setupSampleVoice(instrument);
+      return;
+    }
 
     if (
       this.typeId === "sine" ||
       this.typeId === "saw" ||
       this.typeId === "square"
     ) {
-      // --- SIMPLE WAVEFORMS ---
       const osc = this.ctx.createOscillator();
       osc.type = INSTRUMENTS[this.typeId.toUpperCase()].shape;
       osc.connect(this.output);
       osc.start(t);
       this.nodes.push(osc);
     } else if (this.typeId === "organ") {
-      // --- HAMMOND ORGAN STYLE (Additive Synthesis) ---
-      // Stack sine waves at different octaves
-      const ratios = [0.5, 1, 2, 4]; // Sub-octave, Base, Octave up, 2 Octaves up
+      const ratios = [0.5, 1, 2, 4];
       const gains = [0.5, 1, 0.6, 0.3];
 
       ratios.forEach((ratio, i) => {
@@ -57,26 +132,65 @@ export class AudioVoice {
         osc.type = "sine";
 
         const gain = this.ctx.createGain();
-        gain.gain.value = gains[i] * 0.4; // Scale down so it doesn't clip
+        gain.gain.value = gains[i] * 0.4;
 
         osc.connect(gain);
         gain.connect(this.output);
         osc.start(t);
 
-        // Store osc and ratio so we can update pitch later
         this.nodes.push({ osc, ratio });
       });
+    } else if (this.typeId === "engine") {
+      const base = this.ctx.createOscillator();
+      base.type = "sawtooth";
+
+      const sub = this.ctx.createOscillator();
+      sub.type = "square";
+
+      const rumble = this.ctx.createOscillator();
+      rumble.type = "sine";
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 500;
+      filter.Q.value = 1.5;
+
+      const baseGain = this.ctx.createGain();
+      baseGain.gain.value = 0.45;
+
+      const subGain = this.ctx.createGain();
+      subGain.gain.value = 0.25;
+
+      const rumbleGain = this.ctx.createGain();
+      rumbleGain.gain.value = 0.15;
+
+      base.connect(baseGain);
+      sub.connect(subGain);
+      rumble.connect(rumbleGain);
+
+      baseGain.connect(filter);
+      subGain.connect(filter);
+      rumbleGain.connect(filter);
+
+      filter.connect(this.output);
+
+      base.start(t);
+      sub.start(t);
+      rumble.start(t);
+
+      this.nodes.push({ osc: base, ratio: 1, filter });
+      this.nodes.push({ osc: sub, ratio: 0.5 });
+      this.nodes.push({ osc: rumble, ratio: 0.25 });
     } else if (this.typeId === "brass") {
-      // --- SYNTH BRASS (Sawtooth + Lowpass Filter) ---
       const osc = this.ctx.createOscillator();
       osc.type = "sawtooth";
 
       const osc2 = this.ctx.createOscillator();
-      osc2.type = "triangle"; // Add body
+      osc2.type = "triangle";
 
       const filter = this.ctx.createBiquadFilter();
       filter.type = "lowpass";
-      filter.Q.value = 2; // Resonance
+      filter.Q.value = 2;
 
       osc.connect(filter);
       osc2.connect(filter);
@@ -86,22 +200,19 @@ export class AudioVoice {
       osc2.start(t);
 
       this.nodes.push({ osc, ratio: 1, filter });
-      this.nodes.push({ osc: osc2, ratio: 1.01 }); // Slight detune for thickness
+      this.nodes.push({ osc: osc2, ratio: 1.01 });
     } else if (this.typeId === "drone") {
-      // --- SCI-FI DRONE (FM Synthesis) ---
-      // Carrier
       const carrier = this.ctx.createOscillator();
       carrier.type = "sine";
 
-      // Modulator (vibrato/growl)
       const modulator = this.ctx.createOscillator();
       modulator.type = "sawtooth";
 
       const modGain = this.ctx.createGain();
-      modGain.gain.value = 50; // Modulation depth
+      modGain.gain.value = 50;
 
       modulator.connect(modGain);
-      modGain.connect(carrier.frequency); // FM Synthesis connection
+      modGain.connect(carrier.frequency);
 
       carrier.connect(this.output);
 
@@ -113,28 +224,58 @@ export class AudioVoice {
     }
   }
 
-  setFrequency(freq) {
-    const t = this.ctx.currentTime;
-    const timeConst = 0.02; // Smoothing
+  async setupSampleVoice(instrument) {
+    try {
+      const buffer = await loadAudioBuffer(this.ctx, instrument.url);
 
-    // Update based on voice type
+      if (this.output.context.state === "closed") return;
+
+      const source = this.ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+
+      source.connect(this.output);
+      source.start(this.ctx.currentTime);
+
+      this.sampleSource = source;
+      this.sampleReady = true;
+
+      this.setFrequency(this.lastFreq, this.lastBaseFreq);
+    } catch (error) {
+      this.sampleLoadError = true;
+      console.error(error);
+    }
+  }
+
+  setFrequency(freq, baseFreq = 440) {
+    const t = this.ctx.currentTime;
+    const timeConst = 0.02;
+
+    this.lastFreq = freq;
+    this.lastBaseFreq = baseFreq || 440;
+
+    if (this.sampleSource) {
+      const ratio = Math.max(0.35, Math.min(2.5, freq / this.lastBaseFreq));
+      this.sampleSource.playbackRate.setTargetAtTime(ratio, t, timeConst);
+      return;
+    }
+
     this.nodes.forEach((node) => {
       if (node instanceof OscillatorNode) {
-        // Simple types
         node.frequency.setTargetAtTime(freq, t, timeConst);
       } else if (node.osc && node.ratio) {
-        // Additive types (Organ/Brass)
         node.osc.frequency.setTargetAtTime(freq * node.ratio, t, timeConst);
-        // For Brass, open the filter as pitch gets higher (brighter)
+
         if (node.filter) {
-          node.filter.frequency.setTargetAtTime(freq * 3, t, timeConst);
+          node.filter.frequency.setTargetAtTime(
+            Math.min(1800, Math.max(250, freq * 2.5)),
+            t,
+            timeConst,
+          );
         }
       } else if (node.type === "carrier") {
-        // Drone Carrier
         node.osc.frequency.setTargetAtTime(freq, t, timeConst);
       } else if (node.type === "modulator") {
-        // Drone Modulator - keep ratio fixed or independent?
-        // Let's make the rumble speed up with pitch
         node.osc.frequency.setTargetAtTime(freq * 0.5, t, timeConst);
       }
     });
@@ -142,17 +283,37 @@ export class AudioVoice {
 
   setVolume(vol) {
     const t = this.ctx.currentTime;
-    // Smooth volume to prevent clicks
-    this.output.gain.setTargetAtTime(vol, t, 0.02);
+    const boost = this.isSample ? 3.0 : 1.0;
+    const safeVol = Math.min(1.0, vol * boost);
+
+    this.output.gain.setTargetAtTime(safeVol, t, 0.02);
   }
 
   stop() {
-    // Disconnect and stop everything to prevent memory leaks
     const t = this.ctx.currentTime;
-    this.output.gain.setTargetAtTime(0, t, 0.05); // Fade out
+    this.output.gain.setTargetAtTime(0, t, 0.05);
 
     setTimeout(() => {
-      this.output.disconnect();
-    }, 100);
+      try {
+        if (this.sampleSource) {
+          this.sampleSource.stop();
+          this.sampleSource.disconnect();
+        }
+
+        this.nodes.forEach((node) => {
+          if (node instanceof OscillatorNode) {
+            node.stop();
+            node.disconnect();
+          } else if (node.osc) {
+            node.osc.stop();
+            node.osc.disconnect();
+          }
+        });
+
+        this.output.disconnect();
+      } catch {
+        // Already stopped/disconnected.
+      }
+    }, 120);
   }
 }
