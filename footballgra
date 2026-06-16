@@ -1,0 +1,3813 @@
+# Simulation Pack: gravity-comparison
+
+Generated: 2026-06-16T03:20:36.251Z
+
+## What is this file?
+
+This Markdown file is an **auto-generated bundle** of a simulation folder from the Science Web Lab project.
+It exists so an AI can review and improve the simulation with full context.
+
+## Instructions for the AI (read carefully)
+
+1. **Read every file included below before suggesting changes.**
+2. Keep the existing project structure and conventions.
+3. When proposing edits, reference file paths explicitly (e.g., `src/.../MyFile.jsx`).
+4. If something looks missing (registry entry, exports, schema, constants), call it out.
+
+## Included content
+
+- Simulation folder: `C:/Physics/science-web-lab/src/simulations/subjects/physics/mechanics/gravity-comparison` (recursive)
+- Root `package.json`
+
+## File tree (simulation folder)
+
+```text
+├─ components
+│  ├─ GravityBall.jsx
+│  ├─ GravityLegend.jsx
+│  ├─ GroundLine.jsx
+│  ├─ LaunchVector.jsx
+│  ├─ MotionTrail.jsx
+│  └─ PerspectiveRoad.jsx
+├─ constants.js
+├─ gravityComparison.config.js
+├─ GravityComparisonControlPanel.jsx
+├─ GravityComparisonFootballVideo.jsx
+├─ GravityComparisonScene.jsx
+├─ GravityComparisonSimulation.jsx
+├─ GravityComparisonVideoPage.jsx
+├─ GravityComparisonVideoScene.jsx
+├─ hooks
+│  └─ useGravityComparison.js
+├─ index.jsx
+└─ utils
+   └─ gravityMotion.js
+```
+
+## File: package.json (project root)
+
+```json
+{
+  "name": "science-web-lab",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "gen": "plop --plopfile plopfile.cjs",
+    "sim:check": "node scripts/verify-simulations.cjs",
+    "sim:spec": "node scripts/sim-spec.cjs",
+    "sim:pack": "plop --plopfile plopfile.cjs sim-pack",
+    "pack:sim": "node scripts/pack-simulation-md.cjs",
+    "pack:app": "node scripts/pack-app-json.cjs"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@microsoft/clarity": "^1.0.2",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.4",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.4.2",
+    "@react-three/xr": "^6.6.29",
+    "chart.js": "^4.5.0",
+    "firebase": "^12.3.0",
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.562.0",
+    "p5": "^2.0.5",
+    "react": "^19.1.1",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^19.1.1",
+    "react-ga4": "^3.0.1",
+    "react-helmet-async": "^3.0.0",
+    "react-p5": "^1.4.1",
+    "react-router-dom": "^7.9.3",
+    "recharts": "^3.6.0",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/react": "^19.1.16",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react": "^5.0.4",
+    "autoprefixer": "^10.4.23",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.22",
+    "globals": "^16.4.0",
+    "plop": "^4.0.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^7.1.7"
+  }
+}
+
+```
+
+## File: components/GravityBall.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/components/GravityBall.jsx
+// Renders a gravity comparison ball with 2.5D depth styling, shadow, highlight, and optional label.
+
+export default function GravityBall({
+  x,
+  y,
+  radius,
+  color,
+  label,
+  depthScale = 1,
+  opacity = 1,
+}) {
+  const displayRadius = radius * depthScale;
+
+  return (
+    <g opacity={opacity}>
+      <circle
+        cx={x}
+        cy={y}
+        r={displayRadius}
+        fill={color}
+        stroke="rgba(255,255,255,0.35)"
+        strokeWidth={1.4}
+      />
+
+      <circle
+        cx={x - displayRadius * 0.35}
+        cy={y - displayRadius * 0.38}
+        r={displayRadius * 0.32}
+        fill="rgba(255,255,255,0.35)"
+      />
+
+      {label ? (
+        <text
+          x={x}
+          y={y - displayRadius - 10}
+          textAnchor="middle"
+          fontSize={12 * depthScale}
+          fontWeight="800"
+          fill="#ffffff"
+          paintOrder="stroke"
+          stroke="rgba(0,0,0,0.75)"
+          strokeWidth="4"
+        >
+          {label}
+        </text>
+      ) : null}
+    </g>
+  );
+}
+
+```
+
+## File: components/GravityLegend.jsx
+
+```jsx
+
+```
+
+## File: components/GroundLine.jsx
+
+```jsx
+//src/simulations/subjects/physics/gravity-comparison/components/GroundLine.jsx
+// Component to represent the ground line in the Gravity Comparison simulation.
+export default function GroundLine({ y, width }) {
+  return <line x1={0} y1={y} x2={width} y2={y} stroke="#888" strokeWidth={3} />;
+}
+
+```
+
+## File: components/LaunchVector.jsx
+
+```jsx
+
+```
+
+## File: components/MotionTrail.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/components/MotionTrail.jsx
+// Renders a full colorful dashed trajectory trail without using excessive memory.
+
+export default function MotionTrail({ trail, color }) {
+  if (!trail?.length || trail.length < 2) {
+    return null;
+  }
+
+  const points = trail.map((point) => `${point.x},${point.y}`).join(" ");
+
+  return (
+    <g>
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="7"
+        opacity="0.14"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="2.6"
+        strokeDasharray="10 7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
+
+```
+
+## File: components/PerspectiveRoad.jsx
+
+```jsx
+// PerspectiveRoad.jsx
+// Marathon-style perspective road for Gravity Comparison Lab.
+
+export default function PerspectiveRoad({ width, groundY }) {
+  const horizonY = groundY - 240;
+
+  const centerX = width / 2;
+
+  const roadTopWidth = 180;
+  const roadBottomWidth = width * 2.2;
+
+  const leftTop = centerX - roadTopWidth / 2;
+  const rightTop = centerX + roadTopWidth / 2;
+
+  const leftBottom = centerX - roadBottomWidth / 2;
+  const rightBottom = centerX + roadBottomWidth / 2;
+
+  return (
+    <g>
+      <defs>
+        <linearGradient id="roadGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#243447" />
+          <stop offset="100%" stopColor="#0f172a" />
+        </linearGradient>
+
+        <linearGradient id="skyGlow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(59,130,246,0.25)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+        </linearGradient>
+      </defs>
+
+      {/* atmosphere */}
+      <rect
+        x="-5000"
+        y="-3000"
+        width="20000"
+        height="3000"
+        fill="url(#skyGlow)"
+      />
+
+      {/* road */}
+      <polygon
+        points={`
+          ${leftTop},${horizonY}
+          ${rightTop},${horizonY}
+          ${rightBottom},${groundY + 1500}
+          ${leftBottom},${groundY + 1500}
+        `}
+        fill="url(#roadGradient)"
+      />
+
+      {/* left edge */}
+      <line
+        x1={leftTop}
+        y1={horizonY}
+        x2={leftBottom}
+        y2={groundY + 1500}
+        stroke="rgba(255,255,255,0.25)"
+      />
+
+      {/* right edge */}
+      <line
+        x1={rightTop}
+        y1={horizonY}
+        x2={rightBottom}
+        y2={groundY + 1500}
+        stroke="rgba(255,255,255,0.25)"
+      />
+
+      {/* 6 lanes */}
+      {Array.from({ length: 5 }).map((_, i) => {
+        const t = (i + 1) / 6;
+
+        const xTop =
+          leftTop + (rightTop - leftTop) * t;
+
+        const xBottom =
+          leftBottom + (rightBottom - leftBottom) * t;
+
+        return (
+          <line
+            key={`lane-${i}`}
+            x1={xTop}
+            y1={horizonY}
+            x2={xBottom}
+            y2={groundY + 1500}
+            stroke="rgba(94,234,212,0.20)"
+            strokeWidth="1"
+          />
+        );
+      })}
+
+      {/* road cross lines ////// */}
+      {Array.from({ length: 30 }).map((_, i) => {
+        const t = i / 30;
+
+        const y =
+          horizonY +
+          Math.pow(t, 1.75) *
+            (groundY + 1200 - horizonY);
+
+        const left =
+          leftTop +
+          (leftBottom - leftTop) *
+            Math.pow(t, 1.1);
+
+        const right =
+          rightTop +
+          (rightBottom - rightTop) *
+            Math.pow(t, 1.1);
+
+        return (
+          <line
+            key={`cross-${i}`}
+            x1={left}
+            y1={y}
+            x2={right}
+            y2={y - 20}
+            stroke="rgba(255,255,255,0.12)"
+            strokeWidth="1"
+          />
+        );
+      })}
+
+      {/* horizon glow */}
+      <ellipse
+        cx={centerX}
+        cy={horizonY}
+        rx="320"
+        ry="50"
+        fill="rgba(56,189,248,0.12)"
+      />
+    </g>
+  );
+}
+
+```
+
+## File: constants.js
+
+```js
+// src/simulations/subjects/physics/mechanics/gravity-comparison/constants.js
+// Constants and default settings for the Gravity Comparison simulation.
+
+export const SIMULATION_MODES = {
+  FREE_FALL: "freeFall",
+  PROJECTILE: "projectile",
+};
+
+export const DEFAULT_SIMULATION_MODE = SIMULATION_MODES.FREE_FALL;
+
+export const GRAVITY_WORLDS = [
+  {
+    id: "sun",
+    name: "Sun",
+    gravity: 274,
+    color: "#FFD54F",
+    radius: 13,
+    enabled: false,
+  },
+  {
+    id: "mercury",
+    name: "Mercury",
+    gravity: 3.7,
+    color: "#B0BEC5",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "venus",
+    name: "Venus",
+    gravity: 8.87,
+    color: "#FFB74D",
+    radius: 10,
+    enabled: false,
+  },
+  {
+    id: "earth",
+    name: "Earth",
+    gravity: 9.81,
+    color: "#4CAF50",
+    radius: 10,
+    enabled: true,
+  },
+  {
+    id: "moon",
+    name: "Moon",
+    gravity: 1.62,
+    color: "#E0E0E0",
+    radius: 9,
+    enabled: true,
+  },
+  {
+    id: "mars",
+    name: "Mars",
+    gravity: 3.71,
+    color: "#FF5722",
+    radius: 10,
+    enabled: true,
+  },
+  {
+    id: "phobos",
+    name: "Phobos",
+    gravity: 0.0057,
+    color: "#8D6E63",
+    radius: 7,
+    enabled: false,
+  },
+  {
+    id: "deimos",
+    name: "Deimos",
+    gravity: 0.003,
+    color: "#A1887F",
+    radius: 7,
+    enabled: false,
+  },
+  {
+    id: "jupiter",
+    name: "Jupiter",
+    gravity: 24.79,
+    color: "#FF9800",
+    radius: 12,
+    enabled: true,
+  },
+  {
+    id: "io",
+    name: "Io",
+    gravity: 1.8,
+    color: "#FBC02D",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "europa",
+    name: "Europa",
+    gravity: 1.31,
+    color: "#B0BEC5",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "ganymede",
+    name: "Ganymede",
+    gravity: 1.43,
+    color: "#90A4AE",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "callisto",
+    name: "Callisto",
+    gravity: 1.24,
+    color: "#795548",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "saturn",
+    name: "Saturn",
+    gravity: 10.44,
+    color: "#FDD835",
+    radius: 11,
+    enabled: false,
+  },
+  {
+    id: "titan",
+    name: "Titan",
+    gravity: 1.35,
+    color: "#FFB300",
+    radius: 9,
+    enabled: false,
+  },
+  {
+    id: "enceladus",
+    name: "Enceladus",
+    gravity: 0.113,
+    color: "#E3F2FD",
+    radius: 7,
+    enabled: false,
+  },
+  {
+    id: "uranus",
+    name: "Uranus",
+    gravity: 8.69,
+    color: "#4DD0E1",
+    radius: 10,
+    enabled: false,
+  },
+  {
+    id: "neptune",
+    name: "Neptune",
+    gravity: 11.15,
+    color: "#1976D2",
+    radius: 10,
+    enabled: false,
+  },
+  {
+    id: "triton",
+    name: "Triton",
+    gravity: 0.779,
+    color: "#B3E5FC",
+    radius: 8,
+    enabled: false,
+  },
+  {
+    id: "pluto",
+    name: "Pluto",
+    gravity: 0.62,
+    color: "#BCAAA4",
+    radius: 8,
+    enabled: false,
+  },
+];
+
+export const DEFAULT_FREE_FALL_SETTINGS = {
+  height: 85,
+};
+
+export const DEFAULT_PROJECTILE_SETTINGS = {
+  height: 0,
+  speed: 45,
+  angleDeg: 45,
+};
+
+export const ANIMATION_SETTINGS = {
+  pixelsPerMeter: 5.2,
+  timeScale: 0.35,
+
+  groundPadding: 80,
+
+  leftPadding: 120,
+
+  maxTrailPoints: 900,
+
+  laneSpacing:65,
+
+  maxVisibleLanes: 6,
+};
+
+```
+
+## File: gravityComparison.config.js
+
+```js
+
+```
+
+## File: GravityComparisonControlPanel.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonControlPanel.jsx
+// Right-side modern glass control panel for Gravity Comparison simulation settings, world selection, and view options.
+
+import { useMemo, useState } from "react";
+import {
+  Box,
+  Button,
+  Divider,
+  InputBase,
+  Slider,
+  Stack,
+  Switch,
+  Typography,
+} from "@mui/material";
+
+import { SIMULATION_MODES } from "./constants";
+
+function GlassCard({ children, sx = {} }) {
+  return (
+    <Box
+      sx={{
+        p: 2,
+        borderRadius: 4,
+        background:
+          "linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.035))",
+        border: "1px solid rgba(255,255,255,0.12)",
+        boxShadow: "0 18px 50px rgba(0,0,0,0.28)",
+        ...sx,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
+export default function GravityComparisonControlPanel({
+  mode,
+  setMode,
+  isRunning,
+  setIsRunning,
+  time,
+  bodies,
+  selectedBody,
+  selectedWorldId,
+  setSelectedWorldId,
+  freeFallSettings,
+  setFreeFallSettings,
+  projectileSettings,
+  setProjectileSettings,
+  viewOptions,
+  updateViewOption,
+  resetView,
+  toggleWorld,
+  resetSimulation,
+}) {
+  const [query, setQuery] = useState("");
+
+  const enabledCount = bodies.filter((body) => body.enabled).length;
+
+  const filteredBodies = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return bodies;
+    return bodies.filter((body) => body.name.toLowerCase().includes(q));
+  }, [bodies, query]);
+
+  return (
+    <Box
+      sx={{
+        height: "100%",
+        p: 2,
+        borderLeft: "1px solid rgba(255,255,255,0.12)",
+        background:
+          "linear-gradient(180deg, rgba(10,15,35,0.86), rgba(5,8,20,0.94))",
+        backdropFilter: "blur(22px)",
+        overflowY: "auto",
+      }}
+    >
+      <Stack spacing={2}>
+        <GlassCard>
+          <Typography variant="overline" sx={{ color: "#67e8f9", fontWeight: 900 }}>
+            Gravity Lab
+          </Typography>
+
+          <Typography variant="h5" fontWeight={900}>
+            Gravity Comparison
+          </Typography>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            Compare free fall and projectile motion across planets, moons, dwarf planets, and the Sun.
+          </Typography>
+        </GlassCard>
+
+        <GlassCard>
+          <Typography variant="caption" color="text.secondary">
+            Elapsed time
+          </Typography>
+
+          <Typography
+            sx={{
+              fontFamily: "monospace",
+              fontSize: 34,
+              fontWeight: 900,
+              color: "#5eead4",
+            }}
+          >
+            {time.toFixed(2)}s
+          </Typography>
+
+          <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={() => setIsRunning((current) => !current)}
+              sx={{
+                py: 1.2,
+                fontWeight: 900,
+                borderRadius: 2,
+                background: "linear-gradient(135deg, #2563eb, #7c3aed)",
+              }}
+            >
+              {isRunning ? "Pause" : "Start"}
+            </Button>
+
+            <Button variant="outlined" onClick={resetSimulation}>
+              Reset
+            </Button>
+          </Stack>
+        </GlassCard>
+
+        <GlassCard>
+          <Typography variant="h6" fontWeight={900}>
+            Mode
+          </Typography>
+
+          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+            <Button
+              fullWidth
+              variant={mode === SIMULATION_MODES.FREE_FALL ? "contained" : "outlined"}
+              onClick={() => setMode(SIMULATION_MODES.FREE_FALL)}
+            >
+              Free Fall
+            </Button>
+
+            <Button
+              fullWidth
+              variant={mode === SIMULATION_MODES.PROJECTILE ? "contained" : "outlined"}
+              onClick={() => setMode(SIMULATION_MODES.PROJECTILE)}
+            >
+              Projectile
+            </Button>
+          </Stack>
+        </GlassCard>
+
+        <GlassCard>
+          <Typography variant="h6" fontWeight={900}>
+            Simulation Settings
+          </Typography>
+
+          {mode === SIMULATION_MODES.FREE_FALL ? (
+            <Box sx={{ mt: 2 }}>
+              <Stack direction="row" justifyContent="space-between">
+                <Typography variant="body2">Start height</Typography>
+                <Typography variant="body2" fontWeight={800}>
+                  {freeFallSettings.height} m
+                </Typography>
+              </Stack>
+
+              <Slider
+                min={20}
+                max={150}
+                value={freeFallSettings.height}
+                onChange={(_, value) =>
+                  setFreeFallSettings((current) => ({
+                    ...current,
+                    height: value,
+                  }))
+                }
+              />
+            </Box>
+          ) : (
+            <Stack spacing={2} sx={{ mt: 2 }}>
+              <Box>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2">Speed</Typography>
+                  <Typography variant="body2" fontWeight={800}>
+                    {projectileSettings.speed} m/s
+                  </Typography>
+                </Stack>
+                <Slider
+                  min={5}
+                  max={100}
+                  value={projectileSettings.speed}
+                  onChange={(_, value) =>
+                    setProjectileSettings((current) => ({
+                      ...current,
+                      speed: value,
+                    }))
+                  }
+                />
+              </Box>
+
+              <Box>
+                <Stack direction="row" justifyContent="space-between">
+                  <Typography variant="body2">Angle</Typography>
+                  <Typography variant="body2" fontWeight={800}>
+                    {projectileSettings.angleDeg}°
+                  </Typography>
+                </Stack>
+                <Slider
+                  min={5}
+                  max={85}
+                  value={projectileSettings.angleDeg}
+                  onChange={(_, value) =>
+                    setProjectileSettings((current) => ({
+                      ...current,
+                      angleDeg: value,
+                    }))
+                  }
+                />
+              </Box>
+            </Stack>
+          )}
+        </GlassCard>
+
+        <GlassCard>
+          <Stack direction="row" justifyContent="space-between">
+            <Typography variant="h6" fontWeight={900}>
+              Worlds
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              {enabledCount} / {bodies.length}
+            </Typography>
+          </Stack>
+
+          <InputBase
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search worlds..."
+            sx={{
+              mt: 1.5,
+              mb: 1,
+              width: "100%",
+              px: 1.5,
+              py: 0.8,
+              borderRadius: 2,
+              background: "rgba(15,23,42,0.72)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              color: "white",
+            }}
+          />
+
+          <Divider sx={{ my: 1.5, borderColor: "rgba(255,255,255,0.1)" }} />
+
+          <Stack spacing={0.8}>
+            {filteredBodies.map((body) => (
+              <Box
+                key={body.id}
+                onClick={() => setSelectedWorldId(body.id)}
+                sx={{
+                  px: 1.2,
+                  py: 0.85,
+                  borderRadius: 2.5,
+                  display: "grid",
+                  gridTemplateColumns: "18px 1fr auto auto",
+                  gap: 1,
+                  alignItems: "center",
+                  cursor: "pointer",
+                  background:
+                    body.id === selectedWorldId
+                      ? "rgba(45,212,191,0.18)"
+                      : body.enabled
+                        ? "rgba(124,58,237,0.18)"
+                        : "rgba(255,255,255,0.04)",
+                  border:
+                    body.id === selectedWorldId
+                      ? "1px solid rgba(94,234,212,0.45)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 11,
+                    height: 11,
+                    borderRadius: "50%",
+                    backgroundColor: body.color,
+                    boxShadow: `0 0 16px ${body.color}`,
+                  }}
+                />
+
+                <Typography fontWeight={800}>{body.name}</Typography>
+
+                <Typography variant="caption" color="text.secondary">
+                  {body.gravity} m/s²
+                </Typography>
+
+                <Switch
+                  size="small"
+                  checked={body.enabled}
+                  onChange={(event) => {
+                    event.stopPropagation();
+                    toggleWorld(body.id);
+                  }}
+                />
+              </Box>
+            ))}
+          </Stack>
+        </GlassCard>
+
+        <GlassCard>
+          <Typography variant="h6" fontWeight={900}>
+            Selected World HUD
+          </Typography>
+
+          <Box sx={{ mt: 1.5 }}>
+            <Typography fontWeight={900} sx={{ color: selectedBody?.color }}>
+              {selectedBody?.name}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Gravity: {selectedBody?.gravity} m/s²
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Height: {selectedBody?.position?.y?.toFixed(1)} m
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Vy: {selectedBody?.velocity?.y?.toFixed(2)} m/s
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Max height: {selectedBody?.maxHeight?.toFixed(1)} m
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary">
+              Impact time:{" "}
+              {selectedBody?.impactTime ? `${selectedBody.impactTime.toFixed(2)} s` : "Pending"}
+            </Typography>
+          </Box>
+        </GlassCard>
+
+        <GlassCard>
+          <Typography variant="h6" fontWeight={900}>
+            View Options
+          </Typography>
+
+          {[
+            ["showTrails", "Show trails"],
+            ["showGrid", "Show grid"],
+            ["showLabels", "Show labels"],
+            ["showHeightLines", "Show height lines"],
+          ].map(([key, label]) => (
+            <Stack key={key} direction="row" justifyContent="space-between" alignItems="center">
+              <Typography variant="body2">{label}</Typography>
+              <Switch
+                size="small"
+                checked={viewOptions[key]}
+                onChange={(event) => updateViewOption(key, event.target.checked)}
+              />
+            </Stack>
+          ))}
+
+          <Button fullWidth variant="outlined" sx={{ mt: 1.5 }} onClick={resetView}>
+            Reset View
+          </Button>
+        </GlassCard>
+      </Stack>
+    </Box>
+  );
+}
+```
+
+## File: GravityComparisonFootballVideo.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonFootballVideo.jsx
+// Standalone 9:16 canvas recorder for Shorts: same football shot on different worlds.
+// Shows launch from the ground, follows the longest flight, zooms out, then displays range/height results.
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+const VIDEO = {
+  width: 1080,
+  height: 1920,
+  fps: 60,
+  filename: "esbiko-football-gravity-comparison.webm",
+};
+
+const SHOT = {
+  speedKmh: 130,
+  angleDeg: 35,
+  startDelay: 1.35,
+  endingHold: 6.8,
+};
+
+const WORLDS = [
+  {
+    id: "jupiter",
+    name: "Jupiter",
+    emoji: "🟠",
+    gravity: 24.79,
+    color: "#ff9f1c",
+    glow: "rgba(255,159,28,0.34)",
+  },
+  {
+    id: "earth",
+    name: "Earth",
+    emoji: "🌍",
+    gravity: 9.81,
+    color: "#51d36a",
+    glow: "rgba(81,211,106,0.34)",
+  },
+  {
+    id: "mars",
+    name: "Mars",
+    emoji: "🔴",
+    gravity: 3.71,
+    color: "#ff5b45",
+    glow: "rgba(255,91,69,0.34)",
+  },
+  {
+    id: "moon",
+    name: "Moon",
+    emoji: "🌙",
+    gravity: 1.62,
+    color: "#f4f4ef",
+    glow: "rgba(255,255,255,0.44)",
+  },
+];
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * clamp(t, 0, 1);
+}
+
+function smoothstep(t) {
+  const x = clamp(t, 0, 1);
+  return x * x * (3 - 2 * x);
+}
+
+function easeInOutCubic(t) {
+  const x = clamp(t, 0, 1);
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+function kmhToMs(kmh) {
+  return kmh / 3.6;
+}
+
+function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function formatNumber(value) {
+  return new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(value);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === "function") {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+}
+
+function createShots() {
+  const speed = kmhToMs(SHOT.speedKmh);
+  const angle = degToRad(SHOT.angleDeg);
+  const vx = speed * Math.cos(angle);
+  const vy = speed * Math.sin(angle);
+
+  return WORLDS.map((world) => {
+    const flightTime = (2 * vy) / world.gravity;
+    const range = vx * flightTime;
+    const maxHeight = (vy * vy) / (2 * world.gravity);
+
+    return {
+      ...world,
+      vx,
+      vy,
+      flightTime,
+      range,
+      maxHeight,
+    };
+  });
+}
+
+function positionAt(shot, physicsTime) {
+  const t = clamp(physicsTime, 0, shot.flightTime);
+  return {
+    x: shot.vx * t,
+    y: Math.max(0, shot.vy * t - 0.5 * shot.gravity * t * t),
+    landed: physicsTime >= shot.flightTime,
+  };
+}
+
+function sampleTrail(shot, physicsTime, samples = 96) {
+  const endTime = clamp(physicsTime, 0, shot.flightTime);
+  const points = [];
+
+  for (let i = 0; i <= samples; i += 1) {
+    points.push(positionAt(shot, (endTime * i) / samples));
+  }
+
+  return points;
+}
+
+function fullTrail(shot, samples = 150) {
+  const points = [];
+  for (let i = 0; i <= samples; i += 1) {
+    points.push(positionAt(shot, (shot.flightTime * i) / samples));
+  }
+  return points;
+}
+
+function getPhysicsTime(videoTime) {
+  return Math.max(0, videoTime - SHOT.startDelay);
+}
+
+function getLeader(shots) {
+  return [...shots].sort((a, b) => b.flightTime - a.flightTime)[0];
+}
+
+function getTotalDuration(shots) {
+  return SHOT.startDelay + getLeader(shots).flightTime + SHOT.endingHold;
+}
+
+function getScene(videoTime, shots) {
+  const leader = getLeader(shots);
+  const leaderLandTime = SHOT.startDelay + leader.flightTime;
+
+  if (videoTime < SHOT.startDelay) return "intro";
+ if (videoTime < 6.0) return "launch";
+  if (videoTime < leaderLandTime - 3.2) return "followLeader";
+  if (videoTime < leaderLandTime + 1.0) return "lastLanding";
+  if (videoTime < leaderLandTime + 3.9) return "wideReveal";
+  return "results";
+}
+
+function getFinalCamera(shots) {
+  const maxRange = Math.max(...shots.map((shot) => shot.range));
+  const maxHeight = Math.max(...shots.map((shot) => shot.maxHeight));
+  const safeWidth = VIDEO.width * 0.82;
+  const safeHeight = VIDEO.height * 0.50;
+  const zoom = clamp(Math.min(safeWidth / maxRange, safeHeight / maxHeight), 0.58, 1.25);
+
+  return {
+    x: maxRange / 2,
+    y: maxHeight * 0.45,
+    zoom,
+  };
+}
+
+function getCamera(videoTime, shots) {
+  const scene = getScene(videoTime, shots);
+  const physicsTime = getPhysicsTime(videoTime);
+  const leader = getLeader(shots);
+  const leaderPos = positionAt(leader, physicsTime);
+  const finalCamera = getFinalCamera(shots);
+
+  if (scene === "intro") {
+    const p = smoothstep(videoTime / SHOT.startDelay);
+    return {
+      x: lerp(5, 22, p),
+      y: lerp(0, 8, p),
+      zoom: lerp(7.0, 5.4, p),
+    };
+  }
+
+  if (scene === "launch") {
+    const p = easeInOutCubic((videoTime - SHOT.startDelay) / 3.0);
+    const targetY = clamp(leaderPos.y * 0.35 + 8, 18, 72);
+    const targetZoom = clamp(700 / (leaderPos.y + 145), 2.1, 5.4);
+
+    return {
+      x: lerp(0, leaderPos.x * 0.15, p),
+y: lerp(0, targetY * 0.5, p),
+zoom: lerp(2.2, 1.3, p),
+    };
+  }
+
+  if (scene === "followLeader") {
+   const zoom = clamp(
+  520 / (leaderPos.y + 450),
+  0.7,
+  1.25
+);
+    return {
+      x: leaderPos.x * 0.62,
+      y: leaderPos.y * 0.43 + 8,
+      zoom,
+    };
+  }
+
+  if (scene === "lastLanding") {
+    return {
+      x: leader.range * 0.72,
+      y: 28,
+      zoom: 1.04,
+    };
+  }
+
+  if (scene === "wideReveal") {
+    const leaderLandTime = SHOT.startDelay + leader.flightTime;
+    const p = easeInOutCubic((videoTime - (leaderLandTime + 1.0)) / 2.9);
+    const from = {
+      x: leader.range * 0.72,
+      y: 28,
+      zoom: 1.04,
+    };
+
+    return {
+      x: lerp(from.x, finalCamera.x, p),
+      y: lerp(from.y, finalCamera.y, p),
+      zoom: lerp(from.zoom, finalCamera.zoom, p),
+    };
+  }
+
+  return finalCamera;
+}
+
+function drawText(ctx, text, x, y, size, options = {}) {
+  const {
+    color = "#ffffff",
+    align = "center",
+    weight = 900,
+    alpha = 1,
+    maxWidth,
+    shadow = true,
+  } = options;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+  ctx.fillStyle = color;
+
+  if (shadow) {
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 5;
+  }
+
+  if (maxWidth) ctx.fillText(text, x, y, maxWidth);
+  else ctx.fillText(text, x, y);
+  ctx.restore();
+}
+
+function drawBackground(ctx) {
+  const { width: w, height: h } = VIDEO;
+  const fieldY = 1580;
+
+  const sky = ctx.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#72cdf6");
+  sky.addColorStop(0.48, "#b9ecff");
+  sky.addColorStop(0.72, "#d8f7ff");
+  sky.addColorStop(1, "#fef3c7");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+
+  const sunX = w * 0.80;
+  const sunY = h * 0.15;
+  const sun = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 185);
+  sun.addColorStop(0, "rgba(255,246,165,0.96)");
+  sun.addColorStop(0.34, "rgba(255,232,120,0.42)");
+  sun.addColorStop(1, "rgba(255,232,120,0)");
+  ctx.fillStyle = sun;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 185, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255,255,255,0.44)";
+  [
+    [145, 210, 120, 31],
+    [420, 330, 132, 34],
+    [735, 245, 118, 30],
+  ].forEach(([x, y, rx, ry]) => {
+    ctx.beginPath();
+    ctx.ellipse(x, y, rx, ry, -0.08, 0, Math.PI * 2);
+    ctx.ellipse(x + rx * 0.35, y - 8, rx * 0.48, ry * 0.9, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - rx * 0.45, y + 4, rx * 0.42, ry * 0.82, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  ctx.fillStyle = "rgba(60,100,120,0.22)";
+  ctx.beginPath();
+  ctx.moveTo(0, fieldY - 150);
+  for (let x = 0; x <= w; x += 60) {
+    const y = fieldY - 205 + Math.sin(x * 0.008) * 32 + Math.sin(x * 0.017) * 17;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(w, fieldY + 16);
+  ctx.lineTo(0, fieldY + 16);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#18a954";
+  ctx.fillRect(0, fieldY, w, h - fieldY);
+
+  const stripeW = 95;
+  for (let i = 0; i < Math.ceil(w / stripeW) + 2; i += 1) {
+    ctx.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.055)" : "rgba(0,0,0,0.045)";
+    ctx.beginPath();
+    ctx.moveTo(i * stripeW - 35, fieldY);
+    ctx.lineTo(i * stripeW + stripeW * 0.55, h);
+    ctx.lineTo(i * stripeW + stripeW * 1.55, h);
+    ctx.lineTo(i * stripeW + stripeW, fieldY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, fieldY + 96);
+  ctx.lineTo(w, fieldY + 96);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.ellipse(w / 2, h + 54, 300, 120, 0, Math.PI, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255,255,255,0.45)";
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  ctx.save();
+  ctx.globalAlpha = 0.62;
+  ctx.strokeStyle = "#eaf8ff";
+  ctx.lineWidth = 8;
+  const gx = 40;
+const gy = fieldY - 260;
+const gw = 320;
+const gh = 260;
+  ctx.strokeRect(gx, gy, gw, gh);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(234,248,255,0.45)";
+  for (let x = gx + 24; x < gx + gw; x += 24) {
+    ctx.beginPath();
+    ctx.moveTo(x, gy);
+    ctx.lineTo(x, gy + gh);
+    ctx.stroke();
+  }
+  for (let y = gy + 24; y < gy + gh; y += 24) {
+    ctx.beginPath();
+    ctx.moveTo(gx, y);
+    ctx.lineTo(gx + gw, y);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawFootball(ctx, x, y, radius, rotation = 0, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+
+  ctx.shadowColor = "rgba(0,0,0,0.28)";
+  ctx.shadowBlur = radius * 0.35;
+  ctx.shadowOffsetY = radius * 0.10;
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  const shade = ctx.createRadialGradient(-radius * 0.34, -radius * 0.40, radius * 0.1, 0, 0, radius);
+  shade.addColorStop(0, "rgba(255,255,255,0.94)");
+  shade.addColorStop(0.6, "rgba(255,255,255,0.03)");
+  shade.addColorStop(1, "rgba(0,0,0,0.25)");
+  ctx.fillStyle = shade;
+  ctx.fill();
+
+  ctx.fillStyle = "#111827";
+  ctx.beginPath();
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    const px = Math.cos(a) * radius * 0.33;
+    const py = Math.sin(a) * radius * 0.33;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = "#111827";
+  ctx.lineWidth = radius * 0.05;
+  ctx.lineCap = "round";
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * radius * 0.33, Math.sin(a) * radius * 0.33);
+    ctx.lineTo(Math.cos(a) * radius * 0.82, Math.sin(a) * radius * 0.82);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * radius * 0.84, Math.sin(a) * radius * 0.84, radius * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(0,0,0,0.38)";
+  ctx.lineWidth = radius * 0.035;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTrail(ctx, points, project, shot, finalMode = false) {
+  if (points.length < 2) return;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.setLineDash(finalMode ? [10, 12] : [7, 10]);
+
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = project(point.x, point.y);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.strokeStyle = shot.glow;
+  ctx.lineWidth = finalMode ? 5 : 4;
+  ctx.globalAlpha = finalMode ? 0.44 : 0.34;
+  ctx.shadowColor = shot.glow;
+  ctx.shadowBlur = 9;
+  ctx.stroke();
+
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = project(point.x, point.y);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.strokeStyle = shot.color;
+  ctx.lineWidth = finalMode ? 2.2 : 1.8;
+  ctx.globalAlpha = finalMode ? 0.88 : 0.78;
+  ctx.shadowBlur = 0;
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawWorldLabels(ctx, shots, project, finalMode) {
+  ctx.save();
+  shots.forEach((shot) => {
+    const p = project(shot.range, 0);
+    if (p.x < -120 || p.x > VIDEO.width + 120) return;
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${finalMode ? 900 : 800} ${finalMode ? 24 : 20}px Inter, Arial, sans-serif`;
+    ctx.fillStyle = shot.color;
+    ctx.shadowColor = "rgba(0,0,0,0.46)";
+    ctx.shadowBlur = 10;
+    ctx.fillText(`${shot.emoji} ${shot.name}`, p.x, p.y + 52);
+  });
+  ctx.restore();
+}
+
+function drawOpeningText(ctx, videoTime) {
+  const p = smoothstep(videoTime / 0.85);
+  drawText(ctx, "Same Shot", VIDEO.width / 2, 214, 86, { alpha: p, maxWidth: VIDEO.width - 110 });
+  drawText(ctx, "Different Gravity", VIDEO.width / 2, 298, 48, {
+    color: "#fff2a8",
+    alpha: p,
+    maxWidth: VIDEO.width - 110,
+  });
+
+  ctx.save();
+  ctx.globalAlpha = p;
+  roundRect(ctx, 56, VIDEO.height - 270, 332, 116, 28);
+  ctx.fillStyle = "rgba(4,30,35,0.54)";
+  ctx.strokeStyle = "rgba(255,255,255,0.20)";
+  ctx.lineWidth = 2;
+  ctx.fill();
+  ctx.stroke();
+  ctx.font = "900 27px Inter, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(`⚽ ${SHOT.speedKmh} km/h shot`, 84, VIDEO.height - 228);
+  ctx.fillText(`📐 ${SHOT.angleDeg}° launch angle`, 84, VIDEO.height - 181);
+  ctx.restore();
+}
+
+function drawRec(ctx, status) {
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  roundRect(ctx, 34, 34, 146, 46, 23);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff2d2d";
+  ctx.beginPath();
+  ctx.arc(63, 57, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = "900 23px Inter, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("REC", 83, 57);
+
+  ctx.textAlign = "right";
+  ctx.fillText("9:16", VIDEO.width - 38, 57);
+
+  if (status && !status.toLowerCase().includes("recording")) {
+    ctx.textAlign = "center";
+    ctx.font = "800 19px Inter, Arial, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.84)";
+    ctx.fillText(status, VIDEO.width / 2, 57);
+  }
+  ctx.restore();
+}
+
+function drawResults(ctx, shots, alpha = 1) {
+  const sorted = [...shots].sort((a, b) => b.range - a.range);
+  const winner = sorted[0];
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const x = 78;
+  const y = 392;
+  const w = VIDEO.width - 156;
+  const h = 690;
+
+  roundRect(ctx, x, y, w, h, 36);
+  ctx.fillStyle = "rgba(5,17,32,0.80)";
+  ctx.strokeStyle = "rgba(255,255,255,0.16)";
+  ctx.lineWidth = 2;
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur = 24;
+  ctx.fill();
+  ctx.stroke();
+
+  drawText(ctx, "FINAL RESULTS", VIDEO.width / 2, y + 58, 34, {
+    color: "rgba(255,255,255,0.80)",
+    shadow: false,
+  });
+
+  ctx.font = "900 23px Inter, Arial, sans-serif";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "rgba(255,255,255,0.62)";
+  ctx.textAlign = "right";
+  ctx.fillText("Range", x + w - 250, y + 112);
+  ctx.fillText("Max height", x + w - 54, y + 112);
+
+  sorted.forEach((shot, index) => {
+    const rowY = y + 162 + index * 104;
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.beginPath();
+    ctx.moveTo(x + 42, rowY + 48);
+    ctx.lineTo(x + w - 42, rowY + 48);
+    ctx.stroke();
+
+    ctx.font = "900 34px Inter, Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillStyle = shot.color;
+    ctx.fillText(`${shot.emoji} ${shot.name}`, x + 54, rowY);
+
+    ctx.font = "900 38px Inter, Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillStyle = index === 0 ? "#ffffff" : shot.color;
+    ctx.fillText(`${formatNumber(shot.range)} m`, x + w - 250, rowY);
+
+    ctx.font = "900 34px Inter, Arial, sans-serif";
+    ctx.fillStyle = shot.color;
+    ctx.fillText(`${formatNumber(shot.maxHeight)} m`, x + w - 54, rowY);
+  });
+
+  drawText(ctx, `🏆 ${winner.name} wins the longest flight`, VIDEO.width / 2, y + h - 72, 39, {
+    color: "#ffe27a",
+    maxWidth: VIDEO.width - 130,
+  });
+
+  drawText(ctx, "Lower gravity → higher arc → longer range", VIDEO.width / 2, 1140, 39, {
+    alpha,
+    maxWidth: VIDEO.width - 110,
+  });
+
+  drawText(ctx, "Follow for daily science simulations", VIDEO.width / 2, VIDEO.height - 166, 32, {
+    alpha,
+    color: "rgba(255,255,255,0.92)",
+    maxWidth: VIDEO.width - 100,
+  });
+
+  drawText(ctx, "esbiko", VIDEO.width / 2, VIDEO.height - 100, 58, {
+    alpha,
+    color: "#ffffff",
+  });
+
+  ctx.restore();
+}
+
+function renderFrame(ctx, shots, videoTime, status) {
+  const scene = getScene(videoTime, shots);
+  const physicsTime = getPhysicsTime(videoTime);
+  const camera = getCamera(videoTime, shots);
+  const groundScreenY = 1580;
+
+  const project = (x, y) => ({
+    x: VIDEO.width / 2 + (x - camera.x) * camera.zoom,
+    y: groundScreenY - (y - camera.y) * camera.zoom,
+  });
+
+  ctx.clearRect(0, 0, VIDEO.width, VIDEO.height);
+  drawBackground(ctx);
+
+  const finalMode = scene === "wideReveal" || scene === "results";
+
+  shots.forEach((shot) => {
+    const points = finalMode ? fullTrail(shot) : sampleTrail(shot, physicsTime);
+    drawTrail(ctx, points, project, shot, finalMode);
+  });
+
+  drawWorldLabels(ctx, shots, project, finalMode);
+
+  shots.forEach((shot) => {
+    const pos = finalMode ? positionAt(shot, shot.flightTime) : positionAt(shot, physicsTime);
+    const p = project(pos.x, pos.y);
+
+    if (p.x < -90 || p.x > VIDEO.width + 90 || p.y < -90 || p.y > VIDEO.height + 90) {
+      return;
+    }
+
+    const radius = clamp(
+  18 + camera.zoom * 3.5,
+  18,
+  34
+);
+    const rotation = pos.x * 0.045;
+    drawFootball(ctx, p.x, p.y - radius, radius, rotation, finalMode ? 0.96 : 1);
+  });
+
+  if (scene === "intro") {
+    drawOpeningText(ctx, videoTime);
+  } else if (scene === "launch") {
+    drawText(ctx, "All balls start from the ground", VIDEO.width / 2, 205, 45, {
+      maxWidth: VIDEO.width - 110,
+    });
+  } else if (scene === "followLeader") {
+    drawText(ctx, "Following the longest flight…", VIDEO.width / 2, 205, 45, {
+      maxWidth: VIDEO.width - 110,
+    });
+  } else if (scene === "lastLanding") {
+    drawText(ctx, "Last ball finally lands", VIDEO.width / 2, 205, 45, {
+      maxWidth: VIDEO.width - 110,
+    });
+  } else if (scene === "wideReveal") {
+    drawText(ctx, "Now compare height and range", VIDEO.width / 2, 205, 43, {
+      maxWidth: VIDEO.width - 110,
+    });
+  }
+
+  if (scene === "results") {
+    const total = getTotalDuration(shots);
+    const alpha = smoothstep((videoTime - (total - SHOT.endingHold)) / 0.8);
+    drawResults(ctx, shots, alpha);
+  }
+
+  drawRec(ctx, status);
+}
+
+function startRecording(canvas, onStatus) {
+  if (!canvas.captureStream || typeof MediaRecorder === "undefined") {
+    onStatus("Recording not supported");
+    return null;
+  }
+
+  const stream = canvas.captureStream(VIDEO.fps);
+  const chunks = [];
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 10_000_000,
+  });
+
+  recorder.ondataavailable = (event) => {
+    if (event.data?.size > 0) chunks.push(event.data);
+  };
+
+  recorder.onstop = () => {
+    onStatus("Saving video…");
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = VIDEO.filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    onStatus("Saved");
+  };
+
+  recorder.start();
+  onStatus("Recording…");
+  return recorder;
+}
+
+export default function GravityComparisonFootballVideo() {
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+  const recorderRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const [status, setStatus] = useState("Preparing auto record…");
+  const statusRef = useRef(status);
+  const shots = useMemo(() => createShots(), []);
+
+  function setRecordingStatus(nextStatus) {
+    statusRef.current = nextStatus;
+    setStatus(nextStatus);
+  }
+
+  function restart() {
+    if (recorderRef.current?.state === "recording") {
+      recorderRef.current.stop();
+    }
+
+    startTimeRef.current = performance.now();
+    setRecordingStatus("Preparing auto record…");
+
+    window.setTimeout(() => {
+      const canvas = canvasRef.current;
+      if (canvas && recorderRef.current?.state !== "recording") {
+        recorderRef.current = startRecording(canvas, setRecordingStatus);
+      }
+    }, 120);
+  }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = VIDEO.width * dpr;
+    canvas.height = VIDEO.height * dpr;
+    canvas.style.width = "min(100vw, calc(100vh * 9 / 16))";
+    canvas.style.height = "min(100vh, calc(100vw * 16 / 9))";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const totalDuration = getTotalDuration(shots);
+    startTimeRef.current = performance.now();
+    recorderRef.current = startRecording(canvas, setRecordingStatus);
+
+    function animate(now) {
+      const elapsed = (now - startTimeRef.current) / 1000;
+      const videoTime = Math.min(elapsed, totalDuration);
+      renderFrame(ctx, shots, videoTime, statusRef.current);
+
+      if (elapsed < totalDuration) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        renderFrame(ctx, shots, totalDuration, "Saving video…");
+        if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      }
+    }
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationRef.current);
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    };
+  }, [shots]);
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        display: "grid",
+        placeItems: "center",
+        background: "#020617",
+        overflow: "hidden",
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        aria-label="Football gravity comparison 9:16 auto recording video"
+        style={{
+          display: "block",
+          background: "#020617",
+          boxShadow: "0 0 44px rgba(0,0,0,0.5)",
+        }}
+      />
+
+      <button
+        type="button"
+        onClick={restart}
+        style={{
+          position: "fixed",
+          right: 18,
+          top: 18,
+          zIndex: 5,
+          border: "1px solid rgba(255,255,255,0.24)",
+          borderRadius: 999,
+          padding: "9px 15px",
+          background: "rgba(2,8,18,0.62)",
+          color: "#fff",
+          fontWeight: 900,
+          cursor: "pointer",
+          fontSize: 13,
+        }}
+      >
+        Replay + Record
+      </button>
+
+      <span
+        style={{
+          position: "fixed",
+          left: 16,
+          bottom: 12,
+          color: "rgba(255,255,255,0.58)",
+          fontSize: 12,
+          fontWeight: 800,
+          pointerEvents: "none",
+        }}
+      >
+        {status}
+      </span>
+    </div>
+  );
+}
+
+
+```
+
+## File: GravityComparisonScene.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonVideoScene.jsx
+// 9:16 football-style cinematic recorder for the existing Gravity Comparison Lab.
+// This is canvas-based because automatic video recording needs canvas.captureStream().
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { GRAVITY_WORLDS } from "./constants";
+
+const VIDEO = {
+  width: 1080,
+  height: 1920,
+  fps: 60,
+  filename: "esbiko-football-gravity-comparison.webm",
+};
+
+const SHOT = {
+  speedKmh: 130,
+  angleDeg: 35,
+  introSeconds: 2,
+  endHoldSeconds: 5.5,
+};
+
+const WORLD_IDS = ["jupiter", "earth", "mars", "moon"];
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * clamp(t, 0, 1);
+}
+
+function easeInOut(t) {
+  const x = clamp(t, 0, 1);
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+function easeOut(t) {
+  return 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+}
+
+function kmhToMs(kmh) {
+  return kmh / 3.6;
+}
+
+function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function createFootballWorlds() {
+  const base = GRAVITY_WORLDS.filter((world) => WORLD_IDS.includes(world.id));
+
+  const glowById = {
+    jupiter: "rgba(255,152,0,0.78)",
+    earth: "rgba(76,175,80,0.78)",
+    mars: "rgba(255,87,34,0.78)",
+    moon: "rgba(255,255,255,0.82)",
+  };
+
+  const emojiById = {
+    jupiter: "🟠",
+    earth: "🌍",
+    mars: "🔴",
+    moon: "🌙",
+  };
+
+  return WORLD_IDS.map((id) => {
+    const world = base.find((item) => item.id === id);
+    return {
+      ...world,
+      emoji: emojiById[id],
+      glow: glowById[id],
+    };
+  });
+}
+
+function createShot(world) {
+  const speed = kmhToMs(SHOT.speedKmh);
+  const angle = degToRad(SHOT.angleDeg);
+  const vx = speed * Math.cos(angle);
+  const vy = speed * Math.sin(angle);
+  const flightTime = (2 * vy) / world.gravity;
+  const range = vx * flightTime;
+  const maxHeight = (vy * vy) / (2 * world.gravity);
+
+  return { id: world.id, world, vx, vy, flightTime, range, maxHeight };
+}
+
+function shotPositionAt(shot, t) {
+  const time = clamp(t, 0, shot.flightTime);
+  return {
+    x: shot.vx * time,
+    y: Math.max(0, shot.vy * time - 0.5 * shot.world.gravity * time * time),
+  };
+}
+
+function buildTrail(shot, t, samples = 120) {
+  const end = clamp(t, 0, shot.flightTime);
+  if (end <= 0) return [{ x: 0, y: 0 }];
+
+  return Array.from({ length: samples }, (_, index) =>
+    shotPositionAt(shot, (end * index) / (samples - 1)),
+  );
+}
+
+function drawText(ctx, text, x, y, size, options = {}) {
+  const {
+    color = "#fff",
+    align = "center",
+    weight = 900,
+    alpha = 1,
+    shadow = true,
+    maxWidth,
+  } = options;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+
+  if (shadow) {
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 5;
+  }
+
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y, maxWidth);
+  ctx.restore();
+}
+
+function drawFootball(ctx, x, y, radius, rotation = 0, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+
+  ctx.shadowColor = "rgba(0,0,0,0.32)";
+  ctx.shadowBlur = radius * 0.5;
+  ctx.shadowOffsetY = radius * 0.14;
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  const shade = ctx.createRadialGradient(
+    -radius * 0.35,
+    -radius * 0.38,
+    radius * 0.1,
+    0,
+    0,
+    radius,
+  );
+  shade.addColorStop(0, "rgba(255,255,255,0.98)");
+  shade.addColorStop(0.5, "rgba(255,255,255,0.08)");
+  shade.addColorStop(1, "rgba(0,0,0,0.28)");
+  ctx.fillStyle = shade;
+  ctx.fill();
+
+  const black = "#111827";
+  ctx.fillStyle = black;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    const px = Math.cos(a) * radius * 0.33;
+    const py = Math.sin(a) * radius * 0.33;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = black;
+  ctx.lineWidth = radius * 0.045;
+  ctx.lineCap = "round";
+
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * radius * 0.35, Math.sin(a) * radius * 0.35);
+    ctx.lineTo(Math.cos(a) * radius * 0.82, Math.sin(a) * radius * 0.82);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(
+      Math.cos(a) * radius * 0.84,
+      Math.sin(a) * radius * 0.84,
+      radius * 0.13,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(0,0,0,0.42)";
+  ctx.lineWidth = radius * 0.035;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawFootballField(ctx, w, h) {
+  const sky = ctx.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#3ab9f4");
+  sky.addColorStop(0.42, "#8fdcf7");
+  sky.addColorStop(0.66, "#dff7ff");
+  sky.addColorStop(1, "#f8fdff");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+
+  const sunX = w * 0.8;
+  const sunY = h * 0.27;
+  const sun = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 260);
+  sun.addColorStop(0, "rgba(255,249,192,0.95)");
+  sun.addColorStop(0.22, "rgba(255,219,116,0.35)");
+  sun.addColorStop(1, "rgba(255,219,116,0)");
+  ctx.fillStyle = sun;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 260, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  for (let i = 0; i < 6; i += 1) {
+    const x = 80 + i * 180;
+    const y = 190 + Math.sin(i * 1.9) * 50;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 78, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + 55, y - 10, 48, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - 48, y + 8, 52, 17, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  const groundY = h * 0.72;
+
+  const grass = ctx.createLinearGradient(0, groundY, 0, h);
+  grass.addColorStop(0, "#2f9f46");
+  grass.addColorStop(1, "#126226");
+  ctx.fillStyle = grass;
+  ctx.fillRect(0, groundY, w, h - groundY);
+
+  const stripeWidth = 92;
+  for (let x = -stripeWidth; x < w + stripeWidth; x += stripeWidth) {
+    const stripeIndex = Math.floor(x / stripeWidth);
+    ctx.fillStyle =
+      stripeIndex % 2 === 0 ? "rgba(255,255,255,0.045)" : "rgba(0,0,0,0.055)";
+    ctx.fillRect(x, groundY, stripeWidth, h - groundY);
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY + 160);
+  ctx.lineTo(w, groundY + 160);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(w / 2, groundY + 290, 150, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeRect(w / 2 - 170, groundY + 112, 340, 170);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
+  ctx.lineWidth = 8;
+  ctx.strokeRect(w / 2 - 92, groundY + 35, 184, 105);
+  ctx.lineWidth = 3;
+  ctx.strokeRect(w / 2 - 78, groundY + 48, 156, 92);
+}
+
+function getSceneInfo(videoTime, moonLandingTime) {
+  if (videoTime < 2) return "intro";
+  if (videoTime < 4.2) return "launch";
+  if (videoTime < moonLandingTime - 4) return "followMoon";
+  if (videoTime < moonLandingTime + 1.1) return "moonLanding";
+  if (videoTime < moonLandingTime + 4.6) return "wideReveal";
+  return "results";
+}
+
+function getCamera({ shots, physicsTime, videoTime, scene, moonLandingTime }) {
+  const moon = shots.find((shot) => shot.id === "moon");
+  const moonPos = shotPositionAt(moon, physicsTime);
+  const maxRange = Math.max(...shots.map((shot) => shot.range));
+  const maxHeight = Math.max(...shots.map((shot) => shot.maxHeight));
+
+  if (scene === "intro") {
+    const p = easeInOut(videoTime / 2);
+    return { centerX: lerp(8, 20, p), centerY: 0, zoom: lerp(7.5, 5.8, p) };
+  }
+
+  if (scene === "launch") {
+    const p = easeInOut((videoTime - 2) / 2.2);
+    return {
+      centerX: lerp(20, moonPos.x * 0.34, p),
+      centerY: lerp(0, moonPos.y * 0.2, p),
+      zoom: lerp(5.8, 2.7, p),
+    };
+  }
+
+  if (scene === "followMoon") {
+    const visibleNeed = Math.max(220, moonPos.y + 180);
+    const targetZoom = clamp(880 / visibleNeed, 1.15, 2.7);
+    return { centerX: moonPos.x * 0.72, centerY: moonPos.y * 0.42, zoom: targetZoom };
+  }
+
+  if (scene === "moonLanding") {
+    return { centerX: moonPos.x * 0.78, centerY: moonPos.y * 0.32, zoom: 1.12 };
+  }
+
+  if (scene === "wideReveal" || scene === "results") {
+    const p = scene === "wideReveal"
+      ? easeInOut((videoTime - moonLandingTime - 1.1) / 3.5)
+      : 1;
+
+    const finalZoomX = (VIDEO.width * 0.78) / Math.max(maxRange, 1);
+    const finalZoomY = (VIDEO.height * 0.48) / Math.max(maxHeight, 1);
+    const finalZoom = clamp(Math.min(finalZoomX, finalZoomY), 0.52, 0.95);
+
+    return {
+      centerX: lerp(moonPos.x * 0.78, maxRange * 0.48, p),
+      centerY: lerp(moonPos.y * 0.32, maxHeight * 0.42, p),
+      zoom: lerp(1.12, finalZoom, p),
+    };
+  }
+
+  return { centerX: 0, centerY: 0, zoom: 1 };
+}
+
+function drawTrail(ctx, shot, project, physicsTime, scene) {
+  const isFinal = scene === "wideReveal" || scene === "results";
+  const points = buildTrail(shot, isFinal ? shot.flightTime : physicsTime, isFinal ? 180 : 110);
+  if (points.length < 2) return;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.setLineDash([10, 12]);
+
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = project(point.x, point.y);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+
+  ctx.strokeStyle = shot.world.glow;
+  ctx.lineWidth = isFinal ? 2.4 : 2;
+  ctx.shadowColor = shot.world.glow;
+  ctx.shadowBlur = isFinal ? 8 : 6;
+  ctx.globalAlpha = shot.id === "moon" ? 0.92 : 0.78;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWorldLabel(ctx, shot, x, y, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const width = 150;
+  const height = 42;
+  const px = clamp(x - width / 2, 24, VIDEO.width - width - 24);
+  const py = clamp(y - 78, 170, VIDEO.height - 240);
+
+  ctx.beginPath();
+  ctx.roundRect(px, py, width, height, 21);
+  ctx.fillStyle = "rgba(8, 20, 36, 0.62)";
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 1.5;
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = "900 22px Inter, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`${shot.world.emoji} ${shot.world.name}`, px + width / 2, py + height / 2 + 1);
+  ctx.restore();
+}
+
+function drawResults(ctx, shots, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const sorted = [...shots].sort((a, b) => b.range - a.range);
+  const x = 96;
+  const y = 1245;
+  const w = VIDEO.width - 192;
+  const h = 440;
+
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 32);
+  ctx.fillStyle = "rgba(4, 15, 28, 0.72)";
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 2;
+  ctx.fill();
+  ctx.stroke();
+
+  drawText(ctx, "FINAL RANGE", VIDEO.width / 2, y + 55, 28, {
+    color: "rgba(255,255,255,0.78)",
+    shadow: false,
+  });
+
+  sorted.forEach((shot, index) => {
+    const rowY = y + 115 + index * 68;
+    ctx.font = "900 29px Inter, Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = shot.world.color;
+    ctx.fillText(`${shot.world.emoji} ${shot.world.name}`, x + 46, rowY);
+
+    ctx.font = "900 40px Inter, Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillStyle = index === 0 ? "#fff" : shot.world.color;
+    ctx.fillText(`${Math.round(shot.range)} m`, x + w - 46, rowY);
+
+    if (index < sorted.length - 1) {
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.beginPath();
+      ctx.moveTo(x + 42, rowY + 34);
+      ctx.lineTo(x + w - 42, rowY + 34);
+      ctx.stroke();
+    }
+  });
+
+  drawText(ctx, "Same kick. Different gravity.", VIDEO.width / 2, y + h - 50, 30, {
+    color: "#ffe27a",
+  });
+
+  ctx.restore();
+}
+
+function drawRecordingOverlay(ctx, status) {
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.roundRect(32, 32, 132, 44, 22);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff3333";
+  ctx.beginPath();
+  ctx.arc(60, 54, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = "900 21px Inter, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff";
+  ctx.fillText("REC", 80, 54);
+
+  ctx.textAlign = "right";
+  ctx.fillText("9:16", VIDEO.width - 36, 54);
+
+  if (status && !status.toLowerCase().includes("recording")) {
+    ctx.textAlign = "center";
+    ctx.fillText(status, VIDEO.width / 2, 54);
+  }
+  ctx.restore();
+}
+
+function renderFrame(ctx, shots, videoTime, status) {
+  const moon = shots.find((shot) => shot.id === "moon");
+  const moonLandingTime = moon.flightTime;
+  const duration = moonLandingTime + SHOT.endHoldSeconds;
+  const scene = getSceneInfo(videoTime, moonLandingTime);
+
+  const physicsTime =
+    scene === "results" || scene === "wideReveal"
+      ? moonLandingTime
+      : clamp(videoTime - SHOT.introSeconds, 0, moonLandingTime);
+
+  const camera = getCamera({ shots, physicsTime, videoTime, scene, moonLandingTime });
+  const groundScreenY = VIDEO.height * 0.72;
+  const launchScreenX = VIDEO.width * 0.24;
+
+  const project = (x, y) => ({
+    x: launchScreenX + (x - camera.centerX) * camera.zoom,
+    y: groundScreenY - (y - camera.centerY) * camera.zoom,
+  });
+
+  drawFootballField(ctx, VIDEO.width, VIDEO.height);
+
+  if (scene === "intro") {
+    const p = easeOut(videoTime / 1.4);
+    drawText(ctx, "Same Shot", VIDEO.width / 2, 180, 74, {
+      alpha: p,
+      maxWidth: VIDEO.width - 100,
+    });
+    drawText(ctx, "Different Gravity", VIDEO.width / 2, 248, 42, {
+      color: "#fff3a6",
+      alpha: p,
+      maxWidth: VIDEO.width - 100,
+    });
+
+    const ball = project(0, 0);
+    drawFootball(ctx, ball.x, ball.y - 34, 54, videoTime * 0.45, p);
+    drawText(ctx, "⚽ 130 km/h   •   35°", VIDEO.width / 2, VIDEO.height - 210, 31, {
+      color: "rgba(255,255,255,0.92)",
+      alpha: p,
+    });
+
+    drawRecordingOverlay(ctx, status);
+    return duration;
+  }
+
+  shots.forEach((shot) => {
+    drawTrail(ctx, shot, project, physicsTime, scene);
+  });
+
+  shots.forEach((shot) => {
+    const finalMode = scene === "wideReveal" || scene === "results";
+    const pos = shotPositionAt(shot, finalMode ? shot.flightTime : physicsTime);
+    const p = project(pos.x, pos.y);
+    if (p.x < -80 || p.x > VIDEO.width + 80 || p.y < -80 || p.y > VIDEO.height + 80) return;
+
+    const isMoon = shot.id === "moon";
+    const radius = isMoon && scene !== "results" ? 20 : 17;
+    const rotation = pos.x * 0.018;
+
+    drawFootball(ctx, p.x, p.y, radius, rotation, scene === "results" ? 0.85 : 1);
+    if (finalMode || isMoon) drawWorldLabel(ctx, shot, p.x, p.y, finalMode ? 0.88 : 0.95);
+  });
+
+  if (scene === "launch") {
+    const p = easeOut((videoTime - 2) / 1.4);
+    drawText(ctx, "One kick. Four worlds.", VIDEO.width / 2, 165, 45, { alpha: p });
+  }
+
+  if (scene === "followMoon") {
+    drawText(ctx, "The Moon keeps flying…", VIDEO.width / 2, 165, 42, { alpha: 0.95 });
+  }
+
+  if (scene === "moonLanding") {
+    drawText(ctx, "Wait for the landing…", VIDEO.width / 2, 165, 40, { alpha: 0.92 });
+  }
+
+  if (scene === "wideReveal") {
+    const p = easeOut((videoTime - moonLandingTime - 1.1) / 1.5);
+    drawText(ctx, "Now compare the full paths", VIDEO.width / 2, 165, 39, { alpha: p });
+  }
+
+  if (scene === "results") {
+    const p = easeOut((videoTime - moonLandingTime - 4.6) / 1.2);
+    drawResults(ctx, shots, p);
+  }
+
+  drawRecordingOverlay(ctx, status);
+  return duration;
+}
+
+function startRecording(canvas, onStatus) {
+  if (!canvas.captureStream || !window.MediaRecorder) {
+    onStatus("Recording not supported");
+    return null;
+  }
+
+  const stream = canvas.captureStream(VIDEO.fps);
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+
+  const chunks = [];
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 12_000_000,
+  });
+
+  recorder.ondataavailable = (event) => {
+    if (event.data?.size > 0) chunks.push(event.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = VIDEO.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    onStatus("Saved");
+  };
+
+  recorder.start();
+  onStatus("Recording…");
+  return recorder;
+}
+
+export default function GravityComparisonVideoScene({ onBack } = {}) {
+  const canvasRef = useRef(null);
+  const recorderRef = useRef(null);
+  const animationRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const statusRef = useRef("Preparing…");
+
+  const [status, setStatus] = useState("Preparing…");
+  const [replayKey, setReplayKey] = useState(0);
+
+  const shots = useMemo(() => createFootballWorlds().map((world) => createShot(world)), []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const ctx = canvas.getContext("2d", { alpha: false });
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = VIDEO.width * dpr;
+    canvas.height = VIDEO.height * dpr;
+    canvas.style.width = "min(100vw, calc(100vh * 9 / 16))";
+    canvas.style.height = "min(100vh, calc(100vw * 16 / 9))";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const setRecordingStatus = (nextStatus) => {
+      statusRef.current = nextStatus;
+      setStatus(nextStatus);
+    };
+
+    startTimeRef.current = performance.now();
+    recorderRef.current = startRecording(canvas, setRecordingStatus);
+
+    function animate(now) {
+      const elapsed = (now - startTimeRef.current) / 1000;
+      const duration = renderFrame(ctx, shots, elapsed, statusRef.current);
+
+      if (elapsed < duration) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        renderFrame(ctx, shots, duration, "Saving…");
+        if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      }
+    }
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      cancelAnimationFrame(animationRef.current);
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    };
+  }, [replayKey, shots]);
+
+  function replay() {
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    statusRef.current = "Preparing…";
+    setStatus("Preparing…");
+    setReplayKey((key) => key + 1);
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        background: "#020611",
+        display: "grid",
+        placeItems: "center",
+        overflow: "hidden",
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        aria-label="Football gravity comparison auto recording video canvas"
+        style={{
+          display: "block",
+          background: "#020611",
+          boxShadow: "0 0 44px rgba(0,0,0,0.55)",
+        }}
+      />
+
+      {onBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          style={{
+            position: "fixed",
+            left: 18,
+            top: 18,
+            zIndex: 5,
+            border: "1px solid rgba(255,255,255,0.26)",
+            borderRadius: 999,
+            padding: "9px 15px",
+            background: "rgba(2, 8, 18, 0.58)",
+            color: "#fff",
+            fontWeight: 900,
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          ← Back to Lab
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={replay}
+        style={{
+          position: "fixed",
+          right: 18,
+          top: 18,
+          zIndex: 5,
+          border: "1px solid rgba(255,255,255,0.26)",
+          borderRadius: 999,
+          padding: "9px 15px",
+          background: "rgba(2, 8, 18, 0.58)",
+          color: "#fff",
+          fontWeight: 900,
+          cursor: "pointer",
+          fontSize: 13,
+        }}
+      >
+        Replay + Record
+      </button>
+
+      <span
+        style={{
+          position: "fixed",
+          left: 16,
+          bottom: 12,
+          color: "rgba(255,255,255,0.72)",
+          fontSize: 13,
+          fontWeight: 800,
+          pointerEvents: "none",
+          textShadow: "0 2px 10px rgba(0,0,0,0.75)",
+        }}
+      >
+        {status} · file: {VIDEO.filename}
+      </span>
+    </div>
+  );
+}
+
+
+
+```
+
+## File: GravityComparisonSimulation.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonSimulation.jsx
+// Main layout for the Gravity Comparison simulation.
+// Includes a built-in 9:16 Shorts recorder view so the video scene is reachable from the lab page.
+
+import { useState } from "react";
+import { Box, Button } from "@mui/material";
+
+import GravityComparisonControlPanel from "./GravityComparisonControlPanel";
+import GravityComparisonScene from "./GravityComparisonScene";
+import GravityComparisonVideoScene from "./GravityComparisonVideoScene";
+import { useGravityComparison } from "./hooks/useGravityComparison";
+
+export default function GravityComparisonSimulation() {
+  const simulation = useGravityComparison();
+  const [showVideoRecorder, setShowVideoRecorder] = useState(false);
+
+  if (showVideoRecorder) {
+    return <GravityComparisonVideoScene onBack={() => setShowVideoRecorder(false)} />;
+  }
+
+  return (
+    <Box
+      sx={{
+        width: "100%",
+        height: "100dvh",
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", lg: "1fr 390px" },
+        background:
+          "radial-gradient(circle at 50% 30%, #172554 0%, #020617 45%, #02030a 100%)",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      <Box
+        sx={{
+          position: "absolute",
+          top: 18,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 20,
+          pointerEvents: "auto",
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => setShowVideoRecorder(true)}
+          sx={{
+            px: 2.4,
+            py: 1.05,
+            borderRadius: 999,
+            fontWeight: 950,
+            textTransform: "none",
+            background: "linear-gradient(135deg, #ef4444, #7c3aed, #2563eb)",
+            boxShadow: "0 14px 36px rgba(0,0,0,0.38)",
+            border: "1px solid rgba(255,255,255,0.22)",
+          }}
+        >
+          🎬 Open 9:16 Video Recorder
+        </Button>
+      </Box>
+
+      <GravityComparisonScene {...simulation} />
+
+      <GravityComparisonControlPanel {...simulation} />
+    </Box>
+  );
+}
+
+```
+
+## File: GravityComparisonVideoPage.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonVideoPage.jsx
+// Dev-only wrapper page for the Gravity Comparison vertical video scene.
+
+import GravityComparisonVideoScene from "./GravityComparisonVideoScene";
+
+export default function GravityComparisonVideoPage() {
+  return <GravityComparisonVideoScene />;
+}
+
+
+```
+
+## File: GravityComparisonVideoScene.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/GravityComparisonVideoScene.jsx
+// 9:16 football-style cinematic recorder for the existing Gravity Comparison Lab.
+// This is canvas-based because automatic video recording needs canvas.captureStream().
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { GRAVITY_WORLDS } from "./constants";
+
+const VIDEO = {
+  width: 1080,
+  height: 1920,
+  fps: 60,
+  filename: "esbiko-football-gravity-comparison.webm",
+};
+
+const SHOT = {
+  speedKmh: 130,
+  angleDeg: 35,
+  introSeconds: 2.4,
+  endHoldSeconds: 6.2,
+};
+
+const WORLD_IDS = ["jupiter", "earth", "mars", "moon"];
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * clamp(t, 0, 1);
+}
+
+function easeInOut(t) {
+  const x = clamp(t, 0, 1);
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+function easeOut(t) {
+  return 1 - Math.pow(1 - clamp(t, 0, 1), 3);
+}
+
+function kmhToMs(kmh) {
+  return kmh / 3.6;
+}
+
+function degToRad(deg) {
+  return (deg * Math.PI) / 180;
+}
+
+function createFootballWorlds() {
+  const base = GRAVITY_WORLDS.filter((world) => WORLD_IDS.includes(world.id));
+
+  const glowById = {
+    jupiter: "rgba(255,152,0,0.78)",
+    earth: "rgba(76,175,80,0.78)",
+    mars: "rgba(255,87,34,0.78)",
+    moon: "rgba(255,255,255,0.82)",
+  };
+
+  const emojiById = {
+    jupiter: "🟠",
+    earth: "🌍",
+    mars: "🔴",
+    moon: "🌙",
+  };
+
+  return WORLD_IDS.map((id) => {
+    const world = base.find((item) => item.id === id);
+    return {
+      ...world,
+      emoji: emojiById[id],
+      glow: glowById[id],
+    };
+  });
+}
+
+function createShot(world) {
+  const speed = kmhToMs(SHOT.speedKmh);
+  const angle = degToRad(SHOT.angleDeg);
+  const vx = speed * Math.cos(angle);
+  const vy = speed * Math.sin(angle);
+  const flightTime = (2 * vy) / world.gravity;
+  const range = vx * flightTime;
+  const maxHeight = (vy * vy) / (2 * world.gravity);
+
+  return { id: world.id, world, vx, vy, flightTime, range, maxHeight };
+}
+
+function shotPositionAt(shot, t) {
+  const time = clamp(t, 0, shot.flightTime);
+  return {
+    x: shot.vx * time,
+    y: Math.max(0, shot.vy * time - 0.5 * shot.world.gravity * time * time),
+  };
+}
+
+function buildTrail(shot, t, samples = 120) {
+  const end = clamp(t, 0, shot.flightTime);
+  if (end <= 0) return [{ x: 0, y: 0 }];
+
+  return Array.from({ length: samples }, (_, index) =>
+    shotPositionAt(shot, (end * index) / (samples - 1)),
+  );
+}
+
+function drawText(ctx, text, x, y, size, options = {}) {
+  const {
+    color = "#fff",
+    align = "center",
+    weight = 900,
+    alpha = 1,
+    shadow = true,
+    maxWidth,
+  } = options;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.textAlign = align;
+  ctx.textBaseline = "middle";
+  ctx.font = `${weight} ${size}px Inter, Arial, sans-serif`;
+
+  if (shadow) {
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 5;
+  }
+
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y, maxWidth);
+  ctx.restore();
+}
+
+function drawFootball(ctx, x, y, radius, rotation = 0, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+
+  ctx.shadowColor = "rgba(0,0,0,0.32)";
+  ctx.shadowBlur = radius * 0.5;
+  ctx.shadowOffsetY = radius * 0.14;
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+
+  const shade = ctx.createRadialGradient(
+    -radius * 0.35,
+    -radius * 0.38,
+    radius * 0.1,
+    0,
+    0,
+    radius,
+  );
+  shade.addColorStop(0, "rgba(255,255,255,0.98)");
+  shade.addColorStop(0.5, "rgba(255,255,255,0.08)");
+  shade.addColorStop(1, "rgba(0,0,0,0.28)");
+  ctx.fillStyle = shade;
+  ctx.fill();
+
+  const black = "#111827";
+  ctx.fillStyle = black;
+  ctx.beginPath();
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    const px = Math.cos(a) * radius * 0.33;
+    const py = Math.sin(a) * radius * 0.33;
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.strokeStyle = black;
+  ctx.lineWidth = radius * 0.045;
+  ctx.lineCap = "round";
+
+  for (let i = 0; i < 5; i += 1) {
+    const a = -Math.PI / 2 + (i * Math.PI * 2) / 5;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * radius * 0.35, Math.sin(a) * radius * 0.35);
+    ctx.lineTo(Math.cos(a) * radius * 0.82, Math.sin(a) * radius * 0.82);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(
+      Math.cos(a) * radius * 0.84,
+      Math.sin(a) * radius * 0.84,
+      radius * 0.13,
+      0,
+      Math.PI * 2,
+    );
+    ctx.fill();
+  }
+
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(0,0,0,0.42)";
+  ctx.lineWidth = radius * 0.035;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawFootballField(ctx, w, h) {
+  const sky = ctx.createLinearGradient(0, 0, 0, h);
+  sky.addColorStop(0, "#3ab9f4");
+  sky.addColorStop(0.42, "#8fdcf7");
+  sky.addColorStop(0.66, "#dff7ff");
+  sky.addColorStop(1, "#f8fdff");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, w, h);
+
+  const sunX = w * 0.8;
+  const sunY = h * 0.27;
+  const sun = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 260);
+  sun.addColorStop(0, "rgba(255,249,192,0.95)");
+  sun.addColorStop(0.22, "rgba(255,219,116,0.35)");
+  sun.addColorStop(1, "rgba(255,219,116,0)");
+  ctx.fillStyle = sun;
+  ctx.beginPath();
+  ctx.arc(sunX, sunY, 260, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.save();
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  for (let i = 0; i < 6; i += 1) {
+    const x = 80 + i * 180;
+    const y = 190 + Math.sin(i * 1.9) * 50;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 78, 24, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + 55, y - 10, 48, 18, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - 48, y + 8, 52, 17, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  const groundY = h * 0.72;
+
+  const grass = ctx.createLinearGradient(0, groundY, 0, h);
+  grass.addColorStop(0, "#2f9f46");
+  grass.addColorStop(1, "#126226");
+  ctx.fillStyle = grass;
+  ctx.fillRect(0, groundY, w, h - groundY);
+
+  const stripeWidth = 92;
+  for (let x = -stripeWidth; x < w + stripeWidth; x += stripeWidth) {
+    const stripeIndex = Math.floor(x / stripeWidth);
+    ctx.fillStyle =
+      stripeIndex % 2 === 0 ? "rgba(255,255,255,0.045)" : "rgba(0,0,0,0.055)";
+    ctx.fillRect(x, groundY, stripeWidth, h - groundY);
+  }
+
+  ctx.strokeStyle = "rgba(255,255,255,0.72)";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(0, groundY + 160);
+  ctx.lineTo(w, groundY + 160);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(w / 2, groundY + 290, 150, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.strokeRect(w / 2 - 170, groundY + 112, 340, 170);
+
+  ctx.strokeStyle = "rgba(255,255,255,0.55)";
+  ctx.lineWidth = 8;
+  ctx.strokeRect(w / 2 - 92, groundY + 35, 184, 105);
+  ctx.lineWidth = 3;
+  ctx.strokeRect(w / 2 - 78, groundY + 48, 156, 92);
+}
+
+function getSceneInfo(videoTime, moonLandingTime) {
+  // Keep the first seconds wide. The viewer must immediately understand
+  // that four worlds are being compared, not only one Moon shot.
+  if (videoTime < 2.4) return "intro";
+  if (videoTime < 5.2) return "wideLaunch";
+  if (videoTime < moonLandingTime - 3.2) return "followMoon";
+  if (videoTime < moonLandingTime + 1.2) return "moonLanding";
+  if (videoTime < moonLandingTime + 5.1) return "wideReveal";
+  return "results";
+}
+
+function getCamera({ shots, physicsTime, videoTime, scene, moonLandingTime }) {
+  const moon = shots.find((shot) => shot.id === "moon");
+  const moonPos = shotPositionAt(moon, physicsTime);
+  const maxRange = Math.max(...shots.map((shot) => shot.range));
+  const maxHeight = Math.max(...shots.map((shot) => shot.maxHeight));
+
+  const finalZoomX = (VIDEO.width * 0.82) / Math.max(maxRange, 1);
+  const finalZoomY = (VIDEO.height * 0.42) / Math.max(maxHeight, 1);
+  const finalZoom = clamp(Math.min(finalZoomX, finalZoomY), 0.38, 0.76);
+  const finalCamera = {
+    centerX: maxRange * 0.48,
+    centerY: maxHeight * 0.42,
+    zoom: finalZoom,
+  };
+
+  if (scene === "intro") {
+    const p = easeInOut(videoTime / 2.4);
+    return {
+      centerX: lerp(150, 260, p),
+      centerY: lerp(85, 140, p),
+      zoom: lerp(1.55, 1.25, p),
+    };
+  }
+
+  if (scene === "wideLaunch") {
+    const p = easeInOut((videoTime - 2.4) / 2.8);
+    return {
+      centerX: lerp(250, 360, p),
+      centerY: lerp(125, 165, p),
+      zoom: lerp(1.25, 1.02, p),
+    };
+  }
+
+  if (scene === "followMoon") {
+    const p = easeInOut((videoTime - 5.2) / 4.0);
+    const followZoom = clamp(640 / (moonPos.y + 360), 0.72, 1.32);
+    return {
+      centerX: lerp(360, moonPos.x * 0.68, p),
+      centerY: lerp(165, moonPos.y * 0.50, p),
+      zoom: lerp(1.02, followZoom, p),
+    };
+  }
+
+  if (scene === "moonLanding") {
+    return {
+      centerX: moonPos.x * 0.74,
+      centerY: 80,
+      zoom: 0.82,
+    };
+  }
+
+  if (scene === "wideReveal" || scene === "results") {
+    const p = scene === "wideReveal"
+      ? easeInOut((videoTime - moonLandingTime - 1.2) / 3.9)
+      : 1;
+
+    return {
+      centerX: lerp(moonPos.x * 0.74, finalCamera.centerX, p),
+      centerY: lerp(80, finalCamera.centerY, p),
+      zoom: lerp(0.82, finalCamera.zoom, p),
+    };
+  }
+
+  return finalCamera;
+}
+
+function drawTrail(ctx, shot, project, physicsTime, scene) {
+  const showFullPreview = scene === "intro" || scene === "wideLaunch";
+  const isFinal = scene === "wideReveal" || scene === "results";
+  const trailTime = isFinal || showFullPreview ? shot.flightTime : physicsTime;
+  const points = buildTrail(shot, trailTime, isFinal || showFullPreview ? 180 : 110);
+  if (points.length < 2) return;
+
+  ctx.save();
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.setLineDash([10, 12]);
+
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = project(point.x, point.y);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+
+  ctx.strokeStyle = shot.world.glow;
+  ctx.lineWidth = isFinal || showFullPreview ? 2.2 : 2;
+  ctx.shadowColor = shot.world.glow;
+  ctx.shadowBlur = isFinal ? 8 : 6;
+  ctx.globalAlpha = showFullPreview ? 0.34 : shot.id === "moon" ? 0.9 : 0.7;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawWorldLabel(ctx, shot, x, y, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  const width = 150;
+  const height = 42;
+  const px = clamp(x - width / 2, 24, VIDEO.width - width - 24);
+  const py = clamp(y - 78, 170, VIDEO.height - 240);
+
+  ctx.beginPath();
+  ctx.roundRect(px, py, width, height, 21);
+  ctx.fillStyle = "rgba(8, 20, 36, 0.62)";
+  ctx.strokeStyle = "rgba(255,255,255,0.22)";
+  ctx.lineWidth = 1.5;
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = "900 22px Inter, Arial, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff";
+  ctx.fillText(`${shot.world.emoji} ${shot.world.name}`, px + width / 2, py + height / 2 + 1);
+  ctx.restore();
+}
+
+function drawResults(ctx, shots, alpha) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const sorted = [...shots].sort((a, b) => b.range - a.range);
+  const x = 96;
+  const y = 1245;
+  const w = VIDEO.width - 192;
+  const h = 440;
+
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 32);
+  ctx.fillStyle = "rgba(4, 15, 28, 0.72)";
+  ctx.strokeStyle = "rgba(255,255,255,0.18)";
+  ctx.lineWidth = 2;
+  ctx.fill();
+  ctx.stroke();
+
+  drawText(ctx, "FINAL RANGE", VIDEO.width / 2, y + 55, 28, {
+    color: "rgba(255,255,255,0.78)",
+    shadow: false,
+  });
+
+  sorted.forEach((shot, index) => {
+    const rowY = y + 115 + index * 68;
+    ctx.font = "900 29px Inter, Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = shot.world.color;
+    ctx.fillText(`${shot.world.emoji} ${shot.world.name}`, x + 46, rowY);
+
+    ctx.font = "900 40px Inter, Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillStyle = index === 0 ? "#fff" : shot.world.color;
+    ctx.fillText(`${Math.round(shot.range)} m`, x + w - 46, rowY);
+
+    if (index < sorted.length - 1) {
+      ctx.strokeStyle = "rgba(255,255,255,0.10)";
+      ctx.beginPath();
+      ctx.moveTo(x + 42, rowY + 34);
+      ctx.lineTo(x + w - 42, rowY + 34);
+      ctx.stroke();
+    }
+  });
+
+  drawText(ctx, "Same kick. Different gravity.", VIDEO.width / 2, y + h - 50, 30, {
+    color: "#ffe27a",
+  });
+
+  ctx.restore();
+}
+
+function drawRecordingOverlay(ctx, status) {
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath();
+  ctx.roundRect(32, 32, 132, 44, 22);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff3333";
+  ctx.beginPath();
+  ctx.arc(60, 54, 7, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.font = "900 21px Inter, Arial, sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#fff";
+  ctx.fillText("REC", 80, 54);
+
+  ctx.textAlign = "right";
+  ctx.fillText("9:16", VIDEO.width - 36, 54);
+
+  if (status && !status.toLowerCase().includes("recording")) {
+    ctx.textAlign = "center";
+    ctx.fillText(status, VIDEO.width / 2, 54);
+  }
+  ctx.restore();
+}
+
+function renderFrame(ctx, shots, videoTime, status) {
+  const moon = shots.find((shot) => shot.id === "moon");
+  const moonLandingTime = moon.flightTime;
+  const duration = moonLandingTime + SHOT.endHoldSeconds;
+  const scene = getSceneInfo(videoTime, moonLandingTime);
+
+  const physicsTime =
+    scene === "results" || scene === "wideReveal"
+      ? moonLandingTime
+      : clamp(videoTime - SHOT.introSeconds, 0, moonLandingTime);
+
+  const camera = getCamera({ shots, physicsTime, videoTime, scene, moonLandingTime });
+  const groundScreenY = VIDEO.height * 0.72;
+  const launchScreenX = VIDEO.width * 0.24;
+
+  const project = (x, y) => ({
+    x: launchScreenX + (x - camera.centerX) * camera.zoom,
+    y: groundScreenY - (y - camera.centerY) * camera.zoom,
+  });
+
+  drawFootballField(ctx, VIDEO.width, VIDEO.height);
+
+  shots.forEach((shot) => {
+    drawTrail(ctx, shot, project, physicsTime, scene);
+  });
+
+  if (scene === "intro") {
+    const p = easeOut(videoTime / 1.2);
+    drawText(ctx, "Same Kick", VIDEO.width / 2, 150, 72, {
+      alpha: p,
+      maxWidth: VIDEO.width - 100,
+    });
+    drawText(ctx, "Four Worlds", VIDEO.width / 2, 218, 48, {
+      color: "#fff3a6",
+      alpha: p,
+      maxWidth: VIDEO.width - 100,
+    });
+    drawText(ctx, "Same speed + angle · different gravity", VIDEO.width / 2, VIDEO.height - 210, 30, {
+      color: "rgba(255,255,255,0.94)",
+      alpha: p,
+    });
+  }
+
+  shots.forEach((shot) => {
+    const previewMode = scene === "intro" || scene === "wideLaunch";
+    const finalMode = scene === "wideReveal" || scene === "results";
+    const pos = shotPositionAt(shot, finalMode || previewMode ? Math.min(physicsTime, shot.flightTime) : physicsTime);
+    const p = project(pos.x, pos.y);
+    if (p.x < -80 || p.x > VIDEO.width + 80 || p.y < -80 || p.y > VIDEO.height + 80) return;
+
+    const isMoon = shot.id === "moon";
+    const radius = clamp(10 + camera.zoom * 2.4, 10, 14);
+    const rotation = pos.x * 0.018;
+
+    drawFootball(ctx, p.x, p.y, radius, rotation, scene === "results" ? 0.85 : 1);
+    if (finalMode || previewMode || isMoon) drawWorldLabel(ctx, shot, p.x, p.y, finalMode ? 0.88 : 0.92);
+  });
+
+  if (scene === "wideLaunch") {
+    const p = easeOut((videoTime - 2.4) / 1.4);
+    drawText(ctx, "Watch the paths split", VIDEO.width / 2, 165, 44, { alpha: p });
+  }
+
+  if (scene === "followMoon") {
+    drawText(ctx, "Moon flies farthest…", VIDEO.width / 2, 165, 42, { alpha: 0.95 });
+  }
+
+  if (scene === "moonLanding") {
+    drawText(ctx, "Wait for the landing…", VIDEO.width / 2, 165, 40, { alpha: 0.92 });
+  }
+
+  if (scene === "wideReveal") {
+    const p = easeOut((videoTime - moonLandingTime - 1.1) / 1.5);
+    drawText(ctx, "Now compare the full paths", VIDEO.width / 2, 165, 39, { alpha: p });
+  }
+
+  if (scene === "results") {
+    const p = easeOut((videoTime - moonLandingTime - 4.6) / 1.2);
+    drawResults(ctx, shots, p);
+  }
+
+  drawRecordingOverlay(ctx, status);
+  return duration;
+}
+
+function startRecording(canvas, onStatus) {
+  if (!canvas.captureStream || !window.MediaRecorder) {
+    onStatus("Recording not supported");
+    return null;
+  }
+
+  const stream = canvas.captureStream(VIDEO.fps);
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+
+  const chunks = [];
+  const recorder = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 12_000_000,
+  });
+
+  recorder.ondataavailable = (event) => {
+    if (event.data?.size > 0) chunks.push(event.data);
+  };
+
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = VIDEO.filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    onStatus("Saved");
+  };
+
+  recorder.start();
+  onStatus("Recording…");
+  return recorder;
+}
+
+export default function GravityComparisonVideoScene({ onBack } = {}) {
+  const canvasRef = useRef(null);
+  const recorderRef = useRef(null);
+  const animationRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const statusRef = useRef("Preparing…");
+
+  const [status, setStatus] = useState("Preparing…");
+  const [replayKey, setReplayKey] = useState(0);
+
+  const shots = useMemo(() => createFootballWorlds().map((world) => createShot(world)), []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return undefined;
+
+    const ctx = canvas.getContext("2d", { alpha: false });
+    canvas.width = VIDEO.width;
+    canvas.height = VIDEO.height;
+    canvas.style.width = "min(100vw, calc(100vh * 9 / 16))";
+    canvas.style.height = "min(100vh, calc(100vw * 16 / 9))";
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    const setRecordingStatus = (nextStatus) => {
+      statusRef.current = nextStatus;
+      setStatus(nextStatus);
+    };
+
+    startTimeRef.current = performance.now();
+    renderFrame(ctx, shots, 0, "Preparing…");
+
+    function animate(now) {
+      const elapsed = (now - startTimeRef.current) / 1000;
+      const duration = renderFrame(ctx, shots, elapsed, statusRef.current);
+
+      if (elapsed < duration) {
+        animationRef.current = requestAnimationFrame(animate);
+      } else {
+        renderFrame(ctx, shots, duration, "Saving…");
+        if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+      }
+    }
+
+    requestAnimationFrame(() => {
+      recorderRef.current = startRecording(canvas, setRecordingStatus);
+      startTimeRef.current = performance.now();
+      animationRef.current = requestAnimationFrame(animate);
+    });
+
+    return () => {
+      cancelAnimationFrame(animationRef.current);
+      if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    };
+  }, [replayKey, shots]);
+
+  function replay() {
+    if (recorderRef.current?.state === "recording") recorderRef.current.stop();
+    statusRef.current = "Preparing…";
+    setStatus("Preparing…");
+    setReplayKey((key) => key + 1);
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        background: "#020611",
+        display: "grid",
+        placeItems: "center",
+        overflow: "hidden",
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        aria-label="Football gravity comparison auto recording video canvas"
+        style={{
+          display: "block",
+          background: "#020611",
+          boxShadow: "0 0 44px rgba(0,0,0,0.55)",
+        }}
+      />
+
+      {onBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          style={{
+            position: "fixed",
+            left: 18,
+            top: 18,
+            zIndex: 5,
+            border: "1px solid rgba(255,255,255,0.26)",
+            borderRadius: 999,
+            padding: "9px 15px",
+            background: "rgba(2, 8, 18, 0.58)",
+            color: "#fff",
+            fontWeight: 900,
+            cursor: "pointer",
+            fontSize: 13,
+          }}
+        >
+          ← Back to Lab
+        </button>
+      ) : null}
+
+      <button
+        type="button"
+        onClick={replay}
+        style={{
+          position: "fixed",
+          right: 18,
+          top: 18,
+          zIndex: 5,
+          border: "1px solid rgba(255,255,255,0.26)",
+          borderRadius: 999,
+          padding: "9px 15px",
+          background: "rgba(2, 8, 18, 0.58)",
+          color: "#fff",
+          fontWeight: 900,
+          cursor: "pointer",
+          fontSize: 13,
+        }}
+      >
+        Replay + Record
+      </button>
+
+      <span
+        style={{
+          position: "fixed",
+          left: 16,
+          bottom: 12,
+          color: "rgba(255,255,255,0.72)",
+          fontSize: 13,
+          fontWeight: 800,
+          pointerEvents: "none",
+          textShadow: "0 2px 10px rgba(0,0,0,0.75)",
+        }}
+      >
+        {status} · file: {VIDEO.filename}
+      </span>
+    </div>
+  );
+}
+
+
+
+```
+
+## File: hooks/useGravityComparison.js
+
+```js
+// src/simulations/subjects/physics/mechanics/gravity-comparison/hooks/useGravityComparison.js
+// Custom hook that manages animation timing, physics updates, selected world, pan/zoom view state, and simulation state.
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import {
+  ANIMATION_SETTINGS,
+  DEFAULT_FREE_FALL_SETTINGS,
+  DEFAULT_PROJECTILE_SETTINGS,
+  DEFAULT_SIMULATION_MODE,
+  GRAVITY_WORLDS,
+  SIMULATION_MODES,
+} from "../constants";
+
+import { degToRad, updateTrailPoints } from "../utils/gravityMotion";
+
+function getInitialVelocity(mode, projectileSettings) {
+  if (mode !== SIMULATION_MODES.PROJECTILE) {
+    return { x: 0, y: 0 };
+  }
+
+  const angleRad = degToRad(projectileSettings.angleDeg);
+
+  return {
+    x: projectileSettings.speed * Math.cos(angleRad),
+    y: projectileSettings.speed * Math.sin(angleRad),
+  };
+}
+
+function createInitialBodies(mode = DEFAULT_SIMULATION_MODE, projectileSettings = DEFAULT_PROJECTILE_SETTINGS) {
+  const initialY =
+    mode === SIMULATION_MODES.PROJECTILE
+      ? projectileSettings.height
+      : DEFAULT_FREE_FALL_SETTINGS.height;
+
+  return GRAVITY_WORLDS.map((world) => ({
+    ...world,
+    position: { x: 0, y: initialY },
+    velocity: getInitialVelocity(mode, projectileSettings),
+    hasLanded: false,
+    trail: [{ x: 0, y: initialY }],
+    impactTime: null,
+    maxHeight: initialY,
+    impactSpeed: null,
+  }));
+}
+
+export function useGravityComparison() {
+  const [mode, setModeState] = useState(DEFAULT_SIMULATION_MODE);
+  const [isRunning, setIsRunning] = useState(false);
+  const [time, setTime] = useState(0);
+  const [selectedWorldId, setSelectedWorldId] = useState("earth");
+
+  const [viewOptions, setViewOptions] = useState({
+    showTrails: true,
+    showGrid: true,
+    showLabels: true,
+    showHeightLines: true,
+  });
+
+  const [viewTransform, setViewTransform] = useState({
+    scale: 1,
+    panX: 0,
+    panY: 0,
+  });
+
+  const [freeFallSettings, setFreeFallSettings] = useState(
+    DEFAULT_FREE_FALL_SETTINGS,
+  );
+
+  const [projectileSettings, setProjectileSettings] = useState(
+    DEFAULT_PROJECTILE_SETTINGS,
+  );
+
+  const [bodies, setBodies] = useState(() =>
+    createInitialBodies(DEFAULT_SIMULATION_MODE, DEFAULT_PROJECTILE_SETTINGS),
+  );
+
+  const animationRef = useRef(null);
+  const lastTimestampRef = useRef(null);
+
+  const enabledBodies = useMemo(
+    () => bodies.filter((body) => body.enabled),
+    [bodies],
+  );
+
+  const selectedBody = useMemo(
+    () => bodies.find((body) => body.id === selectedWorldId) || enabledBodies[0] || bodies[0],
+    [bodies, enabledBodies, selectedWorldId],
+  );
+
+  const resetSimulation = useCallback(() => {
+    setIsRunning(false);
+    setTime(0);
+    setBodies(createInitialBodies(mode, projectileSettings));
+    lastTimestampRef.current = null;
+
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+  }, [mode, projectileSettings]);
+
+  const setMode = useCallback(
+    (nextMode) => {
+      setModeState(nextMode);
+      setIsRunning(false);
+      setTime(0);
+      setBodies(createInitialBodies(nextMode, projectileSettings));
+      lastTimestampRef.current = null;
+    },
+    [projectileSettings],
+  );
+
+  const toggleWorld = useCallback(
+    (worldId) => {
+      setBodies((currentBodies) =>
+        currentBodies.map((body) =>
+          body.id === worldId
+            ? {
+                ...body,
+                enabled: !body.enabled,
+                position: {
+                  x: 0,
+                  y:
+                    mode === SIMULATION_MODES.PROJECTILE
+                      ? projectileSettings.height
+                      : freeFallSettings.height,
+                },
+                velocity: getInitialVelocity(mode, projectileSettings),
+                hasLanded: false,
+                trail: [
+                  {
+                    x: 0,
+                    y:
+                      mode === SIMULATION_MODES.PROJECTILE
+                        ? projectileSettings.height
+                        : freeFallSettings.height,
+                  },
+                ],
+                impactTime: null,
+                impactSpeed: null,
+              }
+            : body,
+        ),
+      );
+    },
+    [freeFallSettings.height, mode, projectileSettings],
+  );
+
+  const updateViewOption = useCallback((key, value) => {
+    setViewOptions((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }, []);
+
+  const resetView = useCallback(() => {
+    setViewTransform({
+      scale: 1,
+      panX: 0,
+      panY: 0,
+    });
+  }, []);
+
+  const zoomView = useCallback((direction) => {
+  setViewTransform((current) => {
+    const nextScale =
+      direction > 0
+        ? Math.min(current.scale * 1.12, 5)
+        : Math.max(current.scale / 1.12, 0.12);
+
+    return {
+      ...current,
+      scale: nextScale,
+    };
+  });
+}, []);
+
+  const panView = useCallback((deltaX, deltaY) => {
+    setViewTransform((current) => ({
+      ...current,
+      panX: current.panX + deltaX,
+      panY: current.panY + deltaY,
+    }));
+  }, []);
+
+  const updateFrame = useCallback(
+    (timestamp) => {
+      if (!lastTimestampRef.current) {
+        lastTimestampRef.current = timestamp;
+      }
+
+      const deltaSeconds =
+        ((timestamp - lastTimestampRef.current) / 1000) *
+        ANIMATION_SETTINGS.timeScale;
+
+      lastTimestampRef.current = timestamp;
+
+      setTime((currentTime) => {
+        const nextTime = currentTime + deltaSeconds;
+
+        setBodies((currentBodies) =>
+          currentBodies.map((body) => {
+            if (!body.enabled || body.hasLanded) {
+              return body;
+            }
+
+         if (deltaSeconds <= 0) {
+  return body;
+}
+
+const nextPosition = {
+  x: body.position.x + body.velocity.x * deltaSeconds,
+  y:
+    body.position.y +
+    body.velocity.y * deltaSeconds -
+    0.5 * body.gravity * deltaSeconds * deltaSeconds,
+};
+
+const nextVelocity = {
+  x: body.velocity.x,
+  y: body.velocity.y - body.gravity * deltaSeconds,
+};
+
+const isProjectileStarting =
+  mode === SIMULATION_MODES.PROJECTILE &&
+  body.position.y <= 0 &&
+  body.velocity.y > 0;
+
+const hasLanded =
+  !isProjectileStarting && nextPosition.y <= 0 && nextVelocity.y < 0;
+
+            const safePosition = {
+              x: nextPosition.x,
+              y: hasLanded ? 0 : nextPosition.y,
+            };
+
+            const speed = Math.sqrt(
+              nextVelocity.x * nextVelocity.x + nextVelocity.y * nextVelocity.y,
+            );
+
+            return {
+              ...body,
+              position: safePosition,
+              velocity: hasLanded ? { x: 0, y: 0 } : nextVelocity,
+              hasLanded,
+              impactTime: hasLanded ? nextTime : body.impactTime,
+              impactSpeed: hasLanded ? speed : body.impactSpeed,
+              maxHeight: Math.max(body.maxHeight || 0, safePosition.y),
+              trail: updateTrailPoints({
+                trail: body.trail,
+                point: safePosition,
+                maxTrailPoints: ANIMATION_SETTINGS.maxTrailPoints,
+              }),
+            };
+          }),
+        );
+
+        return nextTime;
+      });
+
+      animationRef.current = requestAnimationFrame(updateFrame);
+    },
+    [mode],
+  );
+
+  useEffect(() => {
+    if (!isRunning) {
+      lastTimestampRef.current = null;
+
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+
+      return;
+    }
+
+    animationRef.current = requestAnimationFrame(updateFrame);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isRunning, updateFrame]);
+
+  const allEnabledBodiesHaveLanded = useMemo(
+    () =>
+      enabledBodies.length > 0 &&
+      enabledBodies.every((body) => body.hasLanded),
+    [enabledBodies],
+  );
+
+  useEffect(() => {
+    if (allEnabledBodiesHaveLanded) {
+      setIsRunning(false);
+    }
+  }, [allEnabledBodiesHaveLanded]);
+
+  return {
+    mode,
+    setMode,
+
+    isRunning,
+    setIsRunning,
+
+    time,
+    bodies,
+    enabledBodies,
+    selectedBody,
+    selectedWorldId,
+    setSelectedWorldId,
+
+    freeFallSettings,
+    setFreeFallSettings,
+
+    projectileSettings,
+    setProjectileSettings,
+
+    viewOptions,
+    updateViewOption,
+
+    viewTransform,
+    resetView,
+    zoomView,
+    panView,
+
+    toggleWorld,
+    resetSimulation,
+  };
+}
+```
+
+## File: index.jsx
+
+```jsx
+// src/simulations/subjects/physics/mechanics/gravity-comparison/index.jsx
+// Entry point for the Gravity Comparison simulation.
+
+export { default } from "./GravityComparisonSimulation";
+```
+
+## File: utils/gravityMotion.js
+
+```js
+// src/simulations/subjects/physics/mechanics/gravity-comparison/utils/gravityMotion.js
+// Motion helper functions for Gravity Comparison simulation.
+
+export function degToRad(degrees) {
+  return (degrees * Math.PI) / 180;
+}
+
+export function updateTrailPoints({ trail, point, maxTrailPoints = 700 }) {
+  const lastPoint = trail[trail.length - 1];
+
+  if (lastPoint) {
+    const dx = Math.abs(lastPoint.x - point.x);
+    const dy = Math.abs(lastPoint.y - point.y);
+
+    // Keep enough points for curved paths, but avoid memory explosion.
+    if (dx < 1.2 && dy < 0.8) {
+      return trail;
+    }
+  }
+
+  const nextTrail = [...trail, point];
+
+  if (nextTrail.length <= maxTrailPoints) {
+    return nextTrail;
+  }
+
+  // Downsample instead of cutting the beginning of the path.
+  const step = Math.ceil(nextTrail.length / maxTrailPoints);
+  return nextTrail.filter((_, index) => index % step === 0);
+}
+
+```
+
