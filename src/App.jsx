@@ -1,6 +1,7 @@
 // ✅ src/App.jsx
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import FootballGravityChallenge from "@/simulations/subjects/physics/mechanics/football-gravity-challenge/FootballGravityChallenge";
 import { trackPageView } from "./services/analytics";
 import AppErrorBoundary from "@/components/system/AppErrorBoundary";
 import SimulationBoundary from "@/components/system/SimulationBoundary";
@@ -86,22 +87,22 @@ export default function App() {
           <AnalyticsTracker />
           <Routes>
             {/* ✅ Admin routes */}
-<Route
-  path="/admin/messages"
-  element={
-    <AdminRoute>
-      <AdminMessages />
-    </AdminRoute>
-  }
-/>
-<Route
-  path="/admin/users"
-  element={
-    <AdminRoute>
-      <AdminUsers />
-    </AdminRoute>
-  }
-/>
+            <Route
+              path="/admin/messages"
+              element={
+                <AdminRoute>
+                  <AdminMessages />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <AdminUsers />
+                </AdminRoute>
+              }
+            />
             <Route
               path="/admin"
               element={
@@ -116,6 +117,14 @@ export default function App() {
               element={
                 <SimulationBoundary>
                   <RunSimulation />
+                </SimulationBoundary>
+              }
+            />
+            <Route
+              path="/dev/football-gravity"
+              element={
+                <SimulationBoundary>
+                  <FootballGravityChallenge />
                 </SimulationBoundary>
               }
             />
