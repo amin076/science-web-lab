@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { lockScroll, unlockScroll } from "@/utils/scrollLock";
+import OrientationGuard from "@/components/shared/mobile/OrientationGuard";
 
 export default function SimulationLayout({ children, onBack }) {
   // Lock page scroll while simulation overlay is mounted
@@ -31,6 +32,7 @@ export default function SimulationLayout({ children, onBack }) {
         zIndex: 1300,
       }}
     >
+      <OrientationGuard />
       {/* Back button overlay */}
       <Box
         sx={{
