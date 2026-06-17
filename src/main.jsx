@@ -1,14 +1,19 @@
-// src/main.jsx
 import { createRoot } from "react-dom/client";
+import { registerSW } from "virtual:pwa-register";
+
 import "./index.css";
 import App from "./App.jsx";
-import ThemeModeProvider from "@/context/ThemeContext"; // ✅ FIX
+import ThemeModeProvider from "@/context/ThemeContext";
 import { HelmetProvider } from "react-helmet-async";
 import { initAnalytics } from "./services/analytics";
 import { initClarity } from "./services/clarity";
 
 initAnalytics();
 initClarity();
+
+registerSW({
+  immediate: true,
+});
 
 createRoot(document.getElementById("root")).render(
   <ThemeModeProvider>
@@ -18,14 +23,4 @@ createRoot(document.getElementById("root")).render(
   </ThemeModeProvider>,
 );
 
-// ✅ Register SW only in production
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then((reg) => console.log("✅ Service Worker registered:", reg.scope))
-      .catch((err) =>
-        console.error("❌ Service Worker registration failed:", err)
-      );
-  });
-}
+
