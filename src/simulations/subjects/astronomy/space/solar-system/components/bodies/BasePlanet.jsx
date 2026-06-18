@@ -7,6 +7,7 @@ import { Line } from "@react-three/drei";
 import SharedRotationAxis from "../labels/SharedRotationAxis";
 import * as THREE from "three";
 import PlanetLabel from "../labels/PlanetLabel";
+import SaturnRings from "../panels/planetMoonComparison/SaturnRings";
 
 export default function BasePlanet({
   name,
@@ -143,18 +144,8 @@ export default function BasePlanet({
                 )}
 
                 {/* Rings */}
-                {data.rings && (
-                  <mesh rotation={[Math.PI / 2, 0, 0]} receiveShadow castShadow>
-                    <ringGeometry
-                      args={[data.rings.inner, data.rings.outer, 128]}
-                    />
-                    <meshStandardMaterial
-                      color={data.rings.color}
-                      side={THREE.DoubleSide}
-                      transparent
-                      opacity={0.8}
-                    />
-                  </mesh>
+                {name === "Saturn" && data.rings && (
+                  <SaturnRings radius={data.radius} rings={data.rings} />
                 )}
               </group>
 
