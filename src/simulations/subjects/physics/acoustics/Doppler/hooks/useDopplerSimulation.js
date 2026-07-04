@@ -8,11 +8,7 @@ import {
   MAX_WAVE_RADIUS,
 } from "../constants";
 
-import {
-  calculateDoppler,
-  calculateAmplitude,
-  isSampleInstrument
-} from "../utils/dopplerPhysics";
+import { calculateDoppler, calculateAmplitude } from "../utils/dopplerPhysics";
 
 export function useDopplerSimulation({
   isRunning,
@@ -74,15 +70,16 @@ export function useDopplerSimulation({
 
           const dist = newX - currentObserver.x;
 
-          const { ratio, observedFreq, shiftPercent, motionStatus } =
-            calculateDoppler({
+          const { observedFreq, shiftPercent, motionStatus } = calculateDoppler(
+            {
               sourceX: newX,
               sourceV: source.v,
               observerX: currentObserver.x,
               observerV: currentObserver.v,
               baseFreq: source.baseFreq,
               speedOfSound: SPEED_OF_SOUND,
-            });
+            },
+          );
 
           const { amplitude, db } = calculateAmplitude(dist);
 
@@ -105,18 +102,20 @@ export function useDopplerSimulation({
           }
 
           const isRealSample =
-          source.instrument?.includes("engine") ||
-          source.instrument?.includes("siren");
+            source.instrument?.includes("engine") ||
+            source.instrument?.includes("siren") ||
+            source.instrument?.includes("voice");
 
-        const volumeScale = isRealSample ? 1.2 : 0.35;
+          const volumeScale = isRealSample ? 1.2 : 0.35;
 
-        updateVoiceRef.current?.(
-    source.id,
-  observedFreq,
-  amplitude * volumeScale,
-  source.instrument,
-  source.baseFreq,
-);
+          updateVoiceRef.current?.(
+            source.id,
+            observedFreq,
+            amplitude * volumeScale,
+            source.instrument,
+            source.baseFreq,
+          );
+
           return {
             ...source,
             x: newX,

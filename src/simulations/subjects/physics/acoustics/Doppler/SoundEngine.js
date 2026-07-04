@@ -1,65 +1,113 @@
-// SoundEngine.js
+// src/simulations/subjects/physics/acoustics/Doppler/SoundEngine.js
 
 export const INSTRUMENTS = {
+  ESBIKO_VOICE: {
+    id: "esbiko_voice",
+    name: "Esbiko Voice",
+    group: "Real Recordings",
+    type: "sample",
+    url: "/audio/doppler/romantic_ringtone.mp3",
+  },
+
   CAR_ENGINE: {
     id: "car_engine",
     name: "Real Car Engine",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/cityford_trimmed.mp3",
   },
+
   DIESEL_ENGINE: {
     id: "diesel_engine",
     name: "Diesel Engine",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/citydiesiel_trimmed.mp3",
   },
+
   BUS_ENGINE: {
     id: "bus_engine",
     name: "Bus Engine",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/citybus_trimmed.mp3",
   },
+
   TRACTOR_ENGINE: {
     id: "tractor_engine",
     name: "Tractor Engine",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/tractor_trimmed.mp3",
   },
+
   AMBULANCE_SIREN: {
     id: "ambulance_siren",
     name: "Ambulance Siren",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/ambulance_trimmed.mp3",
   },
+
   POLICE_SIREN: {
     id: "police_siren",
     name: "Police Siren",
+    group: "Real Recordings",
     type: "sample",
     url: "/audio/doppler/police_trimmed.mp3",
+  },
+
+  SINE: {
+    id: "sine",
+    name: "Pure Tone (Sine)",
+    group: "Pure Waves",
+    type: "simple",
+    shape: "sine",
+  },
+
+  SAW: {
+    id: "saw",
+    name: "Sawtooth Wave",
+    group: "Pure Waves",
+    type: "simple",
+    shape: "sawtooth",
+  },
+
+  SQUARE: {
+    id: "square",
+    name: "Square Wave",
+    group: "Pure Waves",
+    type: "simple",
+    shape: "square",
+  },
+
+  ORGAN: {
+    id: "organ",
+    name: "Electric Organ",
+    group: "Synthetic Instruments",
+    type: "complex",
+  },
+
+  BRASS: {
+    id: "brass",
+    name: "Synth Brass",
+    group: "Synthetic Instruments",
+    type: "complex",
+  },
+
+  DRONE: {
+    id: "drone",
+    name: "Sci-Fi Drone",
+    group: "Synthetic Instruments",
+    type: "complex",
   },
 
   ENGINE: {
     id: "engine",
     name: "Synthetic Car Engine",
+    group: "Engine Sounds",
     type: "complex",
   },
-
-  SINE: { id: "sine", name: "Pure Tone (Sine)", type: "simple", shape: "sine" },
-  SAW: {
-    id: "saw",
-    name: "Buzzer (Sawtooth)",
-    type: "simple",
-    shape: "sawtooth",
-  },
-  SQUARE: {
-    id: "square",
-    name: "8-Bit (Square)",
-    type: "simple",
-    shape: "square",
-  },
-  ORGAN: { id: "organ", name: "Electric Organ", type: "complex" },
-  BRASS: { id: "brass", name: "Synth Brass", type: "complex" },
-  DRONE: { id: "drone", name: "Sci-Fi Drone", type: "complex" },
 };
 
 const getInstrumentById = (typeId) =>
@@ -95,12 +143,14 @@ export class AudioVoice {
     this.sampleLoadError = false;
     this.lastFreq = 440;
     this.lastBaseFreq = 440;
+
     this.output = this.ctx.createGain();
     this.output.gain.value = 0;
     this.output.connect(destination);
 
     this.instrument = getInstrumentById(this.typeId);
     this.isSample = this.instrument?.type === "sample";
+
     this.setupVoice();
   }
 
@@ -123,7 +173,10 @@ export class AudioVoice {
       osc.connect(this.output);
       osc.start(t);
       this.nodes.push(osc);
-    } else if (this.typeId === "organ") {
+      return;
+    }
+
+    if (this.typeId === "organ") {
       const ratios = [0.5, 1, 2, 4];
       const gains = [0.5, 1, 0.6, 0.3];
 
@@ -140,7 +193,11 @@ export class AudioVoice {
 
         this.nodes.push({ osc, ratio });
       });
-    } else if (this.typeId === "engine") {
+
+      return;
+    }
+
+    if (this.typeId === "engine") {
       const base = this.ctx.createOscillator();
       base.type = "sawtooth";
 
@@ -181,7 +238,10 @@ export class AudioVoice {
       this.nodes.push({ osc: base, ratio: 1, filter });
       this.nodes.push({ osc: sub, ratio: 0.5 });
       this.nodes.push({ osc: rumble, ratio: 0.25 });
-    } else if (this.typeId === "brass") {
+      return;
+    }
+
+    if (this.typeId === "brass") {
       const osc = this.ctx.createOscillator();
       osc.type = "sawtooth";
 
@@ -201,7 +261,10 @@ export class AudioVoice {
 
       this.nodes.push({ osc, ratio: 1, filter });
       this.nodes.push({ osc: osc2, ratio: 1.01 });
-    } else if (this.typeId === "drone") {
+      return;
+    }
+
+    if (this.typeId === "drone") {
       const carrier = this.ctx.createOscillator();
       carrier.type = "sine";
 
