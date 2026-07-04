@@ -1,5 +1,11 @@
-const { onRequest, onCall, HttpsError } = require("firebase-functions/v2/https");
+/* eslint-env node */
+const {
+  onRequest,
+  onCall,
+  HttpsError,
+} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
+const { platformApi } = require("./api/platformApi");
 
 admin.initializeApp();
 
@@ -18,8 +24,7 @@ async function countAdmins() {
 
   return result.users.filter(
     (user) =>
-      user.customClaims?.admin === true &&
-      user.customClaims?.role === "admin"
+      user.customClaims?.admin === true && user.customClaims?.role === "admin",
   ).length;
 }
 
@@ -65,7 +70,10 @@ exports.setUserRole = onCall(async (request) => {
   const allowedRoles = ["student", "teacher", "admin"];
 
   if (!uid || !allowedRoles.includes(role)) {
-    throw new HttpsError("invalid-argument", "Valid uid and role are required.");
+    throw new HttpsError(
+      "invalid-argument",
+      "Valid uid and role are required.",
+    );
   }
 
   const targetUser = await admin.auth().getUser(uid);
@@ -79,7 +87,7 @@ exports.setUserRole = onCall(async (request) => {
     if (adminCount <= 1) {
       throw new HttpsError(
         "failed-precondition",
-        "You cannot remove the last admin."
+        "You cannot remove the last admin.",
       );
     }
   }
@@ -94,7 +102,7 @@ exports.setUserRole = onCall(async (request) => {
       role,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     },
-    { merge: true }
+    { merge: true },
   );
 
   await writeAdminLog({
@@ -114,13 +122,16 @@ exports.setUserDisabled = onCall(async (request) => {
   const { uid, disabled } = request.data;
 
   if (!uid || typeof disabled !== "boolean") {
-    throw new HttpsError("invalid-argument", "Valid uid and disabled are required.");
+    throw new HttpsError(
+      "invalid-argument",
+      "Valid uid and disabled are required.",
+    );
   }
 
   if (actorUid === uid && disabled === true) {
     throw new HttpsError(
       "failed-precondition",
-      "You cannot disable your own admin account."
+      "You cannot disable your own admin account.",
     );
   }
 
@@ -135,7 +146,7 @@ exports.setUserDisabled = onCall(async (request) => {
     if (adminCount <= 1) {
       throw new HttpsError(
         "failed-precondition",
-        "You cannot disable the last admin."
+        "You cannot disable the last admin.",
       );
     }
   }
@@ -151,3 +162,4 @@ exports.setUserDisabled = onCall(async (request) => {
 
   return { success: true };
 });
+exports.platformApi = platformApi;
