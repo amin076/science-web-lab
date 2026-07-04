@@ -1,5 +1,6 @@
 /* eslint-env node */
 const { onRequest } = require("firebase-functions/v2/https");
+const { simulationsManifest } = require("./data/simulationsManifest");
 
 function sendJson(res, status, data) {
   res.status(status).json({
@@ -48,21 +49,39 @@ const platformApi = onRequest((req, res) => {
       product: "Science Web Lab",
       type: "Educational Simulation Platform",
       apiVersion: "v1",
-      capabilities: [
-        "platform-health",
-        "platform-info"
-      ],
+      capabilities: ["platform-health", "platform-info"],
       futureCapabilities: [
         "simulation-discovery",
         "simulation-metadata",
         "classroom-integration",
         "experiment-presets",
         "report-export",
-        "agent-gateway"
+        "agent-gateway",
       ],
     });
   }
+  if (path === "/v1/simulations") {
+    return sendJson(res, 200, {
+      count: simulationsManifest.length,
+      simulations: simulationsManifest,
+    });
+  }
 
+  if (path.startsWith("/v1/simulations/")) {
+    const id = decodeURIComponent(path.replace("/v1/simulations/", ""));
+    const simulation = simulationsManifest.find((item) => item.id === id);
+
+    if (!simulation) {
+      return sendJson(res, 404, {
+        error: "SIMULATION_NOT_FOUND",
+        message: `Simulation not found: ${id}`,
+      });
+    }
+
+    return sendJson(res, 200, {
+      simulation,
+    });
+  }
   return sendJson(res, 404, {
     error: "NOT_FOUND",
     message: `No Platform API route found for ${path}`,
