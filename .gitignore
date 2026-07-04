@@ -42,4 +42,4 @@ out/
 # --- generated / local-only artifacts ---
 app-bundle.json
 packs/
-public/models/
+
