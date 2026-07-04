@@ -1,42 +1,75 @@
-//src/simulations/subjects/physics/acoustics/Doppler/components/DopplerCanvas.jsx
-import { MAX_DISTANCE } from "../constants";
+// src/simulations/subjects/physics/acoustics/Doppler/components/DopplerCanvas.jsx
 import ObserverSprite from "./ObserverSprite";
+import SourceHud from "./SourceHud";
 import SourceSprite from "./SourceSprite";
 import WavefrontLayer from "./WavefrontLayer";
+import DopplerShortRecorder from "./DopplerShortRecorder";
 
 const DopplerCanvas = ({ mode, observer, sources }) => {
-  return (
-    <div className="flex-1 relative overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black">
-      <div className="absolute inset-0 pointer-events-none opacity-20 flex justify-between px-10">
-        {[0, 250, 500, 750, 1000].map((m) => (
-          <div
-            key={m}
-            className="h-full border-l border-dashed border-slate-500 relative"
-          >
-            <span className="absolute top-4 left-2 text-xs">{m}m</span>
-          </div>
-        ))}
-      </div>
+  const is3DMode = mode === "car";
 
-      {mode === "car" && (
+  return (
+    <div
+      id="doppler-record-root"
+      className="flex-1 relative overflow-hidden bg-sky-300"
+    >
+      {!is3DMode && (
         <>
-          <div className="absolute left-0 right-0 top-1/2 h-28 -translate-y-1/2 bg-slate-800/30 border-y border-white/10 z-[1]" />
-          <div className="absolute left-0 right-0 top-1/2 border-t-2 border-dashed border-yellow-300/30 z-[2]" />
-          <div className="absolute left-6 top-[calc(50%-70px)] text-xs uppercase tracking-widest text-slate-500 z-[3]">
-            Road / Car Doppler Mode
+          <ParallaxLayer
+            src="/models/doppler/city.png"
+            className="left-0 right-0 top-[0%] h-[100%] z-[2] opacity-60"
+            bgSize="120% 100%"
+            offset={0}
+          />
+
+          <div className="absolute inset-0 bg-slate-950/10 z-[5]" />
+
+          <div className="absolute inset-0 pointer-events-none opacity-18 flex justify-between px-10 z-[6]">
+            {[0, 250, 500, 750, 1000].map((m) => (
+              <div
+                key={m}
+                className="h-full border-l border-dashed border-white/50 relative"
+              >
+                <span className="absolute top-4 left-2 text-xs text-white/70">
+                  {m}m
+                </span>
+              </div>
+            ))}
           </div>
+
+          <WavefrontLayer sources={sources} />
+
+          <ObserverSprite observer={observer} />
+
+          {sources.map((source) => (
+            <SourceSprite key={source.id} source={source} />
+          ))}
         </>
       )}
 
-      <WavefrontLayer sources={sources} />
+      {is3DMode && (
+        <div className="absolute inset-0 flex items-center justify-center text-slate-400 bg-slate-950">
+          3D mode will be rebuilt later.
+        </div>
+      )}
 
-      <ObserverSprite observer={observer} mode={mode} />
-
-      {sources.map((source) => (
-        <SourceSprite key={source.id} source={source} mode={mode} />
-      ))}
+      <SourceHud sources={sources} mode={mode} />
+      <DopplerShortRecorder />
     </div>
   );
 };
+
+const ParallaxLayer = ({ src, className, bgSize, offset, repeat = false }) => (
+  <div
+    className={`absolute pointer-events-none ${className}`}
+    style={{
+      backgroundImage: `url('${src}')`,
+      backgroundRepeat: repeat ? "repeat-x" : "no-repeat",
+      backgroundSize: bgSize,
+      backgroundPositionX: repeat ? `${offset}px` : "center",
+      backgroundPositionY: "bottom",
+    }}
+  />
+);
 
 export default DopplerCanvas;

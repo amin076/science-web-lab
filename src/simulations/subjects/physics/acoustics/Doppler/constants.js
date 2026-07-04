@@ -58,4 +58,10 @@ export const SOURCE_PRESETS = {
     baseFreq: 520,
     instrument: "police_siren",
   },
+  esbiko: {
+    label: "Esbiko Voice",
+    v: 45,
+    baseFreq: 220,
+    instrument: "esbiko_voice",
+  },
 };

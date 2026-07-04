@@ -1,4 +1,4 @@
-//src/simulations/subjects/physics/acoustics/Doppler/components/DopplerControls.jsx
+// src/simulations/subjects/physics/acoustics/Doppler/components/DopplerControls.jsx
 import {
   Play,
   Pause,
@@ -49,7 +49,7 @@ const DopplerControls = ({
                 : "bg-slate-900 border-white/10 text-slate-400"
             }`}
           >
-            <FlaskConical size={14} /> Scientific
+            <FlaskConical size={14} /> 2D Mode
           </button>
 
           <button
@@ -60,7 +60,7 @@ const DopplerControls = ({
                 : "bg-slate-900 border-white/10 text-slate-400"
             }`}
           >
-            <Car size={14} /> Car Mode
+            <Car size={14} /> 3D Mode
           </button>
         </div>
 
@@ -97,7 +97,7 @@ const DopplerControls = ({
         {mode === "car" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 uppercase tracking-wider">
-              <Car size={14} /> Car Presets
+              <Car size={14} /> 3D Presets
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -116,7 +116,7 @@ const DopplerControls = ({
 
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-bold text-blue-400 uppercase tracking-wider">
-            <Ear size={14} /> The Observer
+            <Ear size={14} /> The Listener
           </div>
 
           <div className="bg-slate-900/50 p-4 rounded-lg border border-blue-500/20 space-y-4">
@@ -172,7 +172,7 @@ const DopplerControls = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 uppercase tracking-wider">
               <Volume2 size={14} />{" "}
-              {mode === "car" ? "Car Source" : "Sound Sources"}
+              {mode === "car" ? "3D Source" : "2D Sound Sources"}
             </div>
 
             {mode !== "car" && (

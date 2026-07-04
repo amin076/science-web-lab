@@ -3,6 +3,25 @@ import { Trash2, Music } from "lucide-react";
 import { INSTRUMENTS } from "../SoundEngine";
 import { MAX_DISTANCE, MODES } from "../constants";
 
+const EXACT_FREQUENCY_INSTRUMENTS = [
+  "sine",
+  "saw",
+  "square",
+  "organ",
+  "brass",
+  "drone",
+];
+
+const INSTRUMENT_GROUPS = [
+  "Real Recordings",
+  "Pure Waves",
+  "Synthetic Instruments",
+  "Engine Sounds",
+];
+
+const hasExactFrequency = (source) =>
+  EXACT_FREQUENCY_INSTRUMENTS.includes(source.instrument);
+
 const SourceControlCard = ({
   source,
   index,
@@ -11,8 +30,11 @@ const SourceControlCard = ({
   onUpdateSourceVal,
 }) => {
   const isCarMode = mode === MODES.CAR || mode === "car";
-  const isHigher = source.currentFreq > source.baseFreq;
-  const isLower = source.currentFreq < source.baseFreq;
+  const exactFrequency = hasExactFrequency(source);
+  const rate = source.baseFreq ? source.currentFreq / source.baseFreq : 1;
+  const shift = source.shiftPercent || 0;
+  const isHigher = shift > 0;
+  const isLower = shift < 0;
 
   return (
     <div
@@ -35,7 +57,7 @@ const SourceControlCard = ({
       </div>
 
       {!isCarMode && (
-        <div className="flex items-center gap-2 bg-slate-950 p-2 rounded border border-white/5">
+        <div className="flex items-center gap-2 bg-slate-950 p-2 rounded border border-white/20">
           <Music size={14} className="text-slate-500" />
 
           <select
@@ -45,10 +67,20 @@ const SourceControlCard = ({
             }
             className="bg-transparent text-xs text-white w-full outline-none cursor-pointer"
           >
-            {Object.values(INSTRUMENTS).map((inst) => (
-              <option key={inst.id} value={inst.id} className="bg-slate-900">
-                {inst.name}
-              </option>
+            {INSTRUMENT_GROUPS.map((group) => (
+              <optgroup key={group} label={group} className="bg-slate-900">
+                {Object.values(INSTRUMENTS)
+                  .filter((inst) => inst.group === group)
+                  .map((inst) => (
+                    <option
+                      key={inst.id}
+                      value={inst.id}
+                      className="bg-slate-900"
+                    >
+                      {inst.name}
+                    </option>
+                  ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -75,9 +107,9 @@ const SourceControlCard = ({
       />
 
       <SliderRow
-        label={isCarMode ? "Engine Freq" : "Base Freq"}
+        label={exactFrequency ? "Base Frequency" : "Doppler Reference"}
         value={source.baseFreq}
-        suffix="Hz"
+        suffix={exactFrequency ? "Hz" : ""}
         min={100}
         max={1000}
         color={source.color}
@@ -85,12 +117,28 @@ const SourceControlCard = ({
       />
 
       <div className="mt-3 rounded-lg bg-slate-950/70 border border-white/10 p-3 text-xs space-y-2">
-        <InfoRow label="Emitted" value={`${Math.round(source.baseFreq)} Hz`} />
-        <InfoRow
-          label="Observed"
-          value={`${Math.round(source.currentFreq)} Hz`}
-          valueClassName="text-emerald-300"
-        />
+        {exactFrequency ? (
+          <>
+            <InfoRow
+              label="Emitted"
+              value={`${Math.round(source.baseFreq)} Hz`}
+            />
+            <InfoRow
+              label="Observed"
+              value={`${Math.round(source.currentFreq)} Hz`}
+              valueClassName="text-emerald-300"
+            />
+          </>
+        ) : (
+          <>
+            <InfoRow label="Original rate" value="1.00×" />
+            <InfoRow
+              label="Doppler rate"
+              value={`${rate.toFixed(2)}×`}
+              valueClassName="text-emerald-300"
+            />
+          </>
+        )}
 
         <div className="flex justify-between">
           <span className="text-slate-400">Shift</span>
@@ -103,8 +151,8 @@ const SourceControlCard = ({
                   : "text-slate-300"
             }`}
           >
-            {source.shiftPercent > 0 ? "+" : ""}
-            {Math.round(source.shiftPercent || 0)}%
+            {shift > 0 ? "+" : ""}
+            {Math.round(shift)}%
           </span>
         </div>
 
