@@ -2,12 +2,14 @@
 import { physicsExperiments } from "./physics";
 import { astronomyExperiments } from "./astronomy";
 import { earthScienceExperiments } from "./earth-science";
+import { creativeExperiments } from "./creative";
 
 // 1) Flat list (single source for UI)
 export const experimentsData = [
   ...physicsExperiments,
   ...astronomyExperiments,
   ...earthScienceExperiments,
+  ...creativeExperiments,
 ];
 
 // 2) Labels (for UI)
@@ -15,6 +17,7 @@ export const DOMAIN_LABELS = {
   physics: "Physics",
   astronomy: "Astronomy",
   "earth-science": "Earth Science",
+  creative: "Creative",
 };
 
 export const TOPIC_LABELS = {
@@ -25,6 +28,7 @@ export const TOPIC_LABELS = {
   thermodynamics: "Thermodynamics",
   space: "Space",
   geology: "Geology",
+  patterns: "Patterns",
 };
 
 // 3) Helpers
