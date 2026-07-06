@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/generate-platform-catalog.cjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "gen": "plop --plopfile plopfile.cjs",
@@ -13,7 +13,8 @@
     "sim:spec": "node scripts/sim-spec.cjs",
     "sim:pack": "plop --plopfile plopfile.cjs sim-pack",
     "pack:sim": "node scripts/pack-simulation-md.cjs",
-    "pack:app": "node scripts/pack-app-json.cjs"
+    "pack:app": "node scripts/pack-app-json.cjs",
+    "platform:catalog": "node scripts/generate-platform-catalog.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

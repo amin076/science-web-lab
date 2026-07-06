@@ -221,7 +221,7 @@ exports.platformApi = onRequest((req, res) => {
     });
   }
 
-    if (path === "/v1/simulations") {
+  if (path === "/v1/simulations") {
     const simulations = listSimulations();
 
     return sendJson(200, {
@@ -250,20 +250,6 @@ exports.platformApi = onRequest((req, res) => {
   if (path.startsWith("/v1/simulations/")) {
     const id = decodeURIComponent(path.replace("/v1/simulations/", ""));
     const simulation = getSimulationById(id);
-
-    if (!simulation) {
-      return sendJson(404, {
-        error: "SIMULATION_NOT_FOUND",
-        message: `Simulation not found: ${id}`,
-      });
-    }
-
-    return sendJson(200, { simulation });
-  }
-
-  if (path.startsWith("/v1/simulations/")) {
-    const id = decodeURIComponent(path.replace("/v1/simulations/", ""));
-    const simulation = simulationsManifest.find((item) => item.id === id);
 
     if (!simulation) {
       return sendJson(404, {
