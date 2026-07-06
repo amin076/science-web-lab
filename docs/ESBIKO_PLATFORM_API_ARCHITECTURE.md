@@ -835,8 +835,123 @@ supportsCommands
 The API should never guess capabilities.
 
 Capabilities should come from the simulation itself.
+# Next Strategic Direction
+
+The Platform API is not only for developers.
+
+The long-term goal is:
+
+User
+↓
+Esbiko Chatbot UI
+↓
+AI API / LLM
+↓
+Esbiko Platform API
+↓
+Simulation Adapter
+↓
+Simulation Engine
+
+Students and teachers should not need API knowledge.
+
+The API is the machine-facing layer.
+
+The chatbot is the human-facing layer.
+
+Therefore, the next backend step is NOT to build the chatbot yet.
+
+The next backend step is to prepare simulations so they can be safely discovered, described, and eventually controlled through a standard adapter contract.
 
 ---
+
+# Next Phase: Simulation Adapter / Capability Contract
+
+Goal:
+
+Create a standard contract that each simulation can eventually implement.
+
+The first version should be read-only and safe.
+
+Do not change simulation behavior yet.
+
+Do not control simulations yet.
+
+Do not add AI yet.
+
+The adapter contract should eventually support:
+
+metadata
+capabilities
+state
+commands
+recording
+export
+reports
+
+Initial focus:
+
+capabilities only.
+
+The API must not guess capabilities.
+
+Capabilities must come from the simulation or from a verified platform metadata source.
+
+Example future path:
+
+src/simulations/subjects/.../simulation-name/platform.js
+
+or:
+
+src/simulations/subjects/.../simulation-name/capabilities.js
+
+The exact file name can be proposed by Codex, but the architecture must stay simple and consistent.
+
+---
+
+# Immediate Codex Task
+
+Continue Phase C.
+
+Design and implement the first version of the Simulation Capability Contract.
+
+Requirements:
+
+1. Do not modify simulation behavior.
+2. Do not add AI.
+3. Do not add command execution.
+4. Do not guess capabilities.
+5. Keep all existing API endpoints working.
+6. Add a safe capability source model.
+7. Make /v1/simulations/:id/capabilities return structured capability data.
+8. Keep Firebase Functions as thin transport.
+9. Keep business logic in platform services.
+10. Build successfully.
+11. Functions must still deploy.
+
+Suggested architecture:
+
+Simulation metadata
+↓
+Platform catalog
+↓
+Platform service
+↓
+Capability service
+↓
+Platform API
+
+Expected result:
+
+GET /v1/simulations/:id/capabilities
+
+should return a stable JSON-safe response.
+
+If a simulation has no verified capabilities yet, return safe defaults with confidence unknown or unverified.
+
+Do not mark recording/audio/camera/etc as true unless verified by source.
+---
+
 
 Phase D
 
