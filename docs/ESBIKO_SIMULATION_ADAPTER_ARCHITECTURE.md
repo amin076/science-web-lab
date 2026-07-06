@@ -14,6 +14,10 @@ This document defines the Simulation Adapter Architecture for Esbiko.
 
 The goal is to create one stable, JSON-safe contract that every simulation can eventually expose without coupling the platform to React components, rendering internals, or simulation-specific implementation details.
 
+This document supports the broader platform direction described in:
+
+docs/ESBIKO_PLATFORM_VISION.md
+
 This is a design specification only.
 
 Do not implement adapters from this document until a future implementation phase explicitly starts.
