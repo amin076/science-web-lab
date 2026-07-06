@@ -1,16 +1,7 @@
-const DEFAULT_CAPABILITIES = {
-  interactive: true,
-  physics: true,
-  audio: false,
-  camera: false,
-  recording: false,
-  export: false,
-  timeline: false,
-  presets: false,
-  stateRead: false,
-  commandExecution: false,
-  agentReady: false,
-};
+import {
+  createLegacyCapabilityFlags,
+  createSimulationCapabilityContract,
+} from "@/platform/capabilities";
 
 function normalizeEngine(engine) {
   if (!engine) return "unknown";
@@ -20,6 +11,8 @@ function normalizeEngine(engine) {
 }
 
 export function createPlatformSimulationMetadata(experiment) {
+  const capabilityContract = createSimulationCapabilityContract(experiment);
+
   return {
     id: experiment.id,
     domain: experiment.domain || "unknown",
@@ -33,10 +26,8 @@ export function createPlatformSimulationMetadata(experiment) {
     difficulty: experiment.difficulty || "unspecified",
     estimatedDurationMinutes: experiment.estimatedDurationMinutes || null,
     route: `/experiments/${experiment.id}/run`,
-    capabilities: {
-      ...DEFAULT_CAPABILITIES,
-      ...(experiment.capabilities || {}),
-    },
+    capabilities: createLegacyCapabilityFlags(capabilityContract),
+    capabilityContract,
   };
 }
 

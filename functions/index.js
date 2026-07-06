@@ -210,6 +210,7 @@ exports.platformApi = onRequest((req, res) => {
         "platform-health",
         "platform-info",
         "simulation-discovery",
+        "simulation-capability-discovery",
       ],
       futureCapabilities: [
         "simulation-metadata",

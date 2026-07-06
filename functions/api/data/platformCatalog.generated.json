@@ -20,17 +20,140 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/creative.patterns.ambient-pattern-studio/run",
     "capabilities": {
-      "interactive": true,
+      "interactive": false,
       "physics": false,
       "audio": false,
       "camera": false,
-      "recording": true,
-      "export": true,
+      "recording": false,
+      "export": false,
       "timeline": false,
-      "presets": true,
+      "presets": false,
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "legacy-experiment-capabilities",
+          "declared": false,
+          "reason": "Legacy experiment metadata declared this capability unsupported."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "legacy-experiment-capabilities",
+          "declared": true,
+          "reason": "Legacy experiment metadata declared support, but it is not a verified capability source."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "legacy-experiment-capabilities",
+          "declared": true,
+          "reason": "Legacy experiment metadata declared support, but it is not a verified capability source."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "legacy-experiment-capabilities",
+          "declared": true,
+          "reason": "Legacy experiment metadata declared support, but it is not a verified capability source."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -47,8 +170,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.pulley-system/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -58,6 +181,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -74,8 +320,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.collision/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -85,6 +331,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -101,8 +470,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.electricity.coulomb-law-2d/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -112,6 +481,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -128,8 +620,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.electricity.coulomb-law-3d/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -139,6 +631,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -155,8 +770,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.acoustics.doppler/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -166,6 +781,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -182,8 +920,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/astronomy.space.earth-orbit-lab/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -193,6 +931,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -209,8 +1070,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.electricity.circuits/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -220,6 +1081,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -236,8 +1220,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.gearbox-differential-3d/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -247,6 +1231,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -263,8 +1370,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.gravity-comparison/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -274,6 +1381,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -290,8 +1520,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.gyroscope/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -301,6 +1531,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -317,8 +1670,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.thermodynamics.gas/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -328,6 +1681,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -344,8 +1820,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/astronomy.kepler-lab/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -355,6 +1831,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -371,8 +1970,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.waves.multi-source-interference/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -382,6 +1981,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -398,8 +2120,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.optics.lens-mirror-2d/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -409,6 +2131,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -425,8 +2270,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.optics.lens-mirror-3d/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -436,6 +2281,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -452,8 +2420,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/earth-science.geology.plate-tectonics/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -463,6 +2431,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -479,8 +2570,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.projectile/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -490,6 +2581,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -506,8 +2720,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.waves.surface-waves-double-slit/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -517,6 +2731,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -533,8 +2870,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/astronomy.space.satellites-telescopes/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -544,6 +2881,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -560,8 +3020,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.seesaw/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -571,6 +3031,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -587,8 +3170,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.simple-pendulum/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -598,6 +3181,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -614,8 +3320,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/astronomy.space.solar-system/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -625,6 +3331,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -641,8 +3470,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.acoustics.sound-waves/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -652,6 +3481,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -668,8 +3620,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.acoustics.spatial-audio/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -679,6 +3631,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -695,8 +3770,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.spring-mass/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -706,6 +3781,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -722,8 +3920,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.two-body-gravity/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -733,6 +3931,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -749,8 +4070,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.mechanics.circular-motion/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -760,6 +4081,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   },
   {
@@ -776,8 +4220,8 @@
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.optics.microscope/run",
     "capabilities": {
-      "interactive": true,
-      "physics": true,
+      "interactive": false,
+      "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
@@ -787,6 +4231,129 @@
       "stateRead": false,
       "commandExecution": false,
       "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
     }
   }
 ]
