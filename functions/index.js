@@ -5,7 +5,11 @@ const {
   HttpsError,
 } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
-const { platformApi } = require("./api/platformApi");
+const {
+  listSimulations,
+  getSimulationById,
+  getSimulationCapabilities,
+} = require("./api/services/simulationService");
 
 admin.initializeApp();
 
@@ -162,4 +166,103 @@ exports.setUserDisabled = onCall(async (request) => {
 
   return { success: true };
 });
-exports.platformApi = platformApi;
+exports.platformApi = onRequest((req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).send("");
+  }
+
+  const sendJson = (status, data) => {
+    return res.status(status).json({
+      ok: status >= 200 && status < 300,
+      ...data,
+    });
+  };
+
+  if (req.method !== "GET") {
+    return sendJson(405, {
+      error: "METHOD_NOT_ALLOWED",
+      message: "Only GET is supported in Platform API v1 phase 1.",
+    });
+  }
+
+  const path = req.path || "/";
+
+  if (path === "/" || path === "/v1" || path === "/v1/health") {
+    return sendJson(200, {
+      name: "Esbiko Platform API",
+      version: "v1",
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  if (path === "/v1/platform/info") {
+    return sendJson(200, {
+      name: "Esbiko",
+      product: "Science Web Lab",
+      type: "Educational Simulation Platform",
+      apiVersion: "v1",
+      capabilities: [
+        "platform-health",
+        "platform-info",
+        "simulation-discovery",
+      ],
+      futureCapabilities: [
+        "simulation-metadata",
+        "classroom-integration",
+        "experiment-presets",
+        "report-export",
+        "agent-gateway",
+      ],
+    });
+  }
+
+  if (path === "/v1/simulations") {
+    const simulations = listSimulations();
+
+    return sendJson(200, {
+      count: simulations.length,
+      simulations,
+    });
+  }
+
+  if (path.startsWith("/v1/simulations/") && path.endsWith("/capabilities")) {
+    const id = decodeURIComponent(
+      path.replace("/v1/simulations/", "").replace("/capabilities", ""),
+    );
+
+    const result = getSimulationCapabilities(id);
+
+    if (!result) {
+      return sendJson(404, {
+        error: "SIMULATION_NOT_FOUND",
+        message: `Simulation not found: ${id}`,
+      });
+    }
+
+    return sendJson(200, result);
+  }
+
+  if (path.startsWith("/v1/simulations/")) {
+    const id = decodeURIComponent(path.replace("/v1/simulations/", ""));
+    const simulation = getSimulationById(id);
+
+    if (!simulation) {
+      return sendJson(404, {
+        error: "SIMULATION_NOT_FOUND",
+        message: `Simulation not found: ${id}`,
+      });
+    }
+
+    return sendJson(200, { simulation });
+  }
+
+  return sendJson(404, {
+    error: "NOT_FOUND",
+    message: `No Platform API route found for ${path}`,
+  });
+});

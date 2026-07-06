@@ -34,7 +34,11 @@ export default function RunSimulation() {
 
   return (
     <Box sx={{ height: "100dvh", overflow: "hidden" }}>
-      <SimulationLayout onBack={handleBack} fullHeight>
+      <SimulationLayout
+        onBack={handleBack}
+        fullHeight
+        hideBackButton={id === "creative.patterns.ambient-pattern-studio"}
+      >
         {!SimulationComponent ? (
           <Box sx={{ p: 3 }}>
             <Paper

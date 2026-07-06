@@ -3,6 +3,11 @@
 import lazyWithRetry from "@/components/system/lazyWithRetry";
 
 export const simulationRegistry = {
+  "creative.patterns.ambient-pattern-studio": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/creative/patterns/ambient-pattern-studio"),
+  ),
+
   "physics.mechanics.projectile": lazyWithRetry(
     () => import("@/simulations/subjects/physics/mechanics/projectile-motion"),
   ),

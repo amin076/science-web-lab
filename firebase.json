@@ -62,7 +62,7 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": []
+      "predeploy": ["npm run platform:catalog"]
     }
   ],
   "firestore": {
