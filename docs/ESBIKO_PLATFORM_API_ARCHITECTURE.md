@@ -246,7 +246,7 @@ Phase B
 
 Platform Catalog
 
-IN PROGRESS
+DONE
 
 Goals:
 
@@ -254,11 +254,15 @@ Remove hardcoded simulation manifest.
 
 Platform API should read from the Platform Catalog.
 
-Current temporary implementation still uses:
+Current implementation generates a JSON-safe catalog from the real platform catalog:
 
-functions/api/data/simulationsManifest.js
+scripts/generate-platform-catalog.cjs
 
-This file should eventually be removed.
+functions/api/data/platformCatalog.generated.json
+
+Firebase Functions read this generated catalog through:
+
+functions/api/services/simulationService.js
 
 ---
 
@@ -400,21 +404,21 @@ Role-based permissions
 
 1.
 
-Platform API still depends on a hardcoded simulation manifest.
+Platform API no longer depends on the old hardcoded simulation manifest.
 
-This duplication must be removed.
+The API reads generated platform catalog metadata produced from the real Esbiko catalog.
 
 ---
 
 2.
 
-Business logic still lives inside Firebase Functions.
+Most simulation discovery business logic has moved out of Firebase Functions.
 
-Business logic should move into:
+Shared business logic should continue moving into:
 
 src/platform/services
 
-Firebase Functions should become a thin transport layer.
+Firebase Functions should remain a thin HTTP transport layer.
 
 ---
 
@@ -780,7 +784,7 @@ Phase B
 
 Platform Catalog
 
-IN PROGRESS
+DONE
 
 Goals:
 
@@ -788,11 +792,15 @@ Remove hardcoded simulation manifest.
 
 Platform API should read from the Platform Catalog.
 
-Current temporary implementation still uses:
+Current implementation generates a JSON-safe catalog from the real platform catalog:
 
-functions/api/data/simulationsManifest.js
+scripts/generate-platform-catalog.cjs
 
-This file should eventually be removed.
+functions/api/data/platformCatalog.generated.json
+
+Firebase Functions read this generated catalog through:
+
+functions/api/services/simulationService.js
 
 ---
 
@@ -934,21 +942,21 @@ Role-based permissions
 
 1.
 
-Platform API still depends on a hardcoded simulation manifest.
+Platform API no longer depends on the old hardcoded simulation manifest.
 
-This duplication must be removed.
+The API reads generated platform catalog metadata produced from the real Esbiko catalog.
 
 ---
 
 2.
 
-Business logic still lives inside Firebase Functions.
+Most simulation discovery business logic has moved out of Firebase Functions.
 
-Business logic should move into:
+Shared business logic should continue moving into:
 
 src/platform/services
 
-Firebase Functions should become a thin transport layer.
+Firebase Functions should remain a thin HTTP transport layer.
 
 ---
 

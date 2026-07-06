@@ -370,6 +370,18 @@ Create a JSON-safe catalog transformer.
 
 Make Platform API read from the metadata layer.
 
+Status: DONE for simulation discovery endpoints.
+
+The deployed Platform API now reads simulation metadata from the generated platform catalog:
+
+    functions/api/data/platformCatalog.generated.json
+
+The generated catalog is produced from the real Esbiko catalog by:
+
+    scripts/generate-platform-catalog.cjs
+
+Firebase Functions should keep using service-layer helpers instead of duplicating simulation metadata.
+
 ## Phase 5
 
 Add capabilities per simulation.
