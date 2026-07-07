@@ -20,13 +20,17 @@ export class SimulationErrorBoundary extends React.Component {
     return (
       <div
         style={{
-          height: "100vh",
+          minHeight: "100dvh",
           display: "grid",
           placeItems: "center",
-          padding: 24,
+          paddingTop: "calc(var(--esbiko-safe-top, 0px) + 24px)",
+          paddingRight: "calc(var(--esbiko-safe-right, 0px) + 24px)",
+          paddingBottom: "calc(var(--esbiko-safe-bottom, 0px) + 24px)",
+          paddingLeft: "calc(var(--esbiko-safe-left, 0px) + 24px)",
           background: "linear-gradient(135deg,#050510,#1a1a2e)",
           color: "white",
           textAlign: "center",
+          overflowX: "hidden",
         }}
       >
         <div style={{ maxWidth: 520 }}>

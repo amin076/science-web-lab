@@ -81,11 +81,15 @@ export default function OrientationGuard({
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        px: 3,
+        pt: "calc(var(--esbiko-safe-top, 0px) + 24px)",
+        pr: "calc(var(--esbiko-safe-right, 0px) + 24px)",
+        pb: "calc(var(--esbiko-safe-bottom, 0px) + 24px)",
+        pl: "calc(var(--esbiko-safe-left, 0px) + 24px)",
         background:
           "radial-gradient(circle at center, rgba(25,118,210,0.28), rgba(0,0,0,0.92))",
         backdropFilter: "blur(10px)",
         textAlign: "center",
+        overflow: "auto",
       }}
     >
       <Box

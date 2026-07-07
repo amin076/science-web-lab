@@ -187,13 +187,27 @@ RunSimulation:
 
 # 9. Later Phase Checks
 
-Phase 3 should add a simulation runtime mobile shell test set for:
+Phase 3 should validate the shared simulation runtime shell before changing individual simulations.
+
+Shared shell checks:
+
+* runtime root uses dynamic viewport height
+* stage remains full-bleed and does not resize child simulations
+* safe-area back button remains reachable on phones and PWAs
+* orientation notice respects notches and compact landscape height
+* loading, not-found, and crash fallback screens do not clip
+* scroll remains locked to the simulation route only
+* browser back and in-app back both restore normal page scroll
+
+Pilot simulation checks:
 
 * control panel overflow
-* bottom sheets
-* orientation notices
-* safe-area back buttons
+* bottom sheets or drawers for dense controls
+* HUD overlap with safe-area controls
+* portrait usability or clear orientation guidance
+* landscape compact-height usability
 * fullscreen recording overlays
+* no physics, timing, or recording behavior regressions
 
 Phase 5 and Phase 6 should add dashboard and admin-specific checks for:
 
