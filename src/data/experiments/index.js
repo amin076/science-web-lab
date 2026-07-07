@@ -26,6 +26,7 @@ export const TOPIC_LABELS = {
   optics: "Optics",
   waves: "Waves",
   thermodynamics: "Thermodynamics",
+  challenges: "Physics Challenges",
   space: "Space",
   geology: "Geology",
   patterns: "Patterns",

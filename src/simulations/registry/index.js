@@ -7,6 +7,9 @@ export const simulationRegistry = {
     () =>
       import("@/simulations/subjects/creative/patterns/ambient-pattern-studio"),
   ),
+  "physics.challenges.moon-lander": lazyWithRetry(
+    () => import("@/simulations/subjects/challenges/moon-lander"),
+  ),
 
   "physics.mechanics.projectile": lazyWithRetry(
     () => import("@/simulations/subjects/physics/mechanics/projectile-motion"),
