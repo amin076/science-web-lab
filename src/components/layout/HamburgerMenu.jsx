@@ -67,7 +67,9 @@ export default function HamburgerMenu() {
         onClose={toggle(false)}
         PaperProps={{
           sx: {
-            width: 280,
+            width: "min(86vw, 320px)",
+            pt: "var(--esbiko-safe-top, 0px)",
+            pb: "var(--esbiko-safe-bottom, 0px)",
             background: isDark
               ? "linear-gradient(160deg, #0f172a, #1e3a8a, #3b82f6)"
               : "linear-gradient(160deg, #e0f2fe, #93c5fd, #60a5fa)",

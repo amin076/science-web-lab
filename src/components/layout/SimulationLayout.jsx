@@ -24,8 +24,8 @@ export default function SimulationLayout({ children, onBack, hideBackButton = fa
       sx={{
         position: "fixed",
         inset: 0,
-        width: "100vw",
-        height: "100vh",
+        width: "100%",
+        height: "100dvh",
         overflow: "hidden",
         background: "#050510",
         color: "white",
@@ -37,8 +37,8 @@ export default function SimulationLayout({ children, onBack, hideBackButton = fa
         <Box
           sx={{
             position: "fixed",
-            top: 16,
-            left: 16,
+            top: "calc(var(--esbiko-safe-top, 0px) + 16px)",
+            left: "calc(var(--esbiko-safe-left, 0px) + 16px)",
             zIndex: 1400,
           }}
         >

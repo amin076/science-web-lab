@@ -24,7 +24,7 @@ function Layout({
     <Box
       className="app-shell"
       sx={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         position: "relative",
         backgroundColor: (theme) => theme.palette.background.default,
         overflowX: "hidden",
@@ -72,7 +72,15 @@ function Layout({
       )}
 
       {/* Dashboard Drawer (floating is OK) */}
-      <Box sx={{ position: "fixed", right: 16, top: 120, zIndex: 50 }}>
+      <Box
+        sx={{
+          position: "fixed",
+          right: { xs: "auto", md: 16 },
+          top: 120,
+          zIndex: 50,
+          display: { xs: "none", md: "block" },
+        }}
+      >
         <DashboardDrawer />
       </Box>
 
