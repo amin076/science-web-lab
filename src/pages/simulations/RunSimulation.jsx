@@ -3,6 +3,7 @@ import React, { Suspense, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography } from "@mui/material";
 import SimulationLayout from "@/components/layout/SimulationLayout";
+import { SafeAreaContainer } from "@/components/mobile";
 import { simulationRegistry } from "@/simulations/registry";
 import { unlockScroll } from "@/utils/scrollLock";
 import { trackExperimentView } from "@/services/experimentStats";
@@ -33,7 +34,11 @@ export default function RunSimulation() {
   };
 
   return (
-    <Box sx={{ height: "100dvh", overflow: "hidden" }}>
+    <SafeAreaContainer
+      fullHeight
+      edges={[]}
+      sx={{ height: "100dvh", overflow: "hidden" }}
+    >
       <SimulationLayout
         onBack={handleBack}
         fullHeight
@@ -99,6 +104,6 @@ export default function RunSimulation() {
           </Suspense>
         )}
       </SimulationLayout>
-    </Box>
+    </SafeAreaContainer>
   );
 }

@@ -35,6 +35,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
+import { ResponsiveContainer } from "@/components/mobile";
 import SolarCinematicHero from "@/pages/home/SolarCinematicHero";
 
 const Page = ({ children }) => (
@@ -60,9 +61,9 @@ const Section = ({ children, compact = false }) => (
       py: compact ? { xs: 5, md: 7 } : { xs: 7, md: 10 },
     }}
   >
-    <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2.5, md: 3 } }}>
+    <ResponsiveContainer maxWidth={1200} sx={{ px: { xs: 2.5, md: 3 } }}>
       {children}
-    </Box>
+    </ResponsiveContainer>
   </Box>
 );
 

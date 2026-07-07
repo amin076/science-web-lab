@@ -8,7 +8,6 @@ import {
   Chip,
   Stack,
   Divider,
-  Drawer,
   List,
   ListItemButton,
   ListItemText,
@@ -27,6 +26,7 @@ import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+import { MobileDrawer, ResponsiveContainer } from "@/components/mobile";
 import ExperimentCard from "@/components/experiments/ExperimentCard";
 import { getPopularExperimentIds } from "@/services/experimentStats";
 
@@ -227,7 +227,7 @@ export default function Experiments() {
 
       <Box sx={{ py: 6 }}>
         {/* Header */}
-        <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
+        <ResponsiveContainer maxWidth={1200} sx={{ px: { xs: 2, md: 2 } }}>
           <Typography
             variant="h4"
             gutterBottom
@@ -407,10 +407,10 @@ export default function Experiments() {
           )}
 
           <Divider sx={{ opacity: 0.15, mb: 5 }} />
-        </Box>
+        </ResponsiveContainer>
 
         {/* Sections: Domain -> Topic -> Cards */}
-        <Box sx={{ maxWidth: 1200, mx: "auto", px: 2 }}>
+        <ResponsiveContainer maxWidth={1200} sx={{ px: { xs: 2, md: 2 } }}>
           {domainOrder.map((domain) => {
             const topics = Object.keys(grouped[domain] || {});
             if (!topics.length) return null;
@@ -486,21 +486,19 @@ export default function Experiments() {
               </Box>
             );
           })}
-        </Box>
+        </ResponsiveContainer>
 
         {/* Drawer: Domain + Topic index */}
-        <Drawer
+        <MobileDrawer
           anchor="right"
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          PaperProps={{
-            className: "custom-scrollbar",
-            sx: {
-              width: 340,
-              background: "linear-gradient(180deg,#0b1220,#0f1b33,#102a4d)",
-              color: "#e5e7eb",
-              borderLeft: "1px solid rgba(255,255,255,0.08)",
-            },
+          width="min(88vw, 340px)"
+          PaperProps={{ className: "custom-scrollbar" }}
+          paperSx={{
+            background: "linear-gradient(180deg,#0b1220,#0f1b33,#102a4d)",
+            color: "#e5e7eb",
+            borderLeft: "1px solid rgba(255,255,255,0.08)",
           }}
         >
           <Box sx={{ p: 2.5 }}>
@@ -575,7 +573,7 @@ export default function Experiments() {
               })}
             </List>
           </Box>
-        </Drawer>
+        </MobileDrawer>
       </Box>
     </>
   );
