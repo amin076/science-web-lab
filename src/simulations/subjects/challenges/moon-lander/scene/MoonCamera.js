@@ -6,8 +6,12 @@ const desiredPosition = new THREE.Vector3();
 const desiredLookAt = new THREE.Vector3();
 const currentLookAt = new THREE.Vector3(0, 3, 0);
 
-export default function MoonCamera({ state, impactSignal = 0 }) {
-  const { camera } = useThree();
+export default function MoonCamera({
+  state,
+  impactSignal = 0,
+  controlsActive = false,
+}) {
+  const { camera, controls } = useThree();
 
   useFrame((frameState, delta) => {
     if (!state) return;
@@ -31,9 +35,16 @@ export default function MoonCamera({ state, impactSignal = 0 }) {
     desiredLookAt.set(blendX, Math.max(1.5, landerY * 0.72), 0);
 
     const smoothing = 1 - Math.exp(-delta * 3.2);
-    camera.position.lerp(desiredPosition, smoothing);
+    if (!controlsActive) {
+      camera.position.lerp(desiredPosition, smoothing);
+    }
     currentLookAt.lerp(desiredLookAt, smoothing);
-    camera.lookAt(currentLookAt);
+    if (controls) {
+      controls.target.lerp(currentLookAt, smoothing);
+      controls.update();
+    } else {
+      camera.lookAt(currentLookAt);
+    }
   });
 
   return null;
