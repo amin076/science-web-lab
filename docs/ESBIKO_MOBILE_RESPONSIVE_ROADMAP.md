@@ -461,12 +461,52 @@ Accessibility and touch:
 Priority order:
 
 1. Phase 1: Global responsive foundation
-2. Phase 2: Core pages responsive fixes
-3. Phase 3: Simulation runtime mobile shell
-4. Phase 4: Pilot simulation mobile improvements
-5. Phase 5: Teacher/student dashboard mobile
-6. Phase 6: Admin mobile improvements
-7. Phase 7: PWA polish and device testing
+2. Phase 1.5: Mobile Design System
+3. Phase 2: Core pages responsive fixes
+4. Phase 3: Simulation runtime mobile shell
+5. Phase 4: Pilot simulation mobile improvements
+6. Phase 5: Teacher/student dashboard mobile
+7. Phase 6: Admin mobile improvements
+8. Phase 7: PWA polish and device testing
 
 The key principle is progressive improvement. Each phase should be buildable, reversible, and small enough to review safely.
 
+---
+
+# 12. Phase 1.5: Mobile Design System
+
+Status:
+
+Started
+
+Goal:
+
+Create one shared responsive primitive layer for pages, dashboards, admin tools, and simulations.
+
+Design document:
+
+`docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md`
+
+Implementation folder:
+
+`src/components/mobile/`
+
+Initial primitives:
+
+* `SafeAreaContainer`
+* `ResponsiveContainer`
+* `ResponsiveStack`
+* `MobileDrawer`
+* `MobileBottomSheet`
+* `MobileToolbar`
+* `MobileFloatingButton`
+* `OrientationNotice`
+
+Initial adopters:
+
+* mobile hamburger navigation
+* shared simulation layout back/orientation controls
+
+Migration rule:
+
+Future mobile fixes should prefer these primitives before adding page-specific or simulation-specific responsive wrappers.

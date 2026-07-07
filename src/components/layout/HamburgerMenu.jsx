@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Box,
   IconButton,
-  Drawer,
   List,
   ListItemButton,
   ListItemText,
@@ -17,6 +16,7 @@ import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import { useAuth } from "@/hooks/useAuth";
+import { MobileDrawer } from "@/components/mobile";
 
 const LINKS = [
   { to: "/", label: "Home" },
@@ -61,20 +61,14 @@ export default function HamburgerMenu() {
         <MenuRoundedIcon />
       </IconButton>
 
-      <Drawer
-        anchor="right"
+      <MobileDrawer
         open={open}
         onClose={toggle(false)}
-        PaperProps={{
-          sx: {
-            width: "min(86vw, 320px)",
-            pt: "var(--esbiko-safe-top, 0px)",
-            pb: "var(--esbiko-safe-bottom, 0px)",
-            background: isDark
-              ? "linear-gradient(160deg, #0f172a, #1e3a8a, #3b82f6)"
-              : "linear-gradient(160deg, #e0f2fe, #93c5fd, #60a5fa)",
-            color: isDark ? "#f8fafc" : "#0f172a",
-          },
+        paperSx={{
+          background: isDark
+            ? "linear-gradient(160deg, #0f172a, #1e3a8a, #3b82f6)"
+            : "linear-gradient(160deg, #e0f2fe, #93c5fd, #60a5fa)",
+          color: isDark ? "#f8fafc" : "#0f172a",
         }}
       >
         {/* 🔝 Header */}
@@ -236,7 +230,7 @@ export default function HamburgerMenu() {
             </Box>
           )}
         </Box>
-      </Drawer>
+      </MobileDrawer>
     </>
   );
 }

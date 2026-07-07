@@ -1,8 +1,11 @@
 import React, { useEffect } from "react";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { lockScroll, unlockScroll } from "@/utils/scrollLock";
-import OrientationGuard from "@/components/shared/mobile/OrientationGuard";
+import {
+  MobileFloatingButton,
+  OrientationNotice,
+} from "@/components/mobile";
 
 export default function SimulationLayout({ children, onBack, hideBackButton = false }) {
   // Lock page scroll while simulation overlay is mounted
@@ -32,31 +35,15 @@ export default function SimulationLayout({ children, onBack, hideBackButton = fa
         zIndex: 1300,
       }}
     >
-      <OrientationGuard />
+      <OrientationNotice />
       {!hideBackButton && (
-        <Box
-          sx={{
-            position: "fixed",
-            top: "calc(var(--esbiko-safe-top, 0px) + 16px)",
-            left: "calc(var(--esbiko-safe-left, 0px) + 16px)",
-            zIndex: 1400,
-          }}
+        <MobileFloatingButton
+          label="Back to Lab"
+          position="top-left"
+          onClick={handleBackClick}
         >
-          <Tooltip title="Back to Lab">
-            <IconButton
-              onClick={handleBackClick}
-              sx={{
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.45)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                backdropFilter: "blur(10px)",
-                "&:hover": { backgroundColor: "rgba(0,0,0,0.6)" },
-              }}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
+          <ArrowBackIcon />
+        </MobileFloatingButton>
       )}
 
       {/* Fullscreen stage */}
