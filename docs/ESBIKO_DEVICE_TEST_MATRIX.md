@@ -219,3 +219,238 @@ Phase 5 and Phase 6 should add dashboard and admin-specific checks for:
 * student assignment flows
 * admin navigation
 * long names and emails
+
+---
+
+# 10. Browser Compatibility Matrix
+
+Browser testing should cover both normal browser tabs and installed app behavior where supported.
+
+| Browser / Surface | Primary Devices | Required Checks | Expected Behavior |
+| --- | --- | --- | --- |
+| Chrome Desktop | Windows, macOS, ChromeOS | Public pages, dashboards, simulations, recording, PWA install prompt | Primary reference browser. Desktop layout and simulation runtime should be stable. |
+| Chrome Android | Android phones and tablets | safe area, dynamic viewport, address bar collapse, touch controls, recording controls | No horizontal scroll on pages. Simulation shell should stay full height after browser UI changes. |
+| Safari iPhone | iPhone portrait and landscape | notch safe area, Add to Home Screen, orientation notice, touch targets | Content should avoid the notch and home indicator. Orientation guidance should remain readable. |
+| Safari iPad | iPad portrait, landscape, split view | tablet breakpoints, pointer/touch hybrid behavior, PWA-like installed mode | Tablet should use comfortable spacing without forcing phone-only layouts. |
+| Edge | Windows desktop and Android | desktop parity, PWA install, recording permission behavior | Should match Chrome behavior for app shell and simulations. |
+| Firefox | Windows, Android where available | public pages, catalog, simulation loading, fallback screens | Core app should work. Browser-specific recording limitations should be documented if found. |
+| Samsung Internet | Samsung Android phones/tablets | address bar behavior, viewport height, touch gestures, recording controls | No clipped controls after toolbar collapse or rotation. |
+| Installed PWA | Android, iOS, desktop | standalone display, safe area, reload, service worker update, offline fallback | App should not clip behind system UI. Service worker changes are not part of this phase. |
+
+Priority order for manual checks:
+
+* Chrome Desktop
+* Chrome Android
+* Safari iPhone
+* Safari iPad
+* Installed PWA
+* Edge
+* Firefox
+* Samsung Internet
+
+---
+
+# 11. Orientation Matrix
+
+| Mode | Applies To | Required Checks | Expected Behavior |
+| --- | --- | --- | --- |
+| Portrait | Phones, tablets | public pages, experiment catalog, detail pages, simulation shell | Pages should be naturally usable. Simulations may show guidance if controls require landscape. |
+| Landscape | Phones, tablets | compact height, safe-area sides, control overlap, recording overlays | Simulation stage should maximize visible area and keep controls reachable. |
+| Auto Rotation | Phones, tablets | rotate while simulation is running, rotate while drawer/panel is open | Layout should reflow without stuck scroll lock, clipped panels, or lost controls. |
+| Orientation Notice | Simulation runtime | readability, fullscreen button, safe-area padding, compact height | Notice should not overlap notches or home indicators and should remain dismissible by rotating. |
+| Expected Behavior | All orientations | route changes, browser back, in-app back | Normal page scroll should restore after leaving the simulation route. |
+
+Manual orientation checklist:
+
+* rotate from portrait to landscape while a simulation is running
+* rotate from landscape to portrait while controls are open
+* verify orientation notice appears only where appropriate
+* verify fixed HUDs and floating actions remain inside safe areas
+* verify scroll lock releases after leaving the simulation
+
+---
+
+# 12. Performance Targets
+
+These targets define acceptable platform behavior for responsive testing. Individual simulations may need lower targets if they are heavy 3D scenes, but regressions should be documented.
+
+| Target Area | Desktop | Tablet | Phone |
+| --- | ---: | ---: | ---: |
+| Public page interaction | 60 FPS | 60 FPS | 50-60 FPS |
+| 2D simulations | 60 FPS | 45-60 FPS | 30-60 FPS |
+| 3D simulations | 45-60 FPS | 30-60 FPS | 24-45 FPS |
+| Recording preview | 30-60 FPS | 30 FPS | 24-30 FPS |
+| Initial route interaction | under 3s on warm load | under 4s | under 5s |
+
+Resource targets:
+
+| Resource | Target | Notes |
+| --- | --- | --- |
+| CPU | Avoid sustained 100% CPU outside recording or heavy simulation scenes | Long-running educational sessions should not overheat devices. |
+| Memory | Avoid unbounded growth during 10-minute simulation runs | Long video capture should be chunked when needed. |
+| Battery | Avoid unnecessary animation when paused or hidden | Prefer pausing loops when route is inactive where possible. |
+| Thermal | No severe throttling during a 5-minute mobile test | If throttling occurs, record simulation, browser, and device. |
+| Network | Simulation route should not repeatedly reload large assets | Check lazy-loaded chunks and repeated retries. |
+
+Performance testing notes:
+
+* use browser performance tools for frame timing
+* record device model and browser version
+* test at least one 2D simulation and one 3D simulation
+* test with recording controls visible and hidden
+* compare portrait and landscape on the same device
+
+---
+
+# 13. Recording Test Matrix
+
+| Recording Mode | Required Checks | Expected Behavior |
+| --- | --- | --- |
+| Landscape recording | 16:9 safe area, stage fill, HUD visibility, controls hidden or intentional | Output should not include unintended black bars or clipped simulation content. |
+| Portrait recording | 9:16 safe area, stage centering, mobile controls, source/HUD placement | Output should be usable for shorts without covering key visual content. |
+| Square recording | 1:1 crop/preview, centered simulation content, safe-area label behavior | Important content should remain centered and not be hidden by controls. |
+| HUD visibility | capture labels, overlays, measurement readouts, status chips | HUDs should be intentional for educational videos and removable for clean artistic video. |
+| Safe-area | capture boundary, notch/home indicator avoidance, browser/PWA mode | Safe-area UI should not appear in recorded output unless intentionally shown. |
+| Recorder controls | start, stop, chunking, save folder, long capture behavior | Controls should remain reachable and not be captured unless designed to be visible. |
+
+Recording test durations:
+
+| Duration | Purpose | Notes |
+| --- | --- | --- |
+| 10 seconds | quick layout verification | Use before every recording-related UI change. |
+| 60 seconds | chunk save and smoothness verification | Check frame pacing and file size. |
+| 10 minutes | long-form stability | Watch memory, browser crash risk, and chunk handling. |
+| 1 hour or longer | production workflow | Prefer chunking and external video assembly. |
+
+Recording acceptance criteria:
+
+* no accidental black margins in the intended capture area
+* no unwanted UI labels in final capture mode
+* frame pacing remains visually smooth
+* long recordings do not require browser memory to grow without limit
+* generated files can be combined externally without visible seams
+
+---
+
+# 14. Simulation Migration Matrix
+
+This table tracks mobile readiness for simulations registered in `src/simulations/registry/index.js`.
+
+Status meanings:
+
+* `Shell Ready`: runs inside the shared simulation runtime shell.
+* `Needs Audit`: individual controls, HUDs, or canvas behavior still need mobile review.
+* `Pilot Candidate`: good target for the next simulation-level mobile migration.
+* `Not Certified`: no device-specific pass has been recorded yet.
+
+| Simulation | Desktop | Tablet | Phone | Migration Status | Notes |
+| --- | --- | --- | --- | --- | --- |
+| Ambient Pattern Studio (`creative.patterns.ambient-pattern-studio`) | Shell Ready | Needs Audit | Needs Audit | Needs Audit | Recording and creative controls need dedicated mobile capture tests. |
+| Projectile Motion (`physics.mechanics.projectile`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check graph/control layout and launch controls on narrow screens. |
+| Gravity Comparison (`physics.mechanics.gravity-comparison`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check body selectors and comparison labels. |
+| Coulomb's Law 2D (`physics.electricity.coulomb-law-2d`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check draggable charges and field visualization touch behavior. |
+| Coulomb's Law 3D (`physics.electricity.coulomb-law-3d`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | 3D labels and camera controls need mobile validation. |
+| Plate Tectonics 3D (`earth-science.geology.plate-tectonics`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Heavy 3D scene; test camera, labels, and compact controls. |
+| Solar System 3D (`astronomy.space.solar-system`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Test planet labels, orbit controls, and 3D performance. |
+| Spring-Mass Oscillator (`physics.mechanics.spring-mass`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check sliders and graph readability. |
+| Ripple Tank (`physics.waves.surface-waves-double-slit`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check stage scaling and control-panel overflow. |
+| Satellites & Tracking (`astronomy.space.satellites-telescopes`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | 3D tracking panels and labels need tablet/phone review. |
+| Earth Orbit Lab 3D (`astronomy.space.earth-orbit-lab`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Existing build warning is unrelated but should be fixed before deeper migration. |
+| Optics Bench 2D (`physics.optics.lens-mirror-2d`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check ray diagram touch placement and object controls. |
+| Optics Bench 3D (`physics.optics.lens-mirror-3d`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check 3D controls, labels, and compact height. |
+| Seesaw Balance (`physics.mechanics.seesaw`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check drag targets and force labels. |
+| Electric Circuits Lab (`physics.electricity.circuits`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Circuit editors need careful touch and zoom testing. |
+| Collision Simulator (`physics.mechanics.collision`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check timeline controls, graph panels, and collision object handles. |
+| Doppler Effect (`physics.acoustics.doppler`) | Shell Ready | Needs Audit | Needs Audit | Pilot Candidate | Good Phase 4 candidate because it has audio, controls, recording, and engine state. |
+| Simple Pendulum (`physics.mechanics.simple-pendulum`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check graph/controls and small-screen labels. |
+| Ideal Gas Law Simulation (`physics.thermodynamics.gas`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check particle canvas performance and sliders. |
+| Multi-Source Interference (`physics.waves.multi-source-interference`) | Shell Ready | Needs Audit | Needs Audit | Pilot Candidate | Good Phase 4 candidate because it has dense controls, HUD, recording, and artistic output. |
+| Archimedes Principle (`physics.fluid-mechanics.archimedes-principle`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check object dragging and water-level labels. |
+| Sound Waves Lab (`physics.acoustics.sound-waves`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check oscillator controls and graph readability. |
+| Spatial Audio Lab (`physics.acoustics.spatial-audio`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Requires audio permission and mobile gesture testing. |
+| Kepler's Laws Lab (`astronomy.kepler-lab`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check orbit controls and graph panels. |
+| Uniform Circular Motion (`physics.mechanics.circular-motion`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check rotating object controls and labels. |
+| Two-Body Gravity (`physics.mechanics.two-body-gravity`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check touch gestures and orbit trails. |
+| Block and Tackle (`physics.mechanics.pulley-system`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check pulley controls and labels on narrow screens. |
+| Gearbox & Differential 3D (`physics.mechanics.gearbox-differential-3d`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Heavy 3D mechanical scene; test camera and labels first. |
+| Virtual Microscope (`physics.optics.microscope`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check pinch/zoom behavior and focus controls. |
+| Gyroscope Motion (`physics.mechanics.gyroscope`) | Shell Ready | Needs Audit | Needs Audit | Not Certified | Check 3D camera, labels, and performance. |
+
+Migration rules:
+
+* do not migrate all simulations at once
+* migrate one pilot simulation per phase
+* preserve physics, recording, and existing desktop behavior
+* add mobile primitives only where repeated control or HUD behavior exists
+* record device results in this matrix after each migration
+
+---
+
+# 15. Accessibility Matrix
+
+| Area | Required Checks | Expected Behavior |
+| --- | --- | --- |
+| Keyboard | tab order, focus ring, escape behavior, enter/space activation | Public pages and dialogs should be keyboard usable. Simulation shortcuts should not trap focus. |
+| Touch | 44px targets, drag gestures, sliders, canvas gestures | Controls should be reachable with thumb input and not conflict with browser gestures. |
+| Reduced Motion | OS reduced-motion preference, animation-heavy pages, simulation pause states | Decorative motion should reduce where practical. Scientific animation may continue when essential. |
+| Zoom | browser zoom 125%, 150%, 200%; mobile pinch zoom where allowed | Text and controls should not overlap or become unreachable. |
+| High Contrast | Windows high contrast, forced colors where possible, dark mode contrast | Text, buttons, and focus rings should remain visible. |
+| Screen Reader | page landmarks, button labels, dialog labels, simulation fallback text | Nonvisual users should understand the route and available controls, even when canvas content is visual. |
+
+Simulation accessibility notes:
+
+* canvas-heavy simulations need textual context outside the canvas
+* icon-only buttons must have labels
+* drag-only controls should eventually have numeric input alternatives
+* recording controls must remain keyboard reachable where practical
+* focus should return predictably after closing drawers or bottom sheets
+
+---
+
+# 16. Future Automation
+
+Automated responsive testing should start with stable shell behavior before individual simulation assertions.
+
+## Playwright
+
+Recommended coverage:
+
+* open Home, Experiments, Experiment Detail, and RunSimulation
+* test core viewport widths: 320, 375, 390, 430, 768, 1024, 1440, 1920
+* verify no horizontal document overflow on public pages
+* verify simulation shell uses full viewport bounds
+* verify back button restores normal page scroll after simulation exit
+
+## Visual Regression
+
+Recommended snapshots:
+
+* Home page hero and first content band
+* Experiments page search/filter area
+* Experiment Detail hero and sidebar
+* RunSimulation loading state
+* orientation notice overlay
+* selected pilot simulations after migration
+
+## Responsive Screenshot Tests
+
+Recommended screenshot matrix:
+
+| Route | 320x640 | 390x844 | 844x390 | 768x1024 | 1440x900 |
+| --- | --- | --- | --- | --- | --- |
+| `/` | Required | Required | Optional | Required | Required |
+| `/experiments` | Required | Required | Required | Required | Required |
+| `/experiments/:id` | Required | Required | Optional | Required | Required |
+| `/experiments/:id/run` | Required | Required | Required | Required | Required |
+
+## Regression Checklist
+
+Before merging mobile changes:
+
+* targeted ESLint passes for changed files
+* production build passes
+* public pages have no unintended horizontal scroll
+* simulation route still locks and restores scroll
+* desktop layout remains visually unchanged
+* PWA manifest/service worker behavior is not changed unless intentionally scoped
+* recording workflows are not modified unless explicitly tested
