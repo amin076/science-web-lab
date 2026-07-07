@@ -6,6 +6,7 @@ import { getFlightMetrics, landerScenePosition } from "./sceneMath";
 
 const LANDER_MODEL_PATH = "/models/challenges/lander.glb";
 const LANDER_TARGET_HEIGHT = 2.45;
+const LANDER_FOOT_Y = -0.5;
 
 export default function MoonLander({ state, input }) {
   const { scene } = useGLTF(LANDER_MODEL_PATH);
@@ -18,11 +19,18 @@ export default function MoonLander({ state, input }) {
       }
     });
     const box = new THREE.Box3().setFromObject(clonedScene);
-    const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
     const scale = LANDER_TARGET_HEIGHT / Math.max(size.x, size.y, size.z, 1);
-    clonedScene.position.copy(center.multiplyScalar(-1));
     clonedScene.scale.setScalar(scale);
+    clonedScene.updateMatrixWorld(true);
+
+    const scaledBox = new THREE.Box3().setFromObject(clonedScene);
+    const scaledCenter = scaledBox.getCenter(new THREE.Vector3());
+    clonedScene.position.set(
+      -scaledCenter.x,
+      LANDER_FOOT_Y - scaledBox.min.y,
+      -scaledCenter.z
+    );
     return clonedScene;
   }, [scene]);
   const groupRef = useRef(null);

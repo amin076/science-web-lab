@@ -1,12 +1,15 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import { padSceneWidth, padSceneX } from "./sceneMath";
+import { terrainHeight } from "./terrainSurface";
 
 export default function LandingPad({ state }) {
   const beaconRef = useRef(null);
   const lightRef = useRef(null);
   const x = padSceneX(state);
   const width = padSceneWidth(state);
+  const radius = Math.max(1.45, width * 0.58);
+  const y = terrainHeight(x, 0) + 0.03;
   const success = state?.status === "landed";
   const color = success ? "#86efac" : "#67e8f9";
 
@@ -22,13 +25,17 @@ export default function LandingPad({ state }) {
   });
 
   return (
-    <group position={[x, 0.14, 0]}>
+    <group position={[x, y, 0]}>
       <mesh receiveShadow castShadow>
-        <boxGeometry args={[width + 0.9, 0.16, 2.25]} />
-        <meshStandardMaterial color="#202631" roughness={0.68} metalness={0.18} />
+        <cylinderGeometry args={[radius, radius, 0.14, 96]} />
+        <meshStandardMaterial
+          color="#202631"
+          roughness={0.68}
+          metalness={0.18}
+        />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-        <torusGeometry args={[Math.max(1.1, width * 0.54), 0.045, 12, 96]} />
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.105, 0]}>
+        <torusGeometry args={[radius * 0.78, 0.045, 12, 128]} />
         <meshStandardMaterial
           color={color}
           emissive={color}
@@ -37,7 +44,9 @@ export default function LandingPad({ state }) {
         />
       </mesh>
       <mesh ref={beaconRef} position={[0, 1.7, 0]}>
-        <cylinderGeometry args={[width * 0.42, width * 0.72, 3.4, 48, 1, true]} />
+        <cylinderGeometry
+          args={[radius * 0.45, radius * 0.82, 3.4, 72, 1, true]}
+        />
         <meshBasicMaterial
           color={color}
           transparent
@@ -45,16 +54,26 @@ export default function LandingPad({ state }) {
           depthWrite={false}
         />
       </mesh>
-      {[-0.9, -0.45, 0.45, 0.9].map((offset) => (
-        <mesh key={offset} position={[offset * width * 0.5, 0.2, 1.0]}>
-          <sphereGeometry args={[0.08, 16, 16]} />
-          <meshStandardMaterial
-            color={color}
-            emissive={color}
-            emissiveIntensity={2.8}
-          />
-        </mesh>
-      ))}
+      {[0, 1, 2, 3, 4, 5].map((index) => {
+        const angle = (index / 6) * Math.PI * 2;
+        return (
+          <mesh
+            key={index}
+            position={[
+              Math.cos(angle) * radius * 0.82,
+              0.19,
+              Math.sin(angle) * radius * 0.82,
+            ]}
+          >
+            <sphereGeometry args={[0.08, 16, 16]} />
+            <meshStandardMaterial
+              color={color}
+              emissive={color}
+              emissiveIntensity={2.8}
+            />
+          </mesh>
+        );
+      })}
       <pointLight ref={lightRef} color={color} intensity={2.2} distance={8} />
     </group>
   );
