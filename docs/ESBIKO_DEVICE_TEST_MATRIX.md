@@ -194,6 +194,9 @@ Shared shell checks:
 * runtime root uses dynamic viewport height
 * stage remains full-bleed and does not resize child simulations
 * safe-area back button remains reachable on phones and PWAs
+* shared HUD and control primitives use simulation safe-area offsets
+* shared control panels scroll internally instead of forcing page scroll
+* floating action groups do not cover the back button or orientation notice
 * orientation notice respects notches and compact landscape height
 * loading, not-found, and crash fallback screens do not clip
 * scroll remains locked to the simulation route only

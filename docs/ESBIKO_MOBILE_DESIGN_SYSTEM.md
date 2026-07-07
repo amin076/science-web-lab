@@ -95,6 +95,10 @@ Use explicit names that describe responsive behavior:
 * `MobileBottomSheet`
 * `MobileToolbar`
 * `MobileFloatingButton`
+* `MobileControlPanel`
+* `MobileHUDContainer`
+* `SimulationMobileToolbar`
+* `SimulationFloatingActions`
 * `OrientationNotice`
 
 Avoid vague names such as:
@@ -199,6 +203,60 @@ Use for:
 * mobile settings buttons
 * open-control-panel buttons
 
+## MobileControlPanel
+
+Purpose:
+
+Provide a safe-area-aware, scroll-contained shell for simulation controls.
+
+Use for:
+
+* future simulation settings panels
+* compact mobile control panels
+* side or bottom anchored simulation controls
+* panels that must not overflow beyond the simulation stage
+
+## MobileHUDContainer
+
+Purpose:
+
+Provide a safe-area-aware overlay position for simulation HUD content.
+
+Use for:
+
+* counters
+* measurement readouts
+* status chips
+* compact nonblocking overlays
+
+HUD content should avoid blocking the simulation stage unless `interactive` behavior is required.
+
+## SimulationMobileToolbar
+
+Purpose:
+
+Provide a scroll-safe compact toolbar for simulation controls.
+
+Use for:
+
+* mobile simulation actions
+* compact mode switches
+* recording/action toolbars
+* bottom or top anchored simulation command rows
+
+## SimulationFloatingActions
+
+Purpose:
+
+Provide a safe-area-aware floating action group for simulation buttons.
+
+Use for:
+
+* reset/play/pause action groups
+* open settings buttons
+* graph or HUD toggles
+* compact simulation utility actions
+
 ## OrientationNotice
 
 Purpose:
@@ -209,6 +267,20 @@ Use for:
 
 * simulations that strongly prefer landscape
 * high-density interactive views
+
+## Simulation Safe-Area Helpers
+
+Purpose:
+
+Expose shared simulation overlay offsets without duplicating CSS formulas.
+
+Use:
+
+```js
+import { simulationSafeAreaOffset } from "@/components/mobile";
+```
+
+These helpers read `--esbiko-simulation-safe-*` first, then fall back to the global safe-area variables.
 
 ---
 
@@ -333,4 +405,3 @@ Current adopters:
 * `src/components/layout/SimulationLayout.jsx`
 
 This proves the primitives can support existing platform UI without rewriting page or simulation behavior.
-
