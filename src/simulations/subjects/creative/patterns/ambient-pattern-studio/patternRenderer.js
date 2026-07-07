@@ -8,6 +8,9 @@ export const PATTERN_PRESETS = [
   { value: "aurora", label: "Aurora Silk" },
   { value: "particles", label: "Particle Constellation" },
   { value: "solar-system", label: "Solar System Dream" },
+  { value: "flow-field", label: "Flow Field Silk" },
+  { value: "lissajous", label: "Lissajous Bloom" },
+  { value: "metaballs", label: "Metaball Dream" },
 ];
 
 export const PALETTE_PRESETS = [
@@ -434,6 +437,133 @@ function drawAurora(ctx, w, h, palette, phase, settings) {
   }
 }
 
+function drawFlowField(ctx, w, h, palette, phase, settings) {
+  const base = Math.min(w, h);
+  const count = Math.round(26 + settings.complexity * 46);
+  const steps = Math.round(18 + settings.depth * 18);
+  const stepSize = base * (0.008 + settings.depth * 0.006);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  for (let i = 0; i < count; i += 1) {
+    const p = PARTICLES[i % PARTICLES.length];
+    let x = w * (0.5 + Math.cos(p.angle + phase * (0.42 + p.drift * 0.12)) * p.radius * 0.58);
+    let y = h * (0.5 + Math.sin(p.phase + phase * (0.34 + p.depth * 0.16)) * (p.radius - 0.28) * 0.82);
+    const color = palette.colors[i % palette.colors.length];
+    const alpha = (0.035 + p.depth * 0.075) * settings.intensity;
+
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+
+    for (let step = 0; step < steps; step += 1) {
+      const nx = x / w - 0.5;
+      const ny = y / h - 0.5;
+      const angle =
+        Math.sin(nx * 9.5 + phase * settings.cycles + p.phase) +
+        Math.cos(ny * 8.4 - phase * 1.2 + p.angle) +
+        Math.sin((nx + ny) * 7.2 + phase * 0.8);
+      const turn = angle * Math.PI * (0.32 + settings.rotation * 0.08);
+
+      x += Math.cos(turn) * stepSize;
+      y += Math.sin(turn) * stepSize;
+      ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = rgba(color, alpha);
+    ctx.lineWidth = base * (0.0012 + settings.bloom * 0.0019);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 12 * settings.bloom;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawLissajous(ctx, w, h, palette, phase, settings) {
+  const cx = w / 2;
+  const cy = h / 2;
+  const base = Math.min(w, h);
+  const curves = Math.round(5 + settings.complexity * 8);
+  const points = 420;
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(phase * settings.rotation * 0.24);
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+
+  for (let curve = 0; curve < curves; curve += 1) {
+    const curveT = curve / Math.max(1, curves - 1);
+    const color = palette.colors[curve % palette.colors.length];
+    const ax = 2 + (curve % 4);
+    const ay = 3 + ((curve + 1) % 5);
+    const scale = base * (0.17 + curveT * 0.28 + settings.depth * 0.04);
+    const phaseOffset = curve * 0.72 + phase * settings.cycles;
+
+    ctx.beginPath();
+    for (let i = 0; i <= points; i += 1) {
+      const t = (i / points) * TAU;
+      const pulse = 1 + Math.sin(t * 3 + phase * 2 + curve) * 0.035 * settings.drift;
+      const x = Math.sin(ax * t + phaseOffset) * scale * pulse * 1.25;
+      const y = Math.sin(ay * t + phaseOffset * 0.74) * scale * pulse * 0.72;
+
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = rgba(color, (0.04 + settings.intensity * 0.055) * (1 - curveT * 0.36));
+    ctx.lineWidth = base * (0.0016 + settings.bloom * 0.002);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18 * settings.bloom;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawMetaballs(ctx, w, h, palette, phase, settings) {
+  const base = Math.min(w, h);
+  const count = Math.round(12 + settings.complexity * 18);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  for (let i = 0; i < count; i += 1) {
+    const p = PARTICLES[(i * 7) % PARTICLES.length];
+    const color = palette.colors[i % palette.colors.length];
+    const orbit = phase * settings.cycles * (0.18 + p.drift * 0.13) + p.angle;
+    const wobble = Math.sin(phase * 1.7 + p.phase) * base * 0.025 * settings.drift;
+    const x = w / 2 + Math.cos(orbit) * base * (0.08 + p.radius * 0.38) * 1.28 + wobble;
+    const y = h / 2 + Math.sin(orbit * 0.83 + p.phase) * base * (0.07 + p.radius * 0.32) * 0.84;
+    const radius = base * (0.055 + p.size * 0.028 + settings.depth * 0.035);
+    const alpha = (0.055 + p.depth * 0.075) * settings.intensity;
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, radius * (1.8 + settings.bloom * 0.7));
+
+    grad.addColorStop(0, rgba("#ffffff", alpha * 1.3));
+    grad.addColorStop(0.18, rgba(color, alpha * 1.9));
+    grad.addColorStop(0.58, rgba(color, alpha * 0.55));
+    grad.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, radius * (1.8 + settings.bloom * 0.7), 0, TAU);
+    ctx.fill();
+  }
+
+  const ringRadius = base * (0.18 + settings.depth * 0.12 + Math.sin(phase * 2) * 0.018);
+  ctx.strokeStyle = rgba(palette.colors[0], 0.08 + settings.intensity * 0.055);
+  ctx.lineWidth = base * (0.002 + settings.bloom * 0.002);
+  ctx.shadowColor = palette.colors[1];
+  ctx.shadowBlur = 22 * settings.bloom;
+  ctx.beginPath();
+  ctx.ellipse(w / 2, h / 2, ringRadius * 1.7, ringRadius * 0.78, phase * settings.rotation, 0, TAU);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
 function drawConstellation(ctx, w, h, palette, phase, settings) {
   const count = Math.min(PARTICLES.length, Math.max(20, Math.round(settings.particles)));
   const scale = Math.min(w, h);
@@ -678,10 +808,18 @@ export function renderAmbientPattern(ctx, width, height, timeSeconds, settings) 
 
   drawBackground(ctx, width, height, palette, loopPhase, normalized);
 
+  const heavySelfIlluminatedPattern =
+    normalized.pattern === "flow-field" ||
+    normalized.pattern === "lissajous" ||
+    normalized.pattern === "metaballs";
+
   if (normalized.pattern === "solar-system") {
     drawSharpStarField(ctx, width, height, palette, loopPhase, normalized);
-  } else if (normalized.pattern !== "particles") {
-    drawSoftParticles(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern !== "particles" && !heavySelfIlluminatedPattern) {
+    drawSoftParticles(ctx, width, height, palette, loopPhase, {
+      ...normalized,
+      particles: Math.min(normalized.particles, 90),
+    });
   }
 
   if (normalized.pattern === "tunnel") {
@@ -690,6 +828,12 @@ export function renderAmbientPattern(ctx, width, height, timeSeconds, settings) 
     drawMandala(ctx, width, height, palette, loopPhase, normalized);
   } else if (normalized.pattern === "aurora") {
     drawAurora(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "flow-field") {
+    drawFlowField(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "lissajous") {
+    drawLissajous(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "metaballs") {
+    drawMetaballs(ctx, width, height, palette, loopPhase, normalized);
   } else if (normalized.pattern === "particles") {
     drawConstellation(ctx, width, height, palette, loopPhase, normalized);
   } else if (normalized.pattern === "solar-system") {

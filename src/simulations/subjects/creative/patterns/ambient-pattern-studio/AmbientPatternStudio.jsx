@@ -22,6 +22,7 @@ import {
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
+const MAX_FRAME_DELTA_SECONDS = 1 / 60;
 
 const CAPTURE_GUIDES = {
   landscape: {
@@ -100,11 +101,11 @@ function CaptureGuide({ mode, bounds, isRecording }) {
   );
 }
 
-function Panel({ title, icon: Icon, children }) {
+function Panel({ title, icon, children }) {
   return (
     <section className="rounded-xl border border-white/10 bg-white/[0.055] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
       <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100/85">
-        <Icon size={14} />
+        {React.createElement(icon, { size: 14 })}
         {title}
       </div>
       {children}
@@ -145,6 +146,11 @@ export default function AmbientPatternStudio() {
     particles: 130,
     backgroundGlow: 0.95,
   });
+  const settingsRef = useRef(settings);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
 
   const updateSetting = useCallback((key, value) => {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -250,14 +256,15 @@ export default function AmbientPatternStudio() {
       if (!canvas) return;
 
       const ctx = canvas.getContext("2d", { alpha: false });
-      const dt = Math.min((now - (lastRef.current || now)) / 1000, 0.05);
+      const rawDt = (now - (lastRef.current || now)) / 1000;
+      const dt = Math.min(Math.max(rawDt, 0), MAX_FRAME_DELTA_SECONDS);
       lastRef.current = now;
 
       if (isPlaying) elapsedRef.current += dt;
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = "high";
-      renderAmbientPattern(ctx, canvas.width, canvas.height, elapsedRef.current, settings);
+      renderAmbientPattern(ctx, canvas.width, canvas.height, elapsedRef.current, settingsRef.current);
 
       rafRef.current = requestAnimationFrame(draw);
     };
@@ -267,7 +274,7 @@ export default function AmbientPatternStudio() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [isPlaying, settings]);
+  }, [isPlaying]);
 
   useEffect(() => {
     const container = containerRef.current;
