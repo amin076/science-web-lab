@@ -12,10 +12,14 @@ import {
   Button,
   Chip,
   Stack,
-  Container,
   IconButton,
   Tooltip,
 } from "@mui/material";
+import {
+  ResponsiveContainer,
+  ResponsiveStack,
+  SafeAreaContainer,
+} from "@/components/mobile";
 import { experimentsData } from "@/data/experiments/index";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -148,7 +152,7 @@ export default function ExperimentDetail() {
     return (
       <Box
         sx={{
-          height: "100vh",
+          minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -177,7 +181,6 @@ export default function ExperimentDetail() {
   const {
     name,
     desc = "Explore this interactive science simulation in Esbiko.",
-    shortDesc,
     yearLevel,
     difficulty,
     estimatedTime,
@@ -189,7 +192,6 @@ export default function ExperimentDetail() {
     discussionQuestions = [],
     worksheet,
     teacherGuide,
-    youtubeIdeas = [],
     Icon,
     gradient = DEFAULT_GRADIENT,
     subject = "science",
@@ -242,7 +244,18 @@ export default function ExperimentDetail() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", pb: 8, pt: 4, position: "relative" }}>
+    <SafeAreaContainer
+      component="main"
+      fullHeight
+      edges={["top", "bottom"]}
+      sx={{
+        minHeight: "100dvh",
+        pb: { xs: 6, md: 8 },
+        pt: { xs: 2, md: 4 },
+        position: "relative",
+        overflowX: "hidden",
+      }}
+    >
       {/* 🌑 Background Ambiance */}
       <Box
         sx={{
@@ -260,8 +273,8 @@ export default function ExperimentDetail() {
             position: "absolute",
             top: "-10%",
             right: "-5%",
-            width: "600px",
-            height: "600px",
+            width: { xs: "min(520px, 120vw)", md: "600px" },
+            height: { xs: "min(520px, 120vw)", md: "600px" },
             background: safeGradient,
             filter: "blur(120px)",
             opacity: 0.15,
@@ -272,8 +285,8 @@ export default function ExperimentDetail() {
             position: "absolute",
             bottom: "10%",
             left: "-10%",
-            width: "500px",
-            height: "500px",
+            width: { xs: "min(460px, 115vw)", md: "500px" },
+            height: { xs: "min(460px, 115vw)", md: "500px" },
             background: "#4f46e5",
             filter: "blur(120px)",
             opacity: 0.1,
@@ -281,12 +294,14 @@ export default function ExperimentDetail() {
         />
       </Box>
 
-      <Container maxWidth="lg">
+      <ResponsiveContainer maxWidth={1200}>
         {/* 🔙 Navigation Bar */}
-        <Stack
-          direction="row"
+        <ResponsiveStack
+          direction={{ xs: "row", md: "row" }}
+          spacing={1}
           alignItems="center"
           justifyContent="space-between"
+          wrap
           sx={{ mb: 3 }}
         >
           <Button
@@ -321,9 +336,9 @@ export default function ExperimentDetail() {
               </IconButton>
             </Tooltip>
           </Stack>
-        </Stack>
+        </ResponsiveStack>
 
-        {/* 🦸 HERO SECTION */}
+        {/* HERO SECTION */}
         <Box
           component={motion.div}
           initial={{ opacity: 0, y: 20 }}
@@ -470,7 +485,7 @@ export default function ExperimentDetail() {
               transition={{ delay: 0.1 }}
               sx={{
                 ...glassPanelStyle,
-                p: 4,
+                p: { xs: 3, md: 4 },
               }}
             >
               <Stack direction="row" alignItems="center" gap={2} sx={{ mb: 2 }}>
@@ -541,7 +556,7 @@ export default function ExperimentDetail() {
             </Box>
 
             {classroomActivity && (
-              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+              <Box sx={{ ...glassPanelStyle, p: { xs: 3, md: 4 } }}>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                   🧪 Classroom Activity
                 </Typography>
@@ -569,7 +584,7 @@ export default function ExperimentDetail() {
             )}
 
             {discussionQuestions.length > 0 && (
-              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+              <Box sx={{ ...glassPanelStyle, p: { xs: 3, md: 4 } }}>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                   💬 Discussion Questions
                 </Typography>
@@ -589,7 +604,7 @@ export default function ExperimentDetail() {
             )}
 
             {teacherGuide && (
-              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+              <Box sx={{ ...glassPanelStyle, p: { xs: 3, md: 4 } }}>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                   👨‍🏫 Teacher Guide
                 </Typography>
@@ -645,7 +660,7 @@ export default function ExperimentDetail() {
             )}
 
             {worksheet && (
-              <Box sx={{ ...glassPanelStyle, p: 4 }}>
+              <Box sx={{ ...glassPanelStyle, p: { xs: 3, md: 4 } }}>
                 <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
                   📝 Student Worksheet Preview
                 </Typography>
@@ -944,7 +959,7 @@ export default function ExperimentDetail() {
             </Box>
           </Stack>
         </Box>
-      </Container>
-    </Box>
+      </ResponsiveContainer>
+    </SafeAreaContainer>
   );
 }
