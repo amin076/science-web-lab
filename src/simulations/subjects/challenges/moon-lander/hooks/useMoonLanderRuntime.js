@@ -52,6 +52,12 @@ export default function useMoonLanderRuntime() {
 
   const setControlActive = useCallback(
     (control, active) => {
+      const current = engineRef.current.getState();
+
+      if (active && current.status === MOON_LANDER_STATUS.READY) {
+        setState(engineRef.current.resume());
+      }
+
       publishInput({
         ...inputRef.current,
         [control]: Boolean(active),
@@ -68,10 +74,20 @@ export default function useMoonLanderRuntime() {
     setState(engineRef.current.resume());
   }, []);
 
+  const start = useCallback(() => {
+    lastFrameRef.current = null;
+    setState(engineRef.current.resume());
+  }, []);
+
   const togglePause = useCallback(() => {
     const current = engineRef.current.getState();
 
     if (current.status === MOON_LANDER_STATUS.PAUSED) {
+      setState(engineRef.current.resume());
+      return;
+    }
+
+    if (current.status === MOON_LANDER_STATUS.READY) {
       setState(engineRef.current.resume());
       return;
     }
@@ -85,11 +101,12 @@ export default function useMoonLanderRuntime() {
     pressedKeysRef.current.clear();
     publishInput(createDefaultInput());
     engineRef.current.reset();
+    lastFrameRef.current = null;
     setState(engineRef.current.resume());
   }, [publishInput]);
 
   useEffect(() => {
-    setState(engineRef.current.resume());
+    setState(engineRef.current.getState());
   }, []);
 
   useEffect(() => {
@@ -101,7 +118,12 @@ export default function useMoonLanderRuntime() {
       );
 
       lastFrameRef.current = timestamp;
-      setState(engineRef.current.update(deltaSeconds, inputRef.current));
+
+      const current = engineRef.current.getState();
+      if (current.status === MOON_LANDER_STATUS.RUNNING) {
+        setState(engineRef.current.update(deltaSeconds, inputRef.current));
+      }
+
       animationRef.current = window.requestAnimationFrame(tick);
     }
 
@@ -165,10 +187,12 @@ export default function useMoonLanderRuntime() {
     input,
     pause,
     resume,
+    start,
     reset,
     togglePause,
     setControlActive,
     isPaused: state?.status === MOON_LANDER_STATUS.PAUSED,
+    isReady: state?.status === MOON_LANDER_STATUS.READY,
     isFinished: isTerminalStatus(state?.status),
   };
 }

@@ -1,11 +1,30 @@
-import { Button, IconButton, Stack, Tooltip } from "@mui/material";
-import { Pause, Play, RotateCcw, RotateCcwSquare, RotateCwSquare, Rocket } from "lucide-react";
+import { Box, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import {
+  Flame,
+  Pause,
+  Play,
+  RotateCcw,
+  RotateCcwSquare,
+  RotateCwSquare,
+} from "lucide-react";
 import {
   SimulationFloatingActions,
   SimulationMobileToolbar,
 } from "@/components/mobile";
 
-function ControlButton({ label, active, onPressStart, onPressEnd, children }) {
+function ControlButton({
+  label,
+  active,
+  size = "standard",
+  onPressStart,
+  onPressEnd,
+  children,
+}) {
+  const buttonSize =
+    size === "large"
+      ? { xs: 86, sm: 98 }
+      : { xs: 68, sm: 76 };
+
   const handlePointerDown = (event) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -19,36 +38,39 @@ function ControlButton({ label, active, onPressStart, onPressEnd, children }) {
   };
 
   return (
-    <Button
+    <Box
+      component="button"
+      type="button"
       aria-label={label}
-      variant="contained"
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerCancel={onPressEnd}
       onPointerLeave={onPressEnd}
       sx={{
-        minWidth: { xs: 72, sm: 84 },
-        minHeight: { xs: 58, sm: 64 },
-        borderRadius: 4,
+        width: buttonSize,
+        height: buttonSize,
+        display: "grid",
+        placeItems: "center",
+        borderRadius: "50%",
         color: "white",
-        border: "1px solid rgba(255,255,255,0.16)",
+        border: active
+          ? "1px solid rgba(125, 249, 255, 0.92)"
+          : "1px solid rgba(255,255,255,0.18)",
         background: active
-          ? "linear-gradient(135deg, rgba(96, 230, 255, 0.95), rgba(117, 91, 255, 0.82))"
-          : "rgba(8, 18, 34, 0.74)",
+          ? "radial-gradient(circle at 50% 32%, rgba(255,255,255,0.95), rgba(56,189,248,0.88) 28%, rgba(79,70,229,0.88) 100%)"
+          : "radial-gradient(circle at 50% 24%, rgba(255,255,255,0.12), rgba(8,18,34,0.78) 60%, rgba(4,8,18,0.92))",
         boxShadow: active
-          ? "0 0 28px rgba(88, 218, 255, 0.42)"
-          : "0 16px 42px rgba(0,0,0,0.32)",
-        backdropFilter: "blur(14px)",
+          ? "0 0 34px rgba(74, 222, 255, 0.52), 0 18px 54px rgba(0,0,0,0.42)"
+          : "0 18px 48px rgba(0,0,0,0.38)",
+        backdropFilter: "blur(16px)",
+        cursor: "pointer",
         touchAction: "none",
-        "&:hover": {
-          background: active
-            ? "linear-gradient(135deg, rgba(112, 239, 255, 1), rgba(132, 106, 255, 0.9))"
-            : "rgba(15, 30, 56, 0.82)",
-        },
+        transition: "transform 120ms ease, box-shadow 120ms ease",
+        transform: active ? "scale(0.96)" : "scale(1)",
       }}
     >
       {children}
-    </Button>
+    </Box>
   );
 }
 
@@ -67,60 +89,106 @@ export default function MoonLanderControls({
       <SimulationFloatingActions
         position="bottom-left"
         direction="row"
-        spacing={1}
+        spacing={{ xs: 1.1, sm: 1.4 }}
         sx={{
           bottom: {
-            xs: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 84px)",
-            md: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 22px)",
+            xs: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 86px)",
+            md: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 26px)",
+          },
+          left: {
+            xs: "calc(var(--esbiko-simulation-safe-left, var(--esbiko-safe-left, 0px)) + 18px)",
+            md: "calc(var(--esbiko-simulation-safe-left, var(--esbiko-safe-left, 0px)) + 30px)",
           },
         }}
       >
-        <ControlButton
-          label="Rotate left"
-          active={input.rotateLeft}
-          onPressStart={() => onControlActive("rotateLeft", true)}
-          onPressEnd={() => onControlActive("rotateLeft", false)}
-        >
-          <RotateCcwSquare size={28} aria-hidden="true" />
-        </ControlButton>
-        <ControlButton
-          label="Rotate right"
-          active={input.rotateRight}
-          onPressStart={() => onControlActive("rotateRight", true)}
-          onPressEnd={() => onControlActive("rotateRight", false)}
-        >
-          <RotateCwSquare size={28} aria-hidden="true" />
-        </ControlButton>
+        <Stack spacing={0.8} alignItems="center">
+          <ControlButton
+            label="Rotate left"
+            active={input.rotateLeft}
+            onPressStart={() => onControlActive("rotateLeft", true)}
+            onPressEnd={() => onControlActive("rotateLeft", false)}
+          >
+            <RotateCcwSquare size={30} aria-hidden="true" />
+          </ControlButton>
+          <Typography
+            sx={{
+              color: "rgba(235, 248, 255, 0.74)",
+              fontSize: 10,
+              fontWeight: 900,
+              textTransform: "uppercase",
+            }}
+          >
+            Left
+          </Typography>
+        </Stack>
+        <Stack spacing={0.8} alignItems="center">
+          <ControlButton
+            label="Rotate right"
+            active={input.rotateRight}
+            onPressStart={() => onControlActive("rotateRight", true)}
+            onPressEnd={() => onControlActive("rotateRight", false)}
+          >
+            <RotateCwSquare size={30} aria-hidden="true" />
+          </ControlButton>
+          <Typography
+            sx={{
+              color: "rgba(235, 248, 255, 0.74)",
+              fontSize: 10,
+              fontWeight: 900,
+              textTransform: "uppercase",
+            }}
+          >
+            Right
+          </Typography>
+        </Stack>
       </SimulationFloatingActions>
 
       <SimulationFloatingActions
         position="bottom-right"
         sx={{
           bottom: {
-            xs: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 84px)",
-            md: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 22px)",
+            xs: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 82px)",
+            md: "calc(var(--esbiko-simulation-safe-bottom, var(--esbiko-safe-bottom, 0px)) + 26px)",
+          },
+          right: {
+            xs: "calc(var(--esbiko-simulation-safe-right, var(--esbiko-safe-right, 0px)) + 18px)",
+            md: "calc(var(--esbiko-simulation-safe-right, var(--esbiko-safe-right, 0px)) + 30px)",
           },
         }}
       >
-        <ControlButton
-          label="Main thrust"
-          active={input.mainThrust}
-          onPressStart={() => onControlActive("mainThrust", true)}
-          onPressEnd={() => onControlActive("mainThrust", false)}
-        >
-          <Stack alignItems="center" spacing={0.4}>
-            <Rocket size={30} aria-hidden="true" />
-            <span style={{ fontSize: 11, fontWeight: 900 }}>THRUST</span>
-          </Stack>
-        </ControlButton>
+        <Stack spacing={0.8} alignItems="center">
+          <ControlButton
+            label="Main thrust"
+            active={input.mainThrust}
+            size="large"
+            onPressStart={() => onControlActive("mainThrust", true)}
+            onPressEnd={() => onControlActive("mainThrust", false)}
+          >
+            <Flame size={36} aria-hidden="true" />
+          </ControlButton>
+          <Typography
+            sx={{
+              color: input.mainThrust ? "#7dd3fc" : "rgba(235, 248, 255, 0.78)",
+              fontSize: 11,
+              fontWeight: 950,
+              textTransform: "uppercase",
+            }}
+          >
+            Hold thrust
+          </Typography>
+        </Stack>
       </SimulationFloatingActions>
 
       <SimulationMobileToolbar
         placement="bottom"
         sx={{
-          mx: "auto",
-          width: { xs: "calc(100vw - 24px)", sm: "min(560px, calc(100vw - 32px))" },
+          left: "50%",
+          right: "auto",
+          transform: "translateX(-50%)",
+          width: { xs: "min(320px, calc(100vw - 132px))", sm: 330 },
           justifyContent: "center",
+          px: 1,
+          py: 0.75,
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center">
@@ -132,31 +200,29 @@ export default function MoonLanderControls({
                 disabled={isFinished}
                 sx={{
                   color: "white",
-                  minWidth: 44,
-                  minHeight: 44,
+                  minWidth: 42,
+                  minHeight: 42,
                   backgroundColor: "rgba(255,255,255,0.08)",
                   "&:hover": { backgroundColor: "rgba(255,255,255,0.14)" },
                 }}
               >
-                {isPaused ? <Play size={20} /> : <Pause size={20} />}
+                {isPaused ? <Play size={19} /> : <Pause size={19} />}
               </IconButton>
             </span>
           </Tooltip>
-          <Button
-            startIcon={<RotateCcw size={18} />}
+          <IconButton
+            aria-label="Reset mission"
             onClick={onReset}
             sx={{
-              minHeight: 44,
-              borderRadius: 999,
-              px: 2,
               color: "white",
-              fontWeight: 900,
+              minWidth: 42,
+              minHeight: 42,
               backgroundColor: "rgba(255,255,255,0.08)",
               "&:hover": { backgroundColor: "rgba(255,255,255,0.14)" },
             }}
           >
-            Reset
-          </Button>
+            <RotateCcw size={19} />
+          </IconButton>
         </Stack>
       </SimulationMobileToolbar>
     </>
