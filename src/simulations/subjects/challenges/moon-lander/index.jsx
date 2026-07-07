@@ -1,10 +1,10 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { Flame, Play, Target } from "lucide-react";
-import MoonLanderCanvas from "./components/MoonLanderCanvas";
 import MoonLanderControls from "./components/MoonLanderControls";
 import MoonLanderHUD from "./components/MoonLanderHUD";
 import MoonLanderSummary from "./components/MoonLanderSummary";
 import useMoonLanderRuntime from "./hooks/useMoonLanderRuntime";
+import MoonScene from "./scene/MoonScene";
 
 function TrainingBriefing({ onStart }) {
   return (
@@ -168,7 +168,7 @@ export default function MoonLanderChallenge() {
     >
       {runtime.state && (
         <>
-          <MoonLanderCanvas state={runtime.state} input={runtime.input} />
+          <MoonScene state={runtime.state} input={runtime.input} />
           <MoonLanderHUD state={runtime.state} />
           {!runtime.isReady && (
             <MoonLanderControls
