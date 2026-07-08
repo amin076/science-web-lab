@@ -4,6 +4,10 @@ const TAU = Math.PI * 2;
 export const PATTERN_PRESETS = [
   { value: "kaleidoscope", label: "Kaleidoscope Flow" },
   { value: "tunnel", label: "Neon Tunnel" },
+  { value: "neon-contours", label: "Neon Liquid Contours" },
+  { value: "laser-trails", label: "Laser Light Trails" },
+  { value: "prism-ribbons", label: "Prism Silk Ribbons" },
+  { value: "neon-vortex", label: "Neon Vortex Dive" },
   { value: "mandala", label: "Mandala Bloom" },
   { value: "aurora", label: "Aurora Silk" },
   { value: "particles", label: "Particle Constellation" },
@@ -37,6 +41,24 @@ export const PALETTE_PRESETS = [
     label: "Violet Pulse",
     background: ["#090416", "#1e103d", "#030712"],
     colors: ["#c084fc", "#818cf8", "#f0abfc", "#67e8f9", "#f9a8d4"],
+  },
+  {
+    value: "cyberpop",
+    label: "Cyberpop Neon",
+    background: ["#03010d", "#16032b", "#020617"],
+    colors: ["#ff0f7b", "#ff2bd6", "#22f5ff", "#2764ff", "#ffffff"],
+  },
+  {
+    value: "laserwave",
+    label: "Laserwave",
+    background: ["#03020c", "#070069", "#12001c"],
+    colors: ["#ff1d25", "#ff2fd6", "#20d9ff", "#3157ff", "#f8fafc"],
+  },
+  {
+    value: "prism",
+    label: "Prism Silk",
+    background: ["#03040c", "#12051f", "#03151a"],
+    colors: ["#facc15", "#22c55e", "#22d3ee", "#a855f7", "#fb2f8c"],
   },
   {
     value: "cosmic",
@@ -176,6 +198,36 @@ function buildAsteroids(count) {
 }
 
 const ASTEROIDS = buildAsteroids(120);
+
+function buildNeonSeeds(count, seedStart) {
+  const seeds = [];
+  let seed = seedStart;
+
+  const rand = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+
+  for (let i = 0; i < count; i += 1) {
+    seeds.push({
+      x: rand(),
+      y: rand(),
+      radius: 0.06 + rand() * 0.18,
+      phase: rand() * TAU,
+      speed: 0.18 + rand() * 0.82,
+      wobble: 1.4 + rand() * 4.8,
+      stretch: 0.45 + rand() * 1.4,
+      colorShift: Math.floor(rand() * 8),
+    });
+  }
+
+  return seeds;
+}
+
+const CONTOUR_SEEDS = buildNeonSeeds(72, 75031);
+const TRAIL_SEEDS = buildNeonSeeds(86, 119237);
+const RIBBON_SEEDS = buildNeonSeeds(34, 528911);
+const VORTEX_SEEDS = buildNeonSeeds(96, 88321);
 
 function drawBackground(ctx, w, h, palette, phase, settings) {
   const cx = w * (0.5 + Math.sin(phase) * 0.04 * settings.drift);
@@ -564,6 +616,280 @@ function drawMetaballs(ctx, w, h, palette, phase, settings) {
   ctx.restore();
 }
 
+function drawNeonContours(ctx, w, h, palette, phase, settings) {
+  const base = Math.min(w, h);
+  const count = Math.round(24 + settings.complexity * 40);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  for (let i = 0; i < count; i += 1) {
+    const seed = CONTOUR_SEEDS[i % CONTOUR_SEEDS.length];
+    const color = palette.colors[(i + seed.colorShift) % palette.colors.length];
+    const x =
+      (((seed.x + Math.sin(phase * seed.speed + seed.phase) * 0.09 * settings.drift) % 1) + 1) %
+      1;
+    const y =
+      (((seed.y + Math.cos(phase * seed.speed * 0.83 + seed.phase) * 0.07 * settings.drift) % 1) + 1) %
+      1;
+    const cx = x * w;
+    const cy = y * h;
+    const radius = base * seed.radius * (0.72 + settings.depth * 0.48);
+    const soft = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.8);
+
+    soft.addColorStop(0, rgba(color, 0.16 * settings.intensity));
+    soft.addColorStop(0.36, rgba(color, 0.045 * settings.bloom));
+    soft.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = soft;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 2.8, 0, TAU);
+    ctx.fill();
+
+    for (let pass = 0; pass < 2; pass += 1) {
+      ctx.beginPath();
+      for (let step = 0; step <= 96; step += 1) {
+        const a = (step / 96) * TAU;
+        const wobble =
+          1 +
+          Math.sin(a * seed.wobble + phase * settings.cycles + seed.phase) * 0.18 +
+          Math.cos(a * (seed.wobble * 0.57 + 1.8) - phase * 0.7) * 0.12;
+        const rx = radius * wobble * (1.15 + seed.stretch * 0.22);
+        const ry = radius * wobble * (0.72 + seed.stretch * 0.18);
+        const px = cx + Math.cos(a) * rx;
+        const py = cy + Math.sin(a) * ry;
+
+        if (step === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = rgba(color, pass === 0 ? 0.15 * settings.intensity : 0.38 * settings.intensity);
+      ctx.lineWidth =
+        base * (pass === 0 ? 0.006 + settings.bloom * 0.006 : 0.0016 + settings.bloom * 0.0017);
+      ctx.shadowColor = color;
+      ctx.shadowBlur = (pass === 0 ? 34 : 13) * settings.bloom;
+      ctx.stroke();
+    }
+  }
+
+  const strands = Math.round(10 + settings.complexity * 18);
+  for (let i = 0; i < strands; i += 1) {
+    const seed = CONTOUR_SEEDS[(i * 5) % CONTOUR_SEEDS.length];
+    const color = palette.colors[(i + 2) % palette.colors.length];
+    const yBase = h * (((seed.y + phase * 0.025 * seed.speed) % 1 + 1) % 1);
+
+    ctx.beginPath();
+    for (let step = 0; step <= 90; step += 1) {
+      const t = step / 90;
+      const x = t * w;
+      const y =
+        yBase +
+        Math.sin(t * TAU * (1.4 + seed.stretch) + phase * settings.cycles + seed.phase) * h * 0.14 +
+        Math.cos(t * TAU * 2.7 - phase * 0.8 + seed.phase) * h * 0.055;
+
+      if (step === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = rgba(color, 0.18 + settings.intensity * 0.12);
+    ctx.lineWidth = base * (0.0018 + settings.bloom * 0.0024);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 18 * settings.bloom;
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawLaserTrails(ctx, w, h, palette, phase, settings) {
+  const base = Math.min(w, h);
+  const count = Math.round(24 + settings.complexity * 46);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  for (let i = 0; i < count; i += 1) {
+    const seed = TRAIL_SEEDS[i % TRAIL_SEEDS.length];
+    const color = palette.colors[(i + seed.colorShift) % palette.colors.length];
+    const xBase = w * seed.x;
+    const yOffset = ((phase * 0.18 * settings.cycles * seed.speed + seed.y) % 1) * h;
+    const amp = w * (0.025 + seed.radius * 0.35 + settings.drift * 0.035);
+    const thick = i % 11 === 0;
+
+    ctx.beginPath();
+    for (let step = 0; step <= 90; step += 1) {
+      const t = step / 90;
+      const y = h * 1.12 - t * h * 1.34 + yOffset * 0.22;
+      const x =
+        xBase +
+        Math.sin(t * TAU * (0.75 + seed.stretch) + phase * settings.cycles + seed.phase) * amp +
+        Math.sin(t * TAU * 3.1 - phase * 0.55 + seed.phase) * amp * 0.28;
+
+      if (step === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    ctx.strokeStyle = rgba(color, (thick ? 0.18 : 0.12) + settings.intensity * (thick ? 0.18 : 0.12));
+    ctx.lineWidth = base * (thick ? 0.0065 + settings.bloom * 0.004 : 0.0015 + settings.bloom * 0.002);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = (thick ? 32 : 18) * settings.bloom;
+    ctx.stroke();
+
+    const headT = ((phase * seed.speed * 0.22 + seed.phase / TAU) % 1 + 1) % 1;
+    const headY = h * 1.04 - headT * h * 1.22;
+    const headX =
+      xBase +
+      Math.sin(headT * TAU * (0.75 + seed.stretch) + phase * settings.cycles + seed.phase) * amp;
+    const glow = ctx.createRadialGradient(headX, headY, 0, headX, headY, base * 0.035);
+
+    glow.addColorStop(0, rgba("#ffffff", 0.8 * settings.intensity));
+    glow.addColorStop(0.24, rgba(color, 0.45 * settings.bloom));
+    glow.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(headX, headY, base * 0.035, 0, TAU);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
+function drawPrismRibbons(ctx, w, h, palette, phase, settings) {
+  const count = Math.round(7 + settings.complexity * 12);
+  const base = Math.min(w, h);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+
+  for (let i = 0; i < count; i += 1) {
+    const seed = RIBBON_SEEDS[i % RIBBON_SEEDS.length];
+    const colorA = palette.colors[(i + seed.colorShift) % palette.colors.length];
+    const colorB = palette.colors[(i + seed.colorShift + 2) % palette.colors.length];
+    const colorC = palette.colors[(i + seed.colorShift + 4) % palette.colors.length];
+    const yBase = h * (0.12 + ((seed.y + i * 0.097) % 0.78));
+    const amp = h * (0.06 + seed.radius * 0.52 + settings.depth * 0.08);
+    const ribbonWidth = base * (0.028 + seed.radius * 0.24 + settings.bloom * 0.018);
+    const drift = Math.sin(phase * seed.speed + seed.phase) * w * 0.14 * settings.drift;
+    const gradient = ctx.createLinearGradient(0, yBase - amp, w, yBase + amp);
+
+    gradient.addColorStop(0, rgba(colorA, 0.02));
+    gradient.addColorStop(0.28, rgba(colorB, 0.15 * settings.intensity));
+    gradient.addColorStop(0.58, rgba(colorC, 0.22 * settings.intensity));
+    gradient.addColorStop(1, rgba(colorA, 0.03));
+
+    ctx.beginPath();
+    for (let step = 0; step <= 86; step += 1) {
+      const t = step / 86;
+      const x = -w * 0.12 + t * w * 1.24 + drift;
+      const wave =
+        Math.sin(t * TAU * (0.75 + seed.stretch) + phase * settings.cycles + seed.phase) * amp +
+        Math.cos(t * TAU * 2.15 - phase * 0.52 + seed.phase) * amp * 0.42;
+      const width = ribbonWidth * (0.75 + Math.sin(t * TAU * 2 + seed.phase) * 0.22);
+      const y = yBase + wave - width;
+
+      if (step === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    for (let step = 86; step >= 0; step -= 1) {
+      const t = step / 86;
+      const x = -w * 0.12 + t * w * 1.24 + drift;
+      const wave =
+        Math.sin(t * TAU * (0.75 + seed.stretch) + phase * settings.cycles + seed.phase) * amp +
+        Math.cos(t * TAU * 2.15 - phase * 0.52 + seed.phase) * amp * 0.42;
+      const width = ribbonWidth * (0.75 + Math.sin(t * TAU * 2 + seed.phase) * 0.22);
+      const y = yBase + wave + width;
+
+      ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    ctx.fillStyle = gradient;
+    ctx.shadowColor = colorB;
+    ctx.shadowBlur = 26 * settings.bloom;
+    ctx.fill();
+
+    ctx.strokeStyle = rgba(colorC, 0.09 + settings.intensity * 0.08);
+    ctx.lineWidth = base * (0.001 + settings.bloom * 0.0018);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawNeonVortex(ctx, w, h, palette, phase, settings) {
+  const cx = w / 2 + Math.sin(phase * 1.4) * w * 0.025 * settings.drift;
+  const cy = h / 2 + Math.cos(phase * 1.1) * h * 0.025 * settings.drift;
+  const maxR = Math.hypot(w, h) * 0.74;
+  const count = Math.round(42 + settings.complexity * 64);
+
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  for (let i = 0; i < count; i += 1) {
+    const seed = VORTEX_SEEDS[i % VORTEX_SEEDS.length];
+    const color = palette.colors[(i + seed.colorShift) % palette.colors.length];
+    const start = (seed.phase + phase * settings.cycles * (0.7 + seed.speed)) % TAU;
+    const radius = maxR * (0.08 + ((seed.radius * 3.4 + phase * 0.09 * seed.speed + i * 0.017) % 0.95));
+    const length = 0.32 + settings.depth * 0.28 + seed.radius;
+
+    ctx.beginPath();
+    for (let step = 0; step <= 42; step += 1) {
+      const t = step / 42;
+      const r = radius * (1 - t * (0.28 + seed.radius * 0.9));
+      const a =
+        start +
+        t * length * TAU +
+        Math.sin(t * TAU * seed.wobble + phase * settings.cycles) * 0.15;
+      const perspective = 0.34 + 0.66 * (r / maxR);
+      const x = cx + Math.cos(a) * r * (1.42 - perspective * 0.18);
+      const y = cy + Math.sin(a) * r * (0.72 + perspective * 0.16);
+
+      if (step === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+
+    const depthFade = clamp(radius / maxR, 0, 1);
+    ctx.strokeStyle = rgba(color, (0.12 + settings.intensity * 0.16) * depthFade);
+    ctx.lineWidth = Math.max(1, w * (0.0014 + settings.bloom * 0.0028) * depthFade);
+    ctx.shadowColor = color;
+    ctx.shadowBlur = (18 + 26 * depthFade) * settings.bloom;
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 18; i += 1) {
+    const seed = VORTEX_SEEDS[(i * 7) % VORTEX_SEEDS.length];
+    const color = palette.colors[(i + 1) % palette.colors.length];
+    const a = seed.phase + phase * settings.cycles * (0.6 + seed.speed);
+    const x2 = cx + Math.cos(a) * maxR * 0.92;
+    const y2 = cy + Math.sin(a) * maxR * 0.52;
+
+    ctx.strokeStyle = rgba(color, 0.08 + settings.intensity * 0.08);
+    ctx.lineWidth = Math.max(2, Math.min(w, h) * 0.005 * (0.6 + seed.radius));
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 32 * settings.bloom;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.min(w, h) * 0.16);
+  core.addColorStop(0, rgba("#ffffff", 0.44 * settings.intensity));
+  core.addColorStop(0.18, rgba(palette.colors[0], 0.32 * settings.bloom));
+  core.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = core;
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.min(w, h) * 0.16, 0, TAU);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 function drawConstellation(ctx, w, h, palette, phase, settings) {
   const count = Math.min(PARTICLES.length, Math.max(20, Math.round(settings.particles)));
   const scale = Math.min(w, h);
@@ -811,7 +1137,11 @@ export function renderAmbientPattern(ctx, width, height, timeSeconds, settings) 
   const heavySelfIlluminatedPattern =
     normalized.pattern === "flow-field" ||
     normalized.pattern === "lissajous" ||
-    normalized.pattern === "metaballs";
+    normalized.pattern === "metaballs" ||
+    normalized.pattern === "neon-contours" ||
+    normalized.pattern === "laser-trails" ||
+    normalized.pattern === "prism-ribbons" ||
+    normalized.pattern === "neon-vortex";
 
   if (normalized.pattern === "solar-system") {
     drawSharpStarField(ctx, width, height, palette, loopPhase, normalized);
@@ -824,6 +1154,14 @@ export function renderAmbientPattern(ctx, width, height, timeSeconds, settings) 
 
   if (normalized.pattern === "tunnel") {
     drawTunnel(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "neon-contours") {
+    drawNeonContours(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "laser-trails") {
+    drawLaserTrails(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "prism-ribbons") {
+    drawPrismRibbons(ctx, width, height, palette, loopPhase, normalized);
+  } else if (normalized.pattern === "neon-vortex") {
+    drawNeonVortex(ctx, width, height, palette, loopPhase, normalized);
   } else if (normalized.pattern === "mandala") {
     drawMandala(ctx, width, height, palette, loopPhase, normalized);
   } else if (normalized.pattern === "aurora") {
@@ -842,5 +1180,10 @@ export function renderAmbientPattern(ctx, width, height, timeSeconds, settings) 
     drawKaleidoscope(ctx, width, height, palette, loopPhase, normalized);
   }
 
-  drawVignette(ctx, width, height, normalized.pattern === "solar-system" ? 0.42 : 0.8);
+  drawVignette(
+    ctx,
+    width,
+    height,
+    normalized.pattern === "solar-system" || normalized.pattern === "prism-ribbons" ? 0.42 : 0.8,
+  );
 }
