@@ -23,6 +23,7 @@ const LINKS = [
   { to: "/about", label: "About" },
   { to: "/contact", label: "Contact" },
   { to: "/experiments", label: "Experiments" },
+  { to: "/art-science", label: "Art & Science" },
 ];
 
 export default function HamburgerMenu() {

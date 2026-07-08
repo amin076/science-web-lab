@@ -43,6 +43,7 @@ import ExperimentDetail from "@/pages/ExperimentDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import StyleGuide from "@/pages/StyleGuide";
+import ArtSciencePage from "@/pages/ArtSciencePage";
 
 // ✅ LayoutShell doesn't need props anymore
 function LayoutShell() {
@@ -138,6 +139,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/style-guide" element={<StyleGuide />} />
+              <Route path="/art-science" element={<ArtSciencePage />} />
 
               {/* 🔒 Experiments */}
               <Route path="/experiments" element={<Experiments />} />

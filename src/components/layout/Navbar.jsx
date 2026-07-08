@@ -9,6 +9,7 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import ScienceRoundedIcon from "@mui/icons-material/ScienceRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
 import { useAuth } from "@/hooks/useAuth";
 
@@ -89,6 +90,11 @@ function Navbar({ onClose }) {
         to="/experiments"
         icon={ScienceRoundedIcon}
         label="Experiments"
+      />
+      <LinkItem
+        to="/art-science"
+        icon={AutoAwesomeRoundedIcon}
+        label="Art & Science"
       />
 
       {!user ? (
