@@ -22,6 +22,7 @@ import ProtectedRoute from "@/components/common/ProtectedRoute";
 // 🧑‍🏫 Dashboards
 import TeacherDashboard from "@/pages/dashboard/TeacherDashboard";
 import StudentDashboard from "@/pages/dashboard/StudentDashboard";
+import JoinClass from "@/pages/dashboard/JoinClass";
 import CreateClassForm from "@/pages/dashboard/CreateClassForm";
 import StudentClassDetail from "@/pages/dashboard/StudentClassDetail";
 import StudentExperiment from "@/pages/dashboard/StudentExperiment";
@@ -171,7 +172,15 @@ export default function App() {
                 }
               />
 
-              {/* 👩‍🎓 Student Dashboard */}
+              {/* 👩‍🎓 Student Dashboard */}              <Route
+                path="/dashboard/join-class"
+                element={
+                  <ProtectedRoute>
+                    <JoinClass />
+                  </ProtectedRoute>
+                }
+              />
+
               <Route
                 path="/dashboard/student"
                 element={
