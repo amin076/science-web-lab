@@ -36,7 +36,7 @@ function createSceneSlide(file, index, duration) {
   const lightPreset = LIGHT_SEQUENCE[index % LIGHT_SEQUENCE.length];
   const sceneMode =
     index === 0 ? DEFAULT_SCENE_SETTINGS.sceneMode : SCENE_SEQUENCE[index % SCENE_SEQUENCE.length];
-  const objectPreset = "spaceship";
+  const objectPreset = "custom";
 
   return {
     id: `${file.name}-${file.lastModified}-${index}-${makeId("slide")}`,
@@ -134,7 +134,8 @@ export default function ImageMotionStudio() {
           ? {
               ...slide,
               objectUrl,
-              objectPreset: slide.objectPreset || "spaceship",
+              objectPreset: slide.objectPreset || "custom",
+              objectFileName: file.name,
             }
           : slide,
       ),

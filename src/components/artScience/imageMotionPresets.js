@@ -328,6 +328,11 @@ export const OBJECT_MOTION_PRESETS = {
 };
 
 export const OBJECT_TYPE_PRESETS = {
+  custom: {
+    label: "Custom uploaded object",
+    objectMotion: "float",
+    scale: 0.82,
+  },
   spaceship: {
     label: "Spaceship",
     objectMotion: "spaceshipFlyForward",

@@ -14,7 +14,8 @@
     "sim:pack": "plop --plopfile plopfile.cjs sim-pack",
     "pack:sim": "node scripts/pack-simulation-md.cjs",
     "pack:app": "node scripts/pack-app-json.cjs",
-    "platform:catalog": "node scripts/generate-platform-catalog.cjs"
+    "platform:catalog": "node scripts/generate-platform-catalog.cjs",
+    "test:platform-api": "node scripts/test-platform-api.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -1,7 +1,11 @@
 {
   "hosting": {
     "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "headers": [
       {
         "source": "/service-worker.js",
@@ -46,6 +50,10 @@
     ],
     "rewrites": [
       {
+        "source": "/api/**",
+        "function": "platformApi"
+      },
+      {
         "source": "!/@(service-worker\\.js|manifest\\.json|favicon\\.ico|esbiko-logo-.*\\.png)",
         "destination": "/index.html"
       }
@@ -62,7 +70,9 @@
         "firebase-debug.*.log",
         "*.local"
       ],
-      "predeploy": ["npm run platform:catalog"]
+      "predeploy": [
+        "npm run platform:catalog"
+      ]
     }
   ],
   "firestore": {
