@@ -993,3 +993,38 @@ The next audit phase should focus on:
 Completion of those audits will allow publication of:
 
 ESBIKO_PLATFORM_PROTOCOLS Version 0.3
+
+<!-- JULY_2026_PROTOCOL_STATUS -->
+## July 2026 Protocol Implementation Status
+
+The repository now contains the first production-oriented, read-only implementation of the Esbiko Platform API.
+
+### Current Version
+
+`esbiko-platform-api.v1`
+
+### Current Public Capabilities
+
+- Health inspection.
+- Simulation catalog listing.
+- Text, subject, and capability filters.
+- Bounded result limits.
+- Simulation detail lookup.
+
+### Transport
+
+`/api/**` is routed by Firebase Hosting to the `platformApi` Firebase function.
+
+### Current Restrictions
+
+- No arbitrary command execution.
+- No public write operations.
+- No environment secrets or local paths in responses.
+- No write capability may be added without authentication, authorization, validation, audit logging, and idempotency controls.
+
+### Verified Commands
+
+```bash
+node scripts/test-platform-api.mjs
+npm run build
+```
