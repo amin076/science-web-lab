@@ -328,10 +328,13 @@ export default function ImageMotionControls({
             </Stack>
           </Section>
 
-          <Section icon={<ImagePlus size={17} />} title="Object Layer">
+          <Section icon={<ImagePlus size={17} />} title="Foreground Object (Optional)">
             <Stack spacing={1.5}>
+              <Typography sx={{ color: "rgba(226,242,255,0.62)", fontSize: 12, lineHeight: 1.55 }}>
+                Add a transparent PNG only when you want a separate moving subject, such as a spacecraft, astronaut, planet, or ball. The background image itself is not an object layer.
+              </Typography>
               <Button component="label" variant="outlined" sx={outlineButtonSx}>
-                Upload transparent object PNG
+                {selectedSlide.objectUrl ? "Replace foreground object" : "Upload foreground object PNG"}
                 <input
                   hidden
                   type="file"
@@ -339,8 +342,17 @@ export default function ImageMotionControls({
                   onChange={(event) => onObjectUpload(selectedSlide.id, event.target.files?.[0])}
                 />
               </Button>
+              {selectedSlide.objectUrl ? (
+                <Typography sx={{ color: "#67e8f9", fontSize: 12, fontWeight: 850 }}>
+                  Loaded: {selectedSlide.objectFileName || "Uploaded image"}
+                </Typography>
+              ) : (
+                <Typography sx={{ color: "rgba(226,242,255,0.48)", fontSize: 12 }}>
+                  No foreground object is currently loaded.
+                </Typography>
+              )}
               <GlassSelect
-                label="Object Preset"
+                label="Object Type"
                 value={selectedSlide.objectPreset}
                 options={OBJECT_TYPE_PRESETS}
                 onChange={updateObjectPreset}
