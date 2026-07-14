@@ -189,7 +189,12 @@ exports.platformApi = onRequest((req, res) => {
     });
   }
 
-  const path = req.path || "/";
+  const rawPath = req.path || "/";
+  const path = rawPath === "/api"
+    ? "/"
+    : rawPath.startsWith("/api/")
+      ? rawPath.slice(4)
+      : rawPath;
 
   if (path === "/" || path === "/v1" || path === "/v1/health") {
     return sendJson(200, {
