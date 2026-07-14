@@ -47,6 +47,7 @@ import StyleGuide from "@/pages/StyleGuide";
 import SimulationUiShowcase from "@/pages/SimulationUiShowcase";
 import SimulationWorkspaceShowcase from "@/pages/SimulationWorkspaceShowcase";
 import ArtSciencePage from "@/pages/ArtSciencePage";
+import EvolutionOfLifeSimulation from "./simulations/subjects/biology/evolution/evolution-of-life/EvolutionOfLifeSimulation";
 
 // ✅ LayoutShell doesn't need props anymore
 function LayoutShell() {
@@ -144,6 +145,7 @@ export default function App() {
               <Route path="/style-guide" element={<StyleGuide />} />
               <Route path="/simulation-ui-showcase" element={<SimulationUiShowcase />} />
               <Route path="/simulation-workspace-showcase" element={<SimulationWorkspaceShowcase />} />
+          <Route path="/experiments/evolution-of-life" element={<EvolutionOfLifeSimulation />} />
               <Route path="/art-science" element={<ArtSciencePage />} />
 
               {/* 🔒 Experiments */}

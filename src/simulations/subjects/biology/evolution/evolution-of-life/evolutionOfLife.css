@@ -1,0 +1,405 @@
+.evolution-page {
+  --stage-color: #26a69a;
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  color: #f7fbff;
+  background:
+    radial-gradient(circle at 12% 12%, color-mix(in srgb, var(--stage-color) 28%, transparent), transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(70, 114, 255, 0.22), transparent 31%),
+    linear-gradient(145deg, #07101f 0%, #0b1830 48%, #07111f 100%);
+}
+
+.evolution-shell {
+  position: relative;
+  z-index: 2;
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: clamp(18px, 3vw, 42px);
+}
+
+.evolution-heading {
+  margin-bottom: 24px;
+}
+
+.evolution-chip {
+  color: rgba(240, 248, 255, 0.82) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  backdrop-filter: blur(16px);
+}
+
+.evolution-chip-active {
+  color: #fff !important;
+  border-color: color-mix(in srgb, var(--stage-color) 70%, white 12%) !important;
+  background: color-mix(in srgb, var(--stage-color) 30%, transparent) !important;
+}
+
+.evolution-title {
+  margin-top: 14px !important;
+  font-size: clamp(2rem, 5vw, 4.6rem) !important;
+  line-height: 0.98 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.evolution-subtitle {
+  max-width: 760px;
+  margin-top: 14px !important;
+  color: rgba(225, 236, 248, 0.72);
+  font-size: clamp(0.95rem, 1.5vw, 1.13rem) !important;
+  line-height: 1.65 !important;
+}
+
+.evolution-primary-button,
+.evolution-secondary-button {
+  min-height: 44px;
+  border-radius: 14px !important;
+  text-transform: none !important;
+  font-weight: 750 !important;
+  white-space: nowrap;
+}
+
+.evolution-primary-button {
+  color: #06111d !important;
+  background: linear-gradient(135deg, var(--stage-color), #d8fff7) !important;
+}
+
+.evolution-secondary-button {
+  color: #eaf4ff !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.evolution-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.75fr);
+  gap: 18px;
+}
+
+.evolution-stage-card,
+.evolution-learning-card,
+.evolution-timeline-panel,
+.evolution-metric {
+  color: inherit !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(12, 27, 49, 0.68) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22) !important;
+  backdrop-filter: blur(22px);
+}
+
+.evolution-stage-card {
+  min-height: 490px;
+  display: grid;
+  grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.2fr);
+  overflow: hidden;
+  border-radius: 28px !important;
+}
+
+.evolution-stage-visual {
+  min-height: 340px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--stage-color) 38%, transparent), transparent 55%),
+    linear-gradient(155deg, rgba(255, 255, 255, 0.08), transparent 70%);
+}
+
+.evolution-stage-icon {
+  position: relative;
+  z-index: 2;
+  font-size: clamp(6rem, 14vw, 11rem);
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.36));
+  animation: evolution-float 5s ease-in-out infinite;
+}
+
+.evolution-orbit {
+  position: absolute;
+  border: 1px solid color-mix(in srgb, var(--stage-color) 55%, white 12%);
+  border-radius: 50%;
+  opacity: 0.45;
+}
+
+.evolution-orbit-one {
+  width: 70%;
+  aspect-ratio: 1;
+  animation: evolution-spin 22s linear infinite;
+}
+
+.evolution-orbit-two {
+  width: 94%;
+  aspect-ratio: 1;
+  border-style: dashed;
+  animation: evolution-spin 34s linear infinite reverse;
+}
+
+.evolution-stage-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 4vw, 58px);
+}
+
+.evolution-stage-time,
+.evolution-panel-eyebrow,
+.evolution-metric-label,
+.evolution-dominant-label {
+  color: color-mix(in srgb, var(--stage-color) 74%, white 26%);
+  font-size: 0.76rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.11em !important;
+  text-transform: uppercase;
+}
+
+.evolution-stage-title {
+  margin-top: 10px !important;
+  font-size: clamp(1.8rem, 4vw, 3.6rem) !important;
+  line-height: 1.02 !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.evolution-stage-summary {
+  margin-top: 18px !important;
+  color: rgba(229, 238, 248, 0.76);
+  font-size: clamp(1rem, 1.5vw, 1.16rem) !important;
+  line-height: 1.7 !important;
+}
+
+.evolution-dominant-life {
+  margin-top: 28px;
+  padding: 17px 19px;
+  border-left: 3px solid var(--stage-color);
+  border-radius: 0 14px 14px 0;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.evolution-dominant-value {
+  margin-top: 4px !important;
+  font-weight: 760 !important;
+}
+
+.evolution-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.evolution-metrics-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.evolution-metric {
+  padding: 19px;
+  border-radius: 20px !important;
+}
+
+.evolution-metric-value {
+  margin-top: 7px !important;
+  font-size: clamp(1.45rem, 3vw, 2.15rem) !important;
+  font-weight: 830 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.evolution-metric-detail {
+  margin-top: 4px !important;
+  color: rgba(224, 235, 246, 0.54);
+  font-size: 0.78rem !important;
+}
+
+.evolution-learning-card {
+  flex: 1;
+  padding: 24px;
+  border-radius: 22px !important;
+}
+
+.evolution-panel-title {
+  margin-top: 9px !important;
+  font-size: 1.35rem !important;
+  font-weight: 780 !important;
+}
+
+.evolution-panel-copy {
+  margin-top: 10px !important;
+  color: rgba(225, 236, 247, 0.68);
+  line-height: 1.65 !important;
+}
+
+.evolution-timeline-panel {
+  margin-top: 18px;
+  padding: clamp(18px, 3vw, 30px);
+  border-radius: 26px !important;
+}
+
+.evolution-timeline-current {
+  margin-top: 3px !important;
+  font-size: 1.28rem !important;
+  font-weight: 790 !important;
+}
+
+.evolution-icon-button {
+  color: #f3f8ff !important;
+  border: 1px solid rgba(255, 255, 255, 0.13) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.evolution-progress {
+  height: 4px !important;
+  margin-top: 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.evolution-progress .MuiLinearProgress-bar {
+  border-radius: 999px;
+  background: var(--stage-color) !important;
+}
+
+.evolution-slider {
+  margin-top: 14px;
+  color: var(--stage-color) !important;
+}
+
+.evolution-slider .MuiSlider-markLabel {
+  color: rgba(232, 241, 250, 0.58);
+  font-size: 0.7rem;
+}
+
+.evolution-stage-buttons {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(132px, 1fr);
+  gap: 9px;
+  margin-top: 22px;
+  padding-bottom: 4px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.evolution-stage-button {
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  color: rgba(237, 244, 252, 0.68);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 690;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.045);
+  cursor: pointer;
+  transition: 180ms ease;
+}
+
+.evolution-stage-button:hover,
+.evolution-stage-button.is-active {
+  color: #fff;
+  border-color: color-mix(in srgb, var(--stage-color) 75%, white 8%);
+  background: color-mix(in srgb, var(--stage-color) 22%, transparent);
+  transform: translateY(-2px);
+}
+
+.evolution-stage-button-icon {
+  font-size: 1.55rem;
+}
+
+.evolution-ambient {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.evolution-ambient-one {
+  width: 340px;
+  height: 340px;
+  top: 30%;
+  left: -150px;
+  background: var(--stage-color);
+}
+
+.evolution-ambient-two {
+  width: 400px;
+  height: 400px;
+  right: -180px;
+  bottom: -130px;
+  background: #346cff;
+}
+
+@keyframes evolution-float {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-18px) rotate(2deg); }
+}
+
+@keyframes evolution-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 960px) {
+  .evolution-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolution-side-column {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .evolution-metrics-grid {
+    grid-template-columns: repeat(3, 1fr);
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .evolution-shell {
+    padding: 16px;
+  }
+
+  .evolution-heading .MuiStack-root:last-child {
+    width: 100%;
+  }
+
+  .evolution-heading .MuiButton-root {
+    flex: 1;
+  }
+
+  .evolution-stage-card {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .evolution-stage-visual {
+    min-height: 250px;
+  }
+
+  .evolution-stage-content {
+    padding: 24px 20px 28px;
+  }
+
+  .evolution-side-column,
+  .evolution-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .evolution-stage-buttons {
+    grid-auto-columns: minmax(118px, 42vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evolution-stage-icon,
+  .evolution-orbit {
+    animation: none;
+  }
+
+  .evolution-stage-button {
+    transition: none;
+  }
+}
