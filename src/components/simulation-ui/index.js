@@ -2,6 +2,11 @@ export { default as SimulationSurface } from "./SimulationSurface";
 export { default as SimulationButton } from "./SimulationButton";
 export { default as SimulationIconButton } from "./SimulationIconButton";
 export { default as SimulationSlider } from "./SimulationSlider";
+export { default as SimulationPanel } from "./SimulationPanel";
+export { default as SimulationMetric } from "./SimulationMetric";
+export { default as SimulationHUD } from "./SimulationHUD";
+export { default as SimulationToolbar } from "./SimulationToolbar";
+export { default as SimulationTimeline } from "./SimulationTimeline";
 
 export {
   simulationUiTokens,
