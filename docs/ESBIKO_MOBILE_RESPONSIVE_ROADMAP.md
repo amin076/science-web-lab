@@ -510,3 +510,29 @@ Initial adopters:
 Migration rule:
 
 Future mobile fixes should prefer these primitives before adding page-specific or simulation-specific responsive wrappers.
+
+<!-- JULY_2026_MOBILE_CHECKPOINT -->
+## July 2026 Mobile Checkpoint
+
+### Completed
+
+- Responsive `AdminLayout` implemented and production-build verified.
+- Dashboard navigation rebuilt for separate mobile and desktop behaviour.
+- Shared `MobileDrawer` is used for narrow dashboard viewports.
+- Dashboard links were corrected to real application routes.
+- Protected Join Class route was added.
+- Simulation orientation advice no longer blocks portrait users.
+- Dismissal of orientation advice is stored for the browser session.
+
+### Verification
+
+- Production build passed with 15,623 transformed modules.
+- Route, drawer, orientation, Git, and build checks passed through verified KAP reports.
+
+### Next Mobile Work
+
+- Login and Register responsive implementation.
+- Authenticated dashboard content inspection.
+- Public header and hamburger safe-area review.
+- Class, assignment, and experiment page responsiveness.
+- Simulation-by-simulation mobile readiness classification.

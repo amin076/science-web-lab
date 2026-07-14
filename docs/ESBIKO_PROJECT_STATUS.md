@@ -328,3 +328,46 @@ New Educational Content
 # Next Major Milestone
 
 Complete Responsive Audit for Core Simulations and establish official mobile standards for Esbiko.
+
+<!-- JULY_2026_RELEASE_UPDATE -->
+## July 2026 Verified Release Update
+
+Status: Implemented, built, committed, and pushed on `feature/mobile-platform-release`.
+
+### Mobile and Responsive Improvements
+
+* Responsive admin shell with permanent desktop navigation and temporary mobile drawer.
+* Responsive student and teacher dashboard navigation using the shared mobile drawer system.
+* Protected `/dashboard/join-class` route added and verified.
+* Simulation orientation advice is now non-blocking.
+* Portrait users may continue during the current browser session.
+* Landscape and fullscreen remain recommended options.
+
+### Esbiko Platform API
+
+* Added the read-only Esbiko Platform API foundation.
+* Added health, simulation-list, filtering, and simulation-detail operations.
+* Added Firebase Hosting rewrite from `/api/**` to the `platformApi` function.
+* Added API test coverage and a command-line verification script.
+* Current API version: `esbiko-platform-api.v1`.
+
+### Additional Improvements
+
+* Clarified the optional foreground-object workflow in Art & Science Image Motion Studio.
+* Removed unused responsive hooks from Earth Orbit Lab.
+* Local `.keynu/` runtime and repository-memory files are excluded from Git.
+
+### Verification Evidence
+
+* Esbiko Platform API test passed.
+* Production Vite build passed.
+* Verified build transformed 15,623 modules.
+* Release branch was pushed to GitHub.
+* No environment secrets were included.
+
+### Remaining Work
+
+* Complete real-device visual inspection of authenticated admin, teacher, and student pages.
+* Continue the site-wide mobile responsiveness audit.
+* Improve Login and Register behaviour for narrow screens and mobile keyboards.
+* Reduce large JavaScript bundle chunks and refresh Browserslist data.

@@ -1190,3 +1190,40 @@ Do not invent new platform concepts when existing architecture already supports 
 ---
 
 End of Document
+
+<!-- JULY_2026_IMPLEMENTATION_STATUS -->
+## July 2026 Implementation Status
+
+The first read-only Platform API implementation now exists in the repository.
+
+### Implemented Source Files
+
+- `src/platform/api/PlatformApi.js`
+- `src/platform/api/index.js`
+- `src/platform/api/PlatformApi.test.js`
+- `scripts/test-platform-api.mjs`
+- `functions/index.js`
+- `firebase.json`
+
+### Implemented Operations
+
+- Platform health response.
+- Simulation catalog listing.
+- Text, subject, and capability filtering.
+- Bounded result limits.
+- Individual simulation lookup.
+- Structured not-found responses.
+
+### Current Transport
+
+Firebase Hosting rewrites requests under `/api/**` to the `platformApi` Firebase function.
+
+### Security Boundary
+
+The current implementation is intentionally read-only. It does not provide arbitrary command execution or unauthenticated write access. Any future mutation operation requires authentication, authorization, validation, bounded schemas, audit events, and idempotency controls.
+
+### Verification
+
+- `node scripts/test-platform-api.mjs` passed.
+- The complete production Vite build passed.
+- The release branch was pushed to GitHub.

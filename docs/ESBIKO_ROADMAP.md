@@ -360,3 +360,34 @@ Before adding new features:
 5. Validate
 
 Esbiko should grow through disciplined engineering rather than uncontrolled feature expansion.
+
+<!-- JULY_2026_ROADMAP_UPDATE -->
+# July 2026 Roadmap Update
+
+## Recently Completed
+
+- [x] Responsive admin navigation shell.
+- [x] Responsive teacher and student dashboard navigation.
+- [x] Protected Join Class route.
+- [x] Non-blocking simulation orientation advice.
+- [x] Read-only Esbiko Platform API foundation.
+- [x] Firebase routing for `/api/**`.
+- [x] Platform API automated verification.
+- [x] Release branch build and GitHub push.
+
+## Immediate Priority
+
+1. Improve Login and Register pages for 320 px mobile screens and on-screen keyboards.
+2. Audit StudentDashboard and TeacherDashboard content at 320, 375, 768, and 1024 px.
+3. Verify class-detail, assignment, and experiment pages on real mobile devices.
+4. Re-audit the public header and hamburger navigation with safe-area insets.
+5. Add automated responsive smoke tests and accessibility checks.
+
+## Platform API Next Stage
+
+1. Preserve the current read-only security model.
+2. Define versioned request, response, command, and event schemas.
+3. Add authentication before any write operation.
+4. Add capability-scoped authorization and audit logging.
+5. Add correlation IDs, idempotency keys, bounded pagination, and structured errors.
+6. Consider MCP or JSON-RPC transport adapters only after the application-level API contracts are stable.
