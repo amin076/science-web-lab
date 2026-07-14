@@ -20,10 +20,11 @@ export default function SimulationSurface({
         position: "relative",
         minWidth: 0,
         borderRadius: simulationUiTokens.radius.panel,
-        border: "1px solid rgba(148, 163, 184, 0.18)",
+        border: "1px solid rgba(255, 255, 255, 0.15)",
         background:
-          "linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(3, 7, 18, 0.76))",
-        backdropFilter: `blur(${simulationUiTokens.blur.surface}px)`,
+          "linear-gradient(145deg, rgba(15, 23, 42, 0.58), rgba(3, 7, 18, 0.34))",
+        backdropFilter: `blur(${simulationUiTokens.blur.elevated}px) saturate(155%)`,
+        WebkitBackdropFilter: `blur(${simulationUiTokens.blur.elevated}px) saturate(155%)`,
         boxShadow:
           simulationUiTokens.shadow[elevation] ||
           simulationUiTokens.shadow.surface,

@@ -1,3 +1,6 @@
+export { default as SimulationToolRail } from "./SimulationToolRail";
+export { default as SimulationInfoRail } from "./SimulationInfoRail";
+export { default as SimulationWorkspace } from "./SimulationWorkspace";
 export { default as SimulationSurface } from "./SimulationSurface";
 export { default as SimulationButton } from "./SimulationButton";
 export { default as SimulationIconButton } from "./SimulationIconButton";
