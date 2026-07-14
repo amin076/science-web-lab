@@ -43,3 +43,5 @@ out/
 app-bundle.json
 packs/
 
+# Local Keynu runtime and repository memory
+.keynu/
