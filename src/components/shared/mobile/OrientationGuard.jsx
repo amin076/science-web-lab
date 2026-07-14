@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import ScreenRotationIcon from "@mui/icons-material/ScreenRotation";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
+
+const DISMISS_KEY = "esbiko:orientation-advice-dismissed";
 
 function getViewportState() {
   if (typeof window === "undefined") {
@@ -14,7 +17,6 @@ function getViewportState() {
 
   const width = window.innerWidth;
   const height = window.innerHeight;
-
   const isMobile = width <= 900 || height <= 600;
   const isPortrait = height > width;
 
@@ -25,20 +27,30 @@ function getViewportState() {
   };
 }
 
+function getInitialDismissed() {
+  if (typeof window === "undefined") return false;
+
+  try {
+    return window.sessionStorage.getItem(DISMISS_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 export default function OrientationGuard({
   enabled = true,
+  blocking = false,
+  dismissible = true,
   title = "Rotate your device",
-  message = "For the best experience, use landscape mode.",
+  message = "Landscape mode gives simulations more room, but portrait mode is still available.",
 }) {
   const [viewport, setViewport] = useState(() => getViewportState());
+  const [dismissed, setDismissed] = useState(() => getInitialDismissed());
 
   useEffect(() => {
-    const update = () => {
-      setViewport(getViewportState());
-    };
+    const update = () => setViewport(getViewportState());
 
     update();
-
     window.addEventListener("resize", update);
     window.addEventListener("orientationchange", update);
 
@@ -48,12 +60,34 @@ export default function OrientationGuard({
     };
   }, []);
 
+  useEffect(() => {
+    if (!viewport.canShowGuard) {
+      setDismissed(false);
+
+      try {
+        window.sessionStorage.removeItem(DISMISS_KEY);
+      } catch {
+        // Storage may be unavailable in restricted browser contexts.
+      }
+    }
+  }, [viewport.canShowGuard]);
+
   const shouldShow = useMemo(
-    () => enabled && viewport.canShowGuard,
-    [enabled, viewport.canShowGuard],
+    () => enabled && viewport.canShowGuard && (!dismissible || !dismissed),
+    [dismissed, dismissible, enabled, viewport.canShowGuard],
   );
 
-  const handleFullscreen = async () => {
+  const continueInPortrait = () => {
+    setDismissed(true);
+
+    try {
+      window.sessionStorage.setItem(DISMISS_KEY, "true");
+    } catch {
+      // The in-memory state is sufficient when storage is unavailable.
+    }
+  };
+
+  const enterFullscreenAndLandscape = async () => {
     try {
       const root = document.documentElement;
 
@@ -62,11 +96,16 @@ export default function OrientationGuard({
       }
 
       if (screen.orientation?.lock) {
-        await screen.orientation.lock("landscape");
+        try {
+          await screen.orientation.lock("landscape");
+        } catch {
+          // Some browsers only permit orientation locking on installed PWAs.
+        }
       }
+
+      setViewport(getViewportState());
     } catch {
-      // Some browsers, especially iOS Safari, do not allow orientation lock.
-      // The overlay still guides the user to rotate manually.
+      // Fullscreen remains an optional enhancement.
     }
   };
 
@@ -74,71 +113,97 @@ export default function OrientationGuard({
 
   return (
     <Box
+      role={blocking ? "dialog" : "status"}
+      aria-modal={blocking ? true : undefined}
+      aria-label="Device orientation advice"
       sx={{
         position: "fixed",
-        inset: 0,
-        zIndex: 1600,
+        inset: blocking ? 0 : "auto 0 0 0",
+        zIndex: 1500,
         display: "flex",
-        alignItems: "center",
+        alignItems: blocking ? "center" : "flex-end",
         justifyContent: "center",
-        pt: "calc(var(--esbiko-safe-top, 0px) + 24px)",
-        pr: "calc(var(--esbiko-safe-right, 0px) + 24px)",
-        pb: "calc(var(--esbiko-safe-bottom, 0px) + 24px)",
-        pl: "calc(var(--esbiko-safe-left, 0px) + 24px)",
-        background:
-          "radial-gradient(circle at center, rgba(25,118,210,0.28), rgba(0,0,0,0.92))",
-        backdropFilter: "blur(10px)",
-        textAlign: "center",
-        overflow: "auto",
+        p: {
+          xs: "max(12px, var(--esbiko-safe-bottom, 0px)) 12px",
+          sm: 2,
+        },
+        pointerEvents: blocking ? "auto" : "none",
+        background: blocking ? "rgba(2, 6, 23, 0.86)" : "transparent",
+        backdropFilter: blocking ? "blur(10px)" : "none",
       }}
     >
       <Box
         sx={{
-          width: "min(92vw, 420px)",
-          p: 3,
-          borderRadius: 4,
-          border: "1px solid rgba(255,255,255,0.16)",
-          backgroundColor: "rgba(0,0,0,0.45)",
-          boxShadow: "0 24px 80px rgba(0,0,0,0.45)",
+          width: "min(100%, 460px)",
+          borderRadius: { xs: 3, sm: 4 },
+          px: { xs: 2, sm: 3 },
+          py: { xs: 2, sm: 2.5 },
+          textAlign: "center",
+          color: "#f8fafc",
+          background:
+            "linear-gradient(145deg, rgba(15,23,42,0.97), rgba(2,6,23,0.98))",
+          border: "1px solid rgba(148, 163, 184, 0.28)",
+          boxShadow: "0 18px 50px rgba(2,6,23,0.48)",
+          pointerEvents: "auto",
         }}
       >
         <ScreenRotationIcon
-          sx={{
-            fontSize: 64,
-            mb: 1.5,
-            color: "#90caf9",
-          }}
+          aria-hidden="true"
+          sx={{ fontSize: { xs: 46, sm: 56 }, color: "#7dd3fc", mb: 0.75 }}
         />
 
-        <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+        <Typography
+          component="h2"
+          variant="h5"
+          fontWeight={900}
+          sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}
+        >
           {title}
         </Typography>
 
         <Typography
-          variant="body1"
-          sx={{
-            color: "rgba(255,255,255,0.82)",
-            mb: 2.5,
-            lineHeight: 1.6,
-          }}
+          variant="body2"
+          sx={{ mt: 0.75, color: "rgba(226,232,240,0.88)", lineHeight: 1.6 }}
         >
           {message}
         </Typography>
 
-        <Button
-          variant="contained"
-          startIcon={<FullscreenIcon />}
-          onClick={handleFullscreen}
-          sx={{
-            borderRadius: 999,
-            px: 2.5,
-            py: 1,
-            textTransform: "none",
-            fontWeight: 700,
-          }}
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          justifyContent="center"
+          sx={{ mt: 2 }}
         >
-          Enter fullscreen
-        </Button>
+          <Button
+            variant="contained"
+            startIcon={<FullscreenIcon />}
+            onClick={enterFullscreenAndLandscape}
+            sx={{ minHeight: 44, px: 2.25, borderRadius: 999 }}
+          >
+            Enter fullscreen
+          </Button>
+
+          {dismissible && (
+            <Button
+              variant="outlined"
+              startIcon={<CheckRoundedIcon />}
+              onClick={continueInPortrait}
+              sx={{
+                minHeight: 44,
+                px: 2.25,
+                borderRadius: 999,
+                color: "#e2e8f0",
+                borderColor: "rgba(226,232,240,0.42)",
+                "&:hover": {
+                  borderColor: "#e2e8f0",
+                  backgroundColor: "rgba(255,255,255,0.08)",
+                },
+              }}
+            >
+              Continue in portrait
+            </Button>
+          )}
+        </Stack>
       </Box>
     </Box>
   );
