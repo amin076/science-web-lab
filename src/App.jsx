@@ -146,6 +146,7 @@ export default function App() {
               <Route path="/simulation-ui-showcase" element={<SimulationUiShowcase />} />
               <Route path="/simulation-workspace-showcase" element={<SimulationWorkspaceShowcase />} />
           <Route path="/experiments/evolution-of-life" element={<EvolutionOfLifeSimulation />} />
+          <Route path="/experiments/evolution-of-life/run" element={<EvolutionOfLifeSimulation />} />
               <Route path="/art-science" element={<ArtSciencePage />} />
 
               {/* 🔒 Experiments */}
