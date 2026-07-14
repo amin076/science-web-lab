@@ -11,8 +11,6 @@ import {
   Box,
   Button,
   Typography,
-  useMediaQuery,
-  useTheme,
 } from "@mui/material";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars } from "@react-three/drei";
@@ -59,8 +57,6 @@ import {
    Main Simulator
 ========================= */
 export default function SatelliteTelescopeSimulator() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const [settings, setSettings] = useState({
     timeScale: 200,
@@ -483,7 +479,6 @@ export default function SatelliteTelescopeSimulator() {
     >
       <Box
         sx={{
-          flex: 1,
           position: "relative",
           height: { xs: "70dvh", md: "100%" },
           minHeight: { xs: "70dvh", md: 0 },
