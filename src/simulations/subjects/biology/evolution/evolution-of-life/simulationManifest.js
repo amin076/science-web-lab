@@ -1,4 +1,7 @@
 const simulationManifest = {
+  engine: "canvas2d",
+  renderingModel: "2d-canvas",
+  standardRole: "2D Canvas reference implementation",
   id: "evolution-of-life",
   slug: "evolution-of-life",
   title: "Evolution of Life",

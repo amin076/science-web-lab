@@ -15,7 +15,7 @@ import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
-import { evolutionTimeline } from "./data/evolutionTimeline";
+import { evolutionSubjects, getEvolutionSubject } from "./data/speciesTimelines.js";
 import {
   clampEvolutionIndex,
   formatEvolutionTime,
@@ -37,7 +37,18 @@ function MetricCard({ label, value, detail }) {
 }
 
 export default function EvolutionOfLifeSimulation() {
+  const [selectedSubjectId, setSelectedSubjectId] = useState("life");
+  const selectedSubject = useMemo(
+    () => getEvolutionSubject(selectedSubjectId),
+    [selectedSubjectId],
+  );
+  const subjectTimeline = selectedSubject.timeline;
   const [stageIndex, setStageIndex] = useState(0);
+
+  // data-multispecies-reset
+  useEffect(() => {
+    setStageIndex(0);
+  }, [selectedSubjectId, setStageIndex]);
   const [playing, setPlaying] = useState(false);
 
   const stage = useMemo(() => getEvolutionStage(stageIndex), [stageIndex]);
@@ -48,7 +59,7 @@ export default function EvolutionOfLifeSimulation() {
 
     const timer = window.setInterval(() => {
       setStageIndex((current) => {
-        if (current >= evolutionTimeline.length - 1) {
+        if (current >= subjectTimeline.length - 1) {
           setPlaying(false);
           return current;
         }
@@ -89,7 +100,11 @@ export default function EvolutionOfLifeSimulation() {
               <Chip label="Biology" size="small" className="evolution-chip" />
               <Chip label="Evolution" size="small" className="evolution-chip" />
               <Chip label={stage.era} size="small" className="evolution-chip evolution-chip-active" />
-            </Stack>
+
+        <Typography className="evolution-format-note" variant="body2">
+          2D Canvas reference simulation for the Esbiko simulation standard
+        </Typography>
+      </Stack>
             <Typography component="h1" className="evolution-title">
               Evolution of Life
             </Typography>
@@ -119,7 +134,46 @@ export default function EvolutionOfLifeSimulation() {
           </Stack>
         </Stack>
 
-        <Box className="evolution-grid">
+        <Paper className="evolution-species-panel" elevation={0}>
+        <Stack spacing={1.5}>
+          <Box>
+            <Typography variant="overline" className="evolution-species-eyebrow">
+              Explore a lineage
+            </Typography>
+            <Typography variant="h6">
+              Select life history
+            </Typography>
+            <Typography variant="body2" className="evolution-species-description">
+              Choose a subject, then move the timeline slider to explore its evolutionary stages.
+            </Typography>
+          </Box>
+          <Box className="evolution-species-list">
+            {evolutionSubjects.map((subject) => (
+              <Button
+                key={subject.id}
+                type="button"
+                variant={selectedSubjectId === subject.id ? "contained" : "outlined"}
+                className={`evolution-species-button ${
+                  selectedSubjectId === subject.id
+                    ? "evolution-species-button-active"
+                    : ""
+                }`}
+                onClick={() => setSelectedSubjectId(subject.id)}
+                aria-pressed={selectedSubjectId === subject.id}
+              >
+                <span className="evolution-species-icon" aria-hidden="true">
+                  {subject.icon || "●"}
+                </span>
+                <span>{subject.label}</span>
+              </Button>
+            ))}
+          </Box>
+          <Typography variant="body2" className="evolution-selected-subject">
+            Showing: <strong>{selectedSubject.label}</strong> — {subjectTimeline.length} timeline stages
+          </Typography>
+        </Stack>
+      </Paper>
+      <Box className="evolution-grid">
           <Paper className="evolution-stage-card" elevation={0}>
             <Box className="evolution-stage-visual">
               <Box className="evolution-orbit evolution-orbit-one" />
@@ -213,7 +267,7 @@ export default function EvolutionOfLifeSimulation() {
               <IconButton
                 aria-label="Next evolutionary stage"
                 onClick={() => selectStage(stageIndex + 1)}
-                disabled={stageIndex === evolutionTimeline.length - 1}
+                disabled={stageIndex === subjectTimeline.length - 1}
                 className="evolution-icon-button"
               >
                 <ArrowForwardRoundedIcon />
@@ -230,14 +284,14 @@ export default function EvolutionOfLifeSimulation() {
           <Slider
             value={stageIndex}
             min={0}
-            max={evolutionTimeline.length - 1}
+            max={subjectTimeline.length - 1}
             step={1}
-            marks={evolutionTimeline.map((item, index) => ({
+            marks={subjectTimeline.map((item, index) => ({
               value: index,
               label:
                 index === 0 ||
-                index === evolutionTimeline.length - 1 ||
-                index === Math.floor(evolutionTimeline.length / 2)
+                index === subjectTimeline.length - 1 ||
+                index === Math.floor(subjectTimeline.length / 2)
                   ? item.time
                   : "",
             }))}
@@ -247,7 +301,7 @@ export default function EvolutionOfLifeSimulation() {
           />
 
           <Box className="evolution-stage-buttons">
-            {evolutionTimeline.map((item, index) => (
+            {subjectTimeline.map((item, index) => (
               <button
                 type="button"
                 key={item.id}
