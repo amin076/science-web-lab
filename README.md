@@ -31,6 +31,18 @@ Esbiko is designed as a growing multidisciplinary platform covering:
 
 Some subject areas currently contain more simulations than others. The simulation catalog is continuously expanding.
 
+## Why I Built Esbiko
+
+Before becoming a software developer, I spent several years teaching science, especially physics and astronomy, at high school and university levels.
+
+During those years, I saw the same challenge repeatedly: many students struggled to understand scientific concepts when they were presented only through textbooks, formulas, static diagrams, or verbal explanations. Many schools also had limited laboratory resources, making hands-on experimentation difficult or impossible.
+
+As a teacher, I learned that students understand science much more effectively when they can interact with experiments, change variables, observe results, and explore concepts for themselves.
+
+Later, after moving into web development, I realised that modern web technologies could help bridge this educational gap.
+
+Esbiko was created to combine my experience as both a science teacher and a software developer into a platform where students can learn through exploration, experimentation, and discovery instead of memorisation.
+
 ---
 
 ## Core Capabilities
@@ -456,6 +468,16 @@ science-web-lab/
 
 The exact directory structure may change as the architecture is refined.
 
+## AI-Assisted Development
+
+Esbiko was developed with the assistance of OpenAI GPT-5.6 and OpenAI Codex.
+
+These tools became valuable engineering partners throughout development. They helped accelerate implementation, review application architecture, generate and refactor React and TypeScript code, debug complex issues, improve documentation, and prototype new interactive simulations.
+
+Rather than replacing software development, AI assistance allowed more time to focus on educational design, scientific accuracy, user experience, performance, and the creation of engaging learning activities.
+
+During OpenAI Build Week, GPT-5.6 and Codex were also used to review the project, improve its presentation, refine documentation, and support the preparation of the final submission.
+
 ---
 
 ## Current Development Missions
@@ -685,6 +707,18 @@ Major roadmap areas include:
 - Improve offline availability
 - Develop AI-assisted teaching and learning tools
 - Continue performance optimisation for complex 3D simulations
+
+## Educational Vision
+
+Esbiko is not intended to replace teachers.
+
+Its goal is to empower teachers by providing interactive tools that make science easier to explain, easier to explore, and eventually easier to create.
+
+My experience as a teacher taught me that every classroom is different. Instead of expecting teachers to adapt to fixed educational software, I want Esbiko to adapt to teachers.
+
+One of the platform's most important long-term goals is to enable teachers and students to create, customise, and publish their own interactive scientific simulations without requiring advanced programming knowledge.
+
+The long-term vision is to make simulation creation as accessible to educators as preparing presentation slides, allowing teachers to build and share learning experiences suited to their own students and classrooms.
 
 ---
 
