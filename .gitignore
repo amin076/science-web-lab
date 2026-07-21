@@ -45,3 +45,14 @@ packs/
 
 # Local Keynu runtime and repository memory
 .keynu/
+
+# Firebase local deployment cache
+.firebase/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Firebase local deployment cache
+.firebase/
