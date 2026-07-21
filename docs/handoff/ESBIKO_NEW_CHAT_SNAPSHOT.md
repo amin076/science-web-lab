@@ -8,11 +8,20 @@ Esbiko is the product and platform repository. Keynu is only an external runtime
 
 ## Mandatory Reading
 - `docs/ADDING_A_SIMULATION.md`
-- `docs/SIMULATION_STANDARD.md`
-- `docs/PLATFORM_ARCHITECTURE.md`
-- `docs/PLATFORM_API.md`
-- `docs/PLATFORM_CATALOG.md`
-- `docs/PLATFORM_ROADMAP.md`
+- `docs/ESBIKO_PLATFORM_VISION.md`
+- `docs/ESBIKO_PLATFORM_API_ARCHITECTURE.md`
+- `docs/ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md`
+- `docs/ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md`
+- `docs/ESBIKO_PLATFORM_PROTOCOLS.md`
+- `docs/ESBIKO_SIMULATION_PROTOCOLS.md`
+- `docs/ESBIKO_PLATFORM_METADATA.md`
+- `docs/ESBIKO_PLATFORM_RESOURCES.md`
+- `docs/ESBIKO_SIMULATION_CREATION_STANDARD_VISION.md`
+- `docs/ESBIKO_ROADMAP.md`
+- `docs/ESBIKO_PROJECT_STATUS.md`
+- `docs/ESBIKO_MOBILE_RESPONSIVE_ROADMAP.md`
+- `docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md`
+- `docs/ESBIKO_DEVICE_TEST_MATRIX.md`
 
 ## Non-Negotiable Rules
 - Read Esbiko documentation before changing architecture.
@@ -55,3 +64,12 @@ The Evolution simulation was initially added directly to `src/App.jsx`. This vio
 ## New Chat Instruction
 
 Read this handoff and the required documents before modifying code. Continue only Esbiko work unless Amin explicitly asks for another project.
+## Canonical Architecture Map
+
+- Experiment metadata source of truth: `src/data/experiments/index.js` and its subject modules under `src/data/experiments/`.
+- Platform catalog builder: `src/platform/services/PlatformCatalogService.js`.
+- Catalog transformation: `src/platform/catalog/createPlatformCatalog.js`.
+- Runtime binding: `src/simulations/registry/index.js`.
+- Generic runtime route: `/experiments/:id/run` through `src/pages/simulations/RunSimulation.jsx`.
+- Generated file `functions/api/data/platformCatalog.generated.json` is derived output and must not be edited as the canonical source.
+- Keynu is an external execution bridge only; Esbiko product documentation remains in this repository.

@@ -260,5 +260,66 @@
     "Decide whether status should remain development or advance after visual verification.",
     "Remove or ignore temporary .esbiko audit files deliberately; do not commit them accidentally."
   ],
-  "newChatInstruction": "Treat this file and the listed Esbiko documentation as the source of truth. Continue only Esbiko work. Do not resume Keynu Knowledge Graph work unless Amin explicitly requests it."
+  "newChatInstruction": "Treat this file and the listed Esbiko documentation as the source of truth. Continue only Esbiko work. Do not resume Keynu Knowledge Graph work unless Amin explicitly requests it.",
+  "mandatoryReading": [
+    "docs/ADDING_A_SIMULATION.md",
+    "docs/ESBIKO_PLATFORM_VISION.md",
+    "docs/ESBIKO_PLATFORM_API_ARCHITECTURE.md",
+    "docs/ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md",
+    "docs/ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md",
+    "docs/ESBIKO_PLATFORM_PROTOCOLS.md",
+    "docs/ESBIKO_SIMULATION_PROTOCOLS.md",
+    "docs/ESBIKO_PLATFORM_METADATA.md",
+    "docs/ESBIKO_PLATFORM_RESOURCES.md",
+    "docs/ESBIKO_SIMULATION_CREATION_STANDARD_VISION.md",
+    "docs/ESBIKO_ROADMAP.md",
+    "docs/ESBIKO_PROJECT_STATUS.md",
+    "docs/ESBIKO_MOBILE_RESPONSIVE_ROADMAP.md",
+    "docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md",
+    "docs/ESBIKO_DEVICE_TEST_MATRIX.md"
+  ],
+  "authoritativeArchitecture": {
+    "experimentMetadataSource": "src/data/experiments/index.js",
+    "experimentSubjectModules": "src/data/experiments/",
+    "platformCatalogService": "src/platform/services/PlatformCatalogService.js",
+    "catalogTransformer": "src/platform/catalog/createPlatformCatalog.js",
+    "simulationRegistry": "src/simulations/registry/index.js",
+    "runtimePage": "src/pages/simulations/RunSimulation.jsx",
+    "genericRoutes": [
+      "/experiments/:id",
+      "/experiments/:id/run"
+    ],
+    "generatedCatalog": {
+      "path": "functions/api/data/platformCatalog.generated.json",
+      "role": "derived-output-not-source-of-truth"
+    },
+    "keynuRole": "external-execution-bridge-only"
+  },
+  "documentationStatus": {
+    "canonicalDocuments": [
+      "docs/ADDING_A_SIMULATION.md",
+      "docs/ESBIKO_PLATFORM_VISION.md",
+      "docs/ESBIKO_PLATFORM_API_ARCHITECTURE.md",
+      "docs/ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md",
+      "docs/ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md",
+      "docs/ESBIKO_PLATFORM_PROTOCOLS.md",
+      "docs/ESBIKO_SIMULATION_PROTOCOLS.md",
+      "docs/ESBIKO_PLATFORM_METADATA.md",
+      "docs/ESBIKO_PLATFORM_RESOURCES.md",
+      "docs/ESBIKO_SIMULATION_CREATION_STANDARD_VISION.md",
+      "docs/ESBIKO_ROADMAP.md",
+      "docs/ESBIKO_PROJECT_STATUS.md",
+      "docs/ESBIKO_MOBILE_RESPONSIVE_ROADMAP.md",
+      "docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md",
+      "docs/ESBIKO_DEVICE_TEST_MATRIX.md"
+    ],
+    "obsoleteSnapshotReferences": [
+      "docs/SIMULATION_STANDARD.md",
+      "docs/PLATFORM_ARCHITECTURE.md",
+      "docs/PLATFORM_API.md",
+      "docs/PLATFORM_CATALOG.md",
+      "docs/PLATFORM_ROADMAP.md"
+    ],
+    "note": "Obsolete names are retained here only as migration evidence and must not be used as required reading."
+  }
 }
