@@ -44,6 +44,8 @@ import ExperimentDetail from "@/pages/ExperimentDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import StyleGuide from "@/pages/StyleGuide";
+import SimulationUiShowcase from "@/pages/SimulationUiShowcase";
+import SimulationWorkspaceShowcase from "@/pages/SimulationWorkspaceShowcase";
 import ArtSciencePage from "@/pages/ArtSciencePage";
 
 // ✅ LayoutShell doesn't need props anymore
@@ -140,6 +142,8 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/style-guide" element={<StyleGuide />} />
+              <Route path="/simulation-ui-showcase" element={<SimulationUiShowcase />} />
+              <Route path="/simulation-workspace-showcase" element={<SimulationWorkspaceShowcase />} />
               <Route path="/art-science" element={<ArtSciencePage />} />
 
               {/* 🔒 Experiments */}

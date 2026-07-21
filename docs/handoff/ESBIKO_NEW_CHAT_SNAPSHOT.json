@@ -1,0 +1,325 @@
+{
+  "schemaVersion": "esbiko-handoff.v1",
+  "generatedAt": "2026-07-15T01:07:33.078Z",
+  "project": {
+    "id": "science-web-lab",
+    "name": "Esbiko",
+    "root": "C:\\Physics\\science-web-lab",
+    "repository": "amin076/science-web-lab",
+    "branch": "feature/mobile-platform-release",
+    "purpose": "Virtual science laboratory and educational simulation platform"
+  },
+  "separationOfResponsibilities": {
+    "esbiko": "Owns platform architecture, simulations, APIs, catalogs, documentation and product roadmap.",
+    "keynu": "External runtime and execution bridge only. Keynu must not become the canonical store for Esbiko architecture or product documentation."
+  },
+  "mandatoryRules": [
+    "Read Esbiko documentation before changing architecture.",
+    "Simulations are not standalone application pages.",
+    "Do not add simulation-specific imports or routes to src/App.jsx.",
+    "Use the generic routes /experiments/:id and /experiments/:id/run.",
+    "Register simulations through the canonical experiments catalog and platform runtime.",
+    "Generated catalog files must be generated from source, not treated as the primary source.",
+    "Do not modify unrelated files while adding a simulation.",
+    "Run verification and read back modified files before committing."
+  ],
+  "requiredReading": [
+    "docs/ADDING_A_SIMULATION.md",
+    "docs/SIMULATION_STANDARD.md",
+    "docs/PLATFORM_ARCHITECTURE.md",
+    "docs/PLATFORM_API.md",
+    "docs/PLATFORM_CATALOG.md",
+    "docs/PLATFORM_ROADMAP.md"
+  ],
+  "currentWork": {
+    "simulationId": "evolution-of-life",
+    "title": "Evolution of Life",
+    "status": "Implemented foundation, catalog registered, architecture cleanup completed; visual runtime review still required.",
+    "simulationRoot": "src/simulations/subjects/biology/evolution/evolution-of-life",
+    "files": [
+      {
+        "relative": "EvolutionOfLifeSimulation.jsx",
+        "exists": true,
+        "bytes": 9321
+      },
+      {
+        "relative": "evolutionOfLife.css",
+        "exists": true,
+        "bytes": 8794
+      },
+      {
+        "relative": "simulationManifest.js",
+        "exists": true,
+        "bytes": 642
+      },
+      {
+        "relative": "data/evolutionTimeline.js",
+        "exists": true,
+        "bytes": 4251
+      },
+      {
+        "relative": "model/evolutionModel.js",
+        "exists": true,
+        "bytes": 828
+      }
+    ],
+    "catalogEntries": [
+      {
+        "id": "evolution-of-life",
+        "domain": "biology",
+        "topic": "evolution",
+        "name": "Evolution of Life",
+        "description": "Explore major transitions in the history of life from the earliest cells to modern humans.",
+        "status": "development",
+        "engine": "canvas2d",
+        "demo": true,
+        "tags": [],
+        "difficulty": "unspecified",
+        "estimatedDurationMinutes": null,
+        "route": "/experiments/evolution-of-life/run",
+        "capabilities": {
+          "interactive": false,
+          "physics": false,
+          "audio": false,
+          "camera": false,
+          "recording": false,
+          "export": false,
+          "timeline": false,
+          "presets": false,
+          "stateRead": false,
+          "commandExecution": false,
+          "agentReady": false
+        },
+        "capabilityContract": {
+          "version": "simulation-capabilities.v1",
+          "status": "unverified",
+          "sourceModel": "verified-metadata-or-safe-default",
+          "capabilities": {
+            "interactive": {
+              "key": "interactive",
+              "label": "Interactive",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "physics": {
+              "key": "physics",
+              "label": "Physics",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "audio": {
+              "key": "audio",
+              "label": "Audio",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "camera": {
+              "key": "camera",
+              "label": "Camera",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "recording": {
+              "key": "recording",
+              "label": "Recording",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "export": {
+              "key": "export",
+              "label": "Export",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "timeline": {
+              "key": "timeline",
+              "label": "Timeline",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "presets": {
+              "key": "presets",
+              "label": "Presets",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "stateRead": {
+              "key": "stateRead",
+              "label": "State Read",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "commandExecution": {
+              "key": "commandExecution",
+              "label": "Command Execution",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            },
+            "agentReady": {
+              "key": "agentReady",
+              "label": "Agent Ready",
+              "supported": false,
+              "verified": false,
+              "confidence": "unknown",
+              "source": "safe-default",
+              "declared": null,
+              "reason": "No verified capability source is registered for this simulation."
+            }
+          },
+          "summary": {
+            "total": 11,
+            "supported": 0,
+            "verified": 0,
+            "unknown": 11
+          }
+        }
+      }
+    ],
+    "appIntegration": {
+      "customImportPresent": false,
+      "customRoutePresent": false,
+      "genericDetailsRoutePresent": true,
+      "genericRuntimeRoutePresent": true
+    }
+  },
+  "completedCommits": [
+    {
+      "hash": "9e1d1bb",
+      "summary": "feat(biology): add responsive evolution of life simulation"
+    },
+    {
+      "hash": "57f7917",
+      "summary": "fix(biology): connect evolution catalog route to simulation"
+    },
+    {
+      "hash": "d9e7bd2",
+      "summary": "fix(platform): remove forbidden evolution custom routes"
+    }
+  ],
+  "importantCorrection": {
+    "problem": "The simulation was incorrectly imported and given custom routes in src/App.jsx.",
+    "resolution": "The custom import and both custom routes were removed. Generic platform routes and catalog registration were preserved.",
+    "commit": "d9e7bd2"
+  },
+  "buildState": {
+    "catalogCount": 31,
+    "distIndexExists": true,
+    "distManifestExists": true,
+    "knownWarnings": [
+      "Browserslist database is outdated.",
+      "Some generated chunks exceed the configured warning size.",
+      "The Keynu wrapper sometimes reports a timeout after Vite reaches output generation; verify the actual process exit and artifacts independently."
+    ]
+  },
+  "nextActions": [
+    "Read the required Esbiko documents in the new chat before changing code.",
+    "Inspect how the generic SimulationRuntime resolves a catalog entry to its component.",
+    "Confirm that evolution-of-life loads through /experiments/evolution-of-life/run without any App.jsx customization.",
+    "Start the Esbiko development server and visually review desktop and mobile layouts.",
+    "Repair visual or runtime problems only through the standard simulation architecture.",
+    "Decide whether status should remain development or advance after visual verification.",
+    "Remove or ignore temporary .esbiko audit files deliberately; do not commit them accidentally."
+  ],
+  "newChatInstruction": "Treat this file and the listed Esbiko documentation as the source of truth. Continue only Esbiko work. Do not resume Keynu Knowledge Graph work unless Amin explicitly requests it.",
+  "mandatoryReading": [
+    "docs/ADDING_A_SIMULATION.md",
+    "docs/ESBIKO_PLATFORM_VISION.md",
+    "docs/ESBIKO_PLATFORM_API_ARCHITECTURE.md",
+    "docs/ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md",
+    "docs/ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md",
+    "docs/ESBIKO_PLATFORM_PROTOCOLS.md",
+    "docs/ESBIKO_SIMULATION_PROTOCOLS.md",
+    "docs/ESBIKO_PLATFORM_METADATA.md",
+    "docs/ESBIKO_PLATFORM_RESOURCES.md",
+    "docs/ESBIKO_SIMULATION_CREATION_STANDARD_VISION.md",
+    "docs/ESBIKO_ROADMAP.md",
+    "docs/ESBIKO_PROJECT_STATUS.md",
+    "docs/ESBIKO_MOBILE_RESPONSIVE_ROADMAP.md",
+    "docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md",
+    "docs/ESBIKO_DEVICE_TEST_MATRIX.md"
+  ],
+  "authoritativeArchitecture": {
+    "experimentMetadataSource": "src/data/experiments/index.js",
+    "experimentSubjectModules": "src/data/experiments/",
+    "platformCatalogService": "src/platform/services/PlatformCatalogService.js",
+    "catalogTransformer": "src/platform/catalog/createPlatformCatalog.js",
+    "simulationRegistry": "src/simulations/registry/index.js",
+    "runtimePage": "src/pages/simulations/RunSimulation.jsx",
+    "genericRoutes": [
+      "/experiments/:id",
+      "/experiments/:id/run"
+    ],
+    "generatedCatalog": {
+      "path": "functions/api/data/platformCatalog.generated.json",
+      "role": "derived-output-not-source-of-truth"
+    },
+    "keynuRole": "external-execution-bridge-only"
+  },
+  "documentationStatus": {
+    "canonicalDocuments": [
+      "docs/ADDING_A_SIMULATION.md",
+      "docs/ESBIKO_PLATFORM_VISION.md",
+      "docs/ESBIKO_PLATFORM_API_ARCHITECTURE.md",
+      "docs/ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md",
+      "docs/ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md",
+      "docs/ESBIKO_PLATFORM_PROTOCOLS.md",
+      "docs/ESBIKO_SIMULATION_PROTOCOLS.md",
+      "docs/ESBIKO_PLATFORM_METADATA.md",
+      "docs/ESBIKO_PLATFORM_RESOURCES.md",
+      "docs/ESBIKO_SIMULATION_CREATION_STANDARD_VISION.md",
+      "docs/ESBIKO_ROADMAP.md",
+      "docs/ESBIKO_PROJECT_STATUS.md",
+      "docs/ESBIKO_MOBILE_RESPONSIVE_ROADMAP.md",
+      "docs/ESBIKO_MOBILE_DESIGN_SYSTEM.md",
+      "docs/ESBIKO_DEVICE_TEST_MATRIX.md"
+    ],
+    "obsoleteSnapshotReferences": [
+      "docs/SIMULATION_STANDARD.md",
+      "docs/PLATFORM_ARCHITECTURE.md",
+      "docs/PLATFORM_API.md",
+      "docs/PLATFORM_CATALOG.md",
+      "docs/PLATFORM_ROADMAP.md"
+    ],
+    "note": "Obsolete names are retained here only as migration evidence and must not be used as required reading."
+  }
+}

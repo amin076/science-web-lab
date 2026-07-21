@@ -107,4 +107,8 @@ export const simulationRegistry = {
   "physics.mechanics.gyroscope": lazyWithRetry(
     () => import("@/simulations/subjects/physics/mechanics/gyroscope"),
   ),
+  "evolution-of-life": lazyWithRetry(
+    () =>
+      import("@/simulations/subjects/biology/evolution/evolution-of-life"),
+  ),
 };

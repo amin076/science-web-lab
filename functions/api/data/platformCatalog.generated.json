@@ -1207,6 +1207,156 @@
     }
   },
   {
+    "id": "evolution-of-life",
+    "domain": "biology",
+    "topic": "evolution",
+    "name": "Evolution of Life",
+    "description": "Explore major transitions in the history of life from the earliest cells to modern humans.",
+    "status": "development",
+    "engine": "canvas2d",
+    "demo": true,
+    "tags": [],
+    "difficulty": "unspecified",
+    "estimatedDurationMinutes": null,
+    "route": "/experiments/evolution-of-life/run",
+    "capabilities": {
+      "interactive": false,
+      "physics": false,
+      "audio": false,
+      "camera": false,
+      "recording": false,
+      "export": false,
+      "timeline": false,
+      "presets": false,
+      "stateRead": false,
+      "commandExecution": false,
+      "agentReady": false
+    },
+    "capabilityContract": {
+      "version": "simulation-capabilities.v1",
+      "status": "unverified",
+      "sourceModel": "verified-metadata-or-safe-default",
+      "capabilities": {
+        "interactive": {
+          "key": "interactive",
+          "label": "Interactive",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "physics": {
+          "key": "physics",
+          "label": "Physics",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "audio": {
+          "key": "audio",
+          "label": "Audio",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "camera": {
+          "key": "camera",
+          "label": "Camera",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "recording": {
+          "key": "recording",
+          "label": "Recording",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "export": {
+          "key": "export",
+          "label": "Export",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "timeline": {
+          "key": "timeline",
+          "label": "Timeline",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "presets": {
+          "key": "presets",
+          "label": "Presets",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "stateRead": {
+          "key": "stateRead",
+          "label": "State Read",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "commandExecution": {
+          "key": "commandExecution",
+          "label": "Command Execution",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        },
+        "agentReady": {
+          "key": "agentReady",
+          "label": "Agent Ready",
+          "supported": false,
+          "verified": false,
+          "confidence": "unknown",
+          "source": "safe-default",
+          "declared": null,
+          "reason": "No verified capability source is registered for this simulation."
+        }
+      },
+      "summary": {
+        "total": 11,
+        "supported": 0,
+        "verified": 0,
+        "unknown": 11
+      }
+    }
+  },
+  {
     "id": "physics.mechanics.gearbox-differential-3d",
     "domain": "physics",
     "topic": "mechanics",
