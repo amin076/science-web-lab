@@ -1,4 +1,0 @@
-=== SENSITIVE PATTERNS ===
-
-=== SENSITIVE HISTORICAL FILENAMES ===
-.env.production
