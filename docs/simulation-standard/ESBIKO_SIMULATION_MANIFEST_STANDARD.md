@@ -32,6 +32,7 @@ Every manifest MUST contain:
 - description
 - subject
 - category
+- simulationType
 - standardVersion
 - simulationVersion
 - status
@@ -91,6 +92,32 @@ Examples:
 - ecology
 - genetics
 - planetary-science
+
+## 5.1 Simulation Type
+
+The optional `simulationType` field describes the primary interaction and presentation architecture independently from rendering technology.
+
+Allowed values are:
+
+- `2d`
+- `3d`
+- `timeline`
+
+New reference simulations SHOULD declare `simulationType`. Existing manifests without this field remain valid during incremental migration.
+
+The `category` field MUST NOT be used as a replacement for `simulationType`; category continues to describe the scientific family, such as evolution, mechanics, optics, ecology, or genetics.
+
+The `renderer` field remains separately required and declares the visual rendering technology.
+
+Example:
+
+```js
+simulationType: "timeline",
+renderer: {
+  primary: "hybrid",
+  secondary: ["dom", "three-js"]
+}
+```
 
 ## 6. Renderer Declaration
 

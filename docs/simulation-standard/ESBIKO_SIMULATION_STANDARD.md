@@ -31,6 +31,24 @@ A simulation MUST satisfy each capability standard that it declares in its manif
 
 A reference simulation additionally demonstrates complete architecture separation, automated testing, agent control, accessibility, and production-quality responsive behaviour.
 
+## 3.1 Standard Simulation Types
+
+Esbiko defines three standard simulation types:
+
+- `2d`
+- `3d`
+- `timeline`
+
+The simulation type describes the primary interaction and presentation architecture. It MUST remain independent from rendering technology.
+
+A timeline simulation MAY use DOM, SVG, Canvas 2D, WebGL, Three.js, or hybrid rendering while remaining a timeline simulation.
+
+Renderer families MUST continue to be declared separately according to `ESBIKO_RENDERING_ARCHITECTURE_STANDARD.md`.
+
+New reference simulations SHOULD declare their type through the `simulationType` manifest field. Existing simulations MAY omit this field during incremental migration.
+
+Timeline simulations additionally follow `ESBIKO_TIMELINE_SIMULATION_STANDARD.md`.
+
 ## 4. Mandatory Core Requirements
 
 Every simulation MUST provide:

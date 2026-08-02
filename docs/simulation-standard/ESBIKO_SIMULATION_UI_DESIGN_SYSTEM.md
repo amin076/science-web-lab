@@ -165,6 +165,9 @@ A shared timeline SHOULD support:
 - touch dragging
 
 Timeline presentation MUST distinguish scientific time from playback speed and real elapsed time.
+`SimulationTimeline` is the shared timeline-controller UI component. It is one control within a timeline simulation and MUST NOT be treated as the complete architecture of the simulation.
+
+Simulations declaring `simulationType: "timeline"` additionally follow `ESBIKO_TIMELINE_SIMULATION_STANDARD.md`, which defines journey selection, stage/event data, viewport media, HUD/context information, lifecycle, serialization, loading/error behaviour, testing, and agent/API control.
 
 ## 11. Graph Frame Standard
 

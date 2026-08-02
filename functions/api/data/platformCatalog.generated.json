@@ -1213,20 +1213,20 @@
     "name": "Evolution of Life",
     "description": "Explore major transitions in the history of life from the earliest cells to modern humans.",
     "status": "development",
-    "engine": "canvas2d",
+    "engine": "timeline",
     "demo": true,
     "tags": [],
     "difficulty": "unspecified",
     "estimatedDurationMinutes": null,
     "route": "/experiments/evolution-of-life/run",
     "capabilities": {
-      "interactive": false,
+      "interactive": true,
       "physics": false,
       "audio": false,
       "camera": false,
       "recording": false,
       "export": false,
-      "timeline": false,
+      "timeline": true,
       "presets": false,
       "stateRead": false,
       "commandExecution": false,
@@ -1234,18 +1234,18 @@
     },
     "capabilityContract": {
       "version": "simulation-capabilities.v1",
-      "status": "unverified",
+      "status": "partially-verified",
       "sourceModel": "verified-metadata-or-safe-default",
       "capabilities": {
         "interactive": {
           "key": "interactive",
           "label": "Interactive",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "evolution-runtime-playwright-052",
+          "declared": true,
+          "reason": "Desktop and mobile runtime tests verified stage navigation, journey selection, details controls, and playback."
         },
         "physics": {
           "key": "physics",
@@ -1300,12 +1300,12 @@
         "timeline": {
           "key": "timeline",
           "label": "Timeline",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "evolution-runtime-playwright-052",
+          "declared": true,
+          "reason": "Runtime tests verified timeline events, eras, stage changes, autoplay, and responsive presentation."
         },
         "presets": {
           "key": "presets",
@@ -1350,9 +1350,9 @@
       },
       "summary": {
         "total": 11,
-        "supported": 0,
-        "verified": 0,
-        "unknown": 11
+        "supported": 2,
+        "verified": 2,
+        "unknown": 9
       }
     }
   },
