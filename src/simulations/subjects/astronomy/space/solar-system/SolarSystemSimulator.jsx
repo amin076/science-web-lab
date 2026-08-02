@@ -14,6 +14,7 @@ import PlanetMoonComparison3D from "./components/panels/PlanetMoonComparison3D";
 
 // ✅ XR (ONLY mounted after user clicks Enter AR/VR)
 import { XR, XROrigin, useXR, createXRStore } from "@react-three/xr";
+import ARRoomPlacement from "./components/xr/ARRoomPlacement";
 
 // ✅ LOCAL COMPONENTS
 import Sun from "./components/bodies/Sun";
@@ -111,25 +112,61 @@ function PlaybackControls({
   );
 }
 
-function XRButtons({ onEnterAR, onEnterVR, compact = false }) {
+function XRButtons({
+  onEnterAR,
+  onEnterVR,
+  compact = false,
+  arSupported = null,
+  vrSupported = null,
+  xrBusy = false,
+  xrError = "",
+}) {
   const base =
-    "rounded-lg font-bold shadow-md transition-transform active:scale-95 text-white";
+    "rounded-lg font-bold shadow-md transition-transform active:scale-95 text-white disabled:cursor-not-allowed disabled:opacity-45";
   const pad = compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm";
 
   return (
-    <div className="flex gap-2">
-      <button
-        onClick={onEnterAR}
-        className={`${base} ${pad} bg-blue-600 hover:bg-blue-500`}
-      >
-        📱 {compact ? "AR" : "Enter AR"}
-      </button>
-      <button
-        onClick={onEnterVR}
-        className={`${base} ${pad} bg-purple-600 hover:bg-purple-500`}
-      >
-        🥽 {compact ? "VR" : "Enter VR"}
-      </button>
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={onEnterAR}
+          disabled={xrBusy || arSupported === false}
+          aria-label="Enter augmented reality"
+          className={`${base} ${pad} bg-blue-600 hover:bg-blue-500`}
+        >
+          📱 {xrBusy ? "Starting…" : compact ? "AR" : "Enter AR"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onEnterVR}
+          disabled={xrBusy || vrSupported === false}
+          aria-label="Enter virtual reality"
+          className={`${base} ${pad} bg-purple-600 hover:bg-purple-500`}
+        >
+          🥽 {xrBusy ? "Starting…" : compact ? "VR" : "Enter VR"}
+        </button>
+      </div>
+
+      {(xrError || arSupported === false || vrSupported === false) && (
+        <div
+          role={xrError ? "alert" : "status"}
+          className="max-w-xs rounded-md bg-black/60 px-2 py-1 text-xs text-white/90"
+        >
+          {xrError ||
+            [
+              arSupported === false
+                ? "AR is unavailable on this browser or device."
+                : null,
+              vrSupported === false
+                ? "VR is unavailable on this browser or headset."
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" ")}
+        </div>
+      )}
     </div>
   );
 }
@@ -538,7 +575,7 @@ function SolarSystemSceneXR({
   const groupPosition = isAR ? [0, 1.2, -2] : [0, 0, 0];
 
   return (
-    <>
+    <ARRoomPlacement enabled={xrIntent === "ar"} roomScale={0.035}>
       <group scale={groupScale} position={groupPosition}>
         {!isPresenting && (
           <SolarSystemBodies
@@ -659,7 +696,7 @@ function SolarSystemSceneXR({
       )}
 
       <XROrigin />
-    </>
+    </ARRoomPlacement>
   );
 }
 
@@ -697,6 +734,45 @@ export default function SolarSystemSimulator() {
   // ✅ XR only mounts after click
   const [xrEnabled, setXrEnabled] = useState(false);
   const [xrIntent, setXrIntent] = useState(null); // "ar" | "vr" | null
+  const [xrSupport, setXrSupport] = useState({ ar: null, vr: null });
+  const [xrBusy, setXrBusy] = useState(false);
+  const [xrError, setXrError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function detectXRSupport() {
+      if (!navigator.xr?.isSessionSupported) {
+        if (!cancelled) setXrSupport({ ar: false, vr: false });
+        return;
+      }
+
+      const [ar, vr] = await Promise.all([
+        navigator.xr.isSessionSupported("immersive-ar").catch(() => false),
+        navigator.xr.isSessionSupported("immersive-vr").catch(() => false),
+      ]);
+
+      if (!cancelled) setXrSupport({ ar, vr });
+    }
+
+    detectXRSupport();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = xrStore.subscribe((state) => {
+      if (!state.session) {
+        setXrEnabled(false);
+        setXrIntent(null);
+        setXrBusy(false);
+      }
+    });
+
+    return unsubscribe;
+  }, []);
 
   // ✅ Mobile: use a bottom-sheet controls drawer
   const [controlsOpen, setControlsOpen] = useState(false);
@@ -756,28 +832,52 @@ export default function SolarSystemSimulator() {
   };
 
   const enterAR = async () => {
+    if (xrSupport.ar === false) {
+      setXrError("AR is not supported by this browser or device.");
+      return;
+    }
+
+    setXrBusy(true);
+    setXrError("");
     setXrIntent("ar");
     setXrEnabled(true);
+
     try {
-      const st = xrStore.getState();
-      if (!st.session) await xrStore.enterAR();
-    } catch (e) {
-      console.error(e);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const state = xrStore.getState();
+      if (!state.session) await xrStore.enterAR();
+    } catch (error) {
+      console.error("Unable to enter AR", error);
+      setXrError(error?.message || "The AR session could not be started.");
       setXrEnabled(false);
       setXrIntent(null);
+    } finally {
+      setXrBusy(false);
     }
   };
 
   const enterVR = async () => {
+    if (xrSupport.vr === false) {
+      setXrError("VR is not supported by this browser or headset.");
+      return;
+    }
+
+    setXrBusy(true);
+    setXrError("");
     setXrIntent("vr");
     setXrEnabled(true);
+
     try {
-      const st = xrStore.getState();
-      if (!st.session) await xrStore.enterVR();
-    } catch (e) {
-      console.error(e);
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const state = xrStore.getState();
+      if (!state.session) await xrStore.enterVR();
+    } catch (error) {
+      console.error("Unable to enter VR", error);
+      setXrError(error?.message || "The VR session could not be started.");
       setXrEnabled(false);
       setXrIntent(null);
+    } finally {
+      setXrBusy(false);
     }
   };
 
@@ -892,7 +992,11 @@ export default function SolarSystemSimulator() {
             <XRButtons
               onEnterAR={enterAR}
               onEnterVR={enterVR}
-              compact={isMobile}
+              arSupported={xrSupport.ar}
+              vrSupported={xrSupport.vr}
+              xrBusy={xrBusy}
+              xrError={xrError}
+              compact
             />
 
             {/* Right */}
