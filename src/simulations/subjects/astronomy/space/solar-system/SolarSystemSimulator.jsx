@@ -731,7 +731,7 @@ export default function SolarSystemSimulator() {
     progress: 0,
   });
 
-  // ✅ XR only mounts after click
+  // XR stays mounted so its store remains connected to Three.js before session entry
   const [xrEnabled, setXrEnabled] = useState(false);
   const [xrIntent, setXrIntent] = useState(null); // "ar" | "vr" | null
   const [xrSupport, setXrSupport] = useState({ ar: null, vr: null });
@@ -843,7 +843,6 @@ export default function SolarSystemSimulator() {
     setXrEnabled(true);
 
     try {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
       const state = xrStore.getState();
       if (!state.session) await xrStore.enterAR();
     } catch (error) {
@@ -868,7 +867,6 @@ export default function SolarSystemSimulator() {
     setXrEnabled(true);
 
     try {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
       const state = xrStore.getState();
       if (!state.session) await xrStore.enterVR();
     } catch (error) {
@@ -906,8 +904,9 @@ export default function SolarSystemSimulator() {
               distance={10_000_000}
             />
 
-            {!xrEnabled ? (
-              <SolarSystemSceneNonXR
+            {<XR store={xrStore}>
+              {!xrEnabled ? (
+                <SolarSystemSceneNonXR
                 scale={scale}
                 effectiveSpeed={effectiveSpeed}
                 showAxis={showAxis}
@@ -924,8 +923,7 @@ export default function SolarSystemSimulator() {
                 setTourInfo={setTourInfo}
                 setIsTouring={setIsTouring}
               />
-            ) : (
-              <XR store={xrStore}>
+              ) : (
                 <SolarSystemSceneXR
                   xrIntent={xrIntent}
                   scale={scale}
@@ -944,8 +942,8 @@ export default function SolarSystemSimulator() {
                   setTourInfo={setTourInfo}
                   setIsTouring={setIsTouring}
                 />
-              </XR>
-            )}
+              )}
+            </XR>}
           </Suspense>
         </Canvas>
       </div>
