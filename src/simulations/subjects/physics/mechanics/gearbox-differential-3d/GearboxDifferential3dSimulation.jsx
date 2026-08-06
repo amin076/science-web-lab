@@ -237,10 +237,13 @@ function ReadableDrivetrainScene({
   const pinionRef = useRef(null);
   const ringRef = useRef(null);
   const carrierRef = useRef(null);
+  const diffPinionRef = useRef(null);
+  const diffRingRef = useRef(null);
   const sideLRef = useRef(null);
   const sideRRef = useRef(null);
   const spiderARef = useRef(null);
   const spiderBRef = useRef(null);
+  const spiderShaftRef = useRef(null);
   const axleLRef = useRef(null);
   const axleRRef = useRef(null);
   const wheelLRef = useRef(null);
@@ -312,10 +315,12 @@ function ReadableDrivetrainScene({
       }
       spinX(pinionRef, r.thetaPinion);
       if (carrierRef.current) carrierRef.current.rotation.set(r.thetaCarrier, 0, 0);
+      spinZ(diffPinionRef, r.thetaPinion);
+      spinX(diffRingRef, r.thetaCarrier);
       spinX(sideLRef, r.thetaLeft - r.thetaCarrier);
       spinX(sideRRef, r.thetaRight - r.thetaCarrier);
-      if (spiderARef.current) spiderARef.current.rotation.set(r.thetaCarrier, r.thetaSpider, 0);
-      if (spiderBRef.current) spiderBRef.current.rotation.set(r.thetaCarrier, -r.thetaSpider, 0);
+      spinY(spiderARef, r.thetaSpider);
+      spinY(spiderBRef, -r.thetaSpider);
 
       sampleAccRef.current += dt;
       const sampleEvery = 1 / chartCfg.sampleRate;
@@ -387,11 +392,24 @@ function ReadableDrivetrainScene({
           {showModuleLabels && <ModuleLabel position={[0, 1.42, 0]} title="Differential" subtitle="left/right split" />}
           <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
           <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
+          <ShaftZ position={[0, -0.04, -1.35]} length={1.75} radius={0.075} />
+          <BevelGear
+            ref={diffPinionRef}
+            axis="z"
+            position={[0, -0.04, -0.58]}
+            radius={0.22}
+            length={0.42}
+            teeth={18}
+            color="#d7dde3"
+          />
+          <RingGear ref={diffRingRef} position={[0, -0.04, -0.08]} radius={0.72} thickness={0.18} teeth={44} />
           <group ref={carrierRef} position={[0, -0.04, 0]}>
-            <SpurGear ref={sideLRef} position={[-0.48, 0, 0]} radius={0.34} thickness={0.22} teeth={28} color="#c9d2dc" helixSkew={0.32} />
-            <SpurGear ref={sideRRef} position={[0.48, 0, 0]} radius={0.34} thickness={0.22} teeth={28} color="#c9d2dc" helixSkew={-0.32} />
-            <SpurGear ref={spiderARef} position={[0, 0.28, 0]} radius={0.22} thickness={0.18} teeth={20} color="#e5e7eb" helixSkew={0.22} />
-            <SpurGear ref={spiderBRef} position={[0, -0.28, 0]} radius={0.22} thickness={0.18} teeth={20} color="#e5e7eb" helixSkew={-0.22} />
+            <CarrierCage />
+            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={1.05} radius={0.035} />
+            <BevelGear ref={sideLRef} axis="x" position={[-0.42, 0, 0]} radius={0.28} length={0.28} teeth={22} color="#c9d2dc" />
+            <BevelGear ref={sideRRef} axis="x" position={[0.42, 0, 0]} radius={0.28} length={0.28} teeth={22} color="#c9d2dc" flip />
+            <BevelGear ref={spiderARef} axis="y" position={[0, 0.34, 0]} radius={0.2} length={0.24} teeth={16} color="#e5e7eb" />
+            <BevelGear ref={spiderBRef} axis="y" position={[0, -0.34, 0]} radius={0.2} length={0.24} teeth={16} color="#e5e7eb" flip />
           </group>
           <Shaft ref={axleLRef} position={[1.45, -0.04, 0]} length={2.45} radius={0.09} />
           <Shaft ref={axleRRef} position={[-1.45, -0.04, 0]} length={2.45} radius={0.09} />
@@ -408,6 +426,16 @@ function ReadableDrivetrainScene({
 function spinX(ref, theta) {
   if (!ref?.current) return;
   ref.current.rotation.x = theta;
+}
+
+function spinY(ref, theta) {
+  if (!ref?.current) return;
+  ref.current.rotation.y = theta;
+}
+
+function spinZ(ref, theta) {
+  if (!ref?.current) return;
+  ref.current.rotation.z = theta;
 }
 
 function SceneLabels({ out }) {
@@ -527,6 +555,32 @@ const Shaft = React.forwardRef(function Shaft({ position, length, radius }, ref)
   );
 });
 
+const ShaftY = React.forwardRef(function ShaftY({ position, length, radius }, ref) {
+  return (
+    <group ref={ref} position={position}>
+      <mesh>
+        <cylinderGeometry args={[radius, radius, length, 24]} />
+        <meshStandardMaterial color="#dbeafe" roughness={0.22} metalness={0.74} envMapIntensity={1.2} />
+      </mesh>
+    </group>
+  );
+});
+
+function ShaftZ({ position, length, radius }) {
+  return (
+    <mesh position={position} rotation={[Math.PI / 2, 0, 0]}>
+      <cylinderGeometry args={[radius, radius, length, 28]} />
+      <meshStandardMaterial color="#dbeafe" roughness={0.22} metalness={0.74} envMapIntensity={1.2} />
+    </mesh>
+  );
+}
+
+function axisRotation(axis, flip = false) {
+  if (axis === "y") return [0, 0, Math.PI / 2 + (flip ? Math.PI : 0)];
+  if (axis === "z") return [0, -Math.PI / 2 + (flip ? Math.PI : 0), 0];
+  return [0, flip ? Math.PI : 0, 0];
+}
+
 const SpurGear = React.forwardRef(function SpurGear(
   { position, radius, thickness, teeth = 32, color = "#60a5fa", helixSkew = 0 },
   ref,
@@ -623,6 +677,86 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color, helixSkew = 0
     <instancedMesh ref={instRef} args={[toothGeometry, null, teeth]}>
       <meshStandardMaterial color={color} roughness={0.44} metalness={0.18} envMapIntensity={1.1} />
     </instancedMesh>
+  );
+}
+
+const BevelGear = React.forwardRef(function BevelGear(
+  { axis = "x", position, radius = 0.24, length = 0.32, teeth = 18, color = "#e5e7eb", flip = false },
+  ref,
+) {
+  return (
+    <group ref={ref} position={position} rotation={axisRotation(axis, flip)}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <coneGeometry args={[radius, length, 36]} />
+        <meshStandardMaterial
+          color={color}
+          roughness={0.32}
+          metalness={0.48}
+          envMapIntensity={1.2}
+          emissive={new THREE.Color(color)}
+          emissiveIntensity={0.025}
+        />
+      </mesh>
+      <mesh rotation={[0, 0, Math.PI / 2]} position={[length * 0.22, 0, 0]}>
+        <cylinderGeometry args={[radius * 0.34, radius * 0.34, length * 0.64, 24]} />
+        <meshStandardMaterial color="#f1f5f9" roughness={0.24} metalness={0.56} envMapIntensity={1.2} />
+      </mesh>
+      <TeethRing
+        radius={radius * 0.9}
+        teeth={teeth}
+        toothW={Math.max(0.018, radius * 0.11)}
+        toothH={Math.max(0.038, radius * 0.2)}
+        toothD={Math.max(0.04, length * 0.34)}
+        color={color}
+        helixSkew={0.28}
+      />
+    </group>
+  );
+});
+
+const RingGear = React.forwardRef(function RingGear(
+  { position, radius = 0.72, thickness = 0.18, teeth = 44 },
+  ref,
+) {
+  return (
+    <group ref={ref} position={position}>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
+        <torusGeometry args={[radius, thickness * 0.34, 12, 72]} />
+        <meshStandardMaterial color="#9ca3af" roughness={0.3} metalness={0.42} envMapIntensity={1.2} />
+      </mesh>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
+        <torusGeometry args={[radius * 0.72, thickness * 0.12, 8, 64]} />
+        <meshStandardMaterial color="#e5e7eb" roughness={0.24} metalness={0.56} envMapIntensity={1.2} />
+      </mesh>
+      <TeethRing
+        radius={radius + thickness * 0.25}
+        teeth={teeth}
+        toothW={0.036}
+        toothH={0.105}
+        toothD={0.12}
+        color="#d1d5db"
+        helixSkew={0.18}
+      />
+    </group>
+  );
+});
+
+function CarrierCage() {
+  return (
+    <group>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
+        <torusGeometry args={[0.56, 0.035, 8, 56]} />
+        <meshStandardMaterial color="#64748b" roughness={0.34} metalness={0.5} envMapIntensity={1.1} />
+      </mesh>
+      <mesh position={[0, 0.42, 0]}>
+        <boxGeometry args={[0.88, 0.045, 0.08]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.48} />
+      </mesh>
+      <mesh position={[0, -0.42, 0]}>
+        <boxGeometry args={[0.88, 0.045, 0.08]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.48} />
+      </mesh>
+    </group>
   );
 }
 
