@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
@@ -268,7 +268,6 @@ function ReadableDrivetrainScene({
   const finalDriveRatio = clamp(Number(paramsRef.current?.finalDriveRatio) || 3.2, 1, 6);
   const rPinion = 0.2;
   const rRing = clamp(rPinion * finalDriveRatio, 0.65, 1.35);
-  const showModuleLabels = useMediaQuery("(min-width:700px)");
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, MAX_DT);
@@ -367,7 +366,6 @@ function ReadableDrivetrainScene({
 
       <group scale={scale} position={[0, 0.05, 0]}>
         <group position={[gearboxX, 0, 0]}>
-          {showModuleLabels && <ModuleLabel position={[0, 1.55, 0]} title="Gearbox" subtitle="multi-shaft reduction" />}
           <GlassBox size={[4.95, 2.15, 2.22]} position={[0, 0.1, 0]} />
           <ModuleBase size={[4.55, 0.08, 1.92]} position={[0, -1.02, 0]} />
           <Shaft ref={inShaftRef} position={[0, yIn, 0]} length={4.25} radius={0.075} />
@@ -381,7 +379,6 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[finalX, 0, 0]}>
-          {showModuleLabels && <ModuleLabel position={[0.05, 1.48, 0]} title="Final Drive" subtitle="bevel reduction" />}
           <GlassBox size={[2.55, 2.0, 2.05]} position={[0.05, -0.03, 0]} />
           <ModuleBase size={[2.25, 0.08, 1.78]} position={[0.05, -1.02, 0]} />
           <Shaft position={[-1.1, yOut, 0]} length={1.55} radius={0.085} />
@@ -390,17 +387,16 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[diffX, 0, 0]}>
-          {showModuleLabels && <ModuleLabel position={[0, 1.28, 0]} title="Differential" subtitle="crown gear and spider gears" />}
           <GlassCylinder radius={0.88} height={1.08} position={[0, -0.04, 0.02]} />
           <ModuleBase size={[1.92, 0.08, 1.5]} position={[0, -1.02, 0.02]} />
-          <ShaftZ position={[0, -0.04, -1.1]} length={1.18} radius={0.055} />
+          <ShaftZ position={[0, -0.04, 1.08]} length={1.18} radius={0.055} />
           <DifferentialStlPart
             ref={diffPinionRef}
             file="engineering-mindset-drive-pinion.stl"
             axis="z"
-            position={[0, -0.04, -0.48]}
-            scale={0.0078}
-            color="#d7dde3"
+            position={[0, -0.04, 0.48]}
+            scale={0.0084}
+            color="#f8fafc"
           />
           <DifferentialStlPart
             ref={diffRingRef}
@@ -411,38 +407,39 @@ function ReadableDrivetrainScene({
             color="#aeb8c3"
           />
           <group ref={carrierRef} position={[0, -0.04, 0.04]}>
-            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={0.58} radius={0.024} />
-            <DifferentialStlPart
+            <DifferentialCarrierFrame />
+            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={0.72} radius={0.024} />
+            <DifferentialBevelGear
               ref={sideLRef}
-              file="engineering-mindset-side-spider-gear.stl"
               axis="x"
-              position={[-0.24, 0, 0]}
-              scale={0.0072}
+              position={[-0.26, 0, 0]}
+              radius={0.18}
+              length={0.2}
               color="#c9d2dc"
             />
-            <DifferentialStlPart
+            <DifferentialBevelGear
               ref={sideRRef}
-              file="engineering-mindset-side-spider-gear.stl"
               axis="x"
-              position={[0.24, 0, 0]}
-              scale={0.0072}
+              position={[0.26, 0, 0]}
+              radius={0.18}
+              length={0.2}
               color="#c9d2dc"
               flip
             />
-            <DifferentialStlPart
+            <DifferentialBevelGear
               ref={spiderARef}
-              file="engineering-mindset-side-spider-gear.stl"
               axis="y"
-              position={[0, 0.2, 0]}
-              scale={0.0062}
+              position={[0, 0.25, 0]}
+              radius={0.145}
+              length={0.17}
               color="#e5e7eb"
             />
-            <DifferentialStlPart
+            <DifferentialBevelGear
               ref={spiderBRef}
-              file="engineering-mindset-side-spider-gear.stl"
               axis="y"
-              position={[0, -0.2, 0]}
-              scale={0.0062}
+              position={[0, -0.25, 0]}
+              radius={0.145}
+              length={0.17}
               color="#e5e7eb"
               flip
             />
@@ -503,32 +500,6 @@ function SceneLabels({ out }) {
       </div>
     </Html>
   ));
-}
-
-function ModuleLabel({ position, title, subtitle }) {
-  return (
-    <Html position={position} center distanceFactor={6} occlude={false}>
-      <div
-        style={{
-          minWidth: 96,
-          padding: "5px 8px",
-          borderRadius: 9,
-          border: "1px solid rgba(103, 232, 249, 0.26)",
-          background: "linear-gradient(145deg, rgba(8, 47, 73, 0.44), rgba(2, 6, 23, 0.42))",
-          boxShadow: "0 12px 34px rgba(0,0,0,0.28)",
-          color: "#f8fafc",
-          fontSize: 9,
-          lineHeight: 1.16,
-          textAlign: "center",
-          pointerEvents: "none",
-          backdropFilter: "blur(12px)",
-        }}
-      >
-        <strong style={{ display: "block", color: "#67e8f9", fontSize: 10, marginBottom: 2 }}>{title}</strong>
-        <span style={{ color: "rgba(226, 232, 240, 0.7)" }}>{subtitle}</span>
-      </div>
-    </Html>
-  );
 }
 
 function ModuleBase({ position, size }) {
@@ -643,6 +614,59 @@ const DifferentialStlPart = React.forwardRef(function DifferentialStlPart(
           />
         </mesh>
       </group>
+    </group>
+  );
+});
+
+function DifferentialCarrierFrame() {
+  return (
+    <group>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
+        <torusGeometry args={[0.34, 0.018, 8, 48]} />
+        <meshStandardMaterial color="#7dd3fc" roughness={0.24} metalness={0.58} envMapIntensity={1.2} />
+      </mesh>
+      <mesh position={[0, 0.34, 0]}>
+        <boxGeometry args={[0.56, 0.035, 0.055]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.54} />
+      </mesh>
+      <mesh position={[0, -0.34, 0]}>
+        <boxGeometry args={[0.56, 0.035, 0.055]} />
+        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.54} />
+      </mesh>
+    </group>
+  );
+}
+
+const DifferentialBevelGear = React.forwardRef(function DifferentialBevelGear(
+  { axis = "x", position, radius = 0.18, length = 0.2, color = "#e5e7eb", flip = false },
+  ref,
+) {
+  return (
+    <group ref={ref} position={position} rotation={axisRotation(axis, flip)}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[radius * 0.48, radius, length, 40]} />
+        <meshStandardMaterial
+          color={color}
+          roughness={0.26}
+          metalness={0.62}
+          envMapIntensity={1.18}
+          emissive={new THREE.Color(color)}
+          emissiveIntensity={0.012}
+        />
+      </mesh>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[radius * 0.24, radius * 0.24, length * 1.24, 24]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.22} metalness={0.62} envMapIntensity={1.15} />
+      </mesh>
+      <TeethRing
+        radius={radius * 0.9}
+        teeth={18}
+        toothW={Math.max(0.014, radius * 0.08)}
+        toothH={Math.max(0.026, radius * 0.14)}
+        toothD={Math.max(0.03, length * 0.24)}
+        color={color}
+        helixSkew={0.22}
+      />
     </group>
   );
 });

@@ -6,7 +6,6 @@ URL: https://theengineeringmindset.com/differential-gear-model-download/
 Included files:
 - engineering-mindset-ring-gear.stl
 - engineering-mindset-drive-pinion.stl
-- engineering-mindset-side-spider-gear.stl
 
 Notes:
 - These files are used as visual model parts for the Gearbox & Differential simulation.
