@@ -19,7 +19,7 @@ export default function SimulationMetric({
         minWidth: 0,
         minHeight: 82,
         p: 1.5,
-        borderRadius: simulationUiTokens.radius.control,
+        borderRadius: `${simulationUiTokens.radius.control}px`,
         border: `1px solid ${emphasis ? domainTheme.accentSoft : "rgba(148, 163, 184, 0.14)"}`,
         background: emphasis
           ? `linear-gradient(145deg, ${domainTheme.accentSoft}, rgba(15, 23, 42, 0.62))`

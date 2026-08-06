@@ -17,7 +17,7 @@ export default function SimulationToolbar({
         display: "inline-flex",
         width: "auto",
         maxWidth: "100%",
-        borderRadius: 16,
+        borderRadius: "16px",
         ...sx,
       }}
       {...props}

@@ -70,10 +70,10 @@ export default function GearboxDifferential3dSimulation() {
           background="#030712"
           showDefaultLights={false}
           showStars={false}
-          camera={{ position: [8.6, 4.8, 9.4], fov: 42, near: 0.05, far: 100 }}
+          camera={{ position: [8.8, 4.2, 10.2], fov: 38, near: 0.05, far: 100 }}
           controls={{
             target: [0.15, 0.05, 0],
-            minDistance: 5,
+            minDistance: 6,
             maxDistance: 18,
             enablePan: false,
           }}
@@ -93,6 +93,11 @@ export default function GearboxDifferential3dSimulation() {
         </SimulationThreeViewport>
       }
       hud={<HUD hud={hud} running={running} />}
+      hudPosition="top-left"
+      hudSx={{
+        top: { xs: 88, md: 92 },
+        maxWidth: { xs: "calc(100% - 20px)", sm: 330 },
+      }}
       toolbar={
         <SimulationToolbar
           domain="physics"
@@ -238,7 +243,7 @@ function ReadableDrivetrainScene({
   const wheelLRef = useRef(null);
   const wheelRRef = useRef(null);
 
-  const scale = 1.28;
+  const scale = 1.06;
   const gearboxX = -2.85;
   const finalX = 0.38;
   const diffX = 2.95;
@@ -357,11 +362,11 @@ function ReadableDrivetrainScene({
           <Shaft ref={inShaftRef} position={[0, yIn, 0]} length={4.25} radius={0.075} />
           <Shaft ref={counterShaftRef} position={[0, yCounter, 0]} length={4.25} radius={0.075} />
           <Shaft ref={outShaftRef} position={[0, yOut, 0]} length={4.25} radius={0.085} />
-          <SpurGear ref={gInRef} position={[-1.1, yIn, 0]} radius={rIn} thickness={0.24} teeth={26} color="#f97316" />
+          <SpurGear ref={gInRef} position={[-1.1, yIn, 0]} radius={rIn} thickness={0.24} teeth={30} color="#b77946" />
           <SpurGear ref={gCounterInRef} position={[-1.1, yCounter, 0]} radius={rCounterIn} thickness={0.24} teeth={36} color="#38bdf8" />
           <SpurGear ref={gCounterOutRef} position={[1.05, yCounter, 0]} radius={rCounterOut} thickness={0.26} teeth={42} color="#38bdf8" />
-          <SpurGear ref={gOutRef} position={[1.05, yOut, 0]} radius={rOut} thickness={0.26} teeth={22} color="#f97316" />
-          <SpurGear ref={gIdlerRef} position={[1.05, (yCounter + yOut) / 2, 0]} radius={0.25} thickness={0.2} teeth={24} color="#94a3b8" />
+          <SpurGear ref={gOutRef} position={[1.05, yOut, 0]} radius={rOut} thickness={0.26} teeth={28} color="#b77946" />
+          <SpurGear ref={gIdlerRef} position={[1.05, (yCounter + yOut) / 2, 0]} radius={0.25} thickness={0.2} teeth={24} color="#cbd5e1" />
         </group>
 
         <group position={[finalX, 0, 0]}>
@@ -376,8 +381,8 @@ function ReadableDrivetrainScene({
           <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
           <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
           <group ref={carrierRef} position={[0, -0.04, 0]}>
-            <SpurGear ref={sideLRef} position={[-0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#f97316" />
-            <SpurGear ref={sideRRef} position={[0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#f97316" />
+            <SpurGear ref={sideLRef} position={[-0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#b77946" />
+            <SpurGear ref={sideRRef} position={[0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#b77946" />
             <SpurGear ref={spiderARef} position={[0, 0.28, 0]} radius={0.22} thickness={0.15} teeth={18} color="#cbd5e1" />
             <SpurGear ref={spiderBRef} position={[0, -0.28, 0]} radius={0.22} thickness={0.15} teeth={18} color="#cbd5e1" />
           </group>
@@ -494,7 +499,7 @@ const SpurGear = React.forwardRef(function SpurGear(
   return (
     <group ref={ref} position={position} rotation={[0, 0, Math.PI / 2]}>
       <mesh>
-        <cylinderGeometry args={[radius * 0.88, radius * 0.88, thickness, 48]} />
+        <cylinderGeometry args={[radius * 0.84, radius * 0.84, thickness, 64]} />
         <meshStandardMaterial
           color={color}
           roughness={0.34}
@@ -505,15 +510,23 @@ const SpurGear = React.forwardRef(function SpurGear(
         />
       </mesh>
       <mesh>
+        <torusGeometry args={[radius * 0.73, Math.max(0.014, radius * 0.032), 10, 64]} />
+        <meshStandardMaterial color="#e0f2fe" roughness={0.24} metalness={0.52} envMapIntensity={1.15} />
+      </mesh>
+      <mesh>
         <cylinderGeometry args={[radius * 0.28, radius * 0.28, thickness * 1.08, 28]} />
         <meshStandardMaterial color="#e5e7eb" roughness={0.28} metalness={0.56} envMapIntensity={1.2} />
+      </mesh>
+      <mesh>
+        <torusGeometry args={[radius * 0.29, Math.max(0.012, radius * 0.026), 8, 48]} />
+        <meshStandardMaterial color="#bfdbfe" roughness={0.2} metalness={0.62} envMapIntensity={1.2} />
       </mesh>
       <TeethRing
         radius={radius}
         teeth={teeth}
-        toothW={Math.max(0.03, radius * 0.075)}
-        toothH={Math.max(0.05, radius * 0.11)}
-        toothD={Math.max(0.04, thickness * 0.55)}
+        toothW={Math.max(0.026, radius * 0.082)}
+        toothH={Math.max(0.05, radius * 0.12)}
+        toothD={Math.max(0.06, thickness * 0.72)}
         color={color}
       />
     </group>
@@ -522,6 +535,27 @@ const SpurGear = React.forwardRef(function SpurGear(
 
 function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
   const instRef = useRef(null);
+  const toothGeometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    const innerHalf = toothW * 0.42;
+    const outerHalf = toothW * 0.25;
+    shape.moveTo(-innerHalf, -toothH * 0.48);
+    shape.lineTo(innerHalf, -toothH * 0.48);
+    shape.lineTo(outerHalf, toothH * 0.48);
+    shape.lineTo(-outerHalf, toothH * 0.48);
+    shape.closePath();
+
+    const geometry = new THREE.ExtrudeGeometry(shape, {
+      depth: toothD,
+      bevelEnabled: true,
+      bevelSegments: 1,
+      bevelSize: Math.min(toothW, toothH) * 0.08,
+      bevelThickness: Math.min(toothW, toothH) * 0.08,
+    });
+    geometry.center();
+    geometry.computeVertexNormals();
+    return geometry;
+  }, [toothD, toothH, toothW]);
 
   useEffect(() => {
     if (!instRef.current) return;
@@ -533,7 +567,7 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
 
     for (let index = 0; index < teeth; index += 1) {
       const angle = (index / teeth) * Math.PI * 2;
-      position.set(Math.cos(angle) * radius * 0.96, Math.sin(angle) * radius * 0.96, 0);
+      position.set(Math.cos(angle) * radius * 0.905, Math.sin(angle) * radius * 0.905, 0);
       rotation.setFromAxisAngle(zAxis, angle);
       matrix.compose(position, rotation, scale);
       instRef.current.setMatrixAt(index, matrix);
@@ -542,8 +576,7 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
   }, [radius, teeth]);
 
   return (
-    <instancedMesh ref={instRef} args={[null, null, teeth]}>
-      <boxGeometry args={[toothW, toothH, toothD]} />
+    <instancedMesh ref={instRef} args={[toothGeometry, null, teeth]}>
       <meshStandardMaterial color={color} roughness={0.44} metalness={0.18} envMapIntensity={1.1} />
     </instancedMesh>
   );

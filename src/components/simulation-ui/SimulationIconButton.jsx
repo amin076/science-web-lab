@@ -20,7 +20,7 @@ export default function SimulationIconButton({
       sx={{
         width: simulationUiTokens.control.minTouchSize,
         height: simulationUiTokens.control.minTouchSize,
-        borderRadius: simulationUiTokens.radius.control,
+        borderRadius: `${simulationUiTokens.radius.control}px`,
         color: selected ? "#fff" : "rgba(226, 232, 240, 0.82)",
         border: `1px solid ${
           selected ? domainTheme.accent : "rgba(148, 163, 184, 0.18)"

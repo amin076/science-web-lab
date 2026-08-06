@@ -19,8 +19,8 @@ export default function Controls({ params, setParam }) {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "repeat(2, minmax(0, 1fr))" },
-            gap: 1.1,
+            gridTemplateColumns: "1fr",
+            gap: 0.85,
           }}
         >
           {numericControls.map((control) => {
@@ -32,7 +32,7 @@ export default function Controls({ params, setParam }) {
                 key={control.key}
                 sx={{
                   minWidth: 0,
-                  p: 1.45,
+                  p: 1.2,
                   borderRadius: 2,
                   border: "1px solid rgba(148,163,184,0.14)",
                   background:
@@ -57,7 +57,7 @@ export default function Controls({ params, setParam }) {
                   }}
                 />
                 {control.help && (
-                  <Typography sx={{ mt: 0.35, color: "rgba(203,213,225,0.54)", fontSize: 11.5, lineHeight: 1.45 }}>
+                  <Typography sx={{ mt: 0.15, color: "rgba(203,213,225,0.50)", fontSize: 11, lineHeight: 1.35 }}>
                     {control.help}
                   </Typography>
                 )}
@@ -75,12 +75,12 @@ export default function Controls({ params, setParam }) {
                 key={control.key}
                 component="label"
                 sx={{
-                  minHeight: 58,
+                  minHeight: 50,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                   gap: 1.2,
-                  p: 1.25,
+                  p: 1.05,
                   borderRadius: 2,
                   border: checked
                     ? "1px solid rgba(56,189,248,0.38)"
@@ -92,11 +92,11 @@ export default function Controls({ params, setParam }) {
                 }}
               >
                 <Box minWidth={0}>
-                  <Typography sx={{ color: "rgba(248,250,252,0.92)", fontSize: 13.5, fontWeight: 850 }}>
+                  <Typography sx={{ color: "rgba(248,250,252,0.92)", fontSize: 13, fontWeight: 850 }}>
                     {control.label}
                   </Typography>
                   {control.help && (
-                    <Typography sx={{ mt: 0.25, color: "rgba(203,213,225,0.52)", fontSize: 11.5, lineHeight: 1.35 }}>
+                    <Typography sx={{ mt: 0.15, color: "rgba(203,213,225,0.50)", fontSize: 11, lineHeight: 1.3 }}>
                       {control.help}
                     </Typography>
                   )}

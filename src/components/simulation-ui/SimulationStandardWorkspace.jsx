@@ -23,11 +23,22 @@ export default function SimulationStandardWorkspace({
   recordingControls,
   recordingMode = false,
   hideChromeInRecording = true,
+  showTypeBadge = false,
+  hudPosition = "bottom-left",
+  hudSx = {},
   viewportLabel = "Simulation viewport",
   sx = {},
 }) {
   const theme = getSimulationDomainTheme(domain);
   const chromeHidden = recordingMode && hideChromeInRecording;
+  const hudPlacement =
+    hudPosition === "top-left"
+      ? { top: { xs: 82, md: 90 }, left: { xs: 10, md: 14 }, right: { xs: 10, sm: "auto" } }
+      : hudPosition === "top-right"
+        ? { top: { xs: 82, md: 90 }, right: { xs: 10, md: 14 }, left: { xs: 10, sm: "auto" } }
+        : hudPosition === "bottom-right"
+          ? { right: { xs: 10, md: 14 }, left: { xs: 10, sm: "auto" } }
+          : { left: { xs: 10, md: 14 }, right: { xs: 10, sm: "auto" } };
 
   return (
     <Box
@@ -99,7 +110,7 @@ export default function SimulationStandardWorkspace({
                 position: "absolute",
                 zIndex: 15,
                 top: { xs: 10, md: 14 },
-                left: { xs: 10, md: 14 },
+                left: { xs: 58, md: 64 },
                 right: { xs: 10, md: 14 },
                 pointerEvents: "none",
                 display: chromeHidden && !hud ? "none" : "flex",
@@ -109,7 +120,7 @@ export default function SimulationStandardWorkspace({
                 {(title || subtitle) && (
                   <Box
                     sx={{
-                      maxWidth: "min(580px, 78vw)",
+                      maxWidth: { xs: "calc(100vw - 78px)", md: "min(580px, 78vw)" },
                       textShadow: "0 2px 18px rgba(0,0,0,0.55)",
                     }}
                   >
@@ -153,7 +164,7 @@ export default function SimulationStandardWorkspace({
                   fontSize: 11,
                   fontWeight: 850,
                   letterSpacing: 0,
-                  display: { xs: "none", sm: "block" },
+                  display: showTypeBadge ? { xs: "none", sm: "block" } : "none",
                 }}
               >
                 {typeLabels[simulationType] || "Simulation standard"}
@@ -167,11 +178,17 @@ export default function SimulationStandardWorkspace({
                 sx={{
                   position: "absolute",
                   zIndex: 18,
-                  left: { xs: 10, md: 14 },
-                  right: { xs: 10, sm: "auto" },
-                  bottom: timeline && !chromeHidden ? { xs: 116, md: 126 } : { xs: 10, md: 14 },
+                  ...hudPlacement,
+                  bottom:
+                    hudPosition.startsWith("bottom")
+                      ? timeline && !chromeHidden
+                        ? { xs: 116, md: 126 }
+                        : { xs: 10, md: 14 }
+                      : "auto",
+                  width: { xs: "calc(100% - 20px)", sm: "auto" },
                   maxWidth: { xs: "none", sm: 430 },
                   pointerEvents: "auto",
+                  ...hudSx,
                 }}
               >
                 {hud}
@@ -183,9 +200,12 @@ export default function SimulationStandardWorkspace({
                 sx={{
                   position: "absolute",
                   zIndex: 19,
+                  left: { xs: 10, sm: "auto" },
                   right: { xs: 10, md: 14 },
                   bottom: timeline ? { xs: 116, md: 126 } : { xs: 10, md: 14 },
                   maxWidth: "calc(100% - 20px)",
+                  display: "flex",
+                  justifyContent: "flex-end",
                 }}
               >
                 {toolbar}

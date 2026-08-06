@@ -6,12 +6,12 @@ import { formatNumber } from "./constants";
 function formatHudValue(value, precision = 2) {
   if (value === Infinity) return "infinite";
   if (typeof value === "string") return value;
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return "--";
   return formatNumber(value, precision);
 }
 
 export default function HUD({ hud, running }) {
-  const mode = hud?.mode || "straight • open";
+  const mode = hud?.mode || "straight / open";
   const direction = hud?.direction || "CW";
 
   return (
@@ -21,7 +21,8 @@ export default function HUD({ hud, running }) {
       domain="physics"
       compact
       sx={{
-        width: { xs: "100%", sm: 430 },
+        width: { xs: "100%", sm: 320 },
+        maxWidth: "100%",
         background: "rgba(2,6,23,0.50)",
       }}
       actions={
@@ -43,7 +44,7 @@ export default function HUD({ hud, running }) {
           sx={{
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 0.85,
+            gap: 0.65,
           }}
         >
           <SimulationMetric
@@ -52,7 +53,10 @@ export default function HUD({ hud, running }) {
             unit="rpm"
             domain="physics"
             emphasis
-            sx={{ minHeight: 72 }}
+            sx={{
+              minHeight: 58,
+              p: 1,
+            }}
           />
           <SimulationMetric
             label="Final out"
@@ -60,27 +64,30 @@ export default function HUD({ hud, running }) {
             unit="rpm"
             domain="physics"
             emphasis
-            sx={{ minHeight: 72 }}
+            sx={{
+              minHeight: 58,
+              p: 1,
+            }}
           />
           <SimulationMetric
             label="Left wheel"
             value={formatHudValue(hud?.leftWheelRPM, 2)}
             unit="rpm"
             domain="physics"
-            sx={{ minHeight: 66 }}
+            sx={{ minHeight: 56, p: 1 }}
           />
           <SimulationMetric
             label="Right wheel"
             value={formatHudValue(hud?.rightWheelRPM, 2)}
             unit="rpm"
             domain="physics"
-            sx={{ minHeight: 66 }}
+            sx={{ minHeight: 56, p: 1 }}
           />
         </Box>
 
         <Stack direction="row" gap={0.75} flexWrap="wrap" useFlexGap>
           <Chip
-            label={`Direction ${direction}`}
+            label={`${direction}`}
             size="small"
             sx={{
               color: "#67e8f9",
@@ -101,8 +108,8 @@ export default function HUD({ hud, running }) {
           />
         </Stack>
 
-        <Typography sx={{ color: "rgba(203,213,225,0.55)", fontSize: 11.5, lineHeight: 1.45 }}>
-          Open differential splits wheel speed only when turning is enabled and the diff is unlocked.
+        <Typography sx={{ color: "rgba(203,213,225,0.55)", fontSize: 11, lineHeight: 1.35 }}>
+          Open diff splits wheel speed while turning.
         </Typography>
       </Stack>
     </SimulationPanel>

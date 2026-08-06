@@ -20,7 +20,7 @@ export default function SimulationSurface({
       sx={{
         position: "relative",
         minWidth: 0,
-        borderRadius: simulationUiTokens.radius.panel,
+        borderRadius: `${simulationUiTokens.radius.panel}px`,
         border: "1px solid rgba(255, 255, 255, 0.15)",
         background:
           "linear-gradient(145deg, rgba(15, 23, 42, 0.58), rgba(3, 7, 18, 0.34))",

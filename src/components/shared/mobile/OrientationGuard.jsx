@@ -123,6 +123,7 @@ export default function OrientationGuard({
         display: "flex",
         alignItems: blocking ? "center" : "flex-end",
         justifyContent: "center",
+        boxSizing: "border-box",
         p: {
           xs: "max(12px, var(--esbiko-safe-bottom, 0px)) 12px",
           sm: 2,
@@ -135,6 +136,8 @@ export default function OrientationGuard({
       <Box
         sx={{
           width: "min(100%, 460px)",
+          maxWidth: "calc(100vw - 24px)",
+          boxSizing: "border-box",
           borderRadius: { xs: 3, sm: 4 },
           px: { xs: 2, sm: 3 },
           py: { xs: 2, sm: 2.5 },

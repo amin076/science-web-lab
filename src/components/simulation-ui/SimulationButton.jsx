@@ -65,7 +65,7 @@ export default function SimulationButton({
         minHeight: simulationUiTokens.control.minTouchSize,
         minWidth: simulationUiTokens.control.minTouchSize,
         px: 2,
-        borderRadius: simulationUiTokens.radius.control,
+        borderRadius: `${simulationUiTokens.radius.control}px`,
         fontWeight: 700,
         letterSpacing: "0.01em",
         textTransform: "none",
