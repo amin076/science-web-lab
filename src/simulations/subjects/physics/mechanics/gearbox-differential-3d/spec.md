@@ -17,9 +17,9 @@ Choose one:
 - [x] Mixed (R3F + HUD/Charts in right panel)
 
 **Renderer rules**
-- Must use `SimulationShell` (left stage + right panel).
-- Stage and panel must be same full height (panel is one unified card).
-- Right panel: fixed top controls + scrollable body.
+- Must use the shared standard 3D simulation components.
+- Use `SimulationStandardWorkspace` for responsive layout, HUD, toolbar, and side controls.
+- Use `SimulationThreeViewport` for the Three.js / R3F viewport.
 - Keep animation loop dt-clamped (`MAX_DT`) and avoid React state updates every frame.
 
 ---
@@ -185,11 +185,11 @@ List exactly what must be visible:
 ---
 
 ## 8) UI Layout Requirements (Right Panel)
-Panel body content order:
-1) Controls card (inputs)
-2) HUD / Readouts card
+Panel and overlay content:
+1) Viewport HUD / readouts overlay
+2) Controls card (inputs)
 3) Charts card
-4) Theory / Notes card
+4) Theory / notes card
 5) Debug card (optional)
 
 Charts required:
@@ -261,8 +261,8 @@ Implement this simulation inside:
 Rules:
 - Do NOT change routing.
 - Keep entry file `index.jsx` exporting default.
-- Use `SimulationShell` (left stage + right panel).
-- Right panel: fixed top controls + scrollable content (cards + charts).
+- Use `SimulationStandardWorkspace` and `SimulationThreeViewport`.
+- Keep controls, HUD, charts, and notes on shared simulation UI components.
 - Use `recharts` for charts (already installed).
 - Use dt-based loop with MAX_DT clamp and UI throttling.
 - Provide FULL FILE CONTENT for each changed file.

@@ -1,4 +1,5 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
+import { Box, Typography } from "@mui/material";
 import {
   ResponsiveContainer,
   LineChart,
@@ -9,142 +10,121 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import SimulationPanel from "@/components/simulation-ui/SimulationPanel";
 
 export default function Charts({ data }) {
   const safeData = Array.isArray(data) ? data : [];
-
-  const margin = useMemo(() => ({ top: 8, right: 12, left: 0, bottom: 0 }), []);
-  const tickStyle = useMemo(
-    () => ({ fill: "rgba(255,255,255,0.45)", fontSize: 11 }),
-    []
-  );
-  const axisLineStyle = useMemo(
-    () => ({ stroke: "rgba(255,255,255,0.10)" }),
-    []
-  );
-
-  const tooltipContentStyle = useMemo(
-    () => ({
-      background: "rgba(2, 6, 23, 0.92)",
-      border: "1px solid rgba(255,255,255,0.12)",
-      borderRadius: 12,
-      padding: "8px 10px",
-    }),
-    []
-  );
-  const tooltipLabelStyle = useMemo(
-    () => ({ color: "rgba(255,255,255,0.85)", fontWeight: 800 }),
-    []
-  );
-  const tooltipItemStyle = useMemo(
-    () => ({ color: "rgba(255,255,255,0.75)", fontSize: 12 }),
-    []
-  );
+  const shared = useChartStyles();
 
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 min-w-0">
-      <div className="flex items-center justify-between mb-3">
-        <div className="text-white font-black tracking-wide">Charts</div>
-        <div className="text-xs text-white/40 font-mono">
-          {safeData.length} points
-        </div>
-      </div>
-
-      <div className="space-y-4 min-w-0">
+    <SimulationPanel
+      title="Telemetry"
+      subtitle={`${safeData.length} samples, capped window`}
+      domain="physics"
+      compact
+    >
+      <Box sx={{ display: "grid", gap: 1.15, minWidth: 0 }}>
         <ChartCard
           title="Final Output RPM"
           data={safeData}
-          margin={margin}
-          tickStyle={tickStyle}
-          axisLineStyle={axisLineStyle}
-          tooltipContentStyle={tooltipContentStyle}
-          tooltipLabelStyle={tooltipLabelStyle}
-          tooltipItemStyle={tooltipItemStyle}
+          shared={shared}
           lines={[
-            { key: "finalOutRPM", name: "finalOutRPM", stroke: "rgba(34, 211, 238, 0.9)" },
+            { key: "finalOutRPM", name: "Final output", stroke: "#67e8f9" },
           ]}
         />
 
         <ChartCard
-          title="Wheel RPMs"
+          title="Wheel RPM Split"
           data={safeData}
-          margin={margin}
-          tickStyle={tickStyle}
-          axisLineStyle={axisLineStyle}
-          tooltipContentStyle={tooltipContentStyle}
-          tooltipLabelStyle={tooltipLabelStyle}
-          tooltipItemStyle={tooltipItemStyle}
+          shared={shared}
           lines={[
-            { key: "leftWheelRPM", name: "leftWheelRPM", stroke: "rgba(167, 139, 250, 0.9)" },
-            { key: "rightWheelRPM", name: "rightWheelRPM", stroke: "rgba(248, 113, 113, 0.9)" },
+            { key: "leftWheelRPM", name: "Left wheel", stroke: "#a78bfa" },
+            { key: "rightWheelRPM", name: "Right wheel", stroke: "#f87171" },
           ]}
         />
-
-        <div className="text-xs text-white/35">
-          Expected keys:{" "}
-          <span className="font-mono">
-            t, finalOutRPM, leftWheelRPM, rightWheelRPM
-          </span>
-        </div>
-      </div>
-    </div>
+      </Box>
+    </SimulationPanel>
   );
 }
 
-function ChartCard({
-  title,
-  data,
-  margin,
-  tickStyle,
-  axisLineStyle,
-  tooltipContentStyle,
-  tooltipLabelStyle,
-  tooltipItemStyle,
-  lines,
-}) {
-  return (
-    <div className="bg-black/20 border border-white/10 rounded-2xl p-3 min-w-0">
-      <div className="text-white/75 font-bold text-sm mb-2">{title}</div>
+function useChartStyles() {
+  return useMemo(
+    () => ({
+      margin: { top: 8, right: 10, left: -8, bottom: 0 },
+      tickStyle: { fill: "rgba(203,213,225,0.56)", fontSize: 10 },
+      axisLineStyle: { stroke: "rgba(148,163,184,0.14)" },
+      tooltipContentStyle: {
+        background: "rgba(2, 6, 23, 0.94)",
+        border: "1px solid rgba(148,163,184,0.20)",
+        borderRadius: 12,
+        boxShadow: "0 18px 50px rgba(0,0,0,0.35)",
+      },
+      tooltipLabelStyle: {
+        color: "rgba(248,250,252,0.92)",
+        fontWeight: 800,
+      },
+      tooltipItemStyle: {
+        color: "rgba(226,232,240,0.82)",
+        fontSize: 12,
+      },
+    }),
+    [],
+  );
+}
 
-      {/* Force a real size so Recharts can’t measure 0/negative */}
-      <div style={{ height: 224, width: "100%", minWidth: 0 }}>
+function ChartCard({ title, data, shared, lines }) {
+  return (
+    <Box
+      sx={{
+        minWidth: 0,
+        p: 1.25,
+        borderRadius: 2,
+        border: "1px solid rgba(148,163,184,0.14)",
+        background:
+          "linear-gradient(145deg, rgba(15,23,42,0.58), rgba(2,6,23,0.32))",
+      }}
+    >
+      <Typography sx={{ mb: 0.8, color: "rgba(248,250,252,0.86)", fontSize: 13, fontWeight: 850 }}>
+        {title}
+      </Typography>
+
+      <Box sx={{ height: 188, width: "100%", minWidth: 0 }}>
         <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={1}>
-          <LineChart data={data} margin={margin}>
-            <CartesianGrid stroke="rgba(255,255,255,0.08)" />
+          <LineChart data={data} margin={shared.margin}>
+            <CartesianGrid stroke="rgba(148,163,184,0.10)" />
             <XAxis
               dataKey="t"
-              tick={tickStyle}
+              tick={shared.tickStyle}
               tickLine={false}
-              axisLine={axisLineStyle}
+              axisLine={shared.axisLineStyle}
             />
             <YAxis
-              tick={tickStyle}
+              tick={shared.tickStyle}
               tickLine={false}
-              axisLine={axisLineStyle}
+              axisLine={shared.axisLineStyle}
+              width={42}
             />
             <Tooltip
-              contentStyle={tooltipContentStyle}
-              labelStyle={tooltipLabelStyle}
-              itemStyle={tooltipItemStyle}
+              contentStyle={shared.tooltipContentStyle}
+              labelStyle={shared.tooltipLabelStyle}
+              itemStyle={shared.tooltipItemStyle}
             />
-            <Legend />
-            {Array.isArray(lines)
-              ? lines.map((l) => (
-                  <Line
-                    key={l.key}
-                    type="monotone"
-                    dataKey={l.key}
-                    name={l.name ?? l.key}
-                    dot={false}
-                    stroke={l.stroke}
-                    strokeWidth={2}
-                    isAnimationActive={false}
-                  />
-                ))
-              : null}
+            <Legend wrapperStyle={{ color: "rgba(226,232,240,0.68)", fontSize: 11 }} />
+            {lines.map((line) => (
+              <Line
+                key={line.key}
+                type="monotone"
+                dataKey={line.key}
+                name={line.name}
+                dot={false}
+                stroke={line.stroke}
+                strokeWidth={2.25}
+                isAnimationActive={false}
+              />
+            ))}
           </LineChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

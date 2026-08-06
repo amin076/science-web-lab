@@ -20,7 +20,7 @@ export const DEFAULT_PARAMS = {
 
   diffLocked: false,
 
-  showLabels: true,
+  showLabels: false,
 };
 
 export const CONTROL_SCHEMA = [
