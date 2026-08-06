@@ -71,10 +71,10 @@ export default function GearboxDifferential3dSimulation() {
           background="#030712"
           showDefaultLights={false}
           showStars={false}
-          camera={{ position: [9.8, 5.0, 13.2], fov: 40, near: 0.05, far: 100 }}
+          camera={{ position: [7.2, 3.3, 9.4], fov: 39, near: 0.05, far: 100 }}
           controls={{
-            target: [0.8, 0, 0],
-            minDistance: 7,
+            target: [0.85, -0.22, 0],
+            minDistance: 5.4,
             maxDistance: 24,
             enablePan: true,
             panSpeed: 0.85,
@@ -250,10 +250,10 @@ function ReadableDrivetrainScene({
   const wheelLRef = useRef(null);
   const wheelRRef = useRef(null);
 
-  const scale = 0.82;
+  const scale = 0.76;
   const gearboxX = -4.7;
-  const finalX = 0.7;
-  const diffX = 5.1;
+  const finalX = 0.35;
+  const diffX = 5.95;
   const yIn = 0.85;
   const yCounter = 0.18;
   const yOut = -0.58;
@@ -390,43 +390,42 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[diffX, 0, 0]}>
-          {showModuleLabels && <ModuleLabel position={[0, 1.42, 0]} title="Differential" subtitle="left/right split" />}
-          <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
-          <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
-          <ShaftZ position={[0, -0.04, -1.35]} length={1.75} radius={0.075} />
+          {showModuleLabels && <ModuleLabel position={[0, 1.28, 0]} title="Differential" subtitle="crown gear and spider gears" />}
+          <GlassCylinder radius={0.88} height={1.08} position={[0, -0.04, 0.02]} />
+          <ModuleBase size={[1.92, 0.08, 1.5]} position={[0, -1.02, 0.02]} />
+          <ShaftZ position={[0, -0.04, -1.1]} length={1.18} radius={0.055} />
           <DifferentialStlPart
             ref={diffPinionRef}
             file="engineering-mindset-drive-pinion.stl"
             axis="z"
-            position={[0, -0.04, -0.58]}
-            scale={0.012}
+            position={[0, -0.04, -0.48]}
+            scale={0.0078}
             color="#d7dde3"
           />
           <DifferentialStlPart
             ref={diffRingRef}
             file="engineering-mindset-ring-gear.stl"
             axis="x"
-            position={[0, -0.04, -0.08]}
-            scale={0.012}
+            position={[0, -0.04, 0.04]}
+            scale={0.0092}
             color="#aeb8c3"
           />
-          <group ref={carrierRef} position={[0, -0.04, 0]}>
-            <CarrierCage />
-            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={1.05} radius={0.035} />
+          <group ref={carrierRef} position={[0, -0.04, 0.04]}>
+            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={0.58} radius={0.024} />
             <DifferentialStlPart
               ref={sideLRef}
               file="engineering-mindset-side-spider-gear.stl"
               axis="x"
-              position={[-0.42, 0, 0]}
-              scale={0.012}
+              position={[-0.24, 0, 0]}
+              scale={0.0072}
               color="#c9d2dc"
             />
             <DifferentialStlPart
               ref={sideRRef}
               file="engineering-mindset-side-spider-gear.stl"
               axis="x"
-              position={[0.42, 0, 0]}
-              scale={0.012}
+              position={[0.24, 0, 0]}
+              scale={0.0072}
               color="#c9d2dc"
               flip
             />
@@ -434,24 +433,24 @@ function ReadableDrivetrainScene({
               ref={spiderARef}
               file="engineering-mindset-side-spider-gear.stl"
               axis="y"
-              position={[0, 0.34, 0]}
-              scale={0.0095}
+              position={[0, 0.2, 0]}
+              scale={0.0062}
               color="#e5e7eb"
             />
             <DifferentialStlPart
               ref={spiderBRef}
               file="engineering-mindset-side-spider-gear.stl"
               axis="y"
-              position={[0, -0.34, 0]}
-              scale={0.0095}
+              position={[0, -0.2, 0]}
+              scale={0.0062}
               color="#e5e7eb"
               flip
             />
           </group>
-          <Shaft ref={axleLRef} position={[1.45, -0.04, 0]} length={2.45} radius={0.09} />
-          <Shaft ref={axleRRef} position={[-1.45, -0.04, 0]} length={2.45} radius={0.09} />
-          <Wheel ref={wheelLRef} position={[2.6, -0.04, 0]} radius={0.6} width={0.36} />
-          <Wheel ref={wheelRRef} position={[-2.6, -0.04, 0]} radius={0.6} width={0.36} />
+          <Shaft ref={axleLRef} position={[1.22, -0.04, 0.04]} length={1.82} radius={0.065} />
+          <Shaft ref={axleRRef} position={[-1.22, -0.04, 0.04]} length={1.82} radius={0.065} />
+          <Wheel ref={wheelLRef} position={[2.16, -0.04, 0.04]} radius={0.52} width={0.3} />
+          <Wheel ref={wheelRRef} position={[-2.16, -0.04, 0.04]} radius={0.52} width={0.3} />
         </group>
 
         {paramsRef.current.showLabels && <SceneLabels out={current} />}
@@ -508,24 +507,24 @@ function SceneLabels({ out }) {
 
 function ModuleLabel({ position, title, subtitle }) {
   return (
-    <Html position={position} center distanceFactor={9} occlude={false}>
+    <Html position={position} center distanceFactor={6} occlude={false}>
       <div
         style={{
-          minWidth: 118,
-          padding: "6px 9px",
-          borderRadius: 10,
+          minWidth: 96,
+          padding: "5px 8px",
+          borderRadius: 9,
           border: "1px solid rgba(103, 232, 249, 0.26)",
           background: "linear-gradient(145deg, rgba(8, 47, 73, 0.44), rgba(2, 6, 23, 0.42))",
           boxShadow: "0 12px 34px rgba(0,0,0,0.28)",
           color: "#f8fafc",
-          fontSize: 10,
-          lineHeight: 1.2,
+          fontSize: 9,
+          lineHeight: 1.16,
           textAlign: "center",
           pointerEvents: "none",
           backdropFilter: "blur(12px)",
         }}
       >
-        <strong style={{ display: "block", color: "#67e8f9", fontSize: 11, marginBottom: 2 }}>{title}</strong>
+        <strong style={{ display: "block", color: "#67e8f9", fontSize: 10, marginBottom: 2 }}>{title}</strong>
         <span style={{ color: "rgba(226, 232, 240, 0.7)" }}>{subtitle}</span>
       </div>
     </Html>
@@ -744,25 +743,6 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color, helixSkew = 0
     <instancedMesh ref={instRef} args={[toothGeometry, null, teeth]}>
       <meshStandardMaterial color={color} roughness={0.44} metalness={0.18} envMapIntensity={1.1} />
     </instancedMesh>
-  );
-}
-
-function CarrierCage() {
-  return (
-    <group>
-      <mesh rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[0.56, 0.035, 8, 56]} />
-        <meshStandardMaterial color="#64748b" roughness={0.34} metalness={0.5} envMapIntensity={1.1} />
-      </mesh>
-      <mesh position={[0, 0.42, 0]}>
-        <boxGeometry args={[0.88, 0.045, 0.08]} />
-        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.48} />
-      </mesh>
-      <mesh position={[0, -0.42, 0]}>
-        <boxGeometry args={[0.88, 0.045, 0.08]} />
-        <meshStandardMaterial color="#94a3b8" roughness={0.3} metalness={0.48} />
-      </mesh>
-    </group>
   );
 }
 
