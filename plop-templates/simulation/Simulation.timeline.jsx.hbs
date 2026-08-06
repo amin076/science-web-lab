@@ -1,0 +1,106 @@
+import { useEffect, useMemo, useState } from "react";
+import { TimelineSimulationWorkspace } from "@/components/simulation-ui";
+
+const AUTOPLAY_INTERVAL_MS = 2400;
+
+const DEFAULT_JOURNEYS = [
+  {
+    id: "{{registryKey}}.main",
+    label: "{{title}}",
+    description: "{{subtitle}}",
+    icon: "•",
+    timeline: [
+      {
+        id: "stage-1",
+        label: "Stage 1",
+        title: "Initial state",
+        time: "Start",
+        era: "Phase A",
+        summary: "Replace this placeholder with the first scientific or historical stage.",
+        details: "Document evidence, assumptions, uncertainty, and source references here.",
+      },
+      {
+        id: "stage-2",
+        label: "Stage 2",
+        title: "Transition",
+        time: "Middle",
+        era: "Phase B",
+        summary: "Replace this placeholder with the central transition or event.",
+        details: "Keep timeline data separate from renderer-specific media resources.",
+      },
+      {
+        id: "stage-3",
+        label: "Stage 3",
+        title: "Outcome",
+        time: "End",
+        era: "Phase C",
+        summary: "Replace this placeholder with the final stage or current state.",
+        details: "Reset should return to the first stage of the selected journey.",
+      },
+    ],
+  },
+];
+
+function clampStageIndex(index, stages) {
+  const maximum = Math.max(0, stages.length - 1);
+  const numeric = Number(index);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.max(0, Math.min(maximum, Math.round(numeric)));
+}
+
+export default function {{componentName}}() {
+  const [selectedJourneyId, setSelectedJourneyId] = useState(DEFAULT_JOURNEYS[0].id);
+  const [stageIndex, setStageIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const selectedJourney = useMemo(
+    () => DEFAULT_JOURNEYS.find((journey) => journey.id === selectedJourneyId) || DEFAULT_JOURNEYS[0],
+    [selectedJourneyId],
+  );
+  const stages = selectedJourney.timeline || [];
+  const currentIndex = clampStageIndex(stageIndex, stages);
+
+  useEffect(() => {
+    setStageIndex(0);
+    setIsPlaying(false);
+  }, [selectedJourneyId]);
+
+  useEffect(() => {
+    if (!isPlaying || stages.length < 2) return undefined;
+
+    const timer = window.setInterval(() => {
+      setStageIndex((current) => {
+        const next = current + 1;
+        if (next >= stages.length) {
+          setIsPlaying(false);
+          return stages.length - 1;
+        }
+        return next;
+      });
+    }, AUTOPLAY_INTERVAL_MS);
+
+    return () => window.clearInterval(timer);
+  }, [isPlaying, stages.length]);
+
+  const handleReset = () => {
+    setIsPlaying(false);
+    setStageIndex(0);
+  };
+
+  return (
+    <TimelineSimulationWorkspace
+      title="{{title}}"
+      subtitle="{{subtitle}}"
+      domain="default"
+      journeys={DEFAULT_JOURNEYS}
+      selectedJourneyId={selectedJourneyId}
+      onSelectJourney={setSelectedJourneyId}
+      stages={stages}
+      currentIndex={currentIndex}
+      onChangeStage={setStageIndex}
+      isPlaying={isPlaying}
+      onTogglePlay={() => setIsPlaying((playing) => !playing)}
+      onReset={handleReset}
+    />
+  );
+}

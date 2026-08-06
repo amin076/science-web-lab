@@ -9,6 +9,7 @@ export default function SimulationSurface({
   domain = "default",
   elevation = "surface",
   interactive = false,
+  contentSx = {},
   sx = {},
   ...props
 }) {
@@ -51,7 +52,7 @@ export default function SimulationSurface({
       }}
       {...props}
     >
-      <Box sx={{ position: "relative", zIndex: 1 }}>{children}</Box>
+      <Box sx={{ position: "relative", zIndex: 1, ...contentSx }}>{children}</Box>
     </Box>
   );
 }

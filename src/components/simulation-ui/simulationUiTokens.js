@@ -12,6 +12,36 @@ export const simulationUiTokens = {
     defaultHeight: 46,
     largeHeight: 52,
   },
+  panel: {
+    compactWidth: 320,
+    defaultWidth: 380,
+    wideWidth: 520,
+    mobileMaxHeight: "36dvh",
+  },
+  viewport: {
+    minWidth: 320,
+    qualityDpr: {
+      low: 1,
+      balanced: 2,
+      high: 2.5,
+      recording: 3,
+    },
+  },
+  safeArea: {
+    top: "env(safe-area-inset-top, 0px)",
+    right: "env(safe-area-inset-right, 0px)",
+    bottom: "env(safe-area-inset-bottom, 0px)",
+    left: "env(safe-area-inset-left, 0px)",
+  },
+  zIndex: {
+    viewport: 0,
+    hud: 18,
+    toolbar: 19,
+    timeline: 20,
+    panel: 30,
+    drawer: 40,
+    recording: 50,
+  },
   spacing: {
     xs: 4,
     sm: 8,

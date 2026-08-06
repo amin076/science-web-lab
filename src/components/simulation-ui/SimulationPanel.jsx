@@ -1,6 +1,5 @@
 import { Box, Stack, Typography } from "@mui/material";
 import SimulationSurface from "./SimulationSurface";
-import { simulationUiTokens } from "./simulationUiTokens";
 
 export default function SimulationPanel({
   title,
