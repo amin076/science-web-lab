@@ -60,7 +60,7 @@ export default function GearboxDifferential3dSimulation() {
   return (
     <SimulationStandardWorkspace
       title="Gearbox & Differential"
-      subtitle="3D drivetrain cutaway - speed ratio, direction, and open differential split"
+      subtitle="Separate gearbox and differential modules - ratios, direction, and open differential split"
       simulationType="3d"
       domain="physics"
       viewportLabel="Gearbox and differential 3D simulation"
@@ -70,12 +70,14 @@ export default function GearboxDifferential3dSimulation() {
           background="#030712"
           showDefaultLights={false}
           showStars={false}
-          camera={{ position: [8.8, 4.2, 10.2], fov: 38, near: 0.05, far: 100 }}
+          camera={{ position: [8.4, 4.4, 11.2], fov: 38, near: 0.05, far: 100 }}
           controls={{
-            target: [0.15, 0.05, 0],
+            target: [0, 0, 0],
             minDistance: 6,
-            maxDistance: 18,
-            enablePan: false,
+            maxDistance: 20,
+            enablePan: true,
+            panSpeed: 0.85,
+            screenSpacePanning: true,
           }}
         >
           <color attach="background" args={["#030712"]} />
@@ -243,10 +245,10 @@ function ReadableDrivetrainScene({
   const wheelLRef = useRef(null);
   const wheelRRef = useRef(null);
 
-  const scale = 1.06;
-  const gearboxX = -2.85;
-  const finalX = 0.38;
-  const diffX = 2.95;
+  const scale = 0.96;
+  const gearboxX = -3.35;
+  const finalX = 1.3;
+  const diffX = 3.25;
   const yIn = 0.85;
   const yCounter = 0.18;
   const yOut = -0.58;
@@ -306,7 +308,7 @@ function ReadableDrivetrainScene({
         gIdlerRef.current.visible = out.reverse;
         spinX(gIdlerRef, r.thetaCounter * 0.9);
       }
-      if (pinionRef.current) pinionRef.current.rotation.set(0, r.thetaPinion, 0);
+      spinX(pinionRef, r.thetaPinion);
       if (carrierRef.current) carrierRef.current.rotation.set(r.thetaCarrier, 0, 0);
       spinX(sideLRef, r.thetaLeft - r.thetaCarrier);
       spinX(sideRRef, r.thetaRight - r.thetaCarrier);
@@ -357,34 +359,34 @@ function ReadableDrivetrainScene({
 
       <group scale={scale} position={[0, 0.05, 0]}>
         <group position={[gearboxX, 0, 0]}>
-          <GlassBox size={[4.9, 2.15, 2.2]} position={[0, 0.1, 0]} />
-          <ModuleBase size={[4.5, 0.08, 1.9]} position={[0, -1.02, 0]} />
+          <GlassBox size={[4.95, 2.15, 2.22]} position={[0, 0.1, 0]} />
+          <ModuleBase size={[4.55, 0.08, 1.92]} position={[0, -1.02, 0]} />
           <Shaft ref={inShaftRef} position={[0, yIn, 0]} length={4.25} radius={0.075} />
           <Shaft ref={counterShaftRef} position={[0, yCounter, 0]} length={4.25} radius={0.075} />
           <Shaft ref={outShaftRef} position={[0, yOut, 0]} length={4.25} radius={0.085} />
-          <SpurGear ref={gInRef} position={[-1.1, yIn, 0]} radius={rIn} thickness={0.24} teeth={30} color="#b77946" />
-          <SpurGear ref={gCounterInRef} position={[-1.1, yCounter, 0]} radius={rCounterIn} thickness={0.24} teeth={36} color="#38bdf8" />
-          <SpurGear ref={gCounterOutRef} position={[1.05, yCounter, 0]} radius={rCounterOut} thickness={0.26} teeth={42} color="#38bdf8" />
-          <SpurGear ref={gOutRef} position={[1.05, yOut, 0]} radius={rOut} thickness={0.26} teeth={28} color="#b77946" />
-          <SpurGear ref={gIdlerRef} position={[1.05, (yCounter + yOut) / 2, 0]} radius={0.25} thickness={0.2} teeth={24} color="#cbd5e1" />
+          <SpurGear ref={gInRef} position={[-1.2, yIn, 0]} radius={rIn} thickness={0.3} teeth={30} color="#c9d2dc" helixSkew={0.46} />
+          <SpurGear ref={gCounterInRef} position={[-1.2, yCounter, 0]} radius={rCounterIn} thickness={0.32} teeth={38} color="#8fa3b2" helixSkew={-0.46} />
+          <SpurGear ref={gCounterOutRef} position={[1.08, yCounter, 0]} radius={rCounterOut} thickness={0.34} teeth={44} color="#8fa3b2" helixSkew={0.46} />
+          <SpurGear ref={gOutRef} position={[1.08, yOut, 0]} radius={rOut} thickness={0.34} teeth={30} color="#c9d2dc" helixSkew={-0.46} />
+          <SpurGear ref={gIdlerRef} position={[1.08, (yCounter + yOut) / 2, 0]} radius={0.25} thickness={0.24} teeth={24} color="#e5e7eb" helixSkew={0.3} />
         </group>
 
         <group position={[finalX, 0, 0]}>
-          <GlassBox size={[2.7, 2.0, 2.1]} position={[0.05, -0.03, 0]} />
-          <ModuleBase size={[2.3, 0.08, 1.8]} position={[0.05, -1.02, 0]} />
-          <Shaft position={[-1.25, yOut, 0]} length={1.75} radius={0.085} />
-          <BevelPinion ref={pinionRef} position={[-0.45, yOut, 0]} radius={rPinion} length={0.52} color="#22c55e" />
-          <SpurGear ref={ringRef} position={[-0.45, 0.28, 0]} radius={rRing} thickness={0.28} teeth={64} color="#60a5fa" />
+          <GlassBox size={[2.55, 2.0, 2.05]} position={[0.05, -0.03, 0]} />
+          <ModuleBase size={[2.25, 0.08, 1.78]} position={[0.05, -1.02, 0]} />
+          <Shaft position={[-1.1, yOut, 0]} length={1.55} radius={0.085} />
+          <BevelPinion ref={pinionRef} position={[-0.38, yOut, 0]} radius={rPinion} length={0.56} color="#d7dde3" />
+          <SpurGear ref={ringRef} position={[-0.38, 0.28, 0]} radius={rRing} thickness={0.34} teeth={72} color="#aeb8c3" helixSkew={0.56} />
         </group>
 
         <group position={[diffX, 0, 0]}>
           <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
           <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
           <group ref={carrierRef} position={[0, -0.04, 0]}>
-            <SpurGear ref={sideLRef} position={[-0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#b77946" />
-            <SpurGear ref={sideRRef} position={[0.48, 0, 0]} radius={0.34} thickness={0.19} teeth={26} color="#b77946" />
-            <SpurGear ref={spiderARef} position={[0, 0.28, 0]} radius={0.22} thickness={0.15} teeth={18} color="#cbd5e1" />
-            <SpurGear ref={spiderBRef} position={[0, -0.28, 0]} radius={0.22} thickness={0.15} teeth={18} color="#cbd5e1" />
+            <SpurGear ref={sideLRef} position={[-0.48, 0, 0]} radius={0.34} thickness={0.22} teeth={28} color="#c9d2dc" helixSkew={0.32} />
+            <SpurGear ref={sideRRef} position={[0.48, 0, 0]} radius={0.34} thickness={0.22} teeth={28} color="#c9d2dc" helixSkew={-0.32} />
+            <SpurGear ref={spiderARef} position={[0, 0.28, 0]} radius={0.22} thickness={0.18} teeth={20} color="#e5e7eb" helixSkew={0.22} />
+            <SpurGear ref={spiderBRef} position={[0, -0.28, 0]} radius={0.22} thickness={0.18} teeth={20} color="#e5e7eb" helixSkew={-0.22} />
           </group>
           <Shaft ref={axleLRef} position={[1.45, -0.04, 0]} length={2.45} radius={0.09} />
           <Shaft ref={axleRRef} position={[-1.45, -0.04, 0]} length={2.45} radius={0.09} />
@@ -400,14 +402,14 @@ function ReadableDrivetrainScene({
 
 function spinX(ref, theta) {
   if (!ref?.current) return;
-  ref.current.rotation.set(theta, 0, Math.PI / 2);
+  ref.current.rotation.x = theta;
 }
 
 function SceneLabels({ out }) {
   const labels = [
-    { position: [-2.85, 1.72, 0], title: "Gearbox", value: `${formatNumber(out.gearboxOutRPM, 1)} rpm` },
-    { position: [0.38, 1.55, 0], title: "Final", value: `${formatNumber(out.finalOutRPM, 1)} rpm` },
-    { position: [2.95, 1.42, 0], title: "Diff", value: out.mode },
+    { position: [-3.2, 1.72, 0], title: "Gearbox module", value: `${formatNumber(out.gearboxOutRPM, 1)} rpm` },
+    { position: [1.3, 1.55, 0], title: "Final drive", value: `${formatNumber(out.finalOutRPM, 1)} rpm` },
+    { position: [3.25, 1.42, 0], title: "Differential module", value: out.mode },
   ];
 
   return labels.map((label) => (
@@ -485,20 +487,22 @@ function GlassCylinder({ position = [0, 0, 0], radius = 1, height = 1.4 }) {
 
 const Shaft = React.forwardRef(function Shaft({ position, length, radius }, ref) {
   return (
-    <mesh ref={ref} position={position} rotation={[0, 0, Math.PI / 2]}>
-      <cylinderGeometry args={[radius, radius, length, 32]} />
-      <meshStandardMaterial color="#dbeafe" roughness={0.2} metalness={0.78} envMapIntensity={1.25} />
-    </mesh>
+    <group ref={ref} position={position}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[radius, radius, length, 32]} />
+        <meshStandardMaterial color="#dbeafe" roughness={0.2} metalness={0.78} envMapIntensity={1.25} />
+      </mesh>
+    </group>
   );
 });
 
 const SpurGear = React.forwardRef(function SpurGear(
-  { position, radius, thickness, teeth = 32, color = "#60a5fa" },
+  { position, radius, thickness, teeth = 32, color = "#60a5fa", helixSkew = 0 },
   ref,
 ) {
   return (
-    <group ref={ref} position={position} rotation={[0, 0, Math.PI / 2]}>
-      <mesh>
+    <group ref={ref} position={position}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[radius * 0.84, radius * 0.84, thickness, 64]} />
         <meshStandardMaterial
           color={color}
@@ -509,15 +513,15 @@ const SpurGear = React.forwardRef(function SpurGear(
           emissiveIntensity={0.05}
         />
       </mesh>
-      <mesh>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[radius * 0.73, Math.max(0.014, radius * 0.032), 10, 64]} />
         <meshStandardMaterial color="#e0f2fe" roughness={0.24} metalness={0.52} envMapIntensity={1.15} />
       </mesh>
-      <mesh>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[radius * 0.28, radius * 0.28, thickness * 1.08, 28]} />
         <meshStandardMaterial color="#e5e7eb" roughness={0.28} metalness={0.56} envMapIntensity={1.2} />
       </mesh>
-      <mesh>
+      <mesh rotation={[0, Math.PI / 2, 0]}>
         <torusGeometry args={[radius * 0.29, Math.max(0.012, radius * 0.026), 8, 48]} />
         <meshStandardMaterial color="#bfdbfe" roughness={0.2} metalness={0.62} envMapIntensity={1.2} />
       </mesh>
@@ -528,12 +532,13 @@ const SpurGear = React.forwardRef(function SpurGear(
         toothH={Math.max(0.05, radius * 0.12)}
         toothD={Math.max(0.06, thickness * 0.72)}
         color={color}
+        helixSkew={helixSkew}
       />
     </group>
   );
 });
 
-function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
+function TeethRing({ radius, teeth, toothW, toothH, toothD, color, helixSkew = 0 }) {
   const instRef = useRef(null);
   const toothGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -552,10 +557,18 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
       bevelSize: Math.min(toothW, toothH) * 0.08,
       bevelThickness: Math.min(toothW, toothH) * 0.08,
     });
+    geometry.rotateY(Math.PI / 2);
     geometry.center();
+    if (helixSkew) {
+      const positions = geometry.attributes.position;
+      for (let index = 0; index < positions.count; index += 1) {
+        positions.setZ(index, positions.getZ(index) + positions.getX(index) * helixSkew);
+      }
+      positions.needsUpdate = true;
+    }
     geometry.computeVertexNormals();
     return geometry;
-  }, [toothD, toothH, toothW]);
+  }, [helixSkew, toothD, toothH, toothW]);
 
   useEffect(() => {
     if (!instRef.current) return;
@@ -563,12 +576,12 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color }) {
     const position = new THREE.Vector3();
     const rotation = new THREE.Quaternion();
     const scale = new THREE.Vector3(1, 1, 1);
-    const zAxis = new THREE.Vector3(0, 0, 1);
+    const xAxis = new THREE.Vector3(1, 0, 0);
 
     for (let index = 0; index < teeth; index += 1) {
       const angle = (index / teeth) * Math.PI * 2;
-      position.set(Math.cos(angle) * radius * 0.905, Math.sin(angle) * radius * 0.905, 0);
-      rotation.setFromAxisAngle(zAxis, angle);
+      position.set(0, Math.cos(angle) * radius * 0.905, Math.sin(angle) * radius * 0.905);
+      rotation.setFromAxisAngle(xAxis, angle);
       matrix.compose(position, rotation, scale);
       instRef.current.setMatrixAt(index, matrix);
     }
@@ -603,18 +616,27 @@ const BevelPinion = React.forwardRef(function BevelPinion(
         <cylinderGeometry args={[radius * 0.22, radius * 0.22, length * 0.9, 18]} />
         <meshStandardMaterial color="#e5e7eb" roughness={0.28} metalness={0.56} envMapIntensity={1.2} />
       </mesh>
+      <TeethRing
+        radius={radius * 0.92}
+        teeth={18}
+        toothW={Math.max(0.018, radius * 0.1)}
+        toothH={Math.max(0.035, radius * 0.18)}
+        toothD={Math.max(0.045, length * 0.28)}
+        color={color}
+        helixSkew={0.42}
+      />
     </group>
   );
 });
 
 const Wheel = React.forwardRef(function Wheel({ position, radius = 0.7, width = 0.4 }, ref) {
   return (
-    <group ref={ref} position={position} rotation={[0, 0, Math.PI / 2]}>
-      <mesh>
+    <group ref={ref} position={position}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[radius, radius, width, 48]} />
         <meshStandardMaterial color="#101827" roughness={0.82} metalness={0.08} />
       </mesh>
-      <mesh>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
         <cylinderGeometry args={[radius * 0.52, radius * 0.52, width * 1.05, 32]} />
         <meshStandardMaterial color="#1d4ed8" roughness={0.38} metalness={0.24} envMapIntensity={1.1} />
       </mesh>
