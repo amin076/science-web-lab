@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
@@ -70,11 +70,11 @@ export default function GearboxDifferential3dSimulation() {
           background="#030712"
           showDefaultLights={false}
           showStars={false}
-          camera={{ position: [8.4, 4.4, 11.2], fov: 38, near: 0.05, far: 100 }}
+          camera={{ position: [9.8, 5.0, 13.2], fov: 40, near: 0.05, far: 100 }}
           controls={{
-            target: [0, 0, 0],
-            minDistance: 6,
-            maxDistance: 20,
+            target: [0.8, 0, 0],
+            minDistance: 7,
+            maxDistance: 24,
             enablePan: true,
             panSpeed: 0.85,
             screenSpacePanning: true,
@@ -98,6 +98,7 @@ export default function GearboxDifferential3dSimulation() {
       hudPosition="top-left"
       hudSx={{
         top: { xs: 88, md: 92 },
+        width: { xs: 300, sm: "auto" },
         maxWidth: { xs: "calc(100% - 20px)", sm: 330 },
       }}
       toolbar={
@@ -245,10 +246,10 @@ function ReadableDrivetrainScene({
   const wheelLRef = useRef(null);
   const wheelRRef = useRef(null);
 
-  const scale = 0.96;
-  const gearboxX = -3.35;
-  const finalX = 1.3;
-  const diffX = 3.25;
+  const scale = 0.82;
+  const gearboxX = -4.7;
+  const finalX = 0.7;
+  const diffX = 5.1;
   const yIn = 0.85;
   const yCounter = 0.18;
   const yOut = -0.58;
@@ -263,6 +264,7 @@ function ReadableDrivetrainScene({
   const finalDriveRatio = clamp(Number(paramsRef.current?.finalDriveRatio) || 3.2, 1, 6);
   const rPinion = 0.2;
   const rRing = clamp(rPinion * finalDriveRatio, 0.65, 1.35);
+  const showModuleLabels = useMediaQuery("(min-width:700px)");
 
   useFrame((_, delta) => {
     const dt = Math.min(delta, MAX_DT);
@@ -352,13 +354,14 @@ function ReadableDrivetrainScene({
       <pointLight position={[4, 2.4, -3]} intensity={0.5} color="#a78bfa" />
 
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.2, 0]}>
-        <planeGeometry args={[18, 11]} />
+        <planeGeometry args={[22, 12]} />
         <meshStandardMaterial color="#050816" roughness={0.92} metalness={0.04} />
       </mesh>
-      <gridHelper args={[14, 14, "#164e63", "#0f172a"]} position={[0, -1.18, 0]} />
+      <gridHelper args={[18, 18, "#164e63", "#0f172a"]} position={[0, -1.18, 0]} />
 
       <group scale={scale} position={[0, 0.05, 0]}>
         <group position={[gearboxX, 0, 0]}>
+          {showModuleLabels && <ModuleLabel position={[0, 1.55, 0]} title="Gearbox" subtitle="multi-shaft reduction" />}
           <GlassBox size={[4.95, 2.15, 2.22]} position={[0, 0.1, 0]} />
           <ModuleBase size={[4.55, 0.08, 1.92]} position={[0, -1.02, 0]} />
           <Shaft ref={inShaftRef} position={[0, yIn, 0]} length={4.25} radius={0.075} />
@@ -372,6 +375,7 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[finalX, 0, 0]}>
+          {showModuleLabels && <ModuleLabel position={[0.05, 1.48, 0]} title="Final Drive" subtitle="bevel reduction" />}
           <GlassBox size={[2.55, 2.0, 2.05]} position={[0.05, -0.03, 0]} />
           <ModuleBase size={[2.25, 0.08, 1.78]} position={[0.05, -1.02, 0]} />
           <Shaft position={[-1.1, yOut, 0]} length={1.55} radius={0.085} />
@@ -380,6 +384,7 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[diffX, 0, 0]}>
+          {showModuleLabels && <ModuleLabel position={[0, 1.42, 0]} title="Differential" subtitle="left/right split" />}
           <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
           <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
           <group ref={carrierRef} position={[0, -0.04, 0]}>
@@ -407,9 +412,9 @@ function spinX(ref, theta) {
 
 function SceneLabels({ out }) {
   const labels = [
-    { position: [-3.2, 1.72, 0], title: "Gearbox module", value: `${formatNumber(out.gearboxOutRPM, 1)} rpm` },
-    { position: [1.3, 1.55, 0], title: "Final drive", value: `${formatNumber(out.finalOutRPM, 1)} rpm` },
-    { position: [3.25, 1.42, 0], title: "Differential module", value: out.mode },
+    { position: [-4.7, 1.92, 0], title: "Gearbox out", value: `${formatNumber(out.gearboxOutRPM, 1)} rpm` },
+    { position: [0.7, 1.72, 0], title: "Final output", value: `${formatNumber(out.finalOutRPM, 1)} rpm` },
+    { position: [5.1, 1.65, 0], title: "Differential mode", value: out.mode },
   ];
 
   return labels.map((label) => (
@@ -434,6 +439,32 @@ function SceneLabels({ out }) {
       </div>
     </Html>
   ));
+}
+
+function ModuleLabel({ position, title, subtitle }) {
+  return (
+    <Html position={position} center distanceFactor={9} occlude={false}>
+      <div
+        style={{
+          minWidth: 118,
+          padding: "6px 9px",
+          borderRadius: 10,
+          border: "1px solid rgba(103, 232, 249, 0.26)",
+          background: "linear-gradient(145deg, rgba(8, 47, 73, 0.44), rgba(2, 6, 23, 0.42))",
+          boxShadow: "0 12px 34px rgba(0,0,0,0.28)",
+          color: "#f8fafc",
+          fontSize: 10,
+          lineHeight: 1.2,
+          textAlign: "center",
+          pointerEvents: "none",
+          backdropFilter: "blur(12px)",
+        }}
+      >
+        <strong style={{ display: "block", color: "#67e8f9", fontSize: 11, marginBottom: 2 }}>{title}</strong>
+        <span style={{ color: "rgba(226, 232, 240, 0.7)" }}>{subtitle}</span>
+      </div>
+    </Html>
+  );
 }
 
 function ModuleBase({ position, size }) {
