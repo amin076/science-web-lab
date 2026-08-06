@@ -54,7 +54,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,svg,png}"],
 
         globIgnores: [
-          "**/*.{glb,gltf,bin,mp3,wav,ogg,jpg,jpeg,webp}",
+          "**/*.{glb,gltf,bin,stl,mp3,wav,ogg,jpg,jpeg,webp}",
           "**/astronaut.glb",
           "**/space-shuttle.glb",
           "**/ball.jpg",
@@ -78,7 +78,8 @@ export default defineConfig({
             urlPattern: ({ url }) =>
               url.pathname.endsWith(".glb") ||
               url.pathname.endsWith(".gltf") ||
-              url.pathname.endsWith(".bin"),
+              url.pathname.endsWith(".bin") ||
+              url.pathname.endsWith(".stl"),
             handler: "CacheFirst",
             options: {
               cacheName: "esbiko-runtime-3d-models",

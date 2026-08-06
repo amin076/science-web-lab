@@ -3,8 +3,9 @@ import { Box, Stack, Typography, useMediaQuery } from "@mui/material";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useLoader } from "@react-three/fiber";
 import { Edges, Environment, Html } from "@react-three/drei";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import * as THREE from "three";
 
 import Controls from "./Controls";
@@ -393,23 +394,59 @@ function ReadableDrivetrainScene({
           <GlassCylinder radius={1.0} height={1.28} position={[0, -0.04, 0]} />
           <ModuleBase size={[2.1, 0.08, 1.8]} position={[0, -1.02, 0]} />
           <ShaftZ position={[0, -0.04, -1.35]} length={1.75} radius={0.075} />
-          <BevelGear
+          <DifferentialStlPart
             ref={diffPinionRef}
+            file="engineering-mindset-drive-pinion.stl"
             axis="z"
             position={[0, -0.04, -0.58]}
-            radius={0.22}
-            length={0.42}
-            teeth={18}
+            scale={0.012}
             color="#d7dde3"
           />
-          <RingGear ref={diffRingRef} position={[0, -0.04, -0.08]} radius={0.72} thickness={0.18} teeth={44} />
+          <DifferentialStlPart
+            ref={diffRingRef}
+            file="engineering-mindset-ring-gear.stl"
+            axis="x"
+            position={[0, -0.04, -0.08]}
+            scale={0.012}
+            color="#aeb8c3"
+          />
           <group ref={carrierRef} position={[0, -0.04, 0]}>
             <CarrierCage />
             <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={1.05} radius={0.035} />
-            <BevelGear ref={sideLRef} axis="x" position={[-0.42, 0, 0]} radius={0.28} length={0.28} teeth={22} color="#c9d2dc" />
-            <BevelGear ref={sideRRef} axis="x" position={[0.42, 0, 0]} radius={0.28} length={0.28} teeth={22} color="#c9d2dc" flip />
-            <BevelGear ref={spiderARef} axis="y" position={[0, 0.34, 0]} radius={0.2} length={0.24} teeth={16} color="#e5e7eb" />
-            <BevelGear ref={spiderBRef} axis="y" position={[0, -0.34, 0]} radius={0.2} length={0.24} teeth={16} color="#e5e7eb" flip />
+            <DifferentialStlPart
+              ref={sideLRef}
+              file="engineering-mindset-side-spider-gear.stl"
+              axis="x"
+              position={[-0.42, 0, 0]}
+              scale={0.012}
+              color="#c9d2dc"
+            />
+            <DifferentialStlPart
+              ref={sideRRef}
+              file="engineering-mindset-side-spider-gear.stl"
+              axis="x"
+              position={[0.42, 0, 0]}
+              scale={0.012}
+              color="#c9d2dc"
+              flip
+            />
+            <DifferentialStlPart
+              ref={spiderARef}
+              file="engineering-mindset-side-spider-gear.stl"
+              axis="y"
+              position={[0, 0.34, 0]}
+              scale={0.0095}
+              color="#e5e7eb"
+            />
+            <DifferentialStlPart
+              ref={spiderBRef}
+              file="engineering-mindset-side-spider-gear.stl"
+              axis="y"
+              position={[0, -0.34, 0]}
+              scale={0.0095}
+              color="#e5e7eb"
+              flip
+            />
           </group>
           <Shaft ref={axleLRef} position={[1.45, -0.04, 0]} length={2.45} radius={0.09} />
           <Shaft ref={axleRRef} position={[-1.45, -0.04, 0]} length={2.45} radius={0.09} />
@@ -581,6 +618,36 @@ function axisRotation(axis, flip = false) {
   return [0, flip ? Math.PI : 0, 0];
 }
 
+const DifferentialStlPart = React.forwardRef(function DifferentialStlPart(
+  { file, axis = "x", position, scale = 0.01, color = "#e5e7eb", flip = false },
+  ref,
+) {
+  const sourceGeometry = useLoader(STLLoader, `/models/differential/${file}`);
+  const geometry = useMemo(() => {
+    const nextGeometry = sourceGeometry.clone();
+    nextGeometry.center();
+    nextGeometry.computeVertexNormals();
+    return nextGeometry;
+  }, [sourceGeometry]);
+
+  return (
+    <group ref={ref} position={position}>
+      <group rotation={axisRotation(axis, flip)} scale={scale}>
+        <mesh geometry={geometry} castShadow receiveShadow>
+          <meshStandardMaterial
+            color={color}
+            roughness={0.28}
+            metalness={0.58}
+            envMapIntensity={1.24}
+            emissive={new THREE.Color(color)}
+            emissiveIntensity={0.018}
+          />
+        </mesh>
+      </group>
+    </group>
+  );
+});
+
 const SpurGear = React.forwardRef(function SpurGear(
   { position, radius, thickness, teeth = 32, color = "#60a5fa", helixSkew = 0 },
   ref,
@@ -679,67 +746,6 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color, helixSkew = 0
     </instancedMesh>
   );
 }
-
-const BevelGear = React.forwardRef(function BevelGear(
-  { axis = "x", position, radius = 0.24, length = 0.32, teeth = 18, color = "#e5e7eb", flip = false },
-  ref,
-) {
-  return (
-    <group ref={ref} position={position} rotation={axisRotation(axis, flip)}>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <coneGeometry args={[radius, length, 36]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.32}
-          metalness={0.48}
-          envMapIntensity={1.2}
-          emissive={new THREE.Color(color)}
-          emissiveIntensity={0.025}
-        />
-      </mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]} position={[length * 0.22, 0, 0]}>
-        <cylinderGeometry args={[radius * 0.34, radius * 0.34, length * 0.64, 24]} />
-        <meshStandardMaterial color="#f1f5f9" roughness={0.24} metalness={0.56} envMapIntensity={1.2} />
-      </mesh>
-      <TeethRing
-        radius={radius * 0.9}
-        teeth={teeth}
-        toothW={Math.max(0.018, radius * 0.11)}
-        toothH={Math.max(0.038, radius * 0.2)}
-        toothD={Math.max(0.04, length * 0.34)}
-        color={color}
-        helixSkew={0.28}
-      />
-    </group>
-  );
-});
-
-const RingGear = React.forwardRef(function RingGear(
-  { position, radius = 0.72, thickness = 0.18, teeth = 44 },
-  ref,
-) {
-  return (
-    <group ref={ref} position={position}>
-      <mesh rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[radius, thickness * 0.34, 12, 72]} />
-        <meshStandardMaterial color="#9ca3af" roughness={0.3} metalness={0.42} envMapIntensity={1.2} />
-      </mesh>
-      <mesh rotation={[0, Math.PI / 2, 0]}>
-        <torusGeometry args={[radius * 0.72, thickness * 0.12, 8, 64]} />
-        <meshStandardMaterial color="#e5e7eb" roughness={0.24} metalness={0.56} envMapIntensity={1.2} />
-      </mesh>
-      <TeethRing
-        radius={radius + thickness * 0.25}
-        teeth={teeth}
-        toothW={0.036}
-        toothH={0.105}
-        toothD={0.12}
-        color="#d1d5db"
-        helixSkew={0.18}
-      />
-    </group>
-  );
-});
 
 function CarrierCage() {
   return (
