@@ -4,7 +4,7 @@ import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import { useFrame, useLoader } from "@react-three/fiber";
-import { Edges, Environment, Html } from "@react-three/drei";
+import { Environment, Html } from "@react-three/drei";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import * as THREE from "three";
 
@@ -366,7 +366,6 @@ function ReadableDrivetrainScene({
 
       <group scale={scale} position={[0, 0.05, 0]}>
         <group position={[gearboxX, 0, 0]}>
-          <GlassBox size={[4.95, 2.15, 2.22]} position={[0, 0.1, 0]} />
           <ModuleBase size={[4.55, 0.08, 1.92]} position={[0, -1.02, 0]} />
           <Shaft ref={inShaftRef} position={[0, yIn, 0]} length={4.25} radius={0.075} />
           <Shaft ref={counterShaftRef} position={[0, yCounter, 0]} length={4.25} radius={0.075} />
@@ -379,15 +378,13 @@ function ReadableDrivetrainScene({
         </group>
 
         <group position={[finalX, 0, 0]}>
-          <GlassBox size={[2.55, 2.0, 2.05]} position={[0.05, -0.03, 0]} />
           <ModuleBase size={[2.25, 0.08, 1.78]} position={[0.05, -1.02, 0]} />
           <Shaft position={[-1.1, yOut, 0]} length={1.55} radius={0.085} />
-          <BevelPinion ref={pinionRef} position={[-0.38, yOut, 0]} radius={rPinion} length={0.56} color="#d7dde3" />
+          <CompactGear ref={pinionRef} position={[-0.38, yOut, 0]} radius={rPinion} thickness={0.24} teeth={22} color="#d7dde3" />
           <SpurGear ref={ringRef} position={[-0.38, 0.28, 0]} radius={rRing} thickness={0.34} teeth={72} color="#aeb8c3" helixSkew={0.56} />
         </group>
 
         <group position={[diffX, 0, 0]}>
-          <GlassCylinder radius={0.88} height={1.08} position={[0, -0.04, 0.02]} />
           <ModuleBase size={[1.92, 0.08, 1.5]} position={[0, -1.02, 0.02]} />
           <ShaftZ position={[0, -0.04, 1.08]} length={1.18} radius={0.055} />
           <DifferentialStlPart
@@ -408,11 +405,11 @@ function ReadableDrivetrainScene({
           />
           <group ref={carrierRef} position={[0, -0.04, 0.04]}>
             <DifferentialCarrierFrame />
-            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={0.72} radius={0.024} />
+            <ShaftY ref={spiderShaftRef} position={[0, 0, 0]} length={0.56} radius={0.024} />
             <DifferentialBevelGear
               ref={sideLRef}
               axis="x"
-              position={[-0.26, 0, 0]}
+              position={[-0.2, 0, 0]}
               radius={0.18}
               length={0.2}
               color="#c9d2dc"
@@ -420,7 +417,7 @@ function ReadableDrivetrainScene({
             <DifferentialBevelGear
               ref={sideRRef}
               axis="x"
-              position={[0.26, 0, 0]}
+              position={[0.2, 0, 0]}
               radius={0.18}
               length={0.2}
               color="#c9d2dc"
@@ -429,7 +426,7 @@ function ReadableDrivetrainScene({
             <DifferentialBevelGear
               ref={spiderARef}
               axis="y"
-              position={[0, 0.25, 0]}
+              position={[0, 0.18, 0]}
               radius={0.145}
               length={0.17}
               color="#e5e7eb"
@@ -437,7 +434,7 @@ function ReadableDrivetrainScene({
             <DifferentialBevelGear
               ref={spiderBRef}
               axis="y"
-              position={[0, -0.25, 0]}
+              position={[0, -0.18, 0]}
               radius={0.145}
               length={0.17}
               color="#e5e7eb"
@@ -507,46 +504,6 @@ function ModuleBase({ position, size }) {
     <mesh position={position}>
       <boxGeometry args={size} />
       <meshStandardMaterial color="#111827" roughness={0.64} metalness={0.16} />
-    </mesh>
-  );
-}
-
-function GlassBox({ position = [0, 0, 0], size = [4, 2, 2] }) {
-  return (
-    <mesh position={position}>
-      <boxGeometry args={size} />
-      <meshPhysicalMaterial
-        color="#67e8f9"
-        roughness={0.12}
-        metalness={0}
-        transparent
-        opacity={0.12}
-        clearcoat={1}
-        clearcoatRoughness={0.08}
-        depthWrite={false}
-        side={THREE.DoubleSide}
-      />
-      <Edges color="rgba(226,232,240,0.34)" threshold={15} />
-    </mesh>
-  );
-}
-
-function GlassCylinder({ position = [0, 0, 0], radius = 1, height = 1.4 }) {
-  return (
-    <mesh position={position}>
-      <cylinderGeometry args={[radius, radius, height, 48]} />
-      <meshPhysicalMaterial
-        color="#67e8f9"
-        roughness={0.12}
-        metalness={0}
-        transparent
-        opacity={0.13}
-        clearcoat={1}
-        clearcoatRoughness={0.08}
-        depthWrite={false}
-        side={THREE.DoubleSide}
-      />
-      <Edges color="rgba(226,232,240,0.30)" threshold={15} />
     </mesh>
   );
 }
@@ -644,7 +601,7 @@ const DifferentialBevelGear = React.forwardRef(function DifferentialBevelGear(
   return (
     <group ref={ref} position={position} rotation={axisRotation(axis, flip)}>
       <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[radius * 0.48, radius, length, 40]} />
+        <cylinderGeometry args={[radius * 0.66, radius * 0.66, length * 0.72, 40]} />
         <meshStandardMaterial
           color={color}
           roughness={0.26}
@@ -659,13 +616,40 @@ const DifferentialBevelGear = React.forwardRef(function DifferentialBevelGear(
         <meshStandardMaterial color="#f8fafc" roughness={0.22} metalness={0.62} envMapIntensity={1.15} />
       </mesh>
       <TeethRing
-        radius={radius * 0.9}
+        radius={radius * 0.92}
         teeth={18}
-        toothW={Math.max(0.014, radius * 0.08)}
-        toothH={Math.max(0.026, radius * 0.14)}
-        toothD={Math.max(0.03, length * 0.24)}
+        toothW={Math.max(0.015, radius * 0.09)}
+        toothH={Math.max(0.03, radius * 0.16)}
+        toothD={Math.max(0.035, length * 0.34)}
         color={color}
-        helixSkew={0.22}
+        helixSkew={0.12}
+      />
+    </group>
+  );
+});
+
+const CompactGear = React.forwardRef(function CompactGear(
+  { position, radius = 0.22, thickness = 0.22, teeth = 24, color = "#e5e7eb" },
+  ref,
+) {
+  return (
+    <group ref={ref} position={position}>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[radius * 0.68, radius * 0.68, thickness, 40]} />
+        <meshStandardMaterial color={color} roughness={0.3} metalness={0.52} envMapIntensity={1.15} />
+      </mesh>
+      <mesh rotation={[0, 0, Math.PI / 2]}>
+        <cylinderGeometry args={[radius * 0.28, radius * 0.28, thickness * 1.1, 24]} />
+        <meshStandardMaterial color="#f8fafc" roughness={0.24} metalness={0.62} envMapIntensity={1.12} />
+      </mesh>
+      <TeethRing
+        radius={radius}
+        teeth={teeth}
+        toothW={Math.max(0.018, radius * 0.09)}
+        toothH={Math.max(0.036, radius * 0.16)}
+        toothD={Math.max(0.04, thickness * 0.45)}
+        color={color}
+        helixSkew={0.18}
       />
     </group>
   );
@@ -769,40 +753,6 @@ function TeethRing({ radius, teeth, toothW, toothH, toothD, color, helixSkew = 0
     </instancedMesh>
   );
 }
-
-const BevelPinion = React.forwardRef(function BevelPinion(
-  { position, radius = 0.2, length = 0.5, color = "#22c55e" },
-  ref,
-) {
-  return (
-    <group ref={ref} position={position}>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <coneGeometry args={[radius, length, 28]} />
-        <meshStandardMaterial
-          color={color}
-          roughness={0.34}
-          metalness={0.34}
-          envMapIntensity={1.2}
-          emissive={new THREE.Color(color)}
-          emissiveIntensity={0.05}
-        />
-      </mesh>
-      <mesh rotation={[0, 0, Math.PI / 2]}>
-        <cylinderGeometry args={[radius * 0.22, radius * 0.22, length * 0.9, 18]} />
-        <meshStandardMaterial color="#e5e7eb" roughness={0.28} metalness={0.56} envMapIntensity={1.2} />
-      </mesh>
-      <TeethRing
-        radius={radius * 0.92}
-        teeth={18}
-        toothW={Math.max(0.018, radius * 0.1)}
-        toothH={Math.max(0.035, radius * 0.18)}
-        toothD={Math.max(0.045, length * 0.28)}
-        color={color}
-        helixSkew={0.42}
-      />
-    </group>
-  );
-});
 
 const Wheel = React.forwardRef(function Wheel({ position, radius = 0.7, width = 0.4 }, ref) {
   return (
