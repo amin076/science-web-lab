@@ -10,6 +10,17 @@ export { default as SimulationMetric } from "./SimulationMetric";
 export { default as SimulationHUD } from "./SimulationHUD";
 export { default as SimulationToolbar } from "./SimulationToolbar";
 export { default as SimulationTimeline } from "./SimulationTimeline";
+export { default as SimulationStandardWorkspace } from "./SimulationStandardWorkspace";
+export { default as SimulationCanvas2DViewport } from "./SimulationCanvas2DViewport";
+export { default as SimulationThreeViewport } from "./SimulationThreeViewport";
+export { default as SimulationRecordingControls } from "./SimulationRecordingControls";
+export { simulationRecordingPresets } from "./simulationRecordingPresets";
+export {
+  default as TimelineSimulationWorkspace,
+  JourneySelector,
+  StageHud,
+  StageViewport,
+} from "./TimelineSimulationWorkspace";
 
 export {
   simulationUiTokens,

@@ -106,7 +106,7 @@ It contains:
 - Use \`SimulationShell\` (left stage + right panel).
 - Right panel: fixed top controls + scrollable body.
 - Keep files flat in this simulation folder (no nested folders for this template).
-- Use Canvas 2D approach (current focus).
+- Use the selected standard engine template: ${engine || "canvas2d"}.
 - Provide FULL FILE CONTENT for every file you change.
 
 ---
@@ -254,6 +254,7 @@ module.exports = function (plop) {
         choices: [
           { name: "Canvas 2D (recommended)", value: "canvas2d" },
           { name: "Three.js / R3F (3D)", value: "three" },
+          { name: "Timeline standard", value: "timeline" },
           { name: "p5.js", value: "p5" },
         ],
         default: "canvas2d",
@@ -358,6 +359,8 @@ module.exports = function (plop) {
       const simTemplate =
         data.engine === "three"
           ? "plop-templates/simulation/Simulation.three.jsx.hbs"
+          : data.engine === "timeline"
+          ? "plop-templates/simulation/Simulation.timeline.jsx.hbs"
           : data.engine === "p5"
           ? "plop-templates/simulation/Simulation.p5.jsx.hbs"
           : "plop-templates/simulation/Simulation.jsx.hbs";
@@ -395,7 +398,7 @@ module.exports = function (plop) {
       }
 
       // Optional: scaffold (flat)
-      if (data.addScaffold) {
+      if (data.addScaffold && data.engine !== "timeline") {
         actions.push(
           {
             type: "add",
