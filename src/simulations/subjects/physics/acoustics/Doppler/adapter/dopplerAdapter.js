@@ -16,16 +16,33 @@ export const DOPPLER_LIMITS = Object.freeze({
   observerVelocityMps: Object.freeze({ min: -100, max: 100 }),
   sourcePositionM: Object.freeze({ min: 0, max: MAX_DISTANCE }),
   sourceSpeedMps: Object.freeze({ min: 0, max: 150 }),
+  sourceVelocityMps: Object.freeze({ min: -150, max: 150 }),
   emittedFrequencyHz: Object.freeze({ min: 100, max: 1000 }),
 });
 
-const EXACT_FREQUENCY_INSTRUMENTS = Object.freeze([
+export const DOPPLER_EXACT_FREQUENCY_INSTRUMENTS = Object.freeze([
   "sine",
   "saw",
   "square",
   "organ",
   "brass",
   "drone",
+]);
+
+export const DOPPLER_SAMPLE_INSTRUMENTS = Object.freeze([
+  "esbiko_voice",
+  "car_engine",
+  "diesel_engine",
+  "bus_engine",
+  "tractor_engine",
+  "ambulance_siren",
+  "police_siren",
+]);
+
+export const DOPPLER_SUPPORTED_INSTRUMENTS = Object.freeze([
+  ...DOPPLER_EXACT_FREQUENCY_INSTRUMENTS,
+  ...DOPPLER_SAMPLE_INSTRUMENTS,
+  "engine",
 ]);
 
 function round(value, digits = 2) {
@@ -55,6 +72,19 @@ function readNumber(input, key, fallback) {
     throw createAdapterError(
       "PARAMETER_OUT_OF_RANGE",
       `${key} must be between ${limits.min} and ${limits.max}.`,
+    );
+  }
+
+  return value;
+}
+
+function readInstrument(instrument, fallback = "sine") {
+  const value = instrument ?? fallback;
+
+  if (!DOPPLER_SUPPORTED_INSTRUMENTS.includes(value)) {
+    throw createAdapterError(
+      "INVALID_INSTRUMENT",
+      `instrument must be one of: ${DOPPLER_SUPPORTED_INSTRUMENTS.join(", ")}.`,
     );
   }
 
@@ -102,10 +132,14 @@ export function getDopplerStateSnapshot({
     sources: sources.map((source, index) => ({
       id: String(source.id),
       index: index + 1,
+      label: source.label || `Source ${index + 1}`,
       positionM: round(source.x),
       velocityMps: round(source.v),
       emittedFrequencyHz: round(source.baseFreq),
       instrument: source.instrument,
+      audioType: DOPPLER_SAMPLE_INSTRUMENTS.includes(source.instrument)
+        ? "recorded-sample"
+        : "synthesized",
       ...calculateSourceMeasurements(source, observer),
     })),
   };
@@ -149,10 +183,10 @@ export function configureDopplerExperiment(currentState, input = {}) {
   );
   const instrument = input.instrument ?? currentSource?.instrument ?? "sine";
 
-  if (!EXACT_FREQUENCY_INSTRUMENTS.includes(instrument)) {
+  if (!DOPPLER_EXACT_FREQUENCY_INSTRUMENTS.includes(instrument)) {
     throw createAdapterError(
       "INVALID_INSTRUMENT",
-      `instrument must be one of: ${EXACT_FREQUENCY_INSTRUMENTS.join(", ")}.`,
+      `instrument must be one of: ${DOPPLER_EXACT_FREQUENCY_INSTRUMENTS.join(", ")}.`,
     );
   }
 
@@ -199,6 +233,99 @@ export function configureDopplerExperiment(currentState, input = {}) {
     isRunning: currentState.isRunning,
     observer,
     sources: [source],
+  };
+}
+
+export function configureDopplerScene(currentState, input = {}) {
+  const requestedSources = input.sources;
+
+  if (!Array.isArray(requestedSources) || requestedSources.length < 1) {
+    throw createAdapterError(
+      "INVALID_SOURCES",
+      "sources must contain at least one sound source.",
+    );
+  }
+
+  if (requestedSources.length > 2) {
+    throw createAdapterError(
+      "TOO_MANY_SOURCES",
+      "A Doppler director scene supports at most two sound sources.",
+    );
+  }
+
+  const observerPositionM = readNumber(
+    input,
+    "observerPositionM",
+    currentState.observer?.x ?? 500,
+  );
+  const observerVelocityMps = readNumber(
+    input,
+    "observerVelocityMps",
+    currentState.observer?.v ?? 0,
+  );
+  const observer = { x: observerPositionM, v: observerVelocityMps };
+  const existingById = new Map(
+    (currentState.sources || []).map((source) => [String(source.id), source]),
+  );
+
+  const sources = requestedSources.map((requested, index) => {
+    if (!requested || typeof requested !== "object") {
+      throw createAdapterError(
+        "INVALID_SOURCE",
+        `sources[${index}] must be an object.`,
+      );
+    }
+
+    const id = String(requested.id || `webmcp-doppler-source-${index + 1}`);
+    const existing = existingById.get(id);
+    const sourcePositionM = readNumber(
+      requested,
+      "sourcePositionM",
+      existing?.x ?? (index === 0 ? 250 : 750),
+    );
+    const sourceVelocityMps = readNumber(
+      requested,
+      "sourceVelocityMps",
+      existing?.v ?? 0,
+    );
+    const emittedFrequencyHz = readNumber(
+      requested,
+      "emittedFrequencyHz",
+      existing?.baseFreq ?? 440,
+    );
+    const instrument = readInstrument(requested.instrument, existing?.instrument);
+    const measurement = calculateDoppler({
+      sourceX: sourcePositionM,
+      sourceV: sourceVelocityMps,
+      observerX: observerPositionM,
+      observerV: observerVelocityMps,
+      baseFreq: emittedFrequencyHz,
+      speedOfSound: SPEED_OF_SOUND,
+    });
+
+    return {
+      id,
+      x: sourcePositionM,
+      v: sourceVelocityMps,
+      baseFreq: emittedFrequencyHz,
+      currentFreq: measurement.observedFreq,
+      shiftPercent: measurement.shiftPercent,
+      motionStatus: measurement.motionStatus,
+      db: calculateAmplitude(sourcePositionM - observerPositionM).db,
+      instrument,
+      color: requested.color || existing?.color || (index === 0 ? "#22c55e" : "#38bdf8"),
+      waves: [],
+      lastWaveTime: 0,
+      preset: null,
+      label: requested.label || existing?.label || `Source ${index + 1}`,
+    };
+  });
+
+  return {
+    mode: MODES.SCIENTIFIC,
+    isRunning: currentState.isRunning,
+    observer,
+    sources,
   };
 }
 

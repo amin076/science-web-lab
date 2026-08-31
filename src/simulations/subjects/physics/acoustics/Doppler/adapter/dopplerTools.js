@@ -1,5 +1,13 @@
 import { createSafeToolExecutor } from "../../../../../../webmcp/registerWebMcpTools.js";
-import { DOPPLER_LIMITS } from "./dopplerAdapter.js";
+import {
+  DOPPLER_LIMITS,
+  DOPPLER_SUPPORTED_INSTRUMENTS,
+} from "./dopplerAdapter.js";
+import {
+  DOPPLER_DIRECTOR_DEFAULTS,
+  DOPPLER_DIRECTOR_INSTRUMENTS,
+  DOPPLER_DIRECTOR_LIMITS,
+} from "../director/dopplerDirector.js";
 
 export function createDopplerWebMcpTools(actions) {
   return [
@@ -80,6 +88,84 @@ export function createDopplerWebMcpTools(actions) {
       ),
     },
     {
+      name: "configure_doppler_scene",
+      description:
+        "Configure one visible Doppler scene with one or two independently positioned sound sources. Signed velocity controls left-to-right or right-to-left travel, and recorded vehicle sounds are supported.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          observerPositionM: {
+            type: "number",
+            minimum: DOPPLER_LIMITS.observerPositionM.min,
+            maximum: DOPPLER_LIMITS.observerPositionM.max,
+            description: "Stationary or moving observer position in metres.",
+          },
+          observerVelocityMps: {
+            type: "number",
+            minimum: DOPPLER_LIMITS.observerVelocityMps.min,
+            maximum: DOPPLER_LIMITS.observerVelocityMps.max,
+            description: "Signed observer velocity in metres per second.",
+          },
+          sources: {
+            type: "array",
+            minItems: 1,
+            maxItems: 2,
+            description: "One or two sound sources sharing the visible simulation.",
+            items: {
+              type: "object",
+              properties: {
+                id: {
+                  type: "string",
+                  description: "Stable source identifier used by later state reads.",
+                },
+                label: {
+                  type: "string",
+                  description: "Short human-readable source label.",
+                },
+                sourcePositionM: {
+                  type: "number",
+                  minimum: DOPPLER_LIMITS.sourcePositionM.min,
+                  maximum: DOPPLER_LIMITS.sourcePositionM.max,
+                },
+                sourceVelocityMps: {
+                  type: "number",
+                  minimum: DOPPLER_LIMITS.sourceVelocityMps.min,
+                  maximum: DOPPLER_LIMITS.sourceVelocityMps.max,
+                  description: "Signed velocity; positive moves right and negative moves left.",
+                },
+                emittedFrequencyHz: {
+                  type: "number",
+                  minimum: DOPPLER_LIMITS.emittedFrequencyHz.min,
+                  maximum: DOPPLER_LIMITS.emittedFrequencyHz.max,
+                },
+                instrument: {
+                  type: "string",
+                  enum: DOPPLER_SUPPORTED_INSTRUMENTS,
+                  description: "Synthesized tone or real recorded vehicle/siren sound.",
+                },
+              },
+              required: [
+                "sourcePositionM",
+                "sourceVelocityMps",
+                "emittedFrequencyHz",
+                "instrument",
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+        required: ["sources"],
+        additionalProperties: false,
+      },
+      annotations: {
+        readOnlyHint: false,
+        untrustedContentHint: false,
+      },
+      execute: createSafeToolExecutor("configure_doppler_scene", async (input) =>
+        actions.configureScene(input),
+      ),
+    },
+    {
       name: "set_doppler_playback",
       description:
         "Run or pause the visible Doppler experiment. Running advances the source, observer, wavefronts, and calculated measurements.",
@@ -119,6 +205,106 @@ export function createDopplerWebMcpTools(actions) {
       },
       execute: createSafeToolExecutor("reset_doppler", async () =>
         actions.reset(),
+      ),
+    },
+    {
+      name: "create_doppler_video",
+      description:
+        "Create an agent-directed 9:16 WebM Doppler story with two recorded vehicle sounds approaching from opposite directions, before/after measurements, synchronized captions, and captured audio.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          durationSeconds: {
+            type: "number",
+            minimum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.min,
+            maximum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.max,
+            default: DOPPLER_DIRECTOR_DEFAULTS.durationSeconds,
+            description: "Total video duration. Use 60 seconds for the full judge demo.",
+          },
+          speedMps: {
+            type: "number",
+            minimum: DOPPLER_DIRECTOR_LIMITS.speedMps.min,
+            maximum: DOPPLER_DIRECTOR_LIMITS.speedMps.max,
+            default: DOPPLER_DIRECTOR_DEFAULTS.speedMps,
+          },
+          emittedFrequencyHz: {
+            type: "number",
+            minimum: DOPPLER_DIRECTOR_LIMITS.emittedFrequencyHz.min,
+            maximum: DOPPLER_DIRECTOR_LIMITS.emittedFrequencyHz.max,
+            default: DOPPLER_DIRECTOR_DEFAULTS.emittedFrequencyHz,
+          },
+          firstInstrument: {
+            type: "string",
+            enum: DOPPLER_DIRECTOR_INSTRUMENTS,
+            default: DOPPLER_DIRECTOR_DEFAULTS.firstInstrument,
+            description: "Recorded sound for the left-to-right vehicle.",
+          },
+          secondInstrument: {
+            type: "string",
+            enum: DOPPLER_DIRECTOR_INSTRUMENTS,
+            default: DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
+            description: "Recorded sound for the right-to-left vehicle.",
+          },
+        },
+        additionalProperties: false,
+      },
+      annotations: {
+        readOnlyHint: false,
+        untrustedContentHint: false,
+      },
+      execute: createSafeToolExecutor("create_doppler_video", async (input) =>
+        actions.startDirector(input),
+      ),
+    },
+    {
+      name: "get_doppler_video_status",
+      description:
+        "Read the agent-directed Doppler video's recording state, elapsed time, current story phase, scientific comparison, and download readiness.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        additionalProperties: false,
+      },
+      annotations: {
+        readOnlyHint: true,
+        untrustedContentHint: false,
+      },
+      execute: createSafeToolExecutor("get_doppler_video_status", async () =>
+        actions.getDirectorStatus(),
+      ),
+    },
+    {
+      name: "stop_doppler_video",
+      description:
+        "Stop an active Doppler director recording early and finalize the WebM video so it can be reviewed or downloaded.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        additionalProperties: false,
+      },
+      annotations: {
+        readOnlyHint: false,
+        untrustedContentHint: false,
+      },
+      execute: createSafeToolExecutor("stop_doppler_video", async () =>
+        actions.stopDirector(),
+      ),
+    },
+    {
+      name: "download_doppler_video",
+      description:
+        "Download the finalized agent-directed Doppler WebM video. The recording must have status ready before this action is called.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        additionalProperties: false,
+      },
+      annotations: {
+        readOnlyHint: false,
+        untrustedContentHint: false,
+      },
+      execute: createSafeToolExecutor("download_doppler_video", async () =>
+        actions.downloadDirector(),
       ),
     },
   ];

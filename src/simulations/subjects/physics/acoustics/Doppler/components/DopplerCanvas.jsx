@@ -1,11 +1,21 @@
 // src/simulations/subjects/physics/acoustics/Doppler/components/DopplerCanvas.jsx
+import DopplerDirectorOverlay from "./DopplerDirectorOverlay";
 import ObserverSprite from "./ObserverSprite";
 import SourceHud from "./SourceHud";
 import SourceSprite from "./SourceSprite";
 import WavefrontLayer from "./WavefrontLayer";
 import DopplerShortRecorder from "./DopplerShortRecorder";
 
-const DopplerCanvas = ({ mode, observer, sources }) => {
+const DopplerCanvas = ({
+  mode,
+  observer,
+  sources,
+  directorStatus,
+  recorderRef,
+  getFrameState,
+  getAudioStream,
+  onRecorderStatusChange,
+}) => {
   const is3DMode = mode === "car";
 
   return (
@@ -54,7 +64,13 @@ const DopplerCanvas = ({ mode, observer, sources }) => {
       )}
 
       <SourceHud sources={sources} mode={mode} />
-      <DopplerShortRecorder />
+      <DopplerDirectorOverlay status={directorStatus} />
+      <DopplerShortRecorder
+        ref={recorderRef}
+        getFrameState={getFrameState}
+        getAudioStream={getAudioStream}
+        onStatusChange={onRecorderStatusChange}
+      />
     </div>
   );
 };

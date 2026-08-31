@@ -21,8 +21,13 @@ export function useDopplerWebMcp(actions) {
     const tools = createDopplerWebMcpTools({
       getState: (...args) => actionsRef.current.getState(...args),
       configure: (...args) => actionsRef.current.configure(...args),
+      configureScene: (...args) => actionsRef.current.configureScene(...args),
       setPlayback: (...args) => actionsRef.current.setPlayback(...args),
       reset: (...args) => actionsRef.current.reset(...args),
+      startDirector: (...args) => actionsRef.current.startDirector(...args),
+      getDirectorStatus: (...args) => actionsRef.current.getDirectorStatus(...args),
+      stopDirector: (...args) => actionsRef.current.stopDirector(...args),
+      downloadDirector: (...args) => actionsRef.current.downloadDirector(...args),
     });
 
     registerWebMcpTools({

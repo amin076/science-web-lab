@@ -5,10 +5,12 @@ import { AudioVoice } from "./SoundEngine";
 import DopplerCanvas from "./components/DopplerCanvas";
 import DopplerControls from "./components/DopplerControls";
 import { useDopplerSimulation } from "./hooks/useDopplerSimulation";
+import { useDopplerDirector } from "./hooks/useDopplerDirector";
 import { useDopplerWebMcp } from "./hooks/useDopplerWebMcp";
 import { refreshDopplerMeasurements } from "./engine/dopplerEngine";
 import {
   configureDopplerExperiment,
+  configureDopplerScene,
   createResetDopplerState,
   getDopplerStateSnapshot,
 } from "./adapter/dopplerAdapter";
@@ -24,6 +26,8 @@ const DopplerSimulator = () => {
 
   const audioCtxRef = useRef(null);
   const masterGainRef = useRef(null);
+  const recordingDestinationRef = useRef(null);
+  const recorderRef = useRef(null);
   const voicesRef = useRef({});
   const observerRef = useRef(observer);
   const runtimeStateRef = useRef({ mode, isRunning, observer, sources });
@@ -34,7 +38,7 @@ const DopplerSimulator = () => {
     observerRef.current = observer;
   }, [observer]);
 
-  const initAudio = () => {
+  const initAudio = async () => {
     if (!audioCtxRef.current) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtxRef.current = new AudioContext();
@@ -42,14 +46,31 @@ const DopplerSimulator = () => {
       masterGainRef.current = audioCtxRef.current.createGain();
       masterGainRef.current.gain.value = masterVolume;
       masterGainRef.current.connect(audioCtxRef.current.destination);
+      recordingDestinationRef.current =
+        audioCtxRef.current.createMediaStreamDestination();
+      masterGainRef.current.connect(recordingDestinationRef.current);
     }
 
     if (audioCtxRef.current.state === "suspended") {
-      audioCtxRef.current.resume();
+      await audioCtxRef.current.resume();
     }
+
+    return {
+      state: audioCtxRef.current.state,
+      recordingStreamReady: Boolean(
+        recordingDestinationRef.current?.stream?.getAudioTracks?.().length,
+      ),
+    };
   };
 
-  const updateVoice = (sourceId, freq, vol, instrumentType, baseFreq) => {
+  const updateVoice = (
+    sourceId,
+    freq,
+    vol,
+    instrumentType,
+    baseFreq,
+    pan,
+  ) => {
     if (!audioCtxRef.current) return;
 
     let voice = voicesRef.current[sourceId];
@@ -67,6 +88,7 @@ const DopplerSimulator = () => {
     }
 
     voice.setFrequency(freq, baseFreq);
+    voice.setPan(pan);
     voice.setVolume(isRunning ? vol : 0);
   };
 
@@ -116,8 +138,8 @@ const DopplerSimulator = () => {
     };
   };
 
-  const togglePlay = () => {
-    initAudio();
+  const togglePlay = async () => {
+    await initAudio();
     setIsRunning((prev) => !prev);
   };
 
@@ -195,6 +217,78 @@ const DopplerSimulator = () => {
     }
   };
 
+  const applySceneState = (input) => {
+    const nextState = configureDopplerScene(runtimeStateRef.current, input);
+
+    runtimeStateRef.current = nextState;
+    observerRef.current = nextState.observer;
+    setMode(nextState.mode);
+    setObserver(nextState.observer);
+    setSources(nextState.sources);
+    stopAllVoices();
+
+    return getDopplerStateSnapshot(nextState);
+  };
+
+  const setPlaybackState = async (action) => {
+    if (action !== "run" && action !== "pause") {
+      const error = new Error("action must be run or pause.");
+      error.code = "INVALID_PLAYBACK_ACTION";
+      throw error;
+    }
+
+    if (action === "run") await initAudio();
+
+    const nextState = {
+      ...runtimeStateRef.current,
+      isRunning: action === "run",
+    };
+
+    runtimeStateRef.current = nextState;
+    setIsRunning(nextState.isRunning);
+
+    if (!nextState.isRunning) muteAllVoices();
+
+    return getDopplerStateSnapshot(nextState);
+  };
+
+  const resetSceneState = () => {
+    const nextState = createResetDopplerState();
+
+    runtimeStateRef.current = nextState;
+    observerRef.current = nextState.observer;
+    setIsRunning(false);
+    setMode(nextState.mode);
+    setObserver(nextState.observer);
+    setSources(nextState.sources);
+    stopAllVoices();
+
+    return getDopplerStateSnapshot(nextState);
+  };
+
+  const director = useDopplerDirector({
+    initializeAudio: initAudio,
+    resetScene: resetSceneState,
+    applyScene: applySceneState,
+    setPlayback: setPlaybackState,
+    startRecording: (options) => {
+      if (!recorderRef.current) {
+        return {
+          ok: false,
+          error: {
+            code: "RECORDER_NOT_READY",
+            message: "The Doppler recorder is not mounted yet.",
+          },
+        };
+      }
+
+      return recorderRef.current.startRecording(options);
+    },
+    stopRecording: () => recorderRef.current?.stopRecording(),
+    downloadRecording: () => recorderRef.current?.downloadRecording(),
+    onAction: setLastAgentAction,
+  });
+
   const webMcpStatus = useDopplerWebMcp({
     getState: () => getDopplerStateSnapshot(runtimeStateRef.current),
     configure: (input) => {
@@ -213,43 +307,29 @@ const DopplerSimulator = () => {
 
       return getDopplerStateSnapshot(nextState);
     },
-    setPlayback: (action) => {
-      if (action !== "run" && action !== "pause") {
-        const error = new Error("action must be run or pause.");
-        error.code = "INVALID_PLAYBACK_ACTION";
-        throw error;
-      }
-
-      const nextState = {
-        ...runtimeStateRef.current,
-        isRunning: action === "run",
-      };
-
-      runtimeStateRef.current = nextState;
-      setIsRunning(nextState.isRunning);
-
-      if (!nextState.isRunning) muteAllVoices();
-
+    configureScene: (input) => {
+      const snapshot = applySceneState(input);
       setLastAgentAction(
-        nextState.isRunning ? "Started the experiment" : "Paused the experiment",
+        `Configured ${input.sources.length} directed sound source${input.sources.length === 1 ? "" : "s"}`,
       );
-
-      return getDopplerStateSnapshot(nextState);
+      return snapshot;
+    },
+    setPlayback: async (action) => {
+      const snapshot = await setPlaybackState(action);
+      setLastAgentAction(
+        action === "run" ? "Started the experiment" : "Paused the experiment",
+      );
+      return snapshot;
     },
     reset: () => {
-      const nextState = createResetDopplerState();
-
-      runtimeStateRef.current = nextState;
-      observerRef.current = nextState.observer;
-      setIsRunning(false);
-      setMode(nextState.mode);
-      setObserver(nextState.observer);
-      setSources(nextState.sources);
-      stopAllVoices();
+      const snapshot = resetSceneState();
       setLastAgentAction("Reset the experiment");
-
-      return getDopplerStateSnapshot(nextState);
+      return snapshot;
     },
+    startDirector: director.startDirector,
+    getDirectorStatus: director.getDirectorStatus,
+    stopDirector: director.stopDirector,
+    downloadDirector: director.downloadDirector,
   });
 
   return (
@@ -261,7 +341,19 @@ const DopplerSimulator = () => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.28); }
       `}</style>
 
-      <DopplerCanvas mode={mode} observer={observer} sources={sources} />
+      <DopplerCanvas
+        mode={mode}
+        observer={observer}
+        sources={sources}
+        directorStatus={director.status}
+        recorderRef={recorderRef}
+        getFrameState={() => ({
+          ...runtimeStateRef.current,
+          director: director.statusRef.current,
+        })}
+        getAudioStream={() => recordingDestinationRef.current?.stream || null}
+        onRecorderStatusChange={director.handleRecorderStatus}
+      />
 
       <DopplerControls
         mode={mode}
@@ -281,6 +373,10 @@ const DopplerSimulator = () => {
         masterGainRef={masterGainRef}
         webMcpStatus={webMcpStatus}
         lastAgentAction={lastAgentAction}
+        directorStatus={director.status}
+        onStartDirector={() => director.startDirector({ durationSeconds: 60 })}
+        onStopDirector={director.stopDirector}
+        onDownloadDirector={director.downloadDirector}
       />
     </div>
   );

@@ -3,12 +3,17 @@ export const DOPPLER_WEBMCP_TOOL_NAMES = Object.freeze([
   "open_science_simulation",
   "get_doppler_state",
   "configure_doppler",
+  "configure_doppler_scene",
   "set_doppler_playback",
   "reset_doppler",
+  "create_doppler_video",
+  "get_doppler_video_status",
+  "stop_doppler_video",
+  "download_doppler_video",
 ]);
 
 export const DOPPLER_WEBMCP_TEST_PROMPT =
-  "Using the site tools on this Esbiko page, configure a 440 Hz source approaching a stationary observer at 20 m/s, with the source at 250 m and the observer at 500 m. Run it, pause it, then read the Doppler state and explain the measured frequency shift.";
+  "Using Esbiko's site tools, create a 60-second 9:16 Doppler video with a 440 Hz emitted frequency. Keep the observer stationary at 500 m. First use a Real Car Engine moving left to right at 30 m/s, then use a Diesel Engine moving right to left at 30 m/s. Let each car pass the observer so the video shows and records the sound before and after passing. Display the emitted and observed frequencies, the direction and pitch change, finish with a scientific comparison, wait until the recording is ready, then download the WebM video.";
 
 const STATUS_CONTENT = Object.freeze({
   ready: Object.freeze({

@@ -65,6 +65,7 @@ export function useDopplerSimulation({
             voiceUpdate.volume,
             voiceUpdate.instrument,
             voiceUpdate.baseFreq,
+            voiceUpdate.pan,
           );
         });
 
