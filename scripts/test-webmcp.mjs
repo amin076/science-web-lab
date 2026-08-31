@@ -15,6 +15,12 @@ import {
   createEsbikoSiteTools,
   WEBMCP_ENABLED_SIMULATIONS,
 } from "../src/webmcp/siteTools.js";
+import {
+  DOPPLER_WEBMCP_TEST_PROMPT,
+  DOPPLER_WEBMCP_TOOL_NAMES,
+  formatDopplerResultSummary,
+  getWebMcpGuideStatus,
+} from "../src/simulations/subjects/physics/acoustics/Doppler/webMcpGuide.js";
 
 const baseState = createResetDopplerState();
 const approachingState = configureDopplerExperiment(baseState, {
@@ -167,5 +173,24 @@ const unsupported = await registerWebMcpTools({
   signal: controller.signal,
 });
 assert.equal(unsupported.status, WEBMCP_REGISTRATION_STATUS.UNSUPPORTED);
+
+assert.deepEqual(DOPPLER_WEBMCP_TOOL_NAMES, [
+  "list_science_simulations",
+  "open_science_simulation",
+  "get_doppler_state",
+  "configure_doppler",
+  "set_doppler_playback",
+  "reset_doppler",
+]);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /440 Hz/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /20 m\/s/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /site tools/i);
+assert.equal(getWebMcpGuideStatus("ready").detail, "6 tools available");
+assert.match(getWebMcpGuideStatus("unsupported").help, /ChatGPT desktop app/i);
+assert.equal(
+  formatDopplerResultSummary(approachingState.sources),
+  "440 Hz → 467.24 Hz · +6.19%",
+);
+assert.equal(formatDopplerResultSummary([]), "No source configured yet");
 
 console.log("ESBIKO_WEBMCP_TEST_PASSED");
