@@ -21,6 +21,9 @@ async function loadPlatformCatalog() {
     server: {
       middlewareMode: true,
     },
+    optimizeDeps: {
+      noDiscovery: true,
+    },
   });
 
   try {
