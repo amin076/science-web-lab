@@ -8,6 +8,8 @@ Direct Doppler experiment: <https://www.esbiko.com/experiments/physics.acoustics
 
 Repository: <https://github.com/amin076/science-web-lab>
 
+Production verification: [`PRODUCTION_EVIDENCE.md`](PRODUCTION_EVIDENCE.md)
+
 ## Why WebMCP
 
 Without WebMCP, a browser agent must identify sliders, infer scientific meanings, approximate values, click visual controls, and scrape results from the page. Esbiko now exposes the scientific intent directly: configure an approaching source at a given speed, run the experiment, and read the actual calculated frequency shift.
@@ -66,6 +68,7 @@ Esbiko is a pre-existing project, which the official challenge rules permit when
 - Verified `stateRead`, `commandExecution`, and `agentReady` capability metadata.
 - Automated WebMCP contract, physics, validation, registration, and output-budget tests.
 - Hackathon-specific architecture, compliance, testing, and submission documentation.
+- Production evidence for discovery, execution, validation, shared human/agent state, reset, and deployment.
 
 The timestamped commit history on the WebMCP feature branch and final merge records the new work.
 
