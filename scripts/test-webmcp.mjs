@@ -6,6 +6,7 @@ import {
   createResetDopplerState,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerAdapter.js";
 import { createDopplerWebMcpTools } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerTools.js";
+import { refreshDopplerMeasurements } from "../src/simulations/subjects/physics/acoustics/Doppler/engine/dopplerEngine.js";
 import {
   registerWebMcpTools,
   WEBMCP_REGISTRATION_STATUS,
@@ -43,6 +44,22 @@ assert.ok(
   recedingSnapshot.sources[0].observedFrequencyHz <
     recedingSnapshot.sources[0].emittedFrequencyHz,
   "Receding source must produce a lower observed frequency.",
+);
+
+const manuallyAdjustedSources = refreshDopplerMeasurements(
+  [
+    {
+      ...approachingState.sources[0],
+      baseFreq: 481,
+    },
+  ],
+  approachingState.observer,
+);
+
+assert.equal(manuallyAdjustedSources[0].baseFreq, 481);
+assert.ok(
+  manuallyAdjustedSources[0].currentFreq > 481,
+  "Paused human control changes must refresh the visible Doppler measurement.",
 );
 
 assert.throws(
