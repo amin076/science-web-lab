@@ -5,11 +5,11 @@ Status legend: `PASS`, `PENDING`, `NOT APPLICABLE`.
 | Requirement | Status | Evidence |
 | --- | --- | --- |
 | Existing app meaningfully extended after August 25 | PASS | New WebMCP runtime, adapter, six tools, tests, metadata, UI feedback, and documents on timestamped feature history. |
-| Working WebMCP implementation | PASS (code/build) | Imperative registration plus tested semantic Doppler tools. Production browser verification remains in the deployment checklist. |
+| Working WebMCP implementation | PASS | Six imperative tools were discovered and executed in a WebMCP-capable production browser. See `PRODUCTION_EVIDENCE.md`. |
 | Existing and new work clearly distinguished | PASS | `docs/hackathon/webmcp/README.md` and pre-challenge commit references. |
 | Public repository | PASS | `https://github.com/amin076/science-web-lab` |
 | Visible open-source license | PASS | Root `LICENSE`, MIT, committed July 21, 2026. Confirm GitHub About detection before submission. |
-| Working live URL | PENDING FINAL DEPLOY | `https://www.esbiko.com` and direct Doppler route. |
+| Working live URL | PASS | `https://www.esbiko.com/experiments/physics.acoustics.doppler/run`; Firebase run `33377437466` deployed commit `64affed` successfully. |
 | No judge login required | PASS | Doppler simulation and WebMCP tools are public. |
 | Text description covers fit, UX, collaboration, implementation | PASS | `docs/hackathon/webmcp/SUBMISSION.md` |
 | Demo video under 3 minutes, public on YouTube, with audio | PENDING | Record after production WebMCP smoke test. |
