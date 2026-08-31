@@ -3,8 +3,11 @@ import {
   MAX_WAVE_RADIUS,
   SPEED_OF_SOUND,
   WAVE_EMIT_INTERVAL,
-} from "../constants";
-import { calculateAmplitude, calculateDoppler } from "../utils/dopplerPhysics";
+} from "../constants.js";
+import {
+  calculateAmplitude,
+  calculateDoppler,
+} from "../utils/dopplerPhysics.js";
 
 function wrapPosition(x) {
   if (x > MAX_DISTANCE) return 0;
@@ -26,6 +29,28 @@ export function stepDopplerObserver(observer, dt) {
     ...observer,
     x: wrapPosition(observer.x + observer.v * dt),
   };
+}
+
+export function refreshDopplerMeasurements(sources, observer) {
+  return sources.map((source) => {
+    const { observedFreq, shiftPercent, motionStatus } = calculateDoppler({
+      sourceX: source.x,
+      sourceV: source.v,
+      observerX: observer.x,
+      observerV: observer.v,
+      baseFreq: source.baseFreq,
+      speedOfSound: SPEED_OF_SOUND,
+    });
+    const { db } = calculateAmplitude(source.x - observer.x);
+
+    return {
+      ...source,
+      currentFreq: observedFreq,
+      shiftPercent,
+      motionStatus,
+      db,
+    };
+  });
 }
 
 export function stepDopplerSources({ sources, observer, dt, now }) {

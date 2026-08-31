@@ -6,6 +6,7 @@ import DopplerCanvas from "./components/DopplerCanvas";
 import DopplerControls from "./components/DopplerControls";
 import { useDopplerSimulation } from "./hooks/useDopplerSimulation";
 import { useDopplerWebMcp } from "./hooks/useDopplerWebMcp";
+import { refreshDopplerMeasurements } from "./engine/dopplerEngine";
 import {
   configureDopplerExperiment,
   createResetDopplerState,
@@ -147,8 +148,8 @@ const DopplerSimulator = () => {
   };
 
   const updateSourceVal = (id, key, val) => {
-    setSources((prev) =>
-      prev.map((source) =>
+    setSources((prev) => {
+      const nextSources = prev.map((source) =>
         source.id === id
           ? {
               ...source,
@@ -157,8 +158,29 @@ const DopplerSimulator = () => {
               lastWaveTime: key === "x" ? 0 : source.lastWaveTime,
             }
           : source,
-      ),
+      );
+
+      return refreshDopplerMeasurements(nextSources, observerRef.current);
+    });
+  };
+
+  const updateObserver = (updater) => {
+    const currentState = runtimeStateRef.current;
+    const nextObserver =
+      typeof updater === "function" ? updater(currentState.observer) : updater;
+    const nextSources = refreshDopplerMeasurements(
+      currentState.sources,
+      nextObserver,
     );
+
+    observerRef.current = nextObserver;
+    runtimeStateRef.current = {
+      ...currentState,
+      observer: nextObserver,
+      sources: nextSources,
+    };
+    setObserver(nextObserver);
+    setSources(nextSources);
   };
 
   const handleModeChange = (nextMode) => {
@@ -254,7 +276,7 @@ const DopplerSimulator = () => {
         onAddCarPreset={addCarPreset}
         onRemoveSource={removeSource}
         onUpdateSourceVal={updateSourceVal}
-        onSetObserver={setObserver}
+        onSetObserver={updateObserver}
         onSetMasterVolume={setMasterVolume}
         masterGainRef={masterGainRef}
         webMcpStatus={webMcpStatus}
