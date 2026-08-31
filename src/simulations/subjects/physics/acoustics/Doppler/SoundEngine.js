@@ -146,7 +146,14 @@ export class AudioVoice {
 
     this.output = this.ctx.createGain();
     this.output.gain.value = 0;
-    this.output.connect(destination);
+    this.panNode = this.ctx.createStereoPanner?.() || null;
+
+    if (this.panNode) {
+      this.output.connect(this.panNode);
+      this.panNode.connect(destination);
+    } else {
+      this.output.connect(destination);
+    }
 
     this.instrument = getInstrumentById(this.typeId);
     this.isSample = this.instrument?.type === "sample";
@@ -352,6 +359,13 @@ export class AudioVoice {
     this.output.gain.setTargetAtTime(safeVol, t, 0.02);
   }
 
+  setPan(value) {
+    if (!this.panNode) return;
+
+    const pan = Math.max(-1, Math.min(1, Number(value) || 0));
+    this.panNode.pan.setTargetAtTime(pan, this.ctx.currentTime, 0.03);
+  }
+
   stop() {
     const t = this.ctx.currentTime;
     this.output.gain.setTargetAtTime(0, t, 0.05);
@@ -374,6 +388,7 @@ export class AudioVoice {
         });
 
         this.output.disconnect();
+        this.panNode?.disconnect();
       } catch {
         // Already stopped/disconnected.
       }

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   getDopplerStateSnapshot,
   configureDopplerExperiment,
+  configureDopplerScene,
   createResetDopplerState,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerAdapter.js";
 import { createDopplerWebMcpTools } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerTools.js";
@@ -21,6 +22,10 @@ import {
   formatDopplerResultSummary,
   getWebMcpGuideStatus,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/webMcpGuide.js";
+import {
+  createDopplerDirectorPlan,
+  getDopplerDirectorPhase,
+} from "../src/simulations/subjects/physics/acoustics/Doppler/director/dopplerDirector.js";
 
 const baseState = createResetDopplerState();
 const approachingState = configureDopplerExperiment(baseState, {
@@ -77,11 +82,66 @@ assert.throws(
   (error) => error.code === "PARAMETER_OUT_OF_RANGE",
 );
 
+const twoCarScene = configureDopplerScene(baseState, {
+  observerPositionM: 500,
+  observerVelocityMps: 0,
+  sources: [
+    {
+      id: "left-car",
+      label: "Real car",
+      sourcePositionM: 200,
+      sourceVelocityMps: 30,
+      emittedFrequencyHz: 440,
+      instrument: "car_engine",
+    },
+    {
+      id: "right-car",
+      label: "Diesel",
+      sourcePositionM: 800,
+      sourceVelocityMps: -30,
+      emittedFrequencyHz: 440,
+      instrument: "diesel_engine",
+    },
+  ],
+});
+const twoCarSnapshot = getDopplerStateSnapshot(twoCarScene);
+
+assert.equal(twoCarSnapshot.sources.length, 2);
+assert.deepEqual(
+  twoCarSnapshot.sources.map((source) => source.instrument),
+  ["car_engine", "diesel_engine"],
+);
+assert.ok(
+  twoCarSnapshot.sources.every(
+    (source) => source.observedFrequencyHz > source.emittedFrequencyHz,
+  ),
+  "Both cars must approach the stationary observer from opposite directions.",
+);
+
+const directorPlan = createDopplerDirectorPlan({ durationSeconds: 60 });
+
+assert.equal(directorPlan.durationSeconds, 60);
+assert.equal(directorPlan.cars[0].startPositionM, 200);
+assert.equal(directorPlan.cars[0].velocityMps, 30);
+assert.equal(directorPlan.cars[1].startPositionM, 800);
+assert.equal(directorPlan.cars[1].velocityMps, -30);
+assert.equal(getDopplerDirectorPhase(directorPlan, 16).id, "car-one-receding");
+assert.equal(getDopplerDirectorPhase(directorPlan, 41).id, "car-two-receding");
+assert.ok(
+  directorPlan.results.approaching.observedFrequencyHz > 440 &&
+    directorPlan.results.receding.observedFrequencyHz < 440,
+  "The director plan must preserve the before/after Doppler comparison.",
+);
+
 let runtimeState = approachingState;
 const dopplerTools = createDopplerWebMcpTools({
   getState: () => getDopplerStateSnapshot(runtimeState),
   configure: (input) => {
     runtimeState = configureDopplerExperiment(runtimeState, input);
+    return getDopplerStateSnapshot(runtimeState);
+  },
+  configureScene: (input) => {
+    runtimeState = configureDopplerScene(runtimeState, input);
     return getDopplerStateSnapshot(runtimeState);
   },
   setPlayback: (action) => {
@@ -92,6 +152,17 @@ const dopplerTools = createDopplerWebMcpTools({
     runtimeState = createResetDopplerState();
     return getDopplerStateSnapshot(runtimeState);
   },
+  startDirector: (input) => ({
+    state: "recording",
+    durationSeconds: input.durationSeconds || 60,
+  }),
+  getDirectorStatus: () => ({
+    state: "ready",
+    downloadReady: true,
+    audioIncluded: true,
+  }),
+  stopDirector: () => ({ state: "finalizing" }),
+  downloadDirector: () => ({ state: "ready", downloaded: true }),
 });
 
 assert.deepEqual(
@@ -99,12 +170,18 @@ assert.deepEqual(
   [
     "get_doppler_state",
     "configure_doppler",
+    "configure_doppler_scene",
     "set_doppler_playback",
     "reset_doppler",
+    "create_doppler_video",
+    "get_doppler_video_status",
+    "stop_doppler_video",
+    "download_doppler_video",
   ],
 );
 assert.equal(dopplerTools[0].annotations.readOnlyHint, true);
 assert.equal(dopplerTools[1].annotations.readOnlyHint, false);
+assert.equal(dopplerTools[6].annotations.readOnlyHint, true);
 
 const stateResult = JSON.parse(await dopplerTools[0].execute({}));
 assert.equal(stateResult.ok, true);
@@ -119,6 +196,34 @@ const invalidResult = JSON.parse(
 );
 assert.equal(invalidResult.ok, false);
 assert.equal(invalidResult.error.code, "PARAMETER_OUT_OF_RANGE");
+
+const sceneResult = JSON.parse(
+  await dopplerTools[2].execute({
+    observerPositionM: 500,
+    sources: [
+      {
+        sourcePositionM: 200,
+        sourceVelocityMps: 30,
+        emittedFrequencyHz: 440,
+        instrument: "car_engine",
+      },
+      {
+        sourcePositionM: 800,
+        sourceVelocityMps: -30,
+        emittedFrequencyHz: 440,
+        instrument: "diesel_engine",
+      },
+    ],
+  }),
+);
+assert.equal(sceneResult.ok, true);
+assert.equal(sceneResult.data.sources.length, 2);
+
+const videoStartResult = JSON.parse(
+  await dopplerTools[5].execute({ durationSeconds: 60 }),
+);
+assert.equal(videoStartResult.ok, true);
+assert.equal(videoStartResult.data.state, "recording");
 
 let navigatedTo = null;
 const siteTools = createEsbikoSiteTools({
@@ -159,7 +264,7 @@ const registration = await registerWebMcpTools({
 });
 
 assert.equal(registration.status, WEBMCP_REGISTRATION_STATUS.READY);
-assert.equal(registeredTools.length, 6);
+assert.equal(registeredTools.length, 11);
 assert.ok(
   [...siteTools, ...dopplerTools].every(
     (tool) => tool.name.length <= 30 && tool.description.length <= 500,
@@ -179,13 +284,19 @@ assert.deepEqual(DOPPLER_WEBMCP_TOOL_NAMES, [
   "open_science_simulation",
   "get_doppler_state",
   "configure_doppler",
+  "configure_doppler_scene",
   "set_doppler_playback",
   "reset_doppler",
+  "create_doppler_video",
+  "get_doppler_video_status",
+  "stop_doppler_video",
+  "download_doppler_video",
 ]);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /440 Hz/);
-assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /20 m\/s/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /30 m\/s/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /60-second/);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /site tools/i);
-assert.equal(getWebMcpGuideStatus("ready").detail, "6 tools available");
+assert.equal(getWebMcpGuideStatus("ready").detail, "11 tools available");
 assert.match(getWebMcpGuideStatus("unsupported").help, /ChatGPT desktop app/i);
 assert.equal(
   formatDopplerResultSummary(approachingState.sources),

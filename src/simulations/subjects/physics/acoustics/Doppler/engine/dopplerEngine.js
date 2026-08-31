@@ -95,6 +95,7 @@ export function stepDopplerSources({ sources, observer, dt, now }) {
       volume: amplitude * getVolumeScale(source.instrument),
       instrument: source.instrument,
       baseFreq: source.baseFreq,
+      pan: Math.max(-1, Math.min(1, dist / 300)),
     });
 
     return {

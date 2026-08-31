@@ -780,10 +780,10 @@
       "physics": true,
       "audio": true,
       "camera": false,
-      "recording": false,
-      "export": false,
-      "timeline": false,
-      "presets": false,
+      "recording": true,
+      "export": true,
+      "timeline": true,
+      "presets": true,
       "stateRead": true,
       "commandExecution": true,
       "agentReady": true
@@ -819,7 +819,7 @@
           "supported": true,
           "verified": true,
           "confidence": "verified",
-          "source": "doppler-webmcp-adapter.v1",
+          "source": "doppler-webmcp-director.v2",
           "declared": true,
           "reason": null
         },
@@ -836,42 +836,42 @@
         "recording": {
           "key": "recording",
           "label": "Recording",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-director.v2",
+          "declared": true,
+          "reason": "The in-app 9:16 Canvas recorder captures synchronized Web Audio without screen sharing."
         },
         "export": {
           "key": "export",
           "label": "Export",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-director.v2",
+          "declared": true,
+          "reason": "A finalized AI-directed recording is exported as a downloadable WebM file."
         },
         "timeline": {
           "key": "timeline",
           "label": "Timeline",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-director.v2",
+          "declared": true,
+          "reason": "The verified director plan runs timed approach, passage, comparison, and completion phases."
         },
         "presets": {
           "key": "presets",
           "label": "Presets",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-director.v2",
+          "declared": true,
+          "reason": "The director exposes recorded car, diesel, bus, tractor, and siren sources."
         },
         "stateRead": {
           "key": "stateRead",
@@ -879,7 +879,7 @@
           "supported": true,
           "verified": true,
           "confidence": "verified",
-          "source": "doppler-webmcp-adapter.v1",
+          "source": "doppler-webmcp-director.v2",
           "declared": true,
           "reason": null
         },
@@ -889,7 +889,7 @@
           "supported": true,
           "verified": true,
           "confidence": "verified",
-          "source": "doppler-webmcp-adapter.v1",
+          "source": "doppler-webmcp-director.v2",
           "declared": true,
           "reason": null
         },
@@ -899,16 +899,16 @@
           "supported": true,
           "verified": true,
           "confidence": "verified",
-          "source": "doppler-webmcp-adapter.v1",
+          "source": "doppler-webmcp-director.v2",
           "declared": true,
           "reason": null
         }
       },
       "summary": {
         "total": 11,
-        "supported": 6,
-        "verified": 6,
-        "unknown": 5
+        "supported": 10,
+        "verified": 10,
+        "unknown": 1
       }
     }
   },

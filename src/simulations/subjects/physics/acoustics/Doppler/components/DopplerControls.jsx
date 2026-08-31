@@ -19,6 +19,9 @@ import {
   Clipboard,
   ExternalLink,
   Wrench,
+  Clapperboard,
+  Download,
+  Square,
 } from "lucide-react";
 
 import { MAX_DISTANCE, SOURCE_PRESETS } from "../constants";
@@ -48,12 +51,19 @@ const DopplerControls = ({
   masterGainRef,
   webMcpStatus,
   lastAgentAction,
+  directorStatus,
+  onStartDirector,
+  onStopDirector,
+  onDownloadDirector,
 }) => {
   const agentToolsReady = webMcpStatus === "ready";
   const [isAgentGuideOpen, setIsAgentGuideOpen] = useState(true);
   const [promptCopied, setPromptCopied] = useState(false);
   const guideStatus = getWebMcpGuideStatus(webMcpStatus);
   const resultSummary = formatDopplerResultSummary(sources);
+  const directorActive = ["preparing", "recording", "finalizing"].includes(
+    directorStatus?.state,
+  );
 
   const copyTestPrompt = async () => {
     try {
@@ -62,6 +72,14 @@ const DopplerControls = ({
       window.setTimeout(() => setPromptCopied(false), 2000);
     } catch (error) {
       console.warn("Could not copy the WebMCP test prompt:", error);
+    }
+  };
+
+  const runDirectorAction = async (action) => {
+    try {
+      await action?.();
+    } catch (error) {
+      console.warn("Doppler director action failed:", error);
     }
   };
 
@@ -207,6 +225,80 @@ const DopplerControls = ({
               <p className="select-text text-[11px] leading-5 text-slate-300">
                 {DOPPLER_WEBMCP_TEST_PROMPT}
               </p>
+            </div>
+
+            <div className="rounded-lg border border-violet-400/25 bg-violet-400/10 p-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-violet-200">
+                  <Clapperboard size={13} /> AI Video Director
+                </div>
+                <span className="rounded-full bg-slate-950/60 px-2 py-1 text-[9px] font-bold uppercase text-slate-300">
+                  {directorStatus?.state || "idle"}
+                </span>
+              </div>
+
+              <div className="mt-2 text-[11px] font-bold text-white">
+                {directorStatus?.phaseTitle || "One-minute two-car Doppler story"}
+              </div>
+              <div className="mt-1 text-[10px] leading-4 text-slate-300">
+                {directorStatus?.phaseCaption ||
+                  "Real Car Engine from the left, Diesel Engine from the right, before/after results, captions, stereo movement, and recorded audio."}
+              </div>
+
+              {directorActive && (
+                <div className="mt-3">
+                  <div className="mb-1 flex justify-between text-[9px] font-bold text-slate-400">
+                    <span>
+                      {Math.round(directorStatus.elapsedSeconds || 0)}s / {directorStatus.durationSeconds}s
+                    </span>
+                    <span>{Math.round(directorStatus.progressPercent || 0)}%</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-violet-400 transition-[width] duration-200"
+                      style={{ width: `${Math.min(100, directorStatus.progressPercent || 0)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 flex gap-2">
+                {!directorActive && directorStatus?.state !== "ready" && (
+                  <button
+                    type="button"
+                    onClick={() => runDirectorAction(onStartDirector)}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-violet-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-violet-300"
+                  >
+                    <Clapperboard size={12} /> Create 60s video
+                  </button>
+                )}
+
+                {directorActive && directorStatus?.state !== "finalizing" && (
+                  <button
+                    type="button"
+                    onClick={() => runDirectorAction(onStopDirector)}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-rose-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-rose-300"
+                  >
+                    <Square size={11} fill="currentColor" /> Stop &amp; prepare
+                  </button>
+                )}
+
+                {directorStatus?.state === "ready" && (
+                  <button
+                    type="button"
+                    onClick={() => runDirectorAction(onDownloadDirector)}
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-emerald-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-emerald-300"
+                  >
+                    <Download size={12} /> Download WebM
+                  </button>
+                )}
+              </div>
+
+              {directorStatus?.state === "ready" && (
+                <div className="mt-2 text-[9px] text-emerald-200">
+                  Audio {directorStatus.audioIncluded ? "included" : "not detected"} · {Math.max(1, Math.round((directorStatus.bytes || 0) / 1024 / 1024))} MB
+                </div>
+              )}
             </div>
 
             <div>
