@@ -47,6 +47,7 @@ import StyleGuide from "@/pages/StyleGuide";
 import SimulationUiShowcase from "@/pages/SimulationUiShowcase";
 import SimulationWorkspaceShowcase from "@/pages/SimulationWorkspaceShowcase";
 import ArtSciencePage from "@/pages/ArtSciencePage";
+import WebMcpSiteTools from "@/webmcp/WebMcpSiteTools";
 
 // ✅ LayoutShell doesn't need props anymore
 function LayoutShell() {
@@ -89,6 +90,7 @@ export default function App() {
       <AppErrorBoundary>
         <Router>
           <AnalyticsTracker />
+          <WebMcpSiteTools />
           <Routes>
             {/* ✅ Admin routes */}
             <Route

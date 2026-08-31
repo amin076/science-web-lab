@@ -763,59 +763,65 @@
     "name": "Doppler Effect",
     "description": "Hear the shift. Visualize how sound wave frequencies compress.",
     "status": "active",
-    "engine": "unknown",
+    "engine": "canvas2d",
     "demo": true,
-    "tags": [],
+    "tags": [
+      "doppler",
+      "sound",
+      "frequency",
+      "webmcp",
+      "agent-ready"
+    ],
     "difficulty": "unspecified",
     "estimatedDurationMinutes": null,
     "route": "/experiments/physics.acoustics.doppler/run",
     "capabilities": {
-      "interactive": false,
-      "physics": false,
-      "audio": false,
+      "interactive": true,
+      "physics": true,
+      "audio": true,
       "camera": false,
       "recording": false,
       "export": false,
       "timeline": false,
       "presets": false,
-      "stateRead": false,
-      "commandExecution": false,
-      "agentReady": false
+      "stateRead": true,
+      "commandExecution": true,
+      "agentReady": true
     },
     "capabilityContract": {
       "version": "simulation-capabilities.v1",
-      "status": "unverified",
+      "status": "partially-verified",
       "sourceModel": "verified-metadata-or-safe-default",
       "capabilities": {
         "interactive": {
           "key": "interactive",
           "label": "Interactive",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         },
         "physics": {
           "key": "physics",
           "label": "Physics",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         },
         "audio": {
           "key": "audio",
           "label": "Audio",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         },
         "camera": {
           "key": "camera",
@@ -870,39 +876,39 @@
         "stateRead": {
           "key": "stateRead",
           "label": "State Read",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         },
         "commandExecution": {
           "key": "commandExecution",
           "label": "Command Execution",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         },
         "agentReady": {
           "key": "agentReady",
           "label": "Agent Ready",
-          "supported": false,
-          "verified": false,
-          "confidence": "unknown",
-          "source": "safe-default",
-          "declared": null,
-          "reason": "No verified capability source is registered for this simulation."
+          "supported": true,
+          "verified": true,
+          "confidence": "verified",
+          "source": "doppler-webmcp-adapter.v1",
+          "declared": true,
+          "reason": null
         }
       },
       "summary": {
         "total": 11,
-        "supported": 0,
-        "verified": 0,
-        "unknown": 11
+        "supported": 6,
+        "verified": 6,
+        "unknown": 5
       }
     }
   },

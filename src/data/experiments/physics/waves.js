@@ -15,6 +15,42 @@ export const physicsWaves = [
     Icon: GraphicEqIcon,
     gradient: "linear-gradient(135deg, #f43f5e, #ec4899)",
     demo: true,
+    engine: "canvas2d",
+    tags: ["doppler", "sound", "frequency", "webmcp", "agent-ready"],
+    platform: {
+      capabilities: {
+        interactive: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+        physics: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+        audio: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+        stateRead: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+        commandExecution: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+        agentReady: {
+          supported: true,
+          verified: true,
+          source: "doppler-webmcp-adapter.v1",
+        },
+      },
+    },
   },
   {
     id: "physics.acoustics.sound-waves",

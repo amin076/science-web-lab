@@ -32,13 +32,34 @@ const DopplerControls = ({
   onSetObserver,
   onSetMasterVolume,
   masterGainRef,
+  webMcpStatus,
+  lastAgentAction,
 }) => {
+  const agentToolsReady = webMcpStatus === "ready";
+
   return (
     <aside className="w-96 h-full bg-slate-950/80 border-l border-white/10 backdrop-blur-md flex flex-col shadow-2xl z-50">
       <div className="p-6 border-b border-white/10 bg-slate-900/50">
         <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-1">
           <Activity className="text-blue-500" /> Doppler Lab
         </h2>
+
+        <div className="mt-3 flex items-center gap-2 text-[11px]">
+          <span
+            className={`h-2 w-2 rounded-full ${
+              agentToolsReady ? "bg-emerald-400" : "bg-slate-600"
+            }`}
+          />
+          <span className={agentToolsReady ? "text-emerald-300" : "text-slate-500"}>
+            {agentToolsReady ? "WebMCP agent tools ready" : "WebMCP agent tools unavailable"}
+          </span>
+        </div>
+
+        {lastAgentAction && (
+          <div className="mt-2 rounded border border-blue-400/20 bg-blue-400/10 px-2 py-1 text-[11px] text-blue-200">
+            Last agent action: {lastAgentAction}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2 mt-5">
           <button
