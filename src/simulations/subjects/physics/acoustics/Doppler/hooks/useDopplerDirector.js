@@ -8,7 +8,7 @@ import {
 const INITIAL_STATUS = Object.freeze({
   state: "idle",
   elapsedSeconds: 0,
-  durationSeconds: 60,
+  durationSeconds: 10,
   progressPercent: 0,
   phaseId: null,
   phaseTitle: "Ready for an AI-directed video",

@@ -210,7 +210,7 @@ export function createDopplerWebMcpTools(actions) {
     {
       name: "create_doppler_video",
       description:
-        "Create an agent-directed 9:16 WebM Doppler story with two recorded vehicle sounds approaching from opposite directions, before/after measurements, synchronized captions, and captured audio.",
+        "Create a fast agent-directed 10-second 9:16 WebM Doppler story. A real car crosses left-to-right, then an ambulance with a siren crosses right-to-left. Every recorded frame uses deterministic motion, with before/after measurements, synchronized captions, and captured audio.",
       inputSchema: {
         type: "object",
         properties: {
@@ -219,7 +219,7 @@ export function createDopplerWebMcpTools(actions) {
             minimum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.min,
             maximum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.max,
             default: DOPPLER_DIRECTOR_DEFAULTS.durationSeconds,
-            description: "Total video duration. Use 60 seconds for the full judge demo.",
+            description: "Total video duration. Use 10 seconds for the fast visual-motion test.",
           },
           speedMps: {
             type: "number",
