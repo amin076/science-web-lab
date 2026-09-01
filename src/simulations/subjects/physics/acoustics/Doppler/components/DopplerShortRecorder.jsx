@@ -8,6 +8,7 @@ import {
 import { Circle, Download, Square } from "lucide-react";
 
 import { MAX_DISTANCE } from "../constants";
+import { createDopplerDirectorFrameSource } from "../director/dopplerDirector.js";
 
 const OUTPUT_WIDTH = 1080;
 const OUTPUT_HEIGHT = 1920;
@@ -128,12 +129,14 @@ function drawMetric(ctx, label, value, x, y, width, accent = false) {
 
 function drawRecordingFrame(ctx, images, frameState) {
   const { observer, sources = [], director } = frameState || {};
-  const activeSource = sources[0];
-  const showComparison = [
-    "car-one-result",
-    "comparison",
-    "complete",
-  ].includes(director?.phaseId);
+  const directorSource = director?.plan
+    ? createDopplerDirectorFrameSource(
+        director.plan,
+        Math.min(director.elapsedSeconds || 0, director.plan.durationSeconds),
+      )
+    : null;
+  const visibleSources = directorSource ? [directorSource] : sources;
+  const activeSource = visibleSources[0];
   const progress = Math.max(0, Math.min(100, director?.progressPercent || 0));
 
   ctx.clearRect(0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
@@ -165,18 +168,7 @@ function drawRecordingFrame(ctx, images, frameState) {
     maxWidth: 900,
   });
 
-  if (showComparison && director?.plan?.results) {
-    const { approaching, receding } = director.plan.results;
-    roundedRect(ctx, 54, 382, 972, 290, 32, "rgba(2,6,23,0.78)", "rgba(255,255,255,0.2)");
-    drawText(ctx, "BEFORE / AFTER PASSING", 540, 446, {
-      size: 30,
-      weight: 900,
-      align: "center",
-      color: "#bfdbfe",
-    });
-    drawMetric(ctx, "Approaching", `${approaching.observedFrequencyHz} Hz`, 110, 492, 400, true);
-    drawMetric(ctx, "Receding", `${receding.observedFrequencyHz} Hz`, 570, 492, 400);
-  } else if (activeSource) {
+  if (activeSource) {
     const emitted = `${Math.round(activeSource.baseFreq)} Hz`;
     const observed = `${Number(activeSource.currentFreq || activeSource.baseFreq).toFixed(2)} Hz`;
     const shift = `${activeSource.shiftPercent > 0 ? "+" : ""}${Number(activeSource.shiftPercent || 0).toFixed(2)}%`;
@@ -198,6 +190,17 @@ function drawRecordingFrame(ctx, images, frameState) {
       align: "center",
       color: activeSource.shiftPercent >= 0 ? "#a7f3d0" : "#fde68a",
     });
+  } else if (director?.plan?.results) {
+    const { approaching, receding } = director.plan.results;
+    roundedRect(ctx, 54, 382, 972, 290, 32, "rgba(2,6,23,0.78)", "rgba(255,255,255,0.2)");
+    drawText(ctx, "BEFORE / AFTER PASSING", 540, 446, {
+      size: 30,
+      weight: 900,
+      align: "center",
+      color: "#bfdbfe",
+    });
+    drawMetric(ctx, "Approaching", `${approaching.observedFrequencyHz} Hz`, 110, 492, 400, true);
+    drawMetric(ctx, "Receding", `${receding.observedFrequencyHz} Hz`, 570, 492, 400);
   }
 
   const roadTop = 1240;
@@ -215,7 +218,7 @@ function drawRecordingFrame(ctx, images, frameState) {
   const observerX = ((observer?.x ?? 500) / MAX_DISTANCE) * OUTPUT_WIDTH;
   ctx.drawImage(images.observer, observerX - 74, 1140, 148, 310);
 
-  sources.forEach((source) => {
+  visibleSources.forEach((source) => {
     const sourceX = (source.x / MAX_DISTANCE) * OUTPUT_WIDTH;
     const waveColor = source.color || "#34d399";
 
@@ -231,13 +234,23 @@ function drawRecordingFrame(ctx, images, frameState) {
     ctx.translate(sourceX, 1510);
     ctx.scale(source.v < 0 ? -1 : 1, 1);
     ctx.drawImage(images.car, -220, -100, 440, 205);
+
+    if (source.instrument?.includes("siren")) {
+      const flash = Math.floor((director?.elapsedSeconds || 0) * 8) % 2 === 0;
+      ctx.fillStyle = flash ? "#ef4444" : "#2563eb";
+      ctx.fillRect(-55, -82, 110, 24);
+      ctx.fillStyle = "rgba(255,255,255,0.92)";
+      ctx.font = "900 32px Inter, Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("AMBULANCE", 0, 22);
+    }
     ctx.restore();
   });
 
   roundedRect(ctx, 54, 1772, 972, 94, 28, "rgba(2,6,23,0.84)", "rgba(255,255,255,0.2)");
   roundedRect(ctx, 84, 1820, 912, 16, 8, "rgba(51,65,85,0.9)");
   roundedRect(ctx, 84, 1820, 912 * (progress / 100), 16, 8, "#22c55e");
-  drawText(ctx, `REC ${Math.round(director?.elapsedSeconds || 0)}s / ${director?.durationSeconds || 60}s`, 84, 1806, {
+  drawText(ctx, `REC ${Math.round(director?.elapsedSeconds || 0)}s / ${director?.durationSeconds || 10}s`, 84, 1806, {
     size: 25,
     weight: 900,
     color: "#fecaca",
@@ -301,7 +314,7 @@ const DopplerShortRecorder = forwardRef(function DopplerShortRecorder(
     recorderRef.current = null;
   };
 
-  const startRecording = async ({ durationSeconds = 60, fileName } = {}) => {
+  const startRecording = async ({ durationSeconds = 10, fileName } = {}) => {
     if (recorderRef.current) {
       return { ok: false, error: recorderError("RECORDING_ACTIVE", "A recording is already active.") };
     }
@@ -320,7 +333,25 @@ const DopplerShortRecorder = forwardRef(function DopplerShortRecorder(
       const images = await prepareImages();
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
-      const draw = () => drawRecordingFrame(ctx, images, getFrameState());
+      const captureStartedAt = performance.now();
+      const draw = () => {
+        const frameState = getFrameState();
+        const elapsedSeconds = Math.min(
+          durationSeconds,
+          (performance.now() - captureStartedAt) / 1000,
+        );
+
+        drawRecordingFrame(ctx, images, {
+          ...frameState,
+          director: frameState?.director
+            ? {
+                ...frameState.director,
+                elapsedSeconds,
+                progressPercent: (elapsedSeconds / durationSeconds) * 100,
+              }
+            : frameState?.director,
+        });
+      };
 
       draw();
       const stream = canvas.captureStream(FPS);
@@ -450,11 +481,11 @@ const DopplerShortRecorder = forwardRef(function DopplerShortRecorder(
         <div className="absolute bottom-5 left-5 z-50 flex -translate-x-1/2 items-center gap-2 rounded-2xl border border-white/20 bg-slate-950/75 px-3 py-2 shadow-2xl backdrop-blur-md">
           <button
             type="button"
-            onClick={() => startRecording({ durationSeconds: 60 })}
+            onClick={() => startRecording({ durationSeconds: 10 })}
             className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-xs font-black text-white hover:bg-red-400"
           >
             <Circle size={14} fill="currentColor" />
-            Record 9:16
+            Record 10s · 9:16
           </button>
         </div>
       )}
