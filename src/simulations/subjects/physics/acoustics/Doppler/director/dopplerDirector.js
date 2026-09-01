@@ -2,17 +2,17 @@ import { SPEED_OF_SOUND } from "../constants.js";
 import { calculateDoppler } from "../utils/dopplerPhysics.js";
 
 export const DOPPLER_DIRECTOR_DEFAULTS = Object.freeze({
-  durationSeconds: 60,
+  durationSeconds: 10,
   observerPositionM: 500,
   emittedFrequencyHz: 440,
-  speedMps: 30,
+  speedMps: 60,
   firstInstrument: "car_engine",
-  secondInstrument: "diesel_engine",
+  secondInstrument: "ambulance_siren",
   aspectRatio: "9:16",
 });
 
 export const DOPPLER_DIRECTOR_LIMITS = Object.freeze({
-  durationSeconds: Object.freeze({ min: 20, max: 60 }),
+  durationSeconds: Object.freeze({ min: 10, max: 60 }),
   speedMps: Object.freeze({ min: 10, max: 60 }),
   emittedFrequencyHz: Object.freeze({ min: 100, max: 1000 }),
 });
@@ -112,9 +112,9 @@ export function createDopplerDirectorPlan(input = {}) {
     DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
   );
   const observerPositionM = DOPPLER_DIRECTOR_DEFAULTS.observerPositionM;
-  const at = (secondsAtSixty) => round((secondsAtSixty / 60) * durationSeconds, 3);
-  const halfPassSeconds = at(10);
-  const startDistanceM = Math.min(420, speedMps * halfPassSeconds);
+  const halfDuration = durationSeconds / 2;
+  const passAt = halfDuration / 2;
+  const startDistanceM = Math.min(420, speedMps * passAt);
   const firstStartM = observerPositionM - startDistanceM;
   const secondStartM = observerPositionM + startDistanceM;
   const approaching = frequencyResult({
@@ -140,7 +140,7 @@ export function createDopplerDirectorPlan(input = {}) {
     },
     {
       id: "director-car-right",
-      label: "Diesel — right to left",
+      label: "Ambulance — right to left",
       instrument: secondInstrument,
       startPositionM: round(secondStartM),
       velocityMps: -speedMps,
@@ -151,16 +151,8 @@ export function createDopplerDirectorPlan(input = {}) {
 
   const phases = [
     {
-      id: "intro",
-      startsAtSeconds: 0,
-      playback: "pause",
-      source: null,
-      title: "The Doppler Effect",
-      caption: "Two cars · two directions · one stationary observer",
-    },
-    {
       id: "car-one-approaching",
-      startsAtSeconds: at(5),
+      startsAtSeconds: 0,
       playback: "run",
       source: cars[0],
       title: "Car 1 · Real Car Engine",
@@ -168,39 +160,25 @@ export function createDopplerDirectorPlan(input = {}) {
     },
     {
       id: "car-one-receding",
-      startsAtSeconds: at(15),
+      startsAtSeconds: passAt,
       playback: "run",
       title: "Car 1 passes the observer",
       caption: "After passing — pitch falls",
     },
     {
-      id: "car-one-result",
-      startsAtSeconds: at(25),
-      playback: "pause",
-      title: "Before and after",
-      caption: `${approaching.observedFrequencyHz} Hz approaching → ${receding.observedFrequencyHz} Hz receding`,
-    },
-    {
       id: "car-two-approaching",
-      startsAtSeconds: at(30),
+      startsAtSeconds: halfDuration,
       playback: "run",
       source: cars[1],
-      title: "Car 2 · Diesel Engine",
-      caption: "Approaching from the right — pitch rises",
+      title: "Vehicle 2 · Ambulance Siren",
+      caption: "Ambulance approaches from the right — pitch rises",
     },
     {
       id: "car-two-receding",
-      startsAtSeconds: at(40),
+      startsAtSeconds: halfDuration + passAt,
       playback: "run",
-      title: "Car 2 passes the observer",
-      caption: "After passing — pitch falls",
-    },
-    {
-      id: "comparison",
-      startsAtSeconds: at(50),
-      playback: "pause",
-      title: "Doppler comparison",
-      caption: `Approaching +${Math.abs(approaching.shiftPercent)}% · Receding ${receding.shiftPercent}%`,
+      title: "Ambulance passes the observer",
+      caption: "After passing — the siren pitch falls",
     },
     {
       id: "complete",
@@ -212,8 +190,8 @@ export function createDopplerDirectorPlan(input = {}) {
   ];
 
   return {
-    version: "doppler-director.v1",
-    title: "Two-direction Doppler story",
+    version: "doppler-director.v2",
+    title: "Ten-second two-direction Doppler story",
     durationSeconds,
     aspectRatio: DOPPLER_DIRECTOR_DEFAULTS.aspectRatio,
     observer: { positionM: observerPositionM, velocityMps: 0 },
@@ -244,5 +222,34 @@ export function createDirectorSource(plan, sourceDefinition) {
     instrument: sourceDefinition.instrument,
     color: sourceDefinition.color,
     label: sourceDefinition.label,
+  };
+}
+
+export function createDopplerDirectorFrameSource(plan, elapsedSeconds) {
+  if (!plan?.cars?.length || elapsedSeconds >= plan.durationSeconds) return null;
+
+  const halfDuration = plan.durationSeconds / 2;
+  const carIndex = elapsedSeconds < halfDuration ? 0 : 1;
+  const sourceDefinition = plan.cars[carIndex];
+  const localElapsed = elapsedSeconds - carIndex * halfDuration;
+  const x = sourceDefinition.startPositionM + sourceDefinition.velocityMps * localElapsed;
+  const measurement = calculateDoppler({
+    sourceX: x,
+    sourceV: sourceDefinition.velocityMps,
+    observerX: plan.observer.positionM,
+    observerV: plan.observer.velocityMps,
+    baseFreq: plan.emittedFrequencyHz,
+    speedOfSound: SPEED_OF_SOUND,
+  });
+
+  return {
+    ...createDirectorSource(plan, sourceDefinition),
+    x,
+    v: sourceDefinition.velocityMps,
+    baseFreq: plan.emittedFrequencyHz,
+    currentFreq: measurement.observedFreq,
+    shiftPercent: measurement.shiftPercent,
+    motionStatus: measurement.motionStatus,
+    waves: [],
   };
 }
