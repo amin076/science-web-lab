@@ -23,6 +23,7 @@ import {
   getWebMcpGuideStatus,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/webMcpGuide.js";
 import {
+  createDopplerDirectorFrameSource,
   createDopplerDirectorPlan,
   getDopplerDirectorPhase,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/director/dopplerDirector.js";
@@ -118,15 +119,21 @@ assert.ok(
   "Both cars must approach the stationary observer from opposite directions.",
 );
 
-const directorPlan = createDopplerDirectorPlan({ durationSeconds: 60 });
+const directorPlan = createDopplerDirectorPlan({ durationSeconds: 10 });
 
-assert.equal(directorPlan.durationSeconds, 60);
-assert.equal(directorPlan.cars[0].startPositionM, 200);
-assert.equal(directorPlan.cars[0].velocityMps, 30);
-assert.equal(directorPlan.cars[1].startPositionM, 800);
-assert.equal(directorPlan.cars[1].velocityMps, -30);
-assert.equal(getDopplerDirectorPhase(directorPlan, 16).id, "car-one-receding");
-assert.equal(getDopplerDirectorPhase(directorPlan, 41).id, "car-two-receding");
+assert.equal(directorPlan.durationSeconds, 10);
+assert.equal(directorPlan.cars[0].startPositionM, 350);
+assert.equal(directorPlan.cars[0].velocityMps, 60);
+assert.equal(directorPlan.cars[1].startPositionM, 650);
+assert.equal(directorPlan.cars[1].velocityMps, -60);
+assert.equal(directorPlan.cars[1].instrument, "ambulance_siren");
+assert.equal(getDopplerDirectorPhase(directorPlan, 3).id, "car-one-receding");
+assert.equal(getDopplerDirectorPhase(directorPlan, 8).id, "car-two-receding");
+assert.equal(createDopplerDirectorFrameSource(directorPlan, 0).x, 350);
+assert.equal(createDopplerDirectorFrameSource(directorPlan, 2.5).x, 500);
+assert.equal(createDopplerDirectorFrameSource(directorPlan, 5).x, 650);
+assert.equal(createDopplerDirectorFrameSource(directorPlan, 7.5).x, 500);
+assert.equal(createDopplerDirectorFrameSource(directorPlan, 9.9).instrument, "ambulance_siren");
 assert.ok(
   directorPlan.results.approaching.observedFrequencyHz > 440 &&
     directorPlan.results.receding.observedFrequencyHz < 440,
@@ -154,7 +161,7 @@ const dopplerTools = createDopplerWebMcpTools({
   },
   startDirector: (input) => ({
     state: "recording",
-    durationSeconds: input.durationSeconds || 60,
+    durationSeconds: input.durationSeconds || 10,
   }),
   getDirectorStatus: () => ({
     state: "ready",
@@ -220,7 +227,7 @@ assert.equal(sceneResult.ok, true);
 assert.equal(sceneResult.data.sources.length, 2);
 
 const videoStartResult = JSON.parse(
-  await dopplerTools[5].execute({ durationSeconds: 60 }),
+  await dopplerTools[5].execute({ durationSeconds: 10 }),
 );
 assert.equal(videoStartResult.ok, true);
 assert.equal(videoStartResult.data.state, "recording");
@@ -293,8 +300,9 @@ assert.deepEqual(DOPPLER_WEBMCP_TOOL_NAMES, [
   "download_doppler_video",
 ]);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /440 Hz/);
-assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /30 m\/s/);
-assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /60-second/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /60 m\/s/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /10-second/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /Ambulance Siren/);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /site tools/i);
 assert.equal(getWebMcpGuideStatus("ready").detail, "11 tools available");
 assert.match(getWebMcpGuideStatus("unsupported").help, /ChatGPT desktop app/i);
