@@ -242,7 +242,7 @@ const DopplerControls = ({
               </div>
               <div className="mt-1 text-[10px] leading-4 text-slate-300">
                 {directorStatus?.phaseCaption ||
-                  "Real Car Engine from the left, Diesel Engine from the right, before/after results, captions, stereo movement, and recorded audio."}
+                  "Real Car Engine from the left, Ambulance Siren from the right, continuous visible motion, before/after results, captions, stereo movement, and recorded audio."}
               </div>
 
               {directorActive && (
@@ -269,7 +269,7 @@ const DopplerControls = ({
                     onClick={() => runDirectorAction(onStartDirector)}
                     className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-violet-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-violet-300"
                   >
-                    <Clapperboard size={12} /> Create 60s video
+                    <Clapperboard size={12} /> Create 10s test video
                   </button>
                 )}
 
