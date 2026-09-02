@@ -39,7 +39,16 @@ export function useDopplerSimulation({
     const tick = (timeMs) => {
       const now = timeMs / 1000;
       const last = lastTimeRef.current ?? now;
-      const dt = Math.min(0.05, now - last);
+      const rawDt = Math.max(0, now - last);
+
+      // Keep the simulation tied to real elapsed time while the AI recorder is
+      // doing expensive 1080x1920 canvas drawing + WebM encoding. The previous
+      // 50 ms cap made the physics/audio clock run in slow motion whenever the
+      // browser dropped below 20 fps, so the recorded picture could pass the
+      // observer before the live audio engine changed from approaching to
+      // receding pitch. Ignore only very large gaps (for example returning to
+      // a backgrounded tab) instead of clipping ordinary recording stalls.
+      const dt = rawDt > 1 ? 0 : rawDt;
 
       lastTimeRef.current = now;
 
