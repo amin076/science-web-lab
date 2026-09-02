@@ -74,18 +74,39 @@ The observer is stationary at `500 m`. The timeline is calculated from `distance
 
 | Time | Source | Motion | Position |
 | --- | --- | --- | --- |
-| `0–7.5 s` | Esbiko Voice | approaching | `50 → 500 m` |
-| `7.5–15 s` | Esbiko Voice | receding | `500 → 950 m` |
-| `15–22.5 s` | Ambulance Siren | approaching | `950 → 500 m` |
-| `22.5–30 s` | Ambulance Siren | receding | `500 → 50 m` |
+| `0–7.5 s` | Vehicle 1 | approaching | `50 → 500 m` |
+| `7.5–15 s` | Vehicle 1 | receding | `500 → 950 m` |
+| `15–22.5 s` | Vehicle 2 | approaching | `950 → 500 m` |
+| `22.5–30 s` | Vehicle 2 | receding | `500 → 50 m` |
 
 At `60 m/s` with speed of sound `343 m/s`, a 440 Hz source is approximately **533.29 Hz while approaching** and **374.49 Hz while receding**.
 
-During an AI-directed recording, the live browser preview and the recorded WebM use the same deterministic director plan, so the user can watch the same movement the agent is capturing.
+During an AI-directed recording, the live browser preview, recorded visual motion, and recorded Doppler audio are driven from the same deterministic director timeline. That keeps the audible higher-to-lower pitch change synchronized with the exact observer crossing even when WebM encoding lowers browser frame cadence.
+
+### Final production-verified judge/demo payload
+
+For the clearest final demonstration, use two distinctly different real sounds:
+
+```json
+{
+  "storyMode": "two_vehicle",
+  "durationSeconds": 30,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "car_engine",
+  "secondInstrument": "ambulance_siren"
+}
+```
+
+This production test was watched/listened to end-to-end after the final synchronization fix. The Real Car Engine passes the observer at **7.5 s** and the Ambulance Siren passes from the opposite direction at **22.5 s**; the before/after Doppler pitch change is clearly audible at both pass moments.
+
+Final synchronized runtime commit: `adb0d6a89ebb454f85c151058cc0f84f00a10038`.
+
+Firebase deployment run #121: **PASS**.
 
 ### Optional 10-second single-pass comparison
 
-For a particularly clear before/after listening test, Esbiko also supports one continuous sound crossing the observer halfway through the recording:
+For a particularly clear one-source listening test, Esbiko also supports one continuous sound crossing the observer halfway through the recording:
 
 ```json
 {
@@ -117,9 +138,9 @@ If browser autoplay policy blocks audio, the tool returns `AUDIO_ACTIVATION_REQU
 
 ## Final judge prompt
 
-> Using Esbiko's site tools, create the default 30-second 9:16 two-vehicle Doppler video at 440 Hz and 60 m/s with the observer stationary at 500 m. First show Esbiko Voice crossing left to right, then show an Ambulance Siren crossing right to left. Keep both vehicles visibly moving in the browser and recording, show the higher pitch before each pass and lower pitch after each pass, wait until the recording is ready, then download the WebM video.
+> Using Esbiko's site tools, create a 30-second 9:16 two-vehicle Doppler video at 440 Hz and 60 m/s with the observer stationary at 500 m. First show a Real Car Engine crossing left to right, then show an Ambulance Siren crossing right to left. Keep both vehicles visibly moving in the browser and recording, make the higher pitch before each pass and lower pitch after each pass clearly audible, wait until the recording is ready, then download the WebM video.
 
-Detailed testing, architecture, compliance, submission text, and production evidence are in:
+Detailed testing, architecture, compliance, submission text, final checklist, and production evidence are in:
 
 📘 [`docs/hackathon/webmcp/`](docs/hackathon/webmcp/README.md)
 
@@ -141,6 +162,8 @@ The WebMCP Challenge work added the agent-facing layer and the end-to-end agent 
 - audio-signal verification and silent-file rejection
 - browser autoplay recovery errors
 - live browser mirroring of directed recording motion
+- recording-load clock correction
+- shared deterministic audio/visual director clock for AI recording
 - structured recording status and download operations
 - automated WebMCP contract/physics tests
 - hackathon documentation and production evidence
@@ -162,9 +185,12 @@ WebMCP tools → validated adapter
           measurements            ▼       │
                          AI Doppler Director
                                   │
-                                  ▼
-                        deterministic recorder
+                       shared deterministic clock
                                   │
+                      ┌───────────┴───────────┐
+                      ▼                       ▼
+                 recorded audio        recorded motion
+                      └───────────┬───────────┘
                                   ▼
                            downloadable WebM
 ```

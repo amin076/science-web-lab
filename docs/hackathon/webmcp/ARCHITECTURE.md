@@ -13,11 +13,12 @@ flowchart TD
   P --> L[Live browser simulation]
   W --> D[AI Doppler Director]
   D --> S
-  D --> R[Deterministic 9:16 recorder]
-  S --> AU[Web Audio engine]
-  AU --> L
+  D --> C[Deterministic director clock]
+  C --> L
+  C --> AU[Web Audio pitch/volume/pan]
+  C --> R[Deterministic 9:16 recorder]
+  AU --> SP[Browser speakers]
   AU --> R
-  D --> L
   R --> O[Downloadable WebM]
 ```
 
@@ -73,7 +74,7 @@ The director uses exact geometry:
 phase distance = source speed × phase duration
 ```
 
-Final defaults are:
+Application defaults are:
 
 ```json
 {
@@ -88,13 +89,24 @@ Final defaults are:
 
 That produces a 7.5-second phase, 450-metre leg, and positions `50 → 500 → 950` followed by `950 → 500 → 50`.
 
-## Live browser and recorder synchronization
+The final production-verified judge/demo payload uses `car_engine` followed by `ambulance_siren` with the same geometry because those two real recordings produced the clearest audible before/after comparison.
 
-The WebM recorder derives each frame from `createDopplerDirectorFrameSource(plan, elapsedSeconds)`. The live browser canvas now derives its directed source from the same plan and elapsed director time while a recording is active.
+## Shared director clock: browser, recorder, and AI audio
 
-This avoids the earlier split where the recorded WebM could show deterministic movement while the ordinary browser `sources` array appeared stationary or out of sync.
+The recorder derives each frame from `createDopplerDirectorFrameSource(plan, elapsedSeconds)`. The live browser canvas derives its directed source from the same plan and elapsed director time while a recording is active.
 
-Outside an active director run, the canvas returns to the normal human-controlled simulation sources.
+The final synchronization fix also makes the AI-recorded audio derive its source state from that same deterministic director timeline. `useDopplerSimulation` detects an active director recording, anchors a monotonic clock to the director's elapsed time, generates the active source with `createDopplerDirectorFrameSource(...)`, then applies the resulting Doppler frequency, volume, and stereo pan to the Web Audio voice.
+
+This matters because a 1080×1920 canvas plus WebM encoding can reduce browser frame cadence. If audio were integrated with a second independent simulation clock, the visual source could pass the observer before the audible pitch switched from approaching to receding. The shared director clock removes that drift.
+
+For the final 30-second story, visual and audible pass transitions are therefore tied to the same exact planned times:
+
+- vehicle 1: `7.5 s`;
+- vehicle 2: `22.5 s`.
+
+When the story switches from vehicle 1 to vehicle 2, inactive AudioVoice instances are explicitly stopped so the previous sample does not overlap the next source.
+
+Outside an active director recording, normal manual playback continues to use the ordinary simulation physics loop.
 
 ## Audio architecture
 
