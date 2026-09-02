@@ -19,6 +19,8 @@ export function useDopplerSimulation({
 }) {
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
+  const directorClockStartRef = useRef(null);
+  const directorPlanRef = useRef(null);
   const updateVoiceRef = useRef(updateVoice);
   const muteAllVoicesRef = useRef(muteAllVoices);
   const stopInactiveVoicesRef = useRef(stopInactiveVoices);
@@ -38,6 +40,8 @@ export function useDopplerSimulation({
   useEffect(() => {
     if (!isRunning) {
       cancelAnimationFrame(requestRef.current);
+      directorClockStartRef.current = null;
+      directorPlanRef.current = null;
       muteAllVoicesRef.current?.();
       return;
     }
@@ -64,14 +68,24 @@ export function useDopplerSimulation({
 
       // During an AI-directed recording, do not advance a second independent
       // physics clock for audio. The recorder and browser visuals already use
-      // the deterministic director timeline. Derive the audible source from
-      // that same timeline so the pitch switches at the same observer-pass
-      // moments (7.5 s and 22.5 s in the default 30-second two-vehicle story),
-      // even if 1080x1920 WebM encoding lowers requestAnimationFrame cadence.
+      // the deterministic director timeline. Anchor one monotonic audio clock
+      // to the director's current elapsed time, then derive every audible frame
+      // from the same plan. This keeps the 30-second default pitch transitions
+      // tied to the visual observer passes at 7.5 s and 22.5 s even if WebM
+      // encoding lowers requestAnimationFrame cadence.
       if (directorStatus?.state === "recording" && directorPlan) {
+        if (
+          directorPlanRef.current !== directorPlan ||
+          directorClockStartRef.current == null
+        ) {
+          directorPlanRef.current = directorPlan;
+          directorClockStartRef.current =
+            timeMs - Math.max(0, directorStatus.elapsedSeconds || 0) * 1000;
+        }
+
         const elapsedSeconds = Math.min(
           directorPlan.durationSeconds,
-          Math.max(0, directorStatus.elapsedSeconds || 0),
+          Math.max(0, (timeMs - directorClockStartRef.current) / 1000),
         );
         const directorSource = createDopplerDirectorFrameSource(
           directorPlan,
@@ -94,6 +108,9 @@ export function useDopplerSimulation({
         requestRef.current = requestAnimationFrame(tick);
         return;
       }
+
+      directorClockStartRef.current = null;
+      directorPlanRef.current = null;
 
       const last = lastTimeRef.current ?? now;
       const rawDt = Math.max(0, now - last);
