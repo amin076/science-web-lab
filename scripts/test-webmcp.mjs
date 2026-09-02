@@ -122,7 +122,8 @@ assert.ok(
 const directorPlan = createDopplerDirectorPlan({ durationSeconds: 10 });
 
 assert.equal(directorPlan.durationSeconds, 10);
-assert.equal(directorPlan.version, "doppler-director.v4");
+assert.equal(directorPlan.version, "doppler-director.v5");
+assert.equal(directorPlan.storyMode, "two_vehicle");
 assert.equal(directorPlan.phaseDurationSeconds, 2.5);
 assert.equal(directorPlan.cars[0].startPositionM, 350);
 assert.equal(directorPlan.cars[0].velocityMps, 60);
@@ -167,8 +168,48 @@ assert.equal(getDopplerDirectorPhase(twentySecondPlan, 5).id, "car-one-receding"
 assert.equal(getDopplerDirectorPhase(twentySecondPlan, 14.999).id, "car-two-approaching");
 assert.equal(getDopplerDirectorPhase(twentySecondPlan, 15).id, "car-two-receding");
 
+const singlePassPlan = createDopplerDirectorPlan({
+  storyMode: "single_pass",
+  durationSeconds: 10,
+  speedMps: 60,
+  emittedFrequencyHz: 440,
+  firstInstrument: "ambulance_siren",
+});
+
+assert.equal(singlePassPlan.storyMode, "single_pass");
+assert.equal(singlePassPlan.phaseDurationSeconds, 5);
+assert.equal(singlePassPlan.cars.length, 1);
+assert.equal(singlePassPlan.cars[0].instrument, "ambulance_siren");
+assert.deepEqual(singlePassPlan.timeline, {
+  legDistanceM: 300,
+  firstStartM: 200,
+  firstPassM: 500,
+  firstEndM: 800,
+});
+assert.equal(createDopplerDirectorFrameSource(singlePassPlan, 0).x, 200);
+assert.equal(createDopplerDirectorFrameSource(singlePassPlan, 5).x, 500);
+assert.ok(Math.abs(createDopplerDirectorFrameSource(singlePassPlan, 9.999).x - 799.94) < 0.01);
+assert.equal(createDopplerDirectorFrameSource(singlePassPlan, 4.999).instrument, "ambulance_siren");
+assert.equal(createDopplerDirectorFrameSource(singlePassPlan, 5.001).instrument, "ambulance_siren");
+assert.equal(getDopplerDirectorPhase(singlePassPlan, 4.999).id, "single-approaching");
+assert.equal(getDopplerDirectorPhase(singlePassPlan, 5).id, "single-receding");
+assert.ok(
+  createDopplerDirectorFrameSource(singlePassPlan, 4.999).currentFreq > 440 &&
+    createDopplerDirectorFrameSource(singlePassPlan, 5.001).currentFreq < 440,
+  "Single-pass mode must use the same sample across an audible higher-to-lower pitch transition at 5 seconds.",
+);
+
 assert.throws(
   () => createDopplerDirectorPlan({ durationSeconds: 60, speedMps: 60 }),
+  (error) => error.code === "DIRECTOR_TIMING_OUT_OF_RANGE",
+);
+assert.throws(
+  () =>
+    createDopplerDirectorPlan({
+      storyMode: "single_pass",
+      durationSeconds: 20,
+      speedMps: 60,
+    }),
   (error) => error.code === "DIRECTOR_TIMING_OUT_OF_RANGE",
 );
 
@@ -210,6 +251,7 @@ const dopplerTools = createDopplerWebMcpTools({
   startDirector: (input) => ({
     state: "recording",
     durationSeconds: input.durationSeconds || 10,
+    storyMode: input.storyMode || "two_vehicle",
     audioIncluded: true,
     audioSignalDetected: true,
   }),
@@ -240,6 +282,10 @@ assert.deepEqual(
 assert.equal(dopplerTools[0].annotations.readOnlyHint, true);
 assert.equal(dopplerTools[1].annotations.readOnlyHint, false);
 assert.equal(dopplerTools[6].annotations.readOnlyHint, true);
+assert.deepEqual(
+  dopplerTools[5].inputSchema.properties.storyMode.enum,
+  ["two_vehicle", "single_pass"],
+);
 
 const stateResult = JSON.parse(await dopplerTools[0].execute({}));
 assert.equal(stateResult.ok, true);
@@ -278,10 +324,15 @@ assert.equal(sceneResult.ok, true);
 assert.equal(sceneResult.data.sources.length, 2);
 
 const videoStartResult = JSON.parse(
-  await dopplerTools[5].execute({ durationSeconds: 10 }),
+  await dopplerTools[5].execute({
+    storyMode: "single_pass",
+    durationSeconds: 10,
+    firstInstrument: "ambulance_siren",
+  }),
 );
 assert.equal(videoStartResult.ok, true);
 assert.equal(videoStartResult.data.state, "recording");
+assert.equal(videoStartResult.data.storyMode, "single_pass");
 assert.equal(videoStartResult.data.audioSignalDetected, true);
 
 const videoStatusResult = JSON.parse(await dopplerTools[6].execute({}));
