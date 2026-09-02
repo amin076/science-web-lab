@@ -210,7 +210,7 @@ export function createDopplerWebMcpTools(actions) {
     {
       name: "create_doppler_video",
       description:
-        "Create a fast agent-directed 10-second 9:16 WebM Doppler story. A real car crosses left-to-right, then an ambulance with a siren crosses right-to-left. Every recorded frame uses deterministic motion, with before/after measurements, synchronized captions, and captured audio.",
+        "Create a 10-second 9:16 WebM Doppler story with real car and siren audio, deterministic motion, wavefronts, captions, and before/after pitch. Silent files are rejected. If AUDIO_ACTIVATION_REQUIRED occurs, ask the user to click Run Simulation once, pause it, then retry this tool.",
       inputSchema: {
         type: "object",
         properties: {
@@ -259,7 +259,7 @@ export function createDopplerWebMcpTools(actions) {
     {
       name: "get_doppler_video_status",
       description:
-        "Read the agent-directed Doppler video's recording state, elapsed time, current story phase, scientific comparison, and download readiness.",
+        "Read recording state, elapsed time, story phase, scientific comparison, audio-track presence, verified audio-signal status, and download readiness for the directed Doppler video.",
       inputSchema: {
         type: "object",
         properties: {},

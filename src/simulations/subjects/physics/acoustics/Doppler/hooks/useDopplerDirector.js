@@ -17,6 +17,7 @@ const INITIAL_STATUS = Object.freeze({
   fileName: null,
   bytes: 0,
   audioIncluded: false,
+  audioSignalDetected: false,
   error: null,
 });
 
@@ -38,6 +39,7 @@ function publicStatus(status) {
     fileName: status.fileName,
     bytes: status.bytes,
     audioIncluded: status.audioIncluded,
+    audioSignalDetected: status.audioSignalDetected,
     downloadReady: status.state === "ready",
     error: status.error,
     results: status.plan?.results || null,
@@ -47,6 +49,7 @@ function publicStatus(status) {
 
 export function useDopplerDirector({
   initializeAudio,
+  verifyAudioSignal,
   resetScene,
   applyScene,
   setPlayback,
@@ -122,15 +125,22 @@ export function useDopplerDirector({
         durationSeconds: plan.durationSeconds,
         phaseId: plan.phases[0].id,
         phaseTitle: plan.phases[0].title,
-        phaseCaption: plan.phases[0].caption,
+        phaseCaption: "Preparing audio before recording…",
         plan,
       });
-      onAction?.("Preparing the AI-directed Doppler video");
+      onAction?.("Preparing the AI-directed Doppler video and audio");
 
       let audio;
+      let signal;
 
       try {
-        audio = await initializeAudio();
+        audio = await initializeAudio({
+          instrumentIds: plan.cars.map((car) => car.instrument),
+        });
+
+        await applyPhase(plan, plan.phases[0]);
+        signal = await verifyAudioSignal();
+
         const recording = await startRecording({
           durationSeconds: plan.durationSeconds,
           fileName: `esbiko-doppler-ai-director-${Date.now()}.webm`,
@@ -143,9 +153,17 @@ export function useDopplerDirector({
           );
         }
       } catch (error) {
+        try {
+          await setPlayback("pause");
+        } catch {
+          // Preserve the original startup error.
+        }
+
         updateStatus((current) => ({
           ...current,
           state: "error",
+          audioIncluded: false,
+          audioSignalDetected: false,
           error: {
             code: error?.code || "DIRECTOR_START_FAILED",
             message: error?.message || "The Doppler director could not start.",
@@ -158,10 +176,14 @@ export function useDopplerDirector({
       updateStatus((current) => ({
         ...current,
         state: "recording",
+        elapsedSeconds: 0,
+        progressPercent: 0,
+        phaseId: plan.phases[0].id,
+        phaseTitle: plan.phases[0].title,
+        phaseCaption: plan.phases[0].caption,
         audioIncluded: Boolean(audio?.recordingStreamReady),
+        audioSignalDetected: Boolean(signal?.detected),
       }));
-
-      await applyPhase(plan, plan.phases[0]);
 
       plan.phases.slice(1).forEach((phase) => {
         const timer = window.setTimeout(async () => {
@@ -216,9 +238,11 @@ export function useDopplerDirector({
       initializeAudio,
       onAction,
       resetScene,
+      setPlayback,
       startRecording,
       stopRecording,
       updateStatus,
+      verifyAudioSignal,
     ],
   );
 

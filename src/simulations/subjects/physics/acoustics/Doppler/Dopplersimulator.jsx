@@ -1,7 +1,7 @@
 // src/simulations/subjects/physics/acoustics/Doppler/Dopplersimulator.jsx
 import { useEffect, useRef, useState } from "react";
 
-import { AudioVoice } from "./SoundEngine";
+import { AudioVoice, preloadDopplerInstruments } from "./SoundEngine";
 import DopplerCanvas from "./components/DopplerCanvas";
 import DopplerControls from "./components/DopplerControls";
 import { useDopplerSimulation } from "./hooks/useDopplerSimulation";
@@ -16,6 +16,13 @@ import {
 } from "./adapter/dopplerAdapter";
 
 import { MODES, SOURCE_PRESETS } from "./constants";
+
+function audioError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  return error;
+}
+
 const DopplerSimulator = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.5);
@@ -26,6 +33,7 @@ const DopplerSimulator = () => {
 
   const audioCtxRef = useRef(null);
   const masterGainRef = useRef(null);
+  const audioAnalyserRef = useRef(null);
   const recordingDestinationRef = useRef(null);
   const recorderRef = useRef(null);
   const voicesRef = useRef({});
@@ -38,29 +46,102 @@ const DopplerSimulator = () => {
     observerRef.current = observer;
   }, [observer]);
 
-  const initAudio = async () => {
+  const initAudio = async ({ instrumentIds = [] } = {}) => {
     if (!audioCtxRef.current) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
       audioCtxRef.current = new AudioContext();
 
       masterGainRef.current = audioCtxRef.current.createGain();
       masterGainRef.current.gain.value = masterVolume;
-      masterGainRef.current.connect(audioCtxRef.current.destination);
+
+      audioAnalyserRef.current = audioCtxRef.current.createAnalyser();
+      audioAnalyserRef.current.fftSize = 1024;
+      audioAnalyserRef.current.smoothingTimeConstant = 0.2;
+
       recordingDestinationRef.current =
         audioCtxRef.current.createMediaStreamDestination();
-      masterGainRef.current.connect(recordingDestinationRef.current);
+
+      masterGainRef.current.connect(audioAnalyserRef.current);
+      audioAnalyserRef.current.connect(audioCtxRef.current.destination);
+      audioAnalyserRef.current.connect(recordingDestinationRef.current);
     }
 
     if (audioCtxRef.current.state === "suspended") {
-      await audioCtxRef.current.resume();
+      try {
+        await audioCtxRef.current.resume();
+      } catch {
+        // The explicit state check below produces the actionable WebMCP error.
+      }
+    }
+
+    if (audioCtxRef.current.state !== "running") {
+      throw audioError(
+        "AUDIO_ACTIVATION_REQUIRED",
+        "Browser audio is locked. Click Esbiko's Run Simulation button once, then pause it and retry create_doppler_video.",
+      );
+    }
+
+    await preloadDopplerInstruments(audioCtxRef.current, instrumentIds);
+
+    const recordingTrackCount =
+      recordingDestinationRef.current?.stream?.getAudioTracks?.().length || 0;
+
+    if (!recordingTrackCount) {
+      throw audioError(
+        "AUDIO_CAPTURE_UNAVAILABLE",
+        "The browser did not expose an audio track for the Doppler recorder.",
+      );
     }
 
     return {
       state: audioCtxRef.current.state,
-      recordingStreamReady: Boolean(
-        recordingDestinationRef.current?.stream?.getAudioTracks?.().length,
-      ),
+      recordingStreamReady: true,
+      preloadedInstruments: instrumentIds,
     };
+  };
+
+  const readAudioSignalRms = () => {
+    const analyser = audioAnalyserRef.current;
+
+    if (!analyser) return 0;
+
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+
+    let sumSquares = 0;
+
+    for (const sample of data) {
+      const normalized = (sample - 128) / 128;
+      sumSquares += normalized * normalized;
+    }
+
+    return Math.sqrt(sumSquares / data.length);
+  };
+
+  const verifyAudioSignal = async ({ timeoutMs = 1500 } = {}) => {
+    const startedAt = performance.now();
+
+    while (performance.now() - startedAt < timeoutMs) {
+      if (audioCtxRef.current?.state !== "running") {
+        throw audioError(
+          "AUDIO_ACTIVATION_REQUIRED",
+          "Browser audio stopped before recording. Click Run Simulation once and retry the video tool.",
+        );
+      }
+
+      const rms = readAudioSignalRms();
+
+      if (rms > 0.0005) {
+        return { detected: true, rms };
+      }
+
+      await new Promise((resolve) => window.setTimeout(resolve, 50));
+    }
+
+    throw audioError(
+      "AUDIO_SIGNAL_MISSING",
+      "No audible Doppler signal reached the recording bus. The video was not started, so a silent file will not be produced.",
+    );
   };
 
   const updateVoice = (
@@ -268,6 +349,7 @@ const DopplerSimulator = () => {
 
   const director = useDopplerDirector({
     initializeAudio: initAudio,
+    verifyAudioSignal,
     resetScene: resetSceneState,
     applyScene: applySceneState,
     setPlayback: setPlaybackState,
