@@ -15,60 +15,94 @@ npm run build
 
 - approaching motion produces a higher observed frequency;
 - receding motion produces a lower observed frequency;
-- semantic motion maps to correct signed velocity;
+- semantic motion maps to the correct signed velocity;
 - parameter bounds reject unsafe input;
-- all six intended tools exist;
-- read/write annotation hints are correct;
-- results use parseable JSON success/error envelopes;
-- site discovery and navigation use the allowlisted simulation route;
+- all 11 intended tools register with correct read/write hints;
+- tool outputs use parseable JSON success/error envelopes;
+- site discovery/navigation use the allowlisted Doppler route;
+- site discovery advertises video-director/download capability;
 - registration receives the lifecycle `AbortSignal`;
-- tool names, descriptions, and representative output stay inside recommended budgets;
-- unsupported browsers fail open to the existing human application.
+- tool names/descriptions stay inside WebMCP budgets;
+- the default director is `two_vehicle`, 30 s, 440 Hz, 60 m/s, Esbiko Voice + Ambulance Siren;
+- the default 30-second timeline is exactly `50 → 500 → 950` then `950 → 500 → 50`;
+- each default quarter lasts 7.5 s and each leg is 450 m;
+- the optional 10-second `single_pass` story crosses the observer at exactly 5 s;
+- the same single-pass sample is above 440 Hz immediately before the pass and below 440 Hz immediately after it;
+- deterministic recording frames preserve source motion and wavefronts before and after passing.
 
-The Platform API test verifies that the regenerated catalog remains valid. The production build verifies the complete Vite/PWA application.
+## Final production Chrome test
 
-## ChatGPT in-app browser test
+Use Chrome 149+ with `chrome://flags/#enable-webmcp-testing` enabled and the official WebMCP Inspector.
 
-Use the latest desktop app with GPT-5.6 Sol or GPT-5.6 Terra.
+1. Open <https://www.esbiko.com/experiments/physics.acoustics.doppler/run>.
+2. Hard refresh (`Ctrl+Shift+R`).
+3. Confirm the page reports `11 tools available`.
+4. Confirm `document.modelContext.getTools()` returns 11 names.
+5. If browser audio is locked, click **Run Simulation** once, pause, and continue.
+6. Execute `create_doppler_video` with the final default payload:
 
-1. Open <https://www.esbiko.com> in the in-app browser.
-2. Inspect Available site tools.
-3. Confirm `list_science_simulations` and `open_science_simulation` appear.
-4. Ask the agent to open the Doppler experiment.
-5. Confirm the four Doppler tools appear after the page loads.
-6. Configure a 440 Hz source approaching at 20 m/s.
-7. Confirm the visible source, controls, and Last agent action change.
-8. Run, then read state.
-9. Confirm returned measurements match the visible HUD.
-10. Change a slider manually and read state again; confirm the human change is returned.
-11. Reconfigure as receding and confirm a negative shift.
-12. Reset and confirm no sources, stationary observer, and paused state.
+```json
+{
+  "storyMode": "two_vehicle",
+  "durationSeconds": 30,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "esbiko_voice",
+  "secondInstrument": "ambulance_siren"
+}
+```
 
-## Chrome test
+7. Watch the live browser during recording. It must show the same directed movement as the generated WebM.
+8. Confirm four visible phases:
+   - `0–7.5 s`: Esbiko Voice `50 → 500 m`;
+   - `7.5–15 s`: Esbiko Voice `500 → 950 m`;
+   - `15–22.5 s`: Ambulance `950 → 500 m`;
+   - `22.5–30 s`: Ambulance `500 → 50 m`.
+9. Call `get_doppler_video_status`. Confirm `phaseDurationSeconds: 7.5`, the expected timeline, `audioIncluded: true`, and `audioSignalDetected: true`.
+10. After `state: ready`, execute `download_doppler_video`.
+11. Play the WebM and verify motion, captions, wavefronts, both sounds, and pitch change around 7.5 s and 22.5 s.
 
-1. Use Chrome 149 or later.
-2. Enable `chrome://flags/#enable-webmcp-testing` and relaunch Chrome.
-3. Open the direct Doppler URL.
-4. Inspect `await document.modelContext.getTools()` in the WebMCP test environment.
-5. Execute every tool with valid input.
-6. Test missing, malformed, and out-of-range input.
-7. Verify that navigating away removes the Doppler page tools.
+The Chrome Inspector's natural-language **Send** field may require its optional Gemini configuration. That is not required for Esbiko testing: manual **Execute Tool** calls invoke WebMCP directly and use no Gemini API.
 
-## Required production evidence
+## Optional single-pass audio check
 
-Capture evidence of:
+Use this when a particularly obvious before/after pitch comparison is needed:
+
+```json
+{
+  "storyMode": "single_pass",
+  "durationSeconds": 10,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "ambulance_siren"
+}
+```
+
+Expected geometry: `200 → 500 → 800 m`; expected pass time: exactly `5 s`.
+
+## ChatGPT Site Tools test
+
+When Site Tools are available in the ChatGPT in-app browser:
+
+1. Open Esbiko and inspect available site tools.
+2. Ask ChatGPT to open the Doppler simulation.
+3. Confirm all page tools appear after navigation.
+4. Use the final judge prompt from `SUBMISSION.md`.
+5. Confirm the browser visibly runs the experiment while recording.
+6. Confirm ChatGPT waits for ready status before requesting download.
+
+## Required final evidence
+
+Capture:
 
 - live public URL and WebMCP-ready badge;
-- two site tools discovered;
-- four Doppler tools discovered;
-- approaching configuration and positive shift;
-- structured state output;
-- manual human adjustment reflected in state;
-- receding configuration and negative shift;
-- reset result;
-- clean console for WebMCP registration/execution;
-- final public commit SHA and successful deployment workflow.
+- all 11 discovered tools;
+- final default two-vehicle input;
+- live browser motion during AI recording;
+- status with timeline and verified audio signal;
+- downloaded 30-second WebM;
+- optional 10-second single-pass sample if used in the demo;
+- final public commit SHA and successful Firebase deployment workflow;
+- demo video URL after upload.
 
-## Known pre-existing check issue
-
-`npm run sim:check` currently targets the removed legacy path `src/data/experiments.js`; the current catalog lives under `src/data/experiments/index.js`. This issue predates the WebMCP work and is not used as evidence for this submission.
+Do not mark the 30-second final production smoke test PASS until the live deployed file has been watched and listened to end-to-end.

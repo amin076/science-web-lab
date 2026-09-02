@@ -6,9 +6,18 @@ export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
     name: "Doppler Effect",
     topic: "Sound waves",
     description:
-      "Configure, run, inspect, and reset a visible Doppler-effect experiment.",
+      "Configure, run, inspect, direct, record, and download a visible Doppler-effect experiment.",
     route: "/experiments/physics.acoustics.doppler/run",
-    capabilities: ["state-read", "configure", "playback", "reset"],
+    capabilities: [
+      "state-read",
+      "configure",
+      "scene-configure",
+      "playback",
+      "reset",
+      "video-director",
+      "video-status",
+      "video-download",
+    ],
   }),
 ]);
 

@@ -13,7 +13,7 @@ export const DOPPLER_WEBMCP_TOOL_NAMES = Object.freeze([
 ]);
 
 export const DOPPLER_WEBMCP_TEST_PROMPT =
-  "Using Esbiko's site tools, create a 10-second 9:16 Doppler video with a 440 Hz emitted frequency. Keep the observer stationary at 500 m. First show a Real Car Engine crossing left to right at 60 m/s, then show an Ambulance Siren crossing right to left at 60 m/s. Keep each vehicle visibly moving in every frame, show the pitch before and after it passes, wait until the recording is ready, then download the WebM video.";
+  "Using Esbiko's site tools, create the default 30-second 9:16 two-vehicle Doppler video at 440 Hz and 60 m/s with the observer stationary at 500 m. First show Esbiko Voice crossing left to right, then show an Ambulance Siren crossing right to left. Keep both vehicles visibly moving in the browser and recording, show the higher pitch before each pass and lower pitch after each pass, wait until the recording is ready, then download the WebM video.";
 
 const STATUS_CONTENT = Object.freeze({
   ready: Object.freeze({
