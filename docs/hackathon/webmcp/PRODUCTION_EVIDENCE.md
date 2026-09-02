@@ -2,12 +2,13 @@
 
 Last evidence refresh: September 2, 2026 AEST.
 
-## Current public baseline before final 30-second default deploy
+## Final production baseline
 
 - Public repository: <https://github.com/amin076/science-web-lab>
 - Public demo: <https://www.esbiko.com/experiments/physics.acoustics.doppler/run>
-- Current deployed director/browser-sync commit before this final defaults branch: `2930967b8dd1d57c30fb807368def1dd88cae173`
-- Firebase deployment run #116: <https://github.com/amin076/science-web-lab/actions/runs/33592748245> — **PASS**
+- Final audio/video synchronization runtime commit: `adb0d6a89ebb454f85c151058cc0f84f00a10038`
+- Pull request: `#101` — **Synchronize 30-second AI Doppler audio with video motion**
+- Firebase deployment run #121: <https://github.com/amin076/science-web-lab/actions/runs/33619254268> — **PASS**
 
 ## Verified production behavior
 
@@ -20,7 +21,7 @@ Verified behaviors during challenge testing include:
 | WebMCP page readiness | PASS | Live Doppler page reports `11 tools available`. |
 | Tool discovery | PASS | Two site tools + nine page tools discovered. |
 | Semantic input validation | PASS | Invalid and premature actions return structured error codes rather than silent failure. |
-| Basic state/configure/playback/reset | PASS | Existing 440 Hz approaching/receding workflows update the visible simulation and return physics-derived values. |
+| Basic state/configure/playback/reset | PASS | 440 Hz approaching/receding workflows update the visible simulation and return physics-derived values. |
 | Two-source scene support | PASS | `configure_doppler_scene` supports one or two explicit sources. |
 | Video creation | PASS | `create_doppler_video` creates a 9:16 WebM through the in-app recorder. |
 | Video status | PASS | Status reports progress, phase, timeline, audio inclusion/signal verification, file readiness, and errors. |
@@ -31,8 +32,11 @@ Verified behaviors during challenge testing include:
 | Sample preloading | PASS | Selected real recordings are decoded/preloaded before the recorded timeline starts. |
 | Preflight timeline reset | PASS | Audio preflight is paused and scene reset to exact t=0 before MediaRecorder begins. |
 | Continuous directed motion in WebM | PASS | Deterministic frame-source logic keeps vehicle movement independent of React paint timing. |
-| Single-pass story | PASS | User confirmed a 10-second one-siren video with visible motion and audible voice/pitch change across the observer pass. |
-| Live browser director motion | PASS | PR #98 mirrors deterministic director motion into the browser canvas; run #116 deployed it successfully. |
+| Single-pass story | PASS | A 10-second one-siren video showed visible motion and a clear audible higher-to-lower pitch change across the observer pass at 5 s. |
+| Live browser director motion | PASS | PR #98 mirrors deterministic director motion into the browser while recording. |
+| AI audio follows visual director clock | PASS | PR #101 derives audible source state from the same deterministic director timeline used by the recorded/live visuals. |
+| Final 30-second two-vehicle story | PASS | Real Car Engine + Ambulance Siren at 60 m/s were watched/listened to end-to-end; the pitch change was very clear before/after both observer passes. |
+| Latest deployment | PASS | Firebase run #121 completed successfully for runtime commit `adb0d6a...`. |
 
 ## Important challenge fixes
 
@@ -46,11 +50,13 @@ The final Doppler implementation includes the following challenge iterations:
 - exact speed×time four-phase geometry;
 - audio preflight reset to recording t=0;
 - optional `single_pass` story mode;
-- live browser canvas mirroring of the same director source used by the recorder.
+- live browser canvas mirroring of the same director source used by the recorder;
+- real-time physics/audio clock correction under WebM encoding load (PR #100);
+- final shared deterministic director clock for AI-recorded audio and visual motion (PR #101).
 
-## Final default awaiting production smoke
+## Final production smoke payload
 
-This final branch changes the default director story to:
+The clearest final judge/demo payload verified in production is:
 
 ```json
 {
@@ -58,7 +64,7 @@ This final branch changes the default director story to:
   "durationSeconds": 30,
   "speedMps": 60,
   "emittedFrequencyHz": 440,
-  "firstInstrument": "esbiko_voice",
+  "firstInstrument": "car_engine",
   "secondInstrument": "ambulance_siren"
 }
 ```
@@ -67,28 +73,46 @@ Expected exact timeline:
 
 | Time | Source | Motion | Position |
 | --- | --- | --- | --- |
-| `0–7.5 s` | Esbiko Voice | approaching | `50 → 500 m` |
-| `7.5–15 s` | Esbiko Voice | receding | `500 → 950 m` |
+| `0–7.5 s` | Real Car Engine | approaching | `50 → 500 m` |
+| `7.5–15 s` | Real Car Engine | receding | `500 → 950 m` |
 | `15–22.5 s` | Ambulance Siren | approaching | `950 → 500 m` |
 | `22.5–30 s` | Ambulance Siren | receding | `500 → 50 m` |
 
-The final production smoke test must confirm the deployed default end-to-end before this section is marked PASS.
+The observer is stationary at `500 m`. At `60 m/s` and speed of sound `343 m/s`, a 440 Hz emitted source corresponds to approximately `533.29 Hz` while approaching and `374.49 Hz` while receding.
 
-## Final smoke-test acceptance criteria
+## Final acceptance result
 
-After the final branch is merged and Firebase deployment succeeds:
+The final production smoke has passed the key end-to-end acceptance criteria:
 
-1. Hard-refresh the public Doppler page.
-2. Confirm 11 tools are still discovered.
-3. Run the final 30-second payload.
-4. Confirm browser motion follows all four phases and pass times.
-5. Confirm both real sounds are audible.
-6. Confirm higher/lower pitch behavior around each pass.
-7. Confirm `audioIncluded: true` and `audioSignalDetected: true`.
-8. Confirm status reaches `ready` and exposes the 7.5-second phase duration and expected timeline.
-9. Download and play the full WebM.
-10. Record final commit SHA, Firebase run, file size, and demo-video evidence here.
+1. public Doppler page loads and exposes WebMCP tools;
+2. directed browser motion is visible during recording;
+3. the first source reaches/passes the observer on the planned timeline;
+4. the second source approaches from the opposite direction and passes on the planned timeline;
+5. both real sounds are audible;
+6. higher/lower pitch behavior is clearly audible around the two pass moments (`7.5 s`, `22.5 s`);
+7. AI-recorded audio follows the same deterministic director timeline as the video motion;
+8. the WebM is finalized and downloadable;
+9. the final synchronized runtime deploy completed successfully.
 
-## Earlier automated verification
+## Remaining submission evidence
 
-Previous challenge iterations passed the repository WebMCP contract tests, Platform API tests, targeted linting, `git diff --check`, and Vite production builds. The current final defaults update also expands `scripts/test-webmcp.mjs` with explicit assertions for the 30-second default geometry, instruments, prompt, and advertised video capabilities; run these checks again before final submission.
+Only submission-media evidence remains to be added by the entrant:
+
+- final public YouTube demo URL (<3 minutes, with narration/audio);
+- optional final screenshots/gallery images;
+- final Devpost submission URL after submission.
+
+See [`FINAL_SUBMISSION_CHECKLIST.md`](FINAL_SUBMISSION_CHECKLIST.md) for the user handoff.
+
+## Automated verification commands
+
+The repository provides these final checks:
+
+```bash
+npm ci
+npm run test:webmcp
+npm run test:platform-api
+npm run build
+```
+
+The Firebase deployment workflow also runs the production build before deployment. The final synchronized runtime deployment (#121) completed successfully.
