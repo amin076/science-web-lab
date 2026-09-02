@@ -12,11 +12,11 @@ export const DOPPLER_DIRECTOR_STORY_MODES = Object.freeze([
 ]);
 
 export const DOPPLER_DIRECTOR_DEFAULTS = Object.freeze({
-  durationSeconds: 10,
+  durationSeconds: 30,
   observerPositionM: 500,
   emittedFrequencyHz: 440,
   speedMps: 60,
-  firstInstrument: "car_engine",
+  firstInstrument: "esbiko_voice",
   secondInstrument: "ambulance_siren",
   storyMode: "two_vehicle",
   aspectRatio: "9:16",
@@ -338,7 +338,7 @@ export function createDopplerDirectorPlan(input = {}) {
         });
 
   return {
-    version: "doppler-director.v5",
+    version: "doppler-director.v6",
     storyMode,
     title:
       storyMode === "single_pass"
