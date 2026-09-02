@@ -283,7 +283,6 @@ export class AudioVoice {
 
       osc.start(t);
       osc2.start(t);
-      filter.connect(this.output);
 
       this.nodes.push({ osc, ratio: 1, filter });
       this.nodes.push({ osc: osc2, ratio: 1.01 });
