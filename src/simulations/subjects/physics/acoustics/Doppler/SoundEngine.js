@@ -6,7 +6,7 @@ export const INSTRUMENTS = {
     name: "Esbiko Voice",
     group: "Real Recordings",
     type: "sample",
-    url: "/audio/doppler/romantic_ringtone.mp3",
+    url: "/audio/doppler/esbiko_voice.wav",
   },
 
   CAR_ENGINE: {
