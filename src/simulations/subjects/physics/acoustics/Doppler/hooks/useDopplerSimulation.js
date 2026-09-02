@@ -102,7 +102,6 @@ export function useDopplerSimulation({
 
           stopInactiveVoicesRef.current?.(directorSource.id);
           applyVoiceUpdates(result.voiceUpdates);
-          setSources([directorSource]);
         }
 
         requestRef.current = requestAnimationFrame(tick);
