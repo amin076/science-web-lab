@@ -189,14 +189,13 @@ const DopplerSimulator = () => {
     }
   };
 
-  useDopplerSimulation({
-    isRunning,
-    setObserver,
-    setSources,
-    observerRef,
-    updateVoice,
-    muteAllVoices,
-  });
+  const stopInactiveVoices = (activeSourceId) => {
+    Object.entries(voicesRef.current).forEach(([sourceId, voice]) => {
+      if (String(sourceId) === String(activeSourceId)) return;
+      voice.stop();
+      delete voicesRef.current[sourceId];
+    });
+  };
 
   const createSource = (presetKey = null, selectedMode = mode) => {
     const preset = presetKey ? SOURCE_PRESETS[presetKey] : null;
@@ -369,6 +368,21 @@ const DopplerSimulator = () => {
     stopRecording: () => recorderRef.current?.stopRecording(),
     downloadRecording: () => recorderRef.current?.downloadRecording(),
     onAction: setLastAgentAction,
+  });
+
+  // Manual playback keeps the regular simulation clock. During an AI-directed
+  // recording, the hook switches to director.statusRef so the audible Doppler
+  // rate follows the exact same planned source/observer crossing sequence as
+  // the recorded and live director visuals.
+  useDopplerSimulation({
+    isRunning,
+    setObserver,
+    setSources,
+    observerRef,
+    updateVoice,
+    muteAllVoices,
+    stopInactiveVoices,
+    directorStatusRef: director.statusRef,
   });
 
   const webMcpStatus = useDopplerWebMcp({
