@@ -1,4 +1,5 @@
 // src/simulations/subjects/physics/acoustics/Doppler/components/DopplerCanvas.jsx
+import { createDopplerDirectorFrameSource } from "../director/dopplerDirector.js";
 import DopplerDirectorOverlay from "./DopplerDirectorOverlay";
 import ObserverSprite from "./ObserverSprite";
 import SourceHud from "./SourceHud";
@@ -17,6 +18,16 @@ const DopplerCanvas = ({
   onRecorderStatusChange,
 }) => {
   const is3DMode = mode === "car";
+  const directorSource = directorStatus?.plan
+    ? createDopplerDirectorFrameSource(
+        directorStatus.plan,
+        Math.min(
+          directorStatus.elapsedSeconds || 0,
+          directorStatus.plan.durationSeconds,
+        ),
+      )
+    : null;
+  const visibleSources = directorSource ? [directorSource] : sources;
 
   return (
     <div
@@ -47,11 +58,11 @@ const DopplerCanvas = ({
             ))}
           </div>
 
-          <WavefrontLayer sources={sources} />
+          <WavefrontLayer sources={visibleSources} />
 
           <ObserverSprite observer={observer} />
 
-          {sources.map((source) => (
+          {visibleSources.map((source) => (
             <SourceSprite key={source.id} source={source} />
           ))}
         </>
@@ -63,7 +74,7 @@ const DopplerCanvas = ({
         </div>
       )}
 
-      <SourceHud sources={sources} mode={mode} />
+      <SourceHud sources={visibleSources} mode={mode} />
       <DopplerDirectorOverlay status={directorStatus} />
       <DopplerShortRecorder
         ref={recorderRef}
