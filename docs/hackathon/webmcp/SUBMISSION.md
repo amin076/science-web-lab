@@ -6,77 +6,125 @@ Esbiko WebMCP Science Lab
 
 ## One-line description
 
-Interactive science simulations that teachers, learners, and AI agents can operate together through semantic WebMCP tools.
+Interactive science simulations that humans and AI agents can operate together through semantic WebMCP tools — including a live, audible Doppler experiment that the agent can direct, record, and download as video.
 
 ## Project description
 
-Esbiko is an existing interactive science-learning platform with browser-based simulations for teachers and students. For the WebMCP Challenge, Esbiko was extended so an AI agent can discover, configure, run, inspect, and reset a real Doppler Effect experiment through structured website tools.
+Esbiko is an existing interactive science-learning platform with browser-based simulations for teachers and students. For the OpenAI WebMCP Challenge, Esbiko was extended so an AI agent can discover, configure, run, inspect, direct, record, and export a real Doppler Effect experiment through structured website tools.
 
-Scientific simulation interfaces are difficult for general browser agents. A visual agent must find sliders, infer what each control means, approximate values, determine whether the experiment is running, and scrape measurements from the page. Those steps are fragile and hide the user's scientific intent.
+Scientific simulation interfaces are difficult for general browser agents. A visual agent normally has to find sliders, infer what each control means, approximate numeric values, determine whether the experiment is running, and scrape measurements from the page. Those steps are fragile and hide the user's scientific intent.
 
-Esbiko now exposes that intent directly. A teacher can ask for a 440 Hz source approaching a stationary observer at 20 m/s. The agent opens the Doppler lab, configures the visible experiment, runs it, and reads the actual frequency shift calculated by Esbiko. The teacher can then move a slider manually or ask the agent to reverse the source and compare the two cases.
+Esbiko now exposes that intent directly. WebMCP tools connect to the same React state and physics functions used by the visible human interface. An agent can configure a source, run the experiment, read Esbiko's calculated frequency shift, configure a two-source scene, or start an AI-directed video. During recording, the browser view and the WebM use the same deterministic timeline, so the user watches the same experiment the agent is capturing.
 
-The integration uses the WebMCP Imperative API at the top-level page. Two site tools provide simulation discovery and navigation. Four Doppler tools provide structured state reads, validated configuration, playback, and reset. A JSON-safe adapter maps semantic inputs such as `approaching` and `receding` onto Esbiko's real runtime state and existing physics functions. React remains the state owner, so agent actions and human controls always operate the same experiment.
+The final default story is a 30-second, 9:16, two-vehicle Doppler demonstration at 440 Hz and 60 m/s. The first vehicle uses Esbiko Voice and travels left-to-right. The second uses an Ambulance Siren and travels right-to-left. Each vehicle reaches the stationary observer exactly at its planned pass time, then continues to the opposite side. The agent can wait for the recording to become ready and download the WebM.
 
-WebMCP is a progressive enhancement. The normal Esbiko interface still works in browsers without WebMCP, while supported browsers gain precise, inspectable tools instead of DOM-click automation.
+The recording pipeline also verifies real audio before recording. Selected audio samples are preloaded, the browser AudioContext must be running, and an analyser confirms that a non-silent signal reaches the recording bus. Silent files are rejected rather than reported as successful.
 
-## What is new
+Esbiko also provides a 10-second `single_pass` mode for a particularly clear A/B listening comparison: one Ambulance Siren approaches for five seconds, crosses the observer at exactly 5 s, and recedes for five seconds using the same continuous sample.
 
-Esbiko, the Doppler simulation, the physics engine, the Platform API, Firebase hosting, and the human UI all existed before August 25, 2026. The challenge work adds the complete WebMCP registration layer, six tool contracts, first real Doppler simulation adapter, shared human-agent commands and state reads, validation and error handling, capability verification, automated tests, interface feedback, and submission documentation.
+WebMCP is a progressive enhancement. The normal Esbiko interface continues to work in unsupported browsers; supported browsers gain precise semantic tools instead of DOM-click automation.
+
+## 11 WebMCP tools
+
+Two site-level tools provide discovery and navigation. Nine Doppler-page tools provide state reads, semantic configuration, explicit scene configuration, playback, reset, video creation, video status, stop/finalize, and download.
+
+## Final default geometry
+
+At 30 seconds and 60 m/s, each quarter is 7.5 seconds and each leg is 450 metres:
+
+- 0–7.5 s: Esbiko Voice, `50 → 500 m`, approaching.
+- 7.5–15 s: Esbiko Voice, `500 → 950 m`, receding.
+- 15–22.5 s: Ambulance Siren, `950 → 500 m`, approaching.
+- 22.5–30 s: Ambulance Siren, `500 → 50 m`, receding.
+
+For a stationary observer and speed of sound 343 m/s, the 440 Hz source is approximately 533.29 Hz while approaching and 374.49 Hz while receding.
+
+## What is new for the challenge
+
+Pre-existing: Esbiko application, simulations, Doppler scientific model, human controls, Firebase hosting, Platform API foundations, and media assets.
+
+Challenge work: WebMCP registration lifecycle, 11 semantic tools, validated Doppler adapter, two-source scene contract, shared human/agent runtime state, AI video director, `two_vehicle` and `single_pass` story modes, exact speed×time geometry, Web Audio recording capture, real-signal verification, live browser mirroring, deterministic 9:16 recording, structured errors/status, automated tests, and hackathon documentation/evidence.
 
 ## Links
 
 - Live app: <https://www.esbiko.com>
 - Direct demo: <https://www.esbiko.com/experiments/physics.acoustics.doppler/run>
 - Public repository: <https://github.com/amin076/science-web-lab>
-- Demo video: PENDING
+- Demo video: PENDING FINAL UPLOAD
 
 ## Judge testing instructions
 
-Use ChatGPT's in-app browser or Chrome 149+ with `chrome://flags/#enable-webmcp-testing` enabled. Open the live site and use this prompt:
-
-> Open the Doppler simulation. Configure a 440 Hz source approaching a stationary observer at 20 m/s, run it, and explain the measured frequency shift. Then pause it, make the same source recede at the same speed, and compare the results.
-
 No sign-in is required.
 
-## Demo video script — target 2:35
+Final prompt:
 
-### 0:00–0:18 — Problem
+> Using Esbiko's site tools, create the default 30-second 9:16 two-vehicle Doppler video at 440 Hz and 60 m/s with the observer stationary at 500 m. First show Esbiko Voice crossing left to right, then show an Ambulance Siren crossing right to left. Keep both vehicles visibly moving in the browser and recording, show the higher pitch before each pass and lower pitch after each pass, wait until the recording is ready, then download the WebM video.
 
-"Interactive simulations are designed for people. A browser agent normally has to guess which sliders to move, what the labels mean, and how to read the result."
+For Chrome Inspector manual testing, execute `create_doppler_video` with:
 
-Show the existing Esbiko catalog and human Doppler controls.
+```json
+{
+  "storyMode": "two_vehicle",
+  "durationSeconds": 30,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "esbiko_voice",
+  "secondInstrument": "ambulance_siren"
+}
+```
 
-### 0:18–0:38 — WebMCP extension
+Then call `get_doppler_video_status` until `state` is `ready`, confirm `audioIncluded: true` and `audioSignalDetected: true`, and execute `download_doppler_video`.
 
-"For the WebMCP Challenge, I made Esbiko agent-native. The website now exposes semantic scientific tools directly to the agent—without adding a chatbot and without replacing the human interface."
+Optional clear listening test:
 
-Show Available site tools and the six tool names.
+```json
+{
+  "storyMode": "single_pass",
+  "durationSeconds": 10,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "ambulance_siren"
+}
+```
 
-### 0:38–1:25 — Approaching experiment
+## Demo video script — target 2:30
 
-Ask the main judge prompt. Show the agent opening Doppler, configuring 440 Hz and 20 m/s, and starting playback. Keep the simulation visible while wavefronts and HUD update. Show the structured state result and positive frequency shift.
+### 0:00–0:20 — Problem
 
-### 1:25–1:50 — Human collaboration
+Show the human Doppler simulation.
 
-Change one visible control manually. Ask the agent to read the state again. Point out that the returned state includes the human change because both use the same runtime state.
+Narration: "Interactive science simulations are designed for people. A browser agent normally has to guess which controls to use and how to read the result."
 
-### 1:50–2:15 — Receding comparison
+### 0:20–0:40 — WebMCP
 
-Ask the agent to pause and make the source recede at the same speed. Show the source direction reverse and the observed frequency move below the emitted frequency.
+Show the WebMCP-ready badge and the 11 discovered tools.
 
-### 2:15–2:32 — Architecture and impact
+Narration: "For the WebMCP Challenge, I made Esbiko agent-operable. The site exposes semantic scientific tools directly, while keeping the same human interface."
 
-"A small validated adapter connects WebMCP tools to Esbiko's existing React state and physics engine. Teachers can describe pedagogical intent in natural language while students still see, hear, change, and discuss the experiment."
+### 0:40–1:35 — Live two-vehicle director
 
-### 2:32–2:35 — Close
+Start the default 30-second story. Show the browser motion while it is being recorded. Emphasize the first pass and second pass, visible wavefronts, phase overlay, and audible pitch changes.
+
+### 1:35–1:55 — Structured status and download
+
+Show `get_doppler_video_status`, including timeline, audio verification, progress/ready state, then run `download_doppler_video`.
+
+### 1:55–2:15 — Result
+
+Play a short section of the downloaded WebM and show that it matches the live browser story.
+
+### 2:15–2:27 — Why it matters
+
+Narration: "The agent is not clicking sliders or inventing physics. A validated adapter connects WebMCP to Esbiko's real React state, Doppler equations, audio engine, and recorder."
+
+### 2:27–2:30 — Close
 
 "Esbiko: science experiments that people and agents can operate together."
 
 ## Recording rules
 
-- Keep the final upload below 3:00; aim for 2:25–2:40.
-- Use clear narration and no background music.
-- Show the functioning public deployment, not localhost.
-- Keep the agent tool list, visible simulation, and structured result legible.
-- Do not claim support for simulations other than the verified Doppler MVP.
+- Keep final YouTube video below 3:00.
+- Use clear spoken audio; no background music is needed.
+- Show the public deployment, not localhost.
+- Make the 11 tools, live browser movement, structured status, and downloaded result legible.
+- Do not claim WebMCP coverage for simulations other than the verified Doppler implementation.
