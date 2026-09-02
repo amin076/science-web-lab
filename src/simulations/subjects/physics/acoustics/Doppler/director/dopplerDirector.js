@@ -1,4 +1,5 @@
 import {
+  MAX_DISTANCE,
   MAX_WAVE_RADIUS,
   SPEED_OF_SOUND,
   WAVE_EMIT_INTERVAL,
@@ -104,6 +105,37 @@ function frequencyResult({ emittedFrequencyHz, speedMps, approaching }) {
   };
 }
 
+function createExactTimeline({ durationSeconds, speedMps, observerPositionM }) {
+  const phaseDurationSeconds = durationSeconds / 4;
+  const legDistanceM = speedMps * phaseDurationSeconds;
+  const maxLegDistanceM = Math.min(
+    observerPositionM,
+    MAX_DISTANCE - observerPositionM,
+  );
+
+  if (legDistanceM > maxLegDistanceM) {
+    throw directorError(
+      "DIRECTOR_TIMING_OUT_OF_RANGE",
+      `At ${speedMps} m/s, each ${phaseDurationSeconds}-second quarter needs ${round(
+        legDistanceM,
+      )} m of travel, but only ${round(
+        maxLegDistanceM,
+      )} m is available on either side of the observer. Reduce duration or speed.`,
+    );
+  }
+
+  return {
+    phaseDurationSeconds,
+    legDistanceM,
+    firstStartM: observerPositionM - legDistanceM,
+    firstPassM: observerPositionM,
+    firstEndM: observerPositionM + legDistanceM,
+    secondStartM: observerPositionM + legDistanceM,
+    secondPassM: observerPositionM,
+    secondEndM: observerPositionM - legDistanceM,
+  };
+}
+
 export function createDopplerDirectorPlan(input = {}) {
   const durationSeconds = readBoundedNumber(
     input,
@@ -131,11 +163,11 @@ export function createDopplerDirectorPlan(input = {}) {
     DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
   );
   const observerPositionM = DOPPLER_DIRECTOR_DEFAULTS.observerPositionM;
-  const halfDuration = durationSeconds / 2;
-  const passAt = halfDuration / 2;
-  const startDistanceM = Math.min(420, speedMps * passAt);
-  const firstStartM = observerPositionM - startDistanceM;
-  const secondStartM = observerPositionM + startDistanceM;
+  const timeline = createExactTimeline({
+    durationSeconds,
+    speedMps,
+    observerPositionM,
+  });
   const approaching = frequencyResult({
     emittedFrequencyHz,
     speedMps,
@@ -152,7 +184,7 @@ export function createDopplerDirectorPlan(input = {}) {
       id: "director-car-left",
       label: `${instrumentLabel(firstInstrument)} — left to right`,
       instrument: firstInstrument,
-      startPositionM: round(firstStartM),
+      startPositionM: round(timeline.firstStartM),
       velocityMps: speedMps,
       direction: "left-to-right",
       color: "#22c55e",
@@ -161,43 +193,52 @@ export function createDopplerDirectorPlan(input = {}) {
       id: "director-car-right",
       label: `${instrumentLabel(secondInstrument)} — right to left`,
       instrument: secondInstrument,
-      startPositionM: round(secondStartM),
+      startPositionM: round(timeline.secondStartM),
       velocityMps: -speedMps,
       direction: "right-to-left",
       color: "#38bdf8",
     },
   ];
 
+  const quarter = timeline.phaseDurationSeconds;
   const phases = [
     {
       id: "car-one-approaching",
       startsAtSeconds: 0,
       playback: "run",
       source: cars[0],
+      expectedStartPositionM: round(timeline.firstStartM),
+      expectedEndPositionM: round(timeline.firstPassM),
       title: `Vehicle 1 · ${instrumentLabel(firstInstrument)}`,
-      caption: "Approaching from the left — pitch rises",
+      caption: `Approaching for ${quarter}s — pitch rises`,
     },
     {
       id: "car-one-receding",
-      startsAtSeconds: passAt,
+      startsAtSeconds: quarter,
       playback: "run",
+      expectedStartPositionM: round(timeline.firstPassM),
+      expectedEndPositionM: round(timeline.firstEndM),
       title: "Vehicle 1 passes the observer",
-      caption: "After passing — pitch falls",
+      caption: `After passing for ${quarter}s — pitch falls`,
     },
     {
       id: "car-two-approaching",
-      startsAtSeconds: halfDuration,
+      startsAtSeconds: quarter * 2,
       playback: "run",
       source: cars[1],
+      expectedStartPositionM: round(timeline.secondStartM),
+      expectedEndPositionM: round(timeline.secondPassM),
       title: `Vehicle 2 · ${instrumentLabel(secondInstrument)}`,
-      caption: "Approaching from the right — pitch rises",
+      caption: `Approaching for ${quarter}s — pitch rises`,
     },
     {
       id: "car-two-receding",
-      startsAtSeconds: halfDuration + passAt,
+      startsAtSeconds: quarter * 3,
       playback: "run",
+      expectedStartPositionM: round(timeline.secondPassM),
+      expectedEndPositionM: round(timeline.secondEndM),
       title: "Vehicle 2 passes the observer",
-      caption: "After passing — pitch falls",
+      caption: `After passing for ${quarter}s — pitch falls`,
     },
     {
       id: "complete",
@@ -209,13 +250,23 @@ export function createDopplerDirectorPlan(input = {}) {
   ];
 
   return {
-    version: "doppler-director.v3",
+    version: "doppler-director.v4",
     title: `${durationSeconds}-second two-direction Doppler story`,
     durationSeconds,
+    phaseDurationSeconds: quarter,
     aspectRatio: DOPPLER_DIRECTOR_DEFAULTS.aspectRatio,
     observer: { positionM: observerPositionM, velocityMps: 0 },
     emittedFrequencyHz,
     speedMps,
+    timeline: {
+      legDistanceM: round(timeline.legDistanceM),
+      firstStartM: round(timeline.firstStartM),
+      firstPassM: round(timeline.firstPassM),
+      firstEndM: round(timeline.firstEndM),
+      secondStartM: round(timeline.secondStartM),
+      secondPassM: round(timeline.secondPassM),
+      secondEndM: round(timeline.secondEndM),
+    },
     cars,
     results: { approaching, receding },
     phases,
