@@ -119,14 +119,38 @@ assert.ok(
   "Both cars must approach the stationary observer from opposite directions.",
 );
 
+const defaultDirectorPlan = createDopplerDirectorPlan();
+
+assert.equal(defaultDirectorPlan.version, "doppler-director.v6");
+assert.equal(defaultDirectorPlan.storyMode, "two_vehicle");
+assert.equal(defaultDirectorPlan.durationSeconds, 30);
+assert.equal(defaultDirectorPlan.phaseDurationSeconds, 7.5);
+assert.deepEqual(defaultDirectorPlan.timeline, {
+  legDistanceM: 450,
+  firstStartM: 50,
+  firstPassM: 500,
+  firstEndM: 950,
+  secondStartM: 950,
+  secondPassM: 500,
+  secondEndM: 50,
+});
+assert.deepEqual(
+  defaultDirectorPlan.cars.map((car) => car.instrument),
+  ["esbiko_voice", "ambulance_siren"],
+);
+assert.equal(createDopplerDirectorFrameSource(defaultDirectorPlan, 7.5).x, 500);
+assert.equal(createDopplerDirectorFrameSource(defaultDirectorPlan, 15).x, 950);
+assert.equal(createDopplerDirectorFrameSource(defaultDirectorPlan, 22.5).x, 500);
+
 const directorPlan = createDopplerDirectorPlan({ durationSeconds: 10 });
 
 assert.equal(directorPlan.durationSeconds, 10);
-assert.equal(directorPlan.version, "doppler-director.v5");
+assert.equal(directorPlan.version, "doppler-director.v6");
 assert.equal(directorPlan.storyMode, "two_vehicle");
 assert.equal(directorPlan.phaseDurationSeconds, 2.5);
 assert.equal(directorPlan.cars[0].startPositionM, 350);
 assert.equal(directorPlan.cars[0].velocityMps, 60);
+assert.equal(directorPlan.cars[0].instrument, "esbiko_voice");
 assert.equal(directorPlan.cars[1].startPositionM, 650);
 assert.equal(directorPlan.cars[1].velocityMps, -60);
 assert.equal(directorPlan.cars[1].instrument, "ambulance_siren");
@@ -250,7 +274,7 @@ const dopplerTools = createDopplerWebMcpTools({
   },
   startDirector: (input) => ({
     state: "recording",
-    durationSeconds: input.durationSeconds || 10,
+    durationSeconds: input.durationSeconds || 30,
     storyMode: input.storyMode || "two_vehicle",
     audioIncluded: true,
     audioSignalDetected: true,
@@ -353,6 +377,11 @@ assert.equal(
   listResult.data.simulations.length,
   WEBMCP_ENABLED_SIMULATIONS.length,
 );
+assert.ok(
+  listResult.data.simulations[0].capabilities.includes("video-director") &&
+    listResult.data.simulations[0].capabilities.includes("video-download"),
+  "Site discovery must advertise the verified video-director capabilities.",
+);
 
 const openResult = JSON.parse(
   await siteTools[1].execute({
@@ -409,7 +438,8 @@ assert.deepEqual(DOPPLER_WEBMCP_TOOL_NAMES, [
 ]);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /440 Hz/);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /60 m\/s/);
-assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /10-second/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /30-second/);
+assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /Esbiko Voice/);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /Ambulance Siren/);
 assert.match(DOPPLER_WEBMCP_TEST_PROMPT, /site tools/i);
 assert.equal(getWebMcpGuideStatus("ready").detail, "11 tools available");
