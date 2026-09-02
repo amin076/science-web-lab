@@ -456,7 +456,7 @@ const DopplerSimulator = () => {
         webMcpStatus={webMcpStatus}
         lastAgentAction={lastAgentAction}
         directorStatus={director.status}
-        onStartDirector={() => director.startDirector({ durationSeconds: 10 })}
+        onStartDirector={() => director.startDirector({})}
         onStopDirector={director.stopDirector}
         onDownloadDirector={director.downloadDirector}
       />
