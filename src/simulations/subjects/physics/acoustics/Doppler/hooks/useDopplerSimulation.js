@@ -1,6 +1,7 @@
 // src/simulations/subjects/physics/acoustics/Doppler/hooks/useDopplerSimulation.js
 import { useEffect, useRef } from "react";
 
+import { createDopplerDirectorFrameSource } from "../director/dopplerDirector.js";
 import {
   stepDopplerObserver,
   stepDopplerSources,
@@ -13,11 +14,14 @@ export function useDopplerSimulation({
   observerRef,
   updateVoice,
   muteAllVoices,
+  stopInactiveVoices,
+  directorStatusRef,
 }) {
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
   const updateVoiceRef = useRef(updateVoice);
   const muteAllVoicesRef = useRef(muteAllVoices);
+  const stopInactiveVoicesRef = useRef(stopInactiveVoices);
 
   useEffect(() => {
     updateVoiceRef.current = updateVoice;
@@ -28,6 +32,10 @@ export function useDopplerSimulation({
   }, [muteAllVoices]);
 
   useEffect(() => {
+    stopInactiveVoicesRef.current = stopInactiveVoices;
+  }, [stopInactiveVoices]);
+
+  useEffect(() => {
     if (!isRunning) {
       cancelAnimationFrame(requestRef.current);
       muteAllVoicesRef.current?.();
@@ -36,18 +44,62 @@ export function useDopplerSimulation({
 
     lastTimeRef.current = null;
 
+    const applyVoiceUpdates = (voiceUpdates) => {
+      voiceUpdates.forEach((voiceUpdate) => {
+        updateVoiceRef.current?.(
+          voiceUpdate.sourceId,
+          voiceUpdate.observedFreq,
+          voiceUpdate.volume,
+          voiceUpdate.instrument,
+          voiceUpdate.baseFreq,
+          voiceUpdate.pan,
+        );
+      });
+    };
+
     const tick = (timeMs) => {
       const now = timeMs / 1000;
+      const directorStatus = directorStatusRef?.current;
+      const directorPlan = directorStatus?.plan;
+
+      // During an AI-directed recording, do not advance a second independent
+      // physics clock for audio. The recorder and browser visuals already use
+      // the deterministic director timeline. Derive the audible source from
+      // that same timeline so the pitch switches at the same observer-pass
+      // moments (7.5 s and 22.5 s in the default 30-second two-vehicle story),
+      // even if 1080x1920 WebM encoding lowers requestAnimationFrame cadence.
+      if (directorStatus?.state === "recording" && directorPlan) {
+        const elapsedSeconds = Math.min(
+          directorPlan.durationSeconds,
+          Math.max(0, directorStatus.elapsedSeconds || 0),
+        );
+        const directorSource = createDopplerDirectorFrameSource(
+          directorPlan,
+          elapsedSeconds,
+        );
+
+        if (directorSource) {
+          const result = stepDopplerSources({
+            sources: [directorSource],
+            observer: observerRef.current,
+            dt: 0,
+            now,
+          });
+
+          stopInactiveVoicesRef.current?.(directorSource.id);
+          applyVoiceUpdates(result.voiceUpdates);
+          setSources([directorSource]);
+        }
+
+        requestRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
       const last = lastTimeRef.current ?? now;
       const rawDt = Math.max(0, now - last);
 
-      // Keep the simulation tied to real elapsed time while the AI recorder is
-      // doing expensive 1080x1920 canvas drawing + WebM encoding. The previous
-      // 50 ms cap made the physics/audio clock run in slow motion whenever the
-      // browser dropped below 20 fps, so the recorded picture could pass the
-      // observer before the live audio engine changed from approaching to
-      // receding pitch. Ignore only very large gaps (for example returning to
-      // a backgrounded tab) instead of clipping ordinary recording stalls.
+      // Keep ordinary/manual simulation playback tied to real elapsed time.
+      // Ignore only very large gaps, which are more likely a suspended tab.
       const dt = rawDt > 1 ? 0 : rawDt;
 
       lastTimeRef.current = now;
@@ -67,17 +119,7 @@ export function useDopplerSimulation({
           now,
         });
 
-        result.voiceUpdates.forEach((voiceUpdate) => {
-          updateVoiceRef.current?.(
-            voiceUpdate.sourceId,
-            voiceUpdate.observedFreq,
-            voiceUpdate.volume,
-            voiceUpdate.instrument,
-            voiceUpdate.baseFreq,
-            voiceUpdate.pan,
-          );
-        });
-
+        applyVoiceUpdates(result.voiceUpdates);
         return result.sources;
       });
 
@@ -87,5 +129,5 @@ export function useDopplerSimulation({
     requestRef.current = requestAnimationFrame(tick);
 
     return () => cancelAnimationFrame(requestRef.current);
-  }, [isRunning, setObserver, setSources, observerRef]);
+  }, [isRunning, setObserver, setSources, observerRef, directorStatusRef]);
 }
