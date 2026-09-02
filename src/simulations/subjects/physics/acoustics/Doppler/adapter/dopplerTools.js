@@ -7,6 +7,7 @@ import {
   DOPPLER_DIRECTOR_DEFAULTS,
   DOPPLER_DIRECTOR_INSTRUMENTS,
   DOPPLER_DIRECTOR_LIMITS,
+  DOPPLER_DIRECTOR_STORY_MODES,
 } from "../director/dopplerDirector.js";
 
 export function createDopplerWebMcpTools(actions) {
@@ -210,16 +211,22 @@ export function createDopplerWebMcpTools(actions) {
     {
       name: "create_doppler_video",
       description:
-        "Create a 10-second 9:16 WebM Doppler story with real car and siren audio, deterministic motion, wavefronts, captions, and before/after pitch. Silent files are rejected. If AUDIO_ACTIVATION_REQUIRED occurs, ask the user to click Run Simulation once, pause it, then retry this tool.",
+        "Create a 10–60 second 9:16 WebM Doppler video with deterministic motion, recorded sound, wavefronts, captions, and before/after pitch. Use single_pass for one source that crosses the observer halfway through the video; use two_vehicle for the two-source story. Silent files are rejected.",
       inputSchema: {
         type: "object",
         properties: {
+          storyMode: {
+            type: "string",
+            enum: DOPPLER_DIRECTOR_STORY_MODES,
+            default: DOPPLER_DIRECTOR_DEFAULTS.storyMode,
+            description: "single_pass uses one left-to-right source for the whole video; two_vehicle uses two sequential sources.",
+          },
           durationSeconds: {
             type: "number",
             minimum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.min,
             maximum: DOPPLER_DIRECTOR_LIMITS.durationSeconds.max,
             default: DOPPLER_DIRECTOR_DEFAULTS.durationSeconds,
-            description: "Total video duration. Use 10 seconds for the fast visual-motion test.",
+            description: "Total video duration. In single_pass, the observer crossing occurs exactly halfway through.",
           },
           speedMps: {
             type: "number",
@@ -237,13 +244,13 @@ export function createDopplerWebMcpTools(actions) {
             type: "string",
             enum: DOPPLER_DIRECTOR_INSTRUMENTS,
             default: DOPPLER_DIRECTOR_DEFAULTS.firstInstrument,
-            description: "Recorded sound for the left-to-right vehicle.",
+            description: "Recorded sound for the first source, or the only source in single_pass mode.",
           },
           secondInstrument: {
             type: "string",
             enum: DOPPLER_DIRECTOR_INSTRUMENTS,
             default: DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
-            description: "Recorded sound for the right-to-left vehicle.",
+            description: "Recorded sound for the second source in two_vehicle mode.",
           },
         },
         additionalProperties: false,
