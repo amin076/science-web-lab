@@ -44,6 +44,8 @@ function publicStatus(status) {
     error: status.error,
     results: status.plan?.results || null,
     cars: status.plan?.cars || [],
+    phaseDurationSeconds: status.plan?.phaseDurationSeconds || null,
+    timeline: status.plan?.timeline || null,
   };
 }
 
@@ -116,6 +118,13 @@ export function useDopplerDirector({
       }
 
       const plan = createDopplerDirectorPlan(input);
+      const firstPhase = plan.phases[0];
+      const firstScene = {
+        observerPositionM: plan.observer.positionM,
+        observerVelocityMps: plan.observer.velocityMps,
+        sources: [createDirectorSource(plan, firstPhase.source)],
+      };
+
       clearSchedule();
       resetScene();
 
@@ -123,8 +132,8 @@ export function useDopplerDirector({
         ...INITIAL_STATUS,
         state: "preparing",
         durationSeconds: plan.durationSeconds,
-        phaseId: plan.phases[0].id,
-        phaseTitle: plan.phases[0].title,
+        phaseId: firstPhase.id,
+        phaseTitle: firstPhase.title,
         phaseCaption: "Preparing audio before recording…",
         plan,
       });
@@ -138,8 +147,14 @@ export function useDopplerDirector({
           instrumentIds: plan.cars.map((car) => car.instrument),
         });
 
-        await applyPhase(plan, plan.phases[0]);
+        // Audio preflight must not consume any of the recorded motion timeline.
+        // Run the first source only long enough to prove that a real signal exists,
+        // then pause and restore the exact t=0 scene before MediaRecorder starts.
+        await applyScene(firstScene);
+        await setPlayback("run");
         signal = await verifyAudioSignal();
+        await setPlayback("pause");
+        await applyScene(firstScene);
 
         const recording = await startRecording({
           durationSeconds: plan.durationSeconds,
@@ -152,6 +167,10 @@ export function useDopplerDirector({
             recording?.error?.message || "The in-app WebM recorder could not start.",
           );
         }
+
+        // Recording time zero and live audio motion now begin together.
+        startedAtRef.current = performance.now();
+        await setPlayback("run");
       } catch (error) {
         try {
           await setPlayback("pause");
@@ -172,20 +191,23 @@ export function useDopplerDirector({
         throw error;
       }
 
-      startedAtRef.current = performance.now();
       updateStatus((current) => ({
         ...current,
         state: "recording",
         elapsedSeconds: 0,
         progressPercent: 0,
-        phaseId: plan.phases[0].id,
-        phaseTitle: plan.phases[0].title,
-        phaseCaption: plan.phases[0].caption,
+        phaseId: firstPhase.id,
+        phaseTitle: firstPhase.title,
+        phaseCaption: firstPhase.caption,
         audioIncluded: Boolean(audio?.recordingStreamReady),
         audioSignalDetected: Boolean(signal?.detected),
       }));
+      onAction?.(`Director: ${firstPhase.title}`);
 
       plan.phases.slice(1).forEach((phase) => {
+        const elapsedSetupMs = performance.now() - startedAtRef.current;
+        const delayMs = Math.max(0, phase.startsAtSeconds * 1000 - elapsedSetupMs);
+
         const timer = window.setTimeout(async () => {
           try {
             await applyPhase(plan, phase);
@@ -212,7 +234,7 @@ export function useDopplerDirector({
               },
             }));
           }
-        }, phase.startsAtSeconds * 1000);
+        }, delayMs);
 
         timersRef.current.push(timer);
       });
@@ -234,6 +256,7 @@ export function useDopplerDirector({
     },
     [
       applyPhase,
+      applyScene,
       clearSchedule,
       initializeAudio,
       onAction,
