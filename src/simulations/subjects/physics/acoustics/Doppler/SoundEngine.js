@@ -133,6 +133,24 @@ async function loadAudioBuffer(ctx, url) {
   return audioBuffer;
 }
 
+export async function preloadDopplerInstruments(ctx, instrumentIds = []) {
+  const uniqueSampleUrls = [
+    ...new Set(
+      instrumentIds
+        .map((instrumentId) => getInstrumentById(instrumentId))
+        .filter((instrument) => instrument?.type === "sample" && instrument.url)
+        .map((instrument) => instrument.url),
+    ),
+  ];
+
+  await Promise.all(uniqueSampleUrls.map((url) => loadAudioBuffer(ctx, url)));
+
+  return {
+    requested: instrumentIds.length,
+    sampleCount: uniqueSampleUrls.length,
+  };
+}
+
 export class AudioVoice {
   constructor(audioCtx, destination, typeId) {
     this.ctx = audioCtx;
@@ -265,6 +283,7 @@ export class AudioVoice {
 
       osc.start(t);
       osc2.start(t);
+      filter.connect(this.output);
 
       this.nodes.push({ osc, ratio: 1, filter });
       this.nodes.push({ osc: osc2, ratio: 1.01 });
