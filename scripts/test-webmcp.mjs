@@ -122,6 +122,7 @@ assert.ok(
 const directorPlan = createDopplerDirectorPlan({ durationSeconds: 10 });
 
 assert.equal(directorPlan.durationSeconds, 10);
+assert.equal(directorPlan.version, "doppler-director.v3");
 assert.equal(directorPlan.cars[0].startPositionM, 350);
 assert.equal(directorPlan.cars[0].velocityMps, 60);
 assert.equal(directorPlan.cars[1].startPositionM, 650);
@@ -134,6 +135,17 @@ assert.equal(createDopplerDirectorFrameSource(directorPlan, 2.5).x, 500);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 5).x, 650);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 7.5).x, 500);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 9.9).instrument, "ambulance_siren");
+
+const carAfterPassFrame = createDopplerDirectorFrameSource(directorPlan, 3);
+const ambulanceAfterPassFrame = createDopplerDirectorFrameSource(directorPlan, 8);
+assert.ok(
+  carAfterPassFrame.waves.length > 0 && ambulanceAfterPassFrame.waves.length > 0,
+  "Recorded director frames must preserve visible wavefronts before and after each observer pass.",
+);
+assert.ok(
+  carAfterPassFrame.waves.every((wave) => Number.isFinite(wave.x) && wave.r >= 0),
+  "Recorded wavefronts must keep deterministic emission positions and radii.",
+);
 assert.ok(
   directorPlan.results.approaching.observedFrequencyHz > 440 &&
     directorPlan.results.receding.observedFrequencyHz < 440,
@@ -162,11 +174,14 @@ const dopplerTools = createDopplerWebMcpTools({
   startDirector: (input) => ({
     state: "recording",
     durationSeconds: input.durationSeconds || 10,
+    audioIncluded: true,
+    audioSignalDetected: true,
   }),
   getDirectorStatus: () => ({
     state: "ready",
     downloadReady: true,
     audioIncluded: true,
+    audioSignalDetected: true,
   }),
   stopDirector: () => ({ state: "finalizing" }),
   downloadDirector: () => ({ state: "ready", downloaded: true }),
@@ -231,6 +246,12 @@ const videoStartResult = JSON.parse(
 );
 assert.equal(videoStartResult.ok, true);
 assert.equal(videoStartResult.data.state, "recording");
+assert.equal(videoStartResult.data.audioSignalDetected, true);
+
+const videoStatusResult = JSON.parse(await dopplerTools[6].execute({}));
+assert.equal(videoStatusResult.ok, true);
+assert.equal(videoStatusResult.data.audioIncluded, true);
+assert.equal(videoStatusResult.data.audioSignalDetected, true);
 
 let navigatedTo = null;
 const siteTools = createEsbikoSiteTools({
