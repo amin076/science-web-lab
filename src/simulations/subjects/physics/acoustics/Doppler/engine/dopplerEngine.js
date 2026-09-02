@@ -15,13 +15,28 @@ function wrapPosition(x) {
   return x;
 }
 
-function getVolumeScale(instrument) {
-  const isRealSample =
+function isRealSampleInstrument(instrument) {
+  return (
     instrument?.includes("engine") ||
     instrument?.includes("siren") ||
-    instrument?.includes("voice");
+    instrument?.includes("voice")
+  );
+}
 
-  return isRealSample ? 1.2 : 0.35;
+function getPlaybackVolume(distance, scientificAmplitude, instrument) {
+  if (!isRealSampleInstrument(instrument)) {
+    return scientificAmplitude * 0.35;
+  }
+
+  // The scientific panel keeps the existing inverse-square intensity model,
+  // but browser audio gain should follow acoustic pressure amplitude, which
+  // decays approximately as 1/r. This keeps real vehicle samples audible at
+  // the 300-420 m starting distances used by 20-60 second director videos
+  // without flattening the near/far volume cue.
+  const audibleDistanceM = Math.max(30, Math.abs(distance));
+  const pressureAmplitude = Math.min(1, 30 / audibleDistanceM);
+
+  return pressureAmplitude * 0.9;
 }
 
 export function stepDopplerObserver(observer, dt) {
@@ -92,7 +107,7 @@ export function stepDopplerSources({ sources, observer, dt, now }) {
     voiceUpdates.push({
       sourceId: source.id,
       observedFreq,
-      volume: amplitude * getVolumeScale(source.instrument),
+      volume: getPlaybackVolume(dist, amplitude, source.instrument),
       instrument: source.instrument,
       baseFreq: source.baseFreq,
       pan: Math.max(-1, Math.min(1, dist / 300)),
