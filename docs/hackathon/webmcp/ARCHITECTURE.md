@@ -2,68 +2,136 @@
 
 ## Design decision
 
-WebMCP is a progressive enhancement over Esbiko's existing React application. It does not introduce a backend, agent framework, duplicate simulation, or DOM automation layer.
+WebMCP is a progressive enhancement over Esbiko's existing React application. It does not add a chatbot, duplicate the simulation, or drive the page through DOM clicks.
 
 ```mermaid
 flowchart TD
-  A[Human controls] --> S[Shared React state]
-  W[WebMCP tools] --> D[Doppler adapter]
+  H[Human controls] --> S[Shared React simulation state]
+  W[WebMCP tools] --> A[Validated Doppler adapter]
+  A --> S
+  S --> P[Existing Doppler physics engine]
+  P --> L[Live browser simulation]
+  W --> D[AI Doppler Director]
   D --> S
-  S --> P[Existing physics engine]
-  P --> V[Visible simulation]
-  S --> V
-  S --> D
+  D --> R[Deterministic 9:16 recorder]
+  S --> AU[Web Audio engine]
+  AU --> L
+  AU --> R
+  D --> L
+  R --> O[Downloadable WebM]
 ```
 
-## Layers
+## Tool layers
 
 ### Site tools
 
-`src/webmcp/WebMcpSiteTools.jsx` registers persistent site-level discovery and navigation tools inside the router.
+`src/webmcp/WebMcpSiteTools.jsx` and `src/webmcp/siteTools.js` register two persistent tools:
 
-`src/webmcp/siteTools.js` owns the tool contracts and the deliberately small allowlist of simulations verified for WebMCP.
+- `list_science_simulations`
+- `open_science_simulation`
+
+The site registry advertises the verified Doppler capabilities: state read, semantic configuration, scene configuration, playback, reset, video director, video status, and video download.
+
+### Doppler page tools
+
+`Doppler/adapter/dopplerTools.js` defines nine page-scoped tools:
+
+- state read;
+- one-source semantic configuration;
+- one/two-source explicit scene configuration;
+- run/pause;
+- reset;
+- create video;
+- video status;
+- stop/finalize;
+- download.
+
+`Doppler/hooks/useDopplerWebMcp.js` registers them only while the Doppler page is mounted.
 
 ### Registration runtime
 
-`src/webmcp/registerWebMcpTools.js` provides:
+`src/webmcp/registerWebMcpTools.js` provides feature detection, sequential registration, `AbortSignal` lifecycle cleanup, and consistent JSON success/error envelopes. Unsupported browsers simply keep the normal Esbiko UI.
 
-- feature detection for `document.modelContext`;
-- sequential tool registration;
-- `AbortSignal` lifecycle cleanup;
-- consistent JSON success and error envelopes.
+## Validated scientific boundary
 
-Unsupported browsers receive no polyfill and the existing application continues normally.
+`Doppler/adapter/dopplerAdapter.js` is the JSON-safe boundary between WebMCP and simulation state. It validates ranges, maps semantic motion to signed velocity, and returns measurements calculated by Esbiko's existing Doppler functions.
 
-### Doppler adapter
+No LLM-generated frequency is written into the scientific result.
 
-`Doppler/adapter/dopplerAdapter.js` is the JSON-safe domain boundary. It validates parameter types and bounds, maps semantic motion such as `approaching` to the correct signed source velocity, and calculates measurements through the existing `dopplerPhysics.js` functions.
+## AI Doppler Director
 
-It does not import React, DOM nodes, canvas objects, audio contexts, or mutable browser objects.
+`Doppler/director/dopplerDirector.js` creates deterministic plans from explicit scientific parameters.
 
-### Doppler tools
+Supported story modes:
 
-`Doppler/adapter/dopplerTools.js` defines four non-overlapping page tools with JSON Schema inputs, concise descriptions, annotation hints, and output budgets.
+- `two_vehicle`: two sequential sources; each source has an approaching and receding phase.
+- `single_pass`: one source for the entire recording, crossing the observer halfway through.
 
-`Doppler/hooks/useDopplerWebMcp.js` registers those tools only while the Doppler simulation is mounted and removes them when it unmounts.
+The director uses exact geometry:
 
-### Shared state
+```text
+phase distance = source speed × phase duration
+```
 
-`Dopplersimulator.jsx` remains the state owner. Both human UI handlers and WebMCP adapter actions update `mode`, `isRunning`, `observer`, and `sources`. The adapter reads the latest state through refs so a manual slider change is immediately visible to the next agent state read.
+Final defaults are:
 
-## Scientific integrity
+```json
+{
+  "storyMode": "two_vehicle",
+  "durationSeconds": 30,
+  "speedMps": 60,
+  "emittedFrequencyHz": 440,
+  "firstInstrument": "esbiko_voice",
+  "secondInstrument": "ambulance_siren"
+}
+```
 
-The state tool distinguishes configuration from calculated measurements. Observed frequency, frequency ratio, shift percentage, motion classification, relative amplitude, and level are recalculated from the existing Esbiko physics functions. No LLM-generated number is written into the simulation result.
+That produces a 7.5-second phase, 450-metre leg, and positions `50 → 500 → 950` followed by `950 → 500 → 50`.
+
+## Live browser and recorder synchronization
+
+The WebM recorder derives each frame from `createDopplerDirectorFrameSource(plan, elapsedSeconds)`. The live browser canvas now derives its directed source from the same plan and elapsed director time while a recording is active.
+
+This avoids the earlier split where the recorded WebM could show deterministic movement while the ordinary browser `sources` array appeared stationary or out of sync.
+
+Outside an active director run, the canvas returns to the normal human-controlled simulation sources.
+
+## Audio architecture
+
+Selected real recordings are preloaded before the recorder starts. The graph is:
+
+```text
+AudioVoice(s)
+   ↓
+master gain
+   ↓
+analyser
+   ├──→ browser speakers
+   └──→ MediaStreamDestination → WebM recorder
+```
+
+The director does an audio preflight before recording. If the browser `AudioContext` is not running, it returns `AUDIO_ACTIVATION_REQUIRED`. If no measurable signal reaches the analyser within the verification window, it returns `AUDIO_SIGNAL_MISSING` and does not create a silent file.
+
+The preflight is reset to exact `t=0` before MediaRecorder begins, so audio motion does not consume part of the recorded timeline.
+
+## Doppler sound behavior
+
+The scientific measurement uses Esbiko's Doppler equation. For real audio samples, the observed/emitted frequency ratio is applied to the sample `playbackRate`, creating the audible higher pitch while approaching and lower pitch while receding.
+
+The scientific display keeps the existing intensity model. Audible real-sample gain uses an acoustic-pressure-style distance falloff so distant vehicles remain hearable while still becoming louder near the observer.
+
+## Recording architecture
+
+The in-page recorder creates a 1080×1920 (`9:16`) canvas stream and combines it with the verified Web Audio capture track. It renders the city scene, observer, vehicle, wavefronts, scientific measurements, captions, phase information, and recording progress.
+
+The WebMCP status tool exposes recording state, elapsed time, phase, timeline, expected frequency comparison, audio track presence, audio signal verification, file size, and download readiness.
 
 ## Security decisions
 
-- Only a public educational simulation is exposed; no account, classroom, admin, or user-data tools are registered.
-- All writes use strict schemas and repeat validation inside the adapter.
-- Tool inputs cannot select arbitrary routes, DOM nodes, functions, URLs, or object properties.
-- Read tools set `readOnlyHint: true`; mutating tools set it to `false`.
-- Outputs contain no user-generated or external content and set `untrustedContentHint: false`.
-- Tools remain same-origin and do not use `exposedTo` for cross-origin sharing.
-- Descriptions, parameter descriptions, names, and results stay within current Chrome security-guide budgets.
-
-## Audio behaviour
-
-WebMCP playback starts the visual/physics loop without forcing an `AudioContext` activation. Browsers commonly require a direct human gesture before audio playback. A human can click the visible Run button to enable sound; this does not affect state, measurement, or WebMCP correctness.
+- Only a public educational simulation is exposed.
+- No account, classroom, admin, or private-user-data actions are WebMCP tools.
+- Inputs use strict schemas and are validated again inside domain adapters/director code.
+- Tool callers cannot select arbitrary routes, DOM nodes, functions, or URLs.
+- Read operations use `readOnlyHint: true`; mutations use `false`.
+- Tools remain same-origin and page-scoped where appropriate.
+- Browser audio activation failures are explicit rather than bypassed.
