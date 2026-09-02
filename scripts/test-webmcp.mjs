@@ -122,7 +122,8 @@ assert.ok(
 const directorPlan = createDopplerDirectorPlan({ durationSeconds: 10 });
 
 assert.equal(directorPlan.durationSeconds, 10);
-assert.equal(directorPlan.version, "doppler-director.v3");
+assert.equal(directorPlan.version, "doppler-director.v4");
+assert.equal(directorPlan.phaseDurationSeconds, 2.5);
 assert.equal(directorPlan.cars[0].startPositionM, 350);
 assert.equal(directorPlan.cars[0].velocityMps, 60);
 assert.equal(directorPlan.cars[1].startPositionM, 650);
@@ -135,6 +136,41 @@ assert.equal(createDopplerDirectorFrameSource(directorPlan, 2.5).x, 500);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 5).x, 650);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 7.5).x, 500);
 assert.equal(createDopplerDirectorFrameSource(directorPlan, 9.9).instrument, "ambulance_siren");
+
+const twentySecondPlan = createDopplerDirectorPlan({
+  durationSeconds: 20,
+  speedMps: 60,
+  emittedFrequencyHz: 440,
+  firstInstrument: "esbiko_voice",
+  secondInstrument: "ambulance_siren",
+});
+
+assert.equal(twentySecondPlan.phaseDurationSeconds, 5);
+assert.deepEqual(twentySecondPlan.timeline, {
+  legDistanceM: 300,
+  firstStartM: 200,
+  firstPassM: 500,
+  firstEndM: 800,
+  secondStartM: 800,
+  secondPassM: 500,
+  secondEndM: 200,
+});
+assert.equal(twentySecondPlan.cars[0].instrument, "esbiko_voice");
+assert.equal(createDopplerDirectorFrameSource(twentySecondPlan, 0).x, 200);
+assert.equal(createDopplerDirectorFrameSource(twentySecondPlan, 5).x, 500);
+assert.ok(Math.abs(createDopplerDirectorFrameSource(twentySecondPlan, 9.999).x - 799.94) < 0.01);
+assert.equal(createDopplerDirectorFrameSource(twentySecondPlan, 10).x, 800);
+assert.equal(createDopplerDirectorFrameSource(twentySecondPlan, 15).x, 500);
+assert.ok(Math.abs(createDopplerDirectorFrameSource(twentySecondPlan, 19.999).x - 200.06) < 0.01);
+assert.equal(getDopplerDirectorPhase(twentySecondPlan, 4.999).id, "car-one-approaching");
+assert.equal(getDopplerDirectorPhase(twentySecondPlan, 5).id, "car-one-receding");
+assert.equal(getDopplerDirectorPhase(twentySecondPlan, 14.999).id, "car-two-approaching");
+assert.equal(getDopplerDirectorPhase(twentySecondPlan, 15).id, "car-two-receding");
+
+assert.throws(
+  () => createDopplerDirectorPlan({ durationSeconds: 60, speedMps: 60 }),
+  (error) => error.code === "DIRECTOR_TIMING_OUT_OF_RANGE",
+);
 
 const carAfterPassFrame = createDopplerDirectorFrameSource(directorPlan, 3);
 const ambulanceAfterPassFrame = createDopplerDirectorFrameSource(directorPlan, 8);
