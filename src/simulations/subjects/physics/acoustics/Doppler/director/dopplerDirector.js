@@ -28,7 +28,18 @@ export const DOPPLER_DIRECTOR_INSTRUMENTS = Object.freeze([
   "tractor_engine",
   "ambulance_siren",
   "police_siren",
+  "esbiko_voice",
 ]);
+
+const DOPPLER_DIRECTOR_INSTRUMENT_LABELS = Object.freeze({
+  car_engine: "Real Car Engine",
+  diesel_engine: "Diesel Engine",
+  bus_engine: "Bus Engine",
+  tractor_engine: "Tractor Engine",
+  ambulance_siren: "Ambulance Siren",
+  police_siren: "Police Siren",
+  esbiko_voice: "Esbiko Voice",
+});
 
 function directorError(code, message) {
   const error = new Error(message);
@@ -65,6 +76,10 @@ function readInstrument(input, key, fallback) {
   }
 
   return value;
+}
+
+function instrumentLabel(instrument) {
+  return DOPPLER_DIRECTOR_INSTRUMENT_LABELS[instrument] || instrument;
 }
 
 function round(value, digits = 2) {
@@ -135,7 +150,7 @@ export function createDopplerDirectorPlan(input = {}) {
   const cars = [
     {
       id: "director-car-left",
-      label: "Real car — left to right",
+      label: `${instrumentLabel(firstInstrument)} — left to right`,
       instrument: firstInstrument,
       startPositionM: round(firstStartM),
       velocityMps: speedMps,
@@ -144,7 +159,7 @@ export function createDopplerDirectorPlan(input = {}) {
     },
     {
       id: "director-car-right",
-      label: "Ambulance — right to left",
+      label: `${instrumentLabel(secondInstrument)} — right to left`,
       instrument: secondInstrument,
       startPositionM: round(secondStartM),
       velocityMps: -speedMps,
@@ -159,14 +174,14 @@ export function createDopplerDirectorPlan(input = {}) {
       startsAtSeconds: 0,
       playback: "run",
       source: cars[0],
-      title: "Car 1 · Real Car Engine",
+      title: `Vehicle 1 · ${instrumentLabel(firstInstrument)}`,
       caption: "Approaching from the left — pitch rises",
     },
     {
       id: "car-one-receding",
       startsAtSeconds: passAt,
       playback: "run",
-      title: "Car 1 passes the observer",
+      title: "Vehicle 1 passes the observer",
       caption: "After passing — pitch falls",
     },
     {
@@ -174,15 +189,15 @@ export function createDopplerDirectorPlan(input = {}) {
       startsAtSeconds: halfDuration,
       playback: "run",
       source: cars[1],
-      title: "Vehicle 2 · Ambulance Siren",
-      caption: "Ambulance approaches from the right — pitch rises",
+      title: `Vehicle 2 · ${instrumentLabel(secondInstrument)}`,
+      caption: "Approaching from the right — pitch rises",
     },
     {
       id: "car-two-receding",
       startsAtSeconds: halfDuration + passAt,
       playback: "run",
-      title: "Ambulance passes the observer",
-      caption: "After passing — the siren pitch falls",
+      title: "Vehicle 2 passes the observer",
+      caption: "After passing — pitch falls",
     },
     {
       id: "complete",
@@ -195,7 +210,7 @@ export function createDopplerDirectorPlan(input = {}) {
 
   return {
     version: "doppler-director.v3",
-    title: "Ten-second two-direction Doppler story",
+    title: `${durationSeconds}-second two-direction Doppler story`,
     durationSeconds,
     aspectRatio: DOPPLER_DIRECTOR_DEFAULTS.aspectRatio,
     observer: { positionM: observerPositionM, velocityMps: 0 },
