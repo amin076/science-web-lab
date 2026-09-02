@@ -1,4 +1,8 @@
-import { SPEED_OF_SOUND } from "../constants.js";
+import {
+  MAX_WAVE_RADIUS,
+  SPEED_OF_SOUND,
+  WAVE_EMIT_INTERVAL,
+} from "../constants.js";
 import { calculateDoppler } from "../utils/dopplerPhysics.js";
 
 export const DOPPLER_DIRECTOR_DEFAULTS = Object.freeze({
@@ -190,7 +194,7 @@ export function createDopplerDirectorPlan(input = {}) {
   ];
 
   return {
-    version: "doppler-director.v2",
+    version: "doppler-director.v3",
     title: "Ten-second two-direction Doppler story",
     durationSeconds,
     aspectRatio: DOPPLER_DIRECTOR_DEFAULTS.aspectRatio,
@@ -225,6 +229,41 @@ export function createDirectorSource(plan, sourceDefinition) {
   };
 }
 
+function createDirectorWavefronts(sourceDefinition, localElapsed) {
+  const latestEmissionIndex = Math.floor(localElapsed / WAVE_EMIT_INTERVAL);
+  const oldestVisibleEmission = Math.max(
+    0,
+    localElapsed - MAX_WAVE_RADIUS / SPEED_OF_SOUND,
+  );
+  const oldestEmissionIndex = Math.max(
+    0,
+    Math.ceil(oldestVisibleEmission / WAVE_EMIT_INTERVAL),
+  );
+  const waves = [];
+
+  for (
+    let emissionIndex = oldestEmissionIndex;
+    emissionIndex <= latestEmissionIndex;
+    emissionIndex += 1
+  ) {
+    const emittedAtSeconds = emissionIndex * WAVE_EMIT_INTERVAL;
+    const ageSeconds = localElapsed - emittedAtSeconds;
+    const radiusM = ageSeconds * SPEED_OF_SOUND;
+
+    if (ageSeconds < 0 || radiusM > MAX_WAVE_RADIUS) continue;
+
+    waves.push({
+      id: `${sourceDefinition.id}-recorded-wave-${emissionIndex}`,
+      x:
+        sourceDefinition.startPositionM +
+        sourceDefinition.velocityMps * emittedAtSeconds,
+      r: radiusM,
+    });
+  }
+
+  return waves;
+}
+
 export function createDopplerDirectorFrameSource(plan, elapsedSeconds) {
   if (!plan?.cars?.length || elapsedSeconds >= plan.durationSeconds) return null;
 
@@ -232,7 +271,9 @@ export function createDopplerDirectorFrameSource(plan, elapsedSeconds) {
   const carIndex = elapsedSeconds < halfDuration ? 0 : 1;
   const sourceDefinition = plan.cars[carIndex];
   const localElapsed = elapsedSeconds - carIndex * halfDuration;
-  const x = sourceDefinition.startPositionM + sourceDefinition.velocityMps * localElapsed;
+  const x =
+    sourceDefinition.startPositionM +
+    sourceDefinition.velocityMps * localElapsed;
   const measurement = calculateDoppler({
     sourceX: x,
     sourceV: sourceDefinition.velocityMps,
@@ -250,6 +291,6 @@ export function createDopplerDirectorFrameSource(plan, elapsedSeconds) {
     currentFreq: measurement.observedFreq,
     shiftPercent: measurement.shiftPercent,
     motionStatus: measurement.motionStatus,
-    waves: [],
+    waves: createDirectorWavefronts(sourceDefinition, localElapsed),
   };
 }
