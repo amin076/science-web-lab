@@ -6,6 +6,11 @@ import {
 } from "../constants.js";
 import { calculateDoppler } from "../utils/dopplerPhysics.js";
 
+export const DOPPLER_DIRECTOR_STORY_MODES = Object.freeze([
+  "two_vehicle",
+  "single_pass",
+]);
+
 export const DOPPLER_DIRECTOR_DEFAULTS = Object.freeze({
   durationSeconds: 10,
   observerPositionM: 500,
@@ -13,6 +18,7 @@ export const DOPPLER_DIRECTOR_DEFAULTS = Object.freeze({
   speedMps: 60,
   firstInstrument: "car_engine",
   secondInstrument: "ambulance_siren",
+  storyMode: "two_vehicle",
   aspectRatio: "9:16",
 });
 
@@ -79,6 +85,19 @@ function readInstrument(input, key, fallback) {
   return value;
 }
 
+function readStoryMode(input) {
+  const value = input.storyMode ?? DOPPLER_DIRECTOR_DEFAULTS.storyMode;
+
+  if (!DOPPLER_DIRECTOR_STORY_MODES.includes(value)) {
+    throw directorError(
+      "INVALID_DIRECTOR_STORY_MODE",
+      `storyMode must be one of: ${DOPPLER_DIRECTOR_STORY_MODES.join(", ")}.`,
+    );
+  }
+
+  return value;
+}
+
 function instrumentLabel(instrument) {
   return DOPPLER_DIRECTOR_INSTRUMENT_LABELS[instrument] || instrument;
 }
@@ -105,8 +124,14 @@ function frequencyResult({ emittedFrequencyHz, speedMps, approaching }) {
   };
 }
 
-function createExactTimeline({ durationSeconds, speedMps, observerPositionM }) {
-  const phaseDurationSeconds = durationSeconds / 4;
+function createExactTimeline({
+  durationSeconds,
+  speedMps,
+  observerPositionM,
+  storyMode,
+}) {
+  const phaseDurationSeconds =
+    storyMode === "single_pass" ? durationSeconds / 2 : durationSeconds / 4;
   const legDistanceM = speedMps * phaseDurationSeconds;
   const maxLegDistanceM = Math.min(
     observerPositionM,
@@ -116,7 +141,7 @@ function createExactTimeline({ durationSeconds, speedMps, observerPositionM }) {
   if (legDistanceM > maxLegDistanceM) {
     throw directorError(
       "DIRECTOR_TIMING_OUT_OF_RANGE",
-      `At ${speedMps} m/s, each ${phaseDurationSeconds}-second quarter needs ${round(
+      `At ${speedMps} m/s, each ${phaseDurationSeconds}-second phase needs ${round(
         legDistanceM,
       )} m of travel, but only ${round(
         maxLegDistanceM,
@@ -136,72 +161,49 @@ function createExactTimeline({ durationSeconds, speedMps, observerPositionM }) {
   };
 }
 
-export function createDopplerDirectorPlan(input = {}) {
-  const durationSeconds = readBoundedNumber(
-    input,
-    "durationSeconds",
-    DOPPLER_DIRECTOR_DEFAULTS.durationSeconds,
-  );
-  const speedMps = readBoundedNumber(
-    input,
-    "speedMps",
-    DOPPLER_DIRECTOR_DEFAULTS.speedMps,
-  );
-  const emittedFrequencyHz = readBoundedNumber(
-    input,
-    "emittedFrequencyHz",
-    DOPPLER_DIRECTOR_DEFAULTS.emittedFrequencyHz,
-  );
-  const firstInstrument = readInstrument(
-    input,
-    "firstInstrument",
-    DOPPLER_DIRECTOR_DEFAULTS.firstInstrument,
-  );
-  const secondInstrument = readInstrument(
-    input,
-    "secondInstrument",
-    DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
-  );
-  const observerPositionM = DOPPLER_DIRECTOR_DEFAULTS.observerPositionM;
-  const timeline = createExactTimeline({
-    durationSeconds,
-    speedMps,
-    observerPositionM,
-  });
-  const approaching = frequencyResult({
-    emittedFrequencyHz,
-    speedMps,
-    approaching: true,
-  });
-  const receding = frequencyResult({
-    emittedFrequencyHz,
-    speedMps,
-    approaching: false,
-  });
+function buildSinglePassPhases({ cars, timeline, durationSeconds, firstInstrument }) {
+  const half = timeline.phaseDurationSeconds;
 
-  const cars = [
+  return [
     {
-      id: "director-car-left",
-      label: `${instrumentLabel(firstInstrument)} — left to right`,
-      instrument: firstInstrument,
-      startPositionM: round(timeline.firstStartM),
-      velocityMps: speedMps,
-      direction: "left-to-right",
-      color: "#22c55e",
+      id: "single-approaching",
+      startsAtSeconds: 0,
+      playback: "run",
+      source: cars[0],
+      expectedStartPositionM: round(timeline.firstStartM),
+      expectedEndPositionM: round(timeline.firstPassM),
+      title: `Approaching · ${instrumentLabel(firstInstrument)}`,
+      caption: `0–${half}s · approaching observer · higher pitch`,
     },
     {
-      id: "director-car-right",
-      label: `${instrumentLabel(secondInstrument)} — right to left`,
-      instrument: secondInstrument,
-      startPositionM: round(timeline.secondStartM),
-      velocityMps: -speedMps,
-      direction: "right-to-left",
-      color: "#38bdf8",
+      id: "single-receding",
+      startsAtSeconds: half,
+      playback: "run",
+      expectedStartPositionM: round(timeline.firstPassM),
+      expectedEndPositionM: round(timeline.firstEndM),
+      title: "PASS · pitch drops",
+      caption: `${half}–${durationSeconds}s · moving away · lower pitch`,
+    },
+    {
+      id: "complete",
+      startsAtSeconds: durationSeconds,
+      playback: "pause",
+      title: "Experiment complete",
+      caption: "Compare the same sound before and after the observer pass.",
     },
   ];
+}
 
+function buildTwoVehiclePhases({
+  cars,
+  timeline,
+  durationSeconds,
+  firstInstrument,
+  secondInstrument,
+}) {
   const quarter = timeline.phaseDurationSeconds;
-  const phases = [
+
+  return [
     {
       id: "car-one-approaching",
       startsAtSeconds: 0,
@@ -248,12 +250,102 @@ export function createDopplerDirectorPlan(input = {}) {
       caption: "The sound changes because the received wave spacing changes.",
     },
   ];
+}
+
+export function createDopplerDirectorPlan(input = {}) {
+  const durationSeconds = readBoundedNumber(
+    input,
+    "durationSeconds",
+    DOPPLER_DIRECTOR_DEFAULTS.durationSeconds,
+  );
+  const speedMps = readBoundedNumber(
+    input,
+    "speedMps",
+    DOPPLER_DIRECTOR_DEFAULTS.speedMps,
+  );
+  const emittedFrequencyHz = readBoundedNumber(
+    input,
+    "emittedFrequencyHz",
+    DOPPLER_DIRECTOR_DEFAULTS.emittedFrequencyHz,
+  );
+  const firstInstrument = readInstrument(
+    input,
+    "firstInstrument",
+    DOPPLER_DIRECTOR_DEFAULTS.firstInstrument,
+  );
+  const secondInstrument = readInstrument(
+    input,
+    "secondInstrument",
+    DOPPLER_DIRECTOR_DEFAULTS.secondInstrument,
+  );
+  const storyMode = readStoryMode(input);
+  const observerPositionM = DOPPLER_DIRECTOR_DEFAULTS.observerPositionM;
+  const timeline = createExactTimeline({
+    durationSeconds,
+    speedMps,
+    observerPositionM,
+    storyMode,
+  });
+  const approaching = frequencyResult({
+    emittedFrequencyHz,
+    speedMps,
+    approaching: true,
+  });
+  const receding = frequencyResult({
+    emittedFrequencyHz,
+    speedMps,
+    approaching: false,
+  });
+
+  const cars = [
+    {
+      id: "director-car-left",
+      label: `${instrumentLabel(firstInstrument)} — left to right`,
+      instrument: firstInstrument,
+      startPositionM: round(timeline.firstStartM),
+      velocityMps: speedMps,
+      direction: "left-to-right",
+      color: "#22c55e",
+    },
+  ];
+
+  if (storyMode === "two_vehicle") {
+    cars.push({
+      id: "director-car-right",
+      label: `${instrumentLabel(secondInstrument)} — right to left`,
+      instrument: secondInstrument,
+      startPositionM: round(timeline.secondStartM),
+      velocityMps: -speedMps,
+      direction: "right-to-left",
+      color: "#38bdf8",
+    });
+  }
+
+  const phases =
+    storyMode === "single_pass"
+      ? buildSinglePassPhases({
+          cars,
+          timeline,
+          durationSeconds,
+          firstInstrument,
+        })
+      : buildTwoVehiclePhases({
+          cars,
+          timeline,
+          durationSeconds,
+          firstInstrument,
+          secondInstrument,
+        });
 
   return {
-    version: "doppler-director.v4",
-    title: `${durationSeconds}-second two-direction Doppler story`,
+    version: "doppler-director.v5",
+    storyMode,
+    title:
+      storyMode === "single_pass"
+        ? `${durationSeconds}-second single-pass Doppler comparison`
+        : `${durationSeconds}-second two-direction Doppler story`,
     durationSeconds,
-    phaseDurationSeconds: quarter,
+    phaseDurationSeconds: timeline.phaseDurationSeconds,
     aspectRatio: DOPPLER_DIRECTOR_DEFAULTS.aspectRatio,
     observer: { positionM: observerPositionM, velocityMps: 0 },
     emittedFrequencyHz,
@@ -263,9 +355,13 @@ export function createDopplerDirectorPlan(input = {}) {
       firstStartM: round(timeline.firstStartM),
       firstPassM: round(timeline.firstPassM),
       firstEndM: round(timeline.firstEndM),
-      secondStartM: round(timeline.secondStartM),
-      secondPassM: round(timeline.secondPassM),
-      secondEndM: round(timeline.secondEndM),
+      ...(storyMode === "two_vehicle"
+        ? {
+            secondStartM: round(timeline.secondStartM),
+            secondPassM: round(timeline.secondPassM),
+            secondEndM: round(timeline.secondEndM),
+          }
+        : {}),
     },
     cars,
     results: { approaching, receding },
@@ -333,10 +429,19 @@ function createDirectorWavefronts(sourceDefinition, localElapsed) {
 export function createDopplerDirectorFrameSource(plan, elapsedSeconds) {
   if (!plan?.cars?.length || elapsedSeconds >= plan.durationSeconds) return null;
 
-  const halfDuration = plan.durationSeconds / 2;
-  const carIndex = elapsedSeconds < halfDuration ? 0 : 1;
-  const sourceDefinition = plan.cars[carIndex];
-  const localElapsed = elapsedSeconds - carIndex * halfDuration;
+  let sourceDefinition;
+  let localElapsed;
+
+  if (plan.storyMode === "single_pass") {
+    sourceDefinition = plan.cars[0];
+    localElapsed = elapsedSeconds;
+  } else {
+    const halfDuration = plan.durationSeconds / 2;
+    const carIndex = elapsedSeconds < halfDuration ? 0 : 1;
+    sourceDefinition = plan.cars[carIndex];
+    localElapsed = elapsedSeconds - carIndex * halfDuration;
+  }
+
   const x =
     sourceDefinition.startPositionM +
     sourceDefinition.velocityMps * localElapsed;
