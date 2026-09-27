@@ -88,14 +88,18 @@ function PlaybackControls({
     <div className="flex items-center gap-2">
       {isSimulating ? (
         <button
+          type="button"
           onClick={onPause}
+          aria-label="Pause simulation"
           className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
         >
           ⏸ {compact ? "" : "Pause"}
         </button>
       ) : (
         <button
+          type="button"
           onClick={onStart}
+          aria-label="Start simulation"
           className={`${base} ${pad} bg-emerald-500/80 hover:bg-emerald-600 border-emerald-400/40 font-semibold`}
         >
           ▶ {compact ? "" : "Start"}
@@ -103,7 +107,9 @@ function PlaybackControls({
       )}
 
       <button
+        type="button"
         onClick={onReset}
+        aria-label="Reset simulation"
         className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
       >
         ↺ {compact ? "" : "Reset"}
