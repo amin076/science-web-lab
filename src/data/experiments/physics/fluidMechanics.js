@@ -1,0 +1,92 @@
+// src/data/experiments/physics/fluidMechanics.js
+import ScienceIcon from "@mui/icons-material/Science";
+
+export const physicsFluidMechanics = [
+  {
+    id: "physics.fluid-mechanics.archimedes-principle",
+    domain: "physics",
+    topic: "fluid-mechanics",
+    name: "Archimedes' Principle",
+    desc: "Explore buoyancy by changing object density, fluid density, and object shape while observing displaced volume and force balance.",
+    shortDesc:
+      "A 3D buoyancy lab for investigating Archimedes' principle, floating, sinking, displaced fluid volume, and force balance.",
+    yearLevel: "Years 9–12 Physics",
+    teacherReady: true,
+    difficulty: "Intermediate",
+    estimatedTime: "15–25 mins",
+    supportedDevices: "Desktop / Tablet",
+    lessonType: ["Interactive", "Inquiry-Based", "3D", "Classroom Ready", "STEM"],
+    learningObjectives: [
+      "Relate buoyant force to the volume of displaced fluid",
+      "Compare object density and fluid density to predict floating or sinking",
+      "Observe the balance between weight and buoyant force",
+      "Investigate how object shape changes submerged volume during motion",
+      "Use density, volume, gravity, and force measurements to explain buoyancy",
+    ],
+    curriculumLinks: ["Forces", "Density", "Fluids", "Buoyancy", "Scientific inquiry"],
+    classroomActivity: {
+      title: "What Makes an Object Float?",
+      duration: "15–20 minutes",
+      steps: [
+        "Choose an object shape and keep the fluid set to water",
+        "Select an object density lower than the fluid density and run the simulation",
+        "Observe the submerged percentage, displaced volume, weight, and buoyant force",
+        "Repeat with equal and greater object densities",
+        "Change the fluid density while keeping the object density constant",
+        "Compare the force balance and explain when the object floats or sinks",
+      ],
+    },
+    discussionQuestions: [
+      "How does object density compared with fluid density affect floating and sinking?",
+      "What happens to buoyant force as more of the object becomes submerged?",
+      "Why can the same object behave differently in fluids with different densities?",
+      "How are displaced volume and buoyant force related?",
+      "When a floating object reaches equilibrium, how do buoyant force and weight compare?",
+    ],
+    worksheet: {
+      title: "Archimedes' Principle Student Worksheet",
+      aim: "Investigate how density and displaced fluid volume determine buoyancy.",
+      prediction: "Predict whether an object will float or sink before each trial.",
+      variables: {
+        independent: "Object density, fluid density, or object shape",
+        dependent: "Submerged percentage, displaced volume, and buoyant force",
+        controlled: ["Gravity", "Selected shape when density is tested"],
+      },
+      tableColumns: ["Object Density", "Fluid Density", "Shape", "Submerged %", "Buoyant Force", "Weight", "Outcome"],
+      tableRows: ["Trial 1", "Trial 2", "Trial 3", "Trial 4"],
+      questions: [
+        "Which density combinations produced floating?",
+        "How did displaced volume change as the object entered the fluid?",
+        "How did buoyant force compare with weight at equilibrium?",
+        "What changed when fluid density increased?",
+        "Explain one trial using Archimedes' principle.",
+      ],
+      reflection: "Which measurement best helped you explain whether the object floated or sank?",
+      extension: "Find two different object-fluid combinations that produce similar submerged percentages.",
+    },
+    teacherGuide: {
+      duration: "15–25 minutes",
+      priorKnowledge: ["Force", "Mass", "Volume", "Density", "Gravity"],
+      classroomFlow: [
+        "Review density and force",
+        "Ask students to predict whether the default object will float",
+        "Run contrasting low-density and high-density trials",
+        "Compare displaced volume, buoyant force, and weight",
+        "Change fluid density and repeat",
+        "Use the measurements to formulate Archimedes' principle",
+      ],
+      misconceptions: [
+        "Heavy objects must always sink",
+        "Buoyant force is constant regardless of submerged volume",
+        "Only object mass determines whether it floats",
+      ],
+      realWorldExamples: ["Ships", "Submarines", "Hydrometers", "Floating ice", "Hot-air and fluid displacement analogies"],
+      assessmentIdeas: ["Prediction table", "Force-balance explanation", "Density comparison", "Exit question using a new object-fluid pair"],
+    },
+    engine: "3d",
+    tags: ["buoyancy", "archimedes", "density", "fluids", "forces", "3d"],
+    Icon: ScienceIcon,
+    gradient: "linear-gradient(135deg, #0284c7, #22d3ee)",
+    demo: true,
+  },
+];

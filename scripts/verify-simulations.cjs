@@ -1,73 +1,76 @@
 /* scripts/verify-simulations.cjs */
-const fs = require("fs");
+/* eslint-env node */
 const path = require("path");
 
-const root = process.cwd();
+const projectRoot = path.resolve(__dirname, "..");
 
-const registryPath = path.join(
-  root,
-  "src",
-  "simulations",
-  "registry",
-  "index.js"
-);
-const experimentsPath = path.join(root, "src", "data", "experiments.js");
+async function loadRuntimeSources() {
+  const { createServer } = await import("vite");
+  const server = await createServer({
+    configFile: path.join(projectRoot, "vite.config.js"),
+    appType: "custom",
+    logLevel: "error",
+    server: { middlewareMode: true },
+    optimizeDeps: { noDiscovery: true },
+  });
 
-function read(file) {
-  return fs.readFileSync(file, "utf8");
+  try {
+    const [{ experimentsData }, { simulationRegistry }] = await Promise.all([
+      server.ssrLoadModule("/src/data/experiments/index.js"),
+      server.ssrLoadModule("/src/simulations/registry/index.js"),
+    ]);
+    return { experimentsData, simulationRegistry };
+  } finally {
+    await server.close();
+  }
 }
 
-function extractIdsFromExperiments(text) {
-  // matches: id: "something"
-  const ids = new Set();
-  const re = /id:\s*["']([^"']+)["']/g;
-  let m;
-  while ((m = re.exec(text))) ids.add(m[1]);
-  return ids;
+function duplicateIds(experimentsData) {
+  const seen = new Set();
+  const duplicates = new Set();
+  for (const experiment of experimentsData) {
+    if (!experiment?.id) continue;
+    if (seen.has(experiment.id)) duplicates.add(experiment.id);
+    seen.add(experiment.id);
+  }
+  return [...duplicates].sort();
 }
 
-function extractKeysFromRegistry(text) {
-  // matches: "key": lazyWithRetry(...)
-  const keys = new Set();
-  const re = /["']([^"']+)["']\s*:\s*lazyWithRetry/g;
-  let m;
-  while ((m = re.exec(text))) keys.add(m[1]);
-  return keys;
+async function main() {
+  const { experimentsData, simulationRegistry } = await loadRuntimeSources();
+
+  if (!Array.isArray(experimentsData)) {
+    throw new Error("experimentsData must be an array.");
+  }
+  if (!simulationRegistry || typeof simulationRegistry !== "object") {
+    throw new Error("simulationRegistry must be an object.");
+  }
+
+  const missingIds = experimentsData
+    .filter((experiment) => !experiment?.id)
+    .map((experiment) => experiment?.name || "<unnamed>");
+  const duplicates = duplicateIds(experimentsData);
+  const experimentIds = new Set(experimentsData.filter(Boolean).map((item) => item.id).filter(Boolean));
+  const registryIds = new Set(Object.keys(simulationRegistry));
+
+  const missingInRegistry = [...experimentIds].filter((id) => !registryIds.has(id)).sort();
+  const missingInExperiments = [...registryIds].filter((id) => !experimentIds.has(id)).sort();
+
+  if (missingIds.length || duplicates.length || missingInRegistry.length || missingInExperiments.length) {
+    if (missingIds.length) console.error("❌ Experiment metadata missing ids:", missingIds);
+    if (duplicates.length) console.error("❌ Duplicate experiment ids:", duplicates);
+    if (missingInRegistry.length) console.error("❌ Experiments missing runtime registry bindings:", missingInRegistry);
+    if (missingInExperiments.length) console.error("❌ Runtime registry bindings missing experiment metadata:", missingInExperiments);
+    process.exitCode = 1;
+    return;
+  }
+
+  console.log(
+    `✅ experimentsData and simulationRegistry are consistent (${experimentIds.size} simulations).`,
+  );
 }
 
-function main() {
-  if (!fs.existsSync(registryPath)) {
-    console.error("❌ Missing registry file:", registryPath);
-    process.exit(1);
-  }
-  if (!fs.existsSync(experimentsPath)) {
-    console.error("❌ Missing experiments file:", experimentsPath);
-    process.exit(1);
-  }
-
-  const registry = read(registryPath);
-  const experiments = read(experimentsPath);
-
-  const expIds = extractIdsFromExperiments(experiments);
-  const regKeys = extractKeysFromRegistry(registry);
-
-  const missingInRegistry = [...expIds].filter((id) => !regKeys.has(id));
-  const missingInExperiments = [...regKeys].filter((k) => !expIds.has(k));
-
-  if (missingInRegistry.length) {
-    console.error("❌ Experiments missing in registry:", missingInRegistry);
-    process.exit(1);
-  }
-
-  if (missingInExperiments.length) {
-    console.error(
-      "❌ Registry keys missing in experiments:",
-      missingInExperiments
-    );
-    process.exit(1);
-  }
-
-  console.log("✅ Registry and experiments are consistent.");
-}
-
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

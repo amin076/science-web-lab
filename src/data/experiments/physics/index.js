@@ -5,10 +5,12 @@ import { physicsOptics } from "./optics";
 import { physicsWaves } from "./waves";
 import { physicsThermo } from "./thermodynamics";
 import { physicsChallenges } from "./challenges";
+import { physicsFluidMechanics } from "./fluidMechanics";
 
 export const physicsExperiments = [
   ...physicsChallenges,
   ...physicsMechanics,
+  ...physicsFluidMechanics,
   ...physicsElectricity,
   ...physicsOptics,
   ...physicsWaves,
