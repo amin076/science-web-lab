@@ -153,7 +153,7 @@ Registry keys MUST match simulation IDs exactly.
 
 ### Step 5 — Add Experiment Metadata
 
-File: src/data/experiments.js
+Files: src/data/experiments/index.js and the relevant domain/topic module under src/data/experiments/
 
 {
 id: "physics.mechanics.pendulum",
@@ -169,11 +169,15 @@ ID must match registry key.
 
 ---
 
-### Step 6 — Test
+### Step 6 — Verify catalog/runtime consistency and test
 
-npm run dev
+```bash
+npm run sim:check
+npm run build
+npm run test:platform-api
+```
 
-Verify:
+Then run `npm run dev` and verify:
 
 - /experiments
 - /experiments/:id
