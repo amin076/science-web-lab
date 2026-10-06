@@ -18,7 +18,8 @@
     "test:platform-api": "node scripts/test-platform-api.mjs",
     "test:webmcp": "node scripts/test-webmcp.mjs",
     "test:mcp-doppler": "node scripts/test-mcp-doppler.cjs",
-    "test:simulation-agent": "node scripts/test-simulation-agent-contract.mjs"
+    "test:simulation-agent": "node scripts/test-simulation-agent-contract.mjs",
+    "test:gyroscope-responsive": "node scripts/test-gyroscope-responsive.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
