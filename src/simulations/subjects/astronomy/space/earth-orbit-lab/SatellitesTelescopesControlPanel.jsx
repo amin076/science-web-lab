@@ -123,7 +123,8 @@ export default function SatellitesTelescopesControlPanel({
             fontSize: 10,
             px: 1.5,
             borderColor: "rgba(255,255,255,0.2)",
-            minWidth: 0,
+            minWidth: 44,
+            minHeight: 44,
           }}
         >
           Reset
