@@ -15,7 +15,7 @@ function createServer() {
   const server = new McpServer(
     {
       name: "esbiko-mcp",
-      version: "0.3.0",
+      version: "0.3.1",
     },
     {
       instructions:
