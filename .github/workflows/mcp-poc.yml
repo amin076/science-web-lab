@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Functions dependencies for runtime test
+        run: npm ci --prefix functions
+
       - name: Check MCP source syntax
         run: |
           node --check functions/mcp/dopplerService.js
@@ -34,6 +37,9 @@ jobs:
           node --check functions/mcp/transport.mjs
           node --check functions/mcp/dopplerWidget.mjs
           node --check scripts/test-mcp-doppler.cjs
+
+      - name: Test MCP runtime startup
+        run: node scripts/test-mcp-runtime.mjs
 
       - name: Test Doppler MCP proof of concept
         run: npm run test:mcp-doppler
