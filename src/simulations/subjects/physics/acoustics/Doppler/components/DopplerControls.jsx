@@ -50,6 +50,7 @@ const DopplerControls = ({
   onSetMasterVolume,
   masterGainRef,
   webMcpStatus,
+  hideAgentGuide = false,
   lastAgentAction,
   directorStatus,
   onStartDirector,
@@ -90,7 +91,7 @@ const DopplerControls = ({
           <Activity className="text-blue-500" /> Doppler Lab
         </h2>
 
-        <button
+        {!hideAgentGuide && <button
           type="button"
           onClick={() => setIsAgentGuideOpen((open) => !open)}
           aria-expanded={isAgentGuideOpen}
@@ -138,7 +139,7 @@ const DopplerControls = ({
               }`}
             />
           </span>
-        </button>
+        </button>}
 
         <div className="grid grid-cols-2 gap-2 mt-5">
           <button
@@ -194,7 +195,7 @@ const DopplerControls = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
-        {isAgentGuideOpen && (
+        {!hideAgentGuide && isAgentGuideOpen && (
           <section
             aria-label="WebMCP agent testing guide"
             className="space-y-4 rounded-xl border border-blue-400/25 bg-gradient-to-b from-blue-400/10 to-slate-950/40 p-4"
