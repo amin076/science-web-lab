@@ -115,6 +115,8 @@ export default function SatellitesTelescopesControlPanel({
           size="small"
           variant="outlined"
           color="error"
+          aria-label="Reset simulation"
+          data-agent-action="reset"
           onClick={onReset}
           sx={{
             borderRadius: 4,
@@ -154,13 +156,28 @@ export default function SatellitesTelescopesControlPanel({
           },
         }}
       >
-        <ToggleButton value="educational">
+        <ToggleButton
+          value="educational"
+          aria-label="Educational orbit mode"
+          data-agent-param="simMode"
+          data-agent-value="educational"
+        >
           <SchoolIcon sx={{ fontSize: 14, mr: 0.5 }} /> Edu
         </ToggleButton>
-        <ToggleButton value="semi">
+        <ToggleButton
+          value="semi"
+          aria-label="Semi-realistic orbit mode"
+          data-agent-param="simMode"
+          data-agent-value="semi"
+        >
           <PublicIcon sx={{ fontSize: 14, mr: 0.5 }} /> Semi
         </ToggleButton>
-        <ToggleButton value="realistic">
+        <ToggleButton
+          value="realistic"
+          aria-label="Realistic orbit mode"
+          data-agent-param="simMode"
+          data-agent-value="realistic"
+        >
           <ScienceIcon sx={{ fontSize: 14, mr: 0.5 }} /> Real
         </ToggleButton>
       </ToggleButtonGroup>
@@ -509,6 +526,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showOrbits", "data-agent-param": "showOrbits" }}
                 checked={!!settings.showOrbits}
                 onChange={setBool("showOrbits")}
               />
@@ -520,6 +538,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showTrails", "data-agent-param": "showTrails" }}
                 checked={!!settings.showTrails}
                 onChange={setBool("showTrails")}
               />
@@ -531,6 +550,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showLOS", "data-agent-param": "showLOS" }}
                 checked={!!settings.showLOS}
                 onChange={setBool("showLOS")}
               />
@@ -542,6 +562,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showOnlyVisible", "data-agent-param": "showOnlyVisible" }}
                 checked={!!settings.showOnlyVisible}
                 onChange={setBool("showOnlyVisible")}
               />
@@ -553,6 +574,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showLagrangePoints", "data-agent-param": "showLagrangePoints" }}
                 checked={!!settings.showLagrangePoints}
                 onChange={setBool("showLagrangePoints")}
               />
@@ -564,6 +586,7 @@ export default function SatellitesTelescopesControlPanel({
             control={
               <Switch
                 size="small"
+                inputProps={{ "aria-label": "showLabels", "data-agent-param": "showLabels" }}
                 checked={!!settings.showLabels}
                 onChange={setBool("showLabels")}
               />
@@ -577,6 +600,8 @@ export default function SatellitesTelescopesControlPanel({
         <Box sx={{ px: 1 }}>
           <Stack direction="row" spacing={2} alignItems="center">
             <Slider
+              aria-label="Orbit time scale"
+              data-agent-param="timeScale"
               value={
                 typeof settings.timeScale === "number" ? settings.timeScale : 0
               }
@@ -593,6 +618,8 @@ export default function SatellitesTelescopesControlPanel({
               size="small"
               onChange={handleTimeInput}
               inputProps={{
+                "aria-label": "Orbit time scale numeric input",
+                "data-agent-param": "timeScale",
                 step: 10,
                 min: 1,
                 max: maxTimeScale,
