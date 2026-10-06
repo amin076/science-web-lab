@@ -2,7 +2,7 @@
 
 export const DOPPLER_WIDGET_URI = "ui://esbiko/doppler-v1.html";
 export const DOPPLER_RUN_URL =
-  "https://www.esbiko.com/experiments/physics.acoustics.doppler/run";
+  "https://www.esbiko.com/experiments/physics.acoustics.doppler/run?embed=mcp-app";
 
 export const DOPPLER_WIDGET_HTML = `<!doctype html>
 <html>
