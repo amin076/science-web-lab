@@ -1,4 +1,4 @@
-import { createSimulationAgentProfile } from "./simulationAgentContract";
+import { createSimulationAgentProfile } from "./simulationAgentContract.js";
 
 export const simulationAgentProfiles = Object.freeze({
   "physics.mechanics.simple-pendulum": createSimulationAgentProfile({
