@@ -261,6 +261,12 @@ Never commit directly to main.
 - Registered in simulationRegistry
 - Added to experimentsData
 - Works at /experiments/:id/run
+- Works in embedded mode (?embed=mcp-app)
+- Responsive at compact iframe sizes
+- Primary controls have semantic action/parameter identity
+- Agent manifest entry exists when adapted
+- Parameter/state schemas exist when adapted
+- Shared MCP parameter hydration is used when adapted
 - No console errors
 - No auth or DB logic inside simulation
 
@@ -274,3 +280,143 @@ Never commit directly to main.
 - Fullscreen-ready by default
 - Easy onboarding for new developers
 - Prevents routing & layout bugs
+
+
+---
+
+## Agent-Ready Requirement (NEW)
+
+All new simulations must now be designed for both human use and AI/MCP control.
+
+Read these two documents before adding a new simulation:
+
+- `docs/AGENT_READY_SIMULATION_STANDARD.md`
+- `docs/MCP_AGENTIC_APPLICATION_PLAYBOOK.md`
+
+A new simulation should not be treated as complete if it only works in the normal full-screen desktop page.
+
+It must also be prepared for:
+
+- embedded MCP App / iframe execution
+- responsive layouts
+- semantic controls
+- manifest-driven parameter validation
+- machine-readable state
+- standard AI actions
+
+### Required standard actions
+
+Use the shared semantic vocabulary wherever applicable:
+
+```text
+open
+configure
+readState
+play
+pause
+reset
+record
+export
+```
+
+Do not create simulation-specific names for equivalent operations.
+
+### Required semantic control metadata
+
+Primary controls should expose stable identity, for example:
+
+```html
+<button aria-label="Play simulation" data-agent-action="play">
+  Play
+</button>
+
+<button aria-label="Reset simulation" data-agent-action="reset">
+  Reset
+</button>
+
+<input aria-label="Mass" data-agent-param="massKg" />
+```
+
+### Embedded mode
+
+Every new simulation must tolerate:
+
+```text
+?embed=mcp-app
+```
+
+and must remain usable in compact iframe-sized viewports.
+
+Representative viewport targets:
+
+```text
+360 x 500
+600 x 600
+900 x 650
+1280 x 720
+```
+
+Do not assume a desktop-sized canvas or side panel.
+
+### Parameter hydration
+
+Adapted simulations should use the shared helper:
+
+```text
+readEmbeddedMcpParameters(...)
+```
+
+Do not create custom URL query parsing for `mcp.*` parameters.
+
+### Agent manifest
+
+Every adapted simulation must declare one canonical agent manifest entry containing:
+
+```text
+adapterVersion
+actions
+tools
+video
+exportable
+parameterSchema
+stateSchema
+```
+
+The canonical manifest is the source of truth for frontend profiles and MCP validation.
+
+### Responsive layout
+
+A simulation must not rely on:
+
+- fixed desktop-only widths
+- global fixed-position sidebars
+- hard-coded canvas dimensions
+- non-scrollable control areas
+- controls that overlap the visualization in a narrow iframe
+
+Prefer responsive grid/flex layouts that become:
+
+```text
+wide:
+visualization | controls
+
+narrow:
+visualization
+controls
+```
+
+### New Definition of Done
+
+A new simulation is complete only when:
+
+- scientific behavior works
+- permanent ID is registered
+- metadata is registered
+- normal route works
+- embedded route works
+- control names are semantic
+- parameter/state schemas exist
+- responsive compact layouts work
+- MCP configuration works when adapted
+- build/tests pass
+- no console errors occur
