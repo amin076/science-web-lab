@@ -8,56 +8,30 @@ import SimulationCanvas from "./SimulationCanvas";
 import Telemetry from "./Telemetry";
 import GraphPanel from "./GraphPanel";
 import { degToRad } from "./utils";
-
-function readEmbeddedPendulumState() {
-  const defaults = {
-    embeddedMcpApp: false,
-    lengthM: 2.1,
-    massKg: 2.0,
-    entryAngle: 38,
-    elasticity: 1.0,
-  };
-
-  if (typeof window === "undefined") return defaults;
-
-  const params = new URLSearchParams(window.location.search);
-  const embeddedMcpApp = params.get("embed") === "mcp-app";
-
-  if (!embeddedMcpApp) {
-    return {...defaults, embeddedMcpApp};
-  }
-
-  const readNumber = (key, fallback, min, max) => {
-    const raw = params.get(`mcp.${key}`);
-    if (raw == null || raw === "") return fallback;
-    const value = Number(raw);
-    if (!Number.isFinite(value)) return fallback;
-    return Math.min(max, Math.max(min, value));
-  };
-
-  return {
-    embeddedMcpApp,
-    lengthM: readNumber("lengthM", defaults.lengthM, 0.5, 3.0),
-    massKg: readNumber("massKg", defaults.massKg, 0.1, 10.0),
-    entryAngle: readNumber("entryAngle", defaults.entryAngle, -170, 170),
-    elasticity: readNumber("elasticity", defaults.elasticity, 0.98, 1.0),
-  };
-}
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 export default function Pendulum() {
   const initialMcpStateRef = useRef(null);
 
   if (!initialMcpStateRef.current) {
-    initialMcpStateRef.current = readEmbeddedPendulumState();
+    initialMcpStateRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.simple-pendulum",
+      {
+        lengthM: 2.1,
+        massKg: 2,
+        entryAngle: 38,
+        elasticity: 1,
+      },
+    );
   }
 
   const initialMcpState = initialMcpStateRef.current;
   const [running, setRunning] = useState(false);
 
-  const [lengthM, setLengthM] = useState(initialMcpState.lengthM);
-  const [massKg, setMassKg] = useState(initialMcpState.massKg);
-  const [entryAngle, setEntryAngle] = useState(initialMcpState.entryAngle);
-  const [elasticity, setElasticity] = useState(initialMcpState.elasticity);
+  const [lengthM, setLengthM] = useState(initialMcpState.values.lengthM);
+  const [massKg, setMassKg] = useState(initialMcpState.values.massKg);
+  const [entryAngle, setEntryAngle] = useState(initialMcpState.values.entryAngle);
+  const [elasticity, setElasticity] = useState(initialMcpState.values.elasticity);
 
   const [pxPerMeter, setPxPerMeter] = useState(160);
   const [bobRadius, setBobRadius] = useState(22);
