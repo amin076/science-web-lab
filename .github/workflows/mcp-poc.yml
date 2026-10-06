@@ -38,6 +38,9 @@ jobs:
       - name: Test Doppler MCP proof of concept
         run: npm run test:mcp-doppler
 
+      - name: Test reusable simulation agent contract
+        run: npm run test:simulation-agent
+
       - name: Test Platform API
         run: npm run test:platform-api
 
