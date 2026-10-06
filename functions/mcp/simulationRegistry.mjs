@@ -8,6 +8,13 @@ const platformCatalog = require("../api/data/platformCatalog.generated.json");
 const BASE_URL = "https://www.esbiko.com";
 
 const SPECIALIZED = Object.freeze({
+  "physics.mechanics.simple-pendulum": Object.freeze({
+    integrationLevel: "adapted",
+    tools: ["open_science_simulation"],
+    stateSync: true,
+    video: false,
+    adapterVersion: "pendulum-adapter.v1",
+  }),
   "physics.acoustics.doppler": Object.freeze({
     integrationLevel: "adapted",
     tools: [
