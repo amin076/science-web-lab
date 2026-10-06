@@ -506,7 +506,7 @@ export const simulationAgentManifest = Object.freeze({
         },
         focusTarget: {
           type: "string",
-          enum: ["system", "sun", "mercury", "venus", "earth", "mars", "jupiter", "saturn", "uranus", "neptune"],
+          enum: ["system", "sun", "mercury", "venus", "earth", "moon", "mars", "jupiter", "saturn", "uranus", "neptune"],
         },
         showTrails: { type: "boolean" },
         showOrbits: { type: "boolean" },
