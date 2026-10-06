@@ -90,6 +90,33 @@ assert.equal(soundWavesEmbedded.values.freq2, 446);
 assert.equal(soundWavesEmbedded.values.volume, 0.7);
 assert.equal(soundWavesEmbedded.values.waveType, "triangle");
 
+const gyroscopeProfile = getSimulationProfile("physics.mechanics.gyroscope");
+assert.equal(
+  gyroscopeProfile.capabilityContract?.status,
+  "verified",
+  "Gyroscope capability contract should be verified from the agent manifest",
+);
+assert.equal(
+  gyroscopeProfile.capabilityContract?.capabilities?.agentReady?.supported,
+  true,
+  "Gyroscope agentReady capability should be supported",
+);
+assert.equal(
+  gyroscopeProfile.capabilityContract?.capabilities?.agentReady?.verified,
+  true,
+  "Gyroscope agentReady capability should be verified",
+);
+assert.equal(
+  gyroscopeProfile.capabilityContract?.capabilities?.stateRead?.supported,
+  true,
+  "Gyroscope stateRead capability should be supported",
+);
+assert.equal(
+  gyroscopeProfile.capabilityContract?.capabilities?.commandExecution?.supported,
+  true,
+  "Gyroscope commandExecution capability should be supported",
+);
+
 console.log("MCP RUNTIME STARTUP TEST PASSED");
 console.log("SHARED EMBEDDED MCP PARAMETER READER TEST PASSED");
 console.log("SIMULATION PARAMETER VALIDATION TEST PASSED");
