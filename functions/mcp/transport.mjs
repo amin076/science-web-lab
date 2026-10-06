@@ -6,6 +6,8 @@ import {toNodeHandler} from "@modelcontextprotocol/node";
 import * as z from "zod/v4";
 import legacyServer from "./server.js";
 import {DOPPLER_WIDGET_HTML, DOPPLER_WIDGET_URI} from "./dopplerWidget.mjs";
+import {GENERIC_SIMULATION_WIDGET_HTML, GENERIC_SIMULATION_WIDGET_URI} from "./simulationWidget.mjs";
+import {listSimulationProfiles, requireSimulationProfile, SIMULATION_IDS} from "./simulationRegistry.mjs";
 
 const {executeTool} = legacyServer;
 
@@ -17,13 +19,41 @@ function createServer() {
     },
     {
       instructions:
-        "Use list_science_simulations to discover Esbiko tools. " +
+        "Use list_science_simulations to discover Esbiko simulations. " +
+        "Use open_science_simulation to open any Esbiko simulation in the universal MCP App shell. " +
         "Use run_doppler_experiment for Doppler-effect calculations and " +
         "explain the returned scientific result to the user. " +
         "The Doppler tool has an attached interactive MCP App UI. " +
         "Do not claim that no interactive widget is available merely because " +
         "the component is rendered separately from the conversation transcript.",
     },
+  );
+
+  server.registerResource(
+    "esbiko-simulation-shell",
+    GENERIC_SIMULATION_WIDGET_URI,
+    {},
+    async () => ({
+      contents: [
+        {
+          uri: GENERIC_SIMULATION_WIDGET_URI,
+          mimeType: "text/html;profile=mcp-app",
+          text: GENERIC_SIMULATION_WIDGET_HTML,
+          _meta: {
+            ui: {
+              prefersBorder: true,
+              csp: {
+                frameDomains: ["https://www.esbiko.com"],
+                resourceDomains: ["https://www.esbiko.com"],
+              },
+            },
+            "openai/ui": {
+              availableDisplayModes: ["inline", "fullscreen"],
+            },
+          },
+        },
+      ],
+    }),
   );
 
   server.registerResource(
@@ -66,7 +96,78 @@ function createServer() {
         openWorldHint: false,
       },
     },
-    async () => executeTool("list_science_simulations", {}),
+    async () => {
+      const simulations = listSimulationProfiles();
+      return {
+        structuredContent: {
+          count: simulations.length,
+          simulations,
+        },
+        content: [
+          {
+            type: "text",
+            text:
+              `Esbiko exposes ${simulations.length} simulations through the universal MCP integration. ` +
+              "Simulations marked adapted have deeper agent controls.",
+          },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "open_science_simulation",
+    {
+      title: "Open Esbiko science simulation",
+      description:
+        "Open any Esbiko simulation in the reusable interactive MCP App shell. " +
+        "Use list_science_simulations to discover simulation IDs. Simulations " +
+        "with integrationLevel=adapted also support deeper agent controls.",
+      inputSchema: z.object({
+        simulationId: z.enum(SIMULATION_IDS),
+      }).strict(),
+      outputSchema: z.object({
+        simulation: z.object({
+          id: z.string(),
+          name: z.string(),
+          description: z.string(),
+          domain: z.string(),
+          topic: z.string(),
+          route: z.string(),
+          runUrl: z.string(),
+          integrationLevel: z.enum(["universal", "adapted"]),
+          tools: z.array(z.string()),
+          stateSync: z.boolean(),
+          video: z.boolean(),
+          adapterVersion: z.string().nullable(),
+        }).passthrough(),
+      }).strict(),
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+      _meta: {
+        ui: {resourceUri: GENERIC_SIMULATION_WIDGET_URI},
+        "openai/outputTemplate": GENERIC_SIMULATION_WIDGET_URI,
+        "openai/toolInvocation/invoking": "Opening Esbiko simulation…",
+        "openai/toolInvocation/invoked": "Esbiko simulation ready.",
+      },
+    },
+    async ({simulationId}) => {
+      const simulation = requireSimulationProfile(simulationId);
+      return {
+        structuredContent: {simulation},
+        content: [
+          {
+            type: "text",
+            text:
+              `Opened ${simulation.name} in Esbiko's interactive MCP App shell. ` +
+              `Integration level: ${simulation.integrationLevel}.`,
+          },
+        ],
+      };
+    },
   );
 
   server.registerTool(
