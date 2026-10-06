@@ -48,10 +48,16 @@
         "test_cases": {
           "positive": [
             {
-              "description": "Configure and open an adapted mechanics simulation.",
-              "prompt": "Open the Simple Pendulum with length 1.5 m, mass 3 kg, initial angle 25 degrees, and elasticity 0.995.",
+              "description": "Open the flagship Solar System showcase with validated agent parameters.",
+              "prompt": "Open the Solar System in educational scale, focus on Earth, use speed 5, show orbits and labels, and hide axes.",
               "tools_triggered": "open_science_simulation",
-              "expected_behavior": "Open the Simple Pendulum MCP App with the requested parameters preserved and report it as an adapted Esbiko simulation."
+              "expected_behavior": "Open the adapted Solar System simulation in the shared MCP App, preserve the requested parameters, and present a responsive interactive 3D experience."
+            },
+            {
+              "description": "Open the flagship 3D Orbit Lab with validated Earth-orbit settings.",
+              "prompt": "Open the 3D Orbit Lab in educational mode with time scale 200, Moon and Lagrange points visible, vectors on, and telescope coordinates -37.8136, 144.9631.",
+              "tools_triggered": "open_science_simulation",
+              "expected_behavior": "Open the adapted Earth Orbit Lab with the requested settings preserved and a responsive interactive 3D orbital scene."
             },
             {
               "description": "Run the deterministic Doppler scientific calculation.",
@@ -60,16 +66,10 @@
               "expected_behavior": "Return an observed frequency of about 533.29 Hz, a positive frequency shift of about 21.2%, and identify the motion as approaching."
             },
             {
-              "description": "Open a responsive 3D gyroscope with agent parameters.",
-              "prompt": "Open the Gyroscope with spin speed 18 rad/s, tilt 35 degrees, mass 1.5 kg, vectors on, and trail off.",
+              "description": "Configure and open an adapted mechanics simulation.",
+              "prompt": "Open the Simple Pendulum with length 1.5 m, mass 3 kg, initial angle 25 degrees, and elasticity 0.995.",
               "tools_triggered": "open_science_simulation",
-              "expected_behavior": "Open the adapted Gyroscope simulation with the supplied values and an interactive responsive UI."
-            },
-            {
-              "description": "Discover the Esbiko simulation catalog.",
-              "prompt": "List the science simulations available in Esbiko and tell me which ones have deeper agent controls.",
-              "tools_triggered": "list_science_simulations",
-              "expected_behavior": "Return the Esbiko simulation catalog and distinguish universal simulations from adapted simulations without inventing unsupported capabilities."
+              "expected_behavior": "Open the Simple Pendulum MCP App with the requested parameters preserved and report it as an adapted Esbiko simulation."
             },
             {
               "description": "Prepare the supported Doppler browser video workflow.",
