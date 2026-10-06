@@ -50,6 +50,14 @@
     ],
     "rewrites": [
       {
+        "source": "/mcp",
+        "function": "mcp"
+      },
+      {
+        "source": "/mcp/**",
+        "function": "mcp"
+      },
+      {
         "source": "/api/**",
         "function": "platformApi"
       },
@@ -81,4 +89,4 @@
   "storage": {
     "rules": "storage.rules"
   }
-}
+}\n
