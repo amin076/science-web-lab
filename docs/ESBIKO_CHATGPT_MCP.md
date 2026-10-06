@@ -290,3 +290,64 @@ secondInstrument
 The request is forwarded into the embedded Doppler runtime. In MCP App mode, Esbiko shows a dedicated **MCP Video Studio** instead of the legacy WebMCP testing guide.
 
 Because browser audio and MediaRecorder require a direct user gesture, ChatGPT prepares the video configuration but does not falsely claim that a WebM file already exists. The user clicks **Generate Video** once, then the existing Esbiko director/recorder pipeline runs, reports progress, and exposes **Download WebM** when ready.
+
+
+## Batch adapter onboarding v1
+
+Esbiko now uses a shared embedded-parameter reader:
+
+```text
+src/platform/agent/readEmbeddedMcpParameters.js
+```
+
+Simulation components no longer need to implement their own URL parsing, numeric conversion, enum checking, or range clamping for `mcp.*` query parameters.
+
+The helper:
+
+- reads the canonical simulation agent manifest
+- detects `embed=mcp-app`
+- parses only declared parameters
+- clamps numeric values to manifest min/max bounds
+- rejects invalid enum values by keeping defaults
+- reports which parameters were explicitly supplied
+- leaves normal website execution unchanged
+
+The earlier Simple Pendulum and Spring–Mass integrations were refactored to use this shared helper.
+
+### First batch
+
+Five additional simulations are now adapted without dedicated MCP tools or dedicated MCP App resources:
+
+```text
+physics.mechanics.circular-motion
+physics.mechanics.projectile
+physics.mechanics.gravity-comparison
+physics.mechanics.seesaw
+physics.mechanics.collision
+```
+
+All five use:
+
+```text
+open_science_simulation
+ui://esbiko/simulation-shell-v1.html
+simulation-agent.v1
+readEmbeddedMcpParameters(...)
+```
+
+The live official-client smoke workflow opens all five with real parameter sets and verifies:
+
+- the simulation is reported as `adapted`
+- the expected adapter version is present
+- all supplied parameters survive MCP validation unchanged
+- the shared MCP App path remains usable
+
+This reduces normal simulation onboarding to:
+
+```text
+1. add one canonical manifest entry
+2. initialize simulation state with readEmbeddedMcpParameters(...)
+3. add one generic smoke case
+```
+
+No new MCP transport registration, tool name, resource URI, ChatGPT widget, CSP rule, or server-side registry duplication is required.
