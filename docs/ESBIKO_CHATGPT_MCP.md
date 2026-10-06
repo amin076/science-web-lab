@@ -109,3 +109,84 @@ ChatGPT
 ```
 
 This video workflow is part of the Doppler MCP App v0.2 milestone.
+
+
+## MCP App UI v0.2
+
+The first ChatGPT-renderable Esbiko UI is registered as:
+
+```text
+ui://esbiko/doppler-v1.html
+```
+
+The `run_doppler_experiment` tool links to this resource through the standard MCP Apps metadata:
+
+```text
+_meta.ui.resourceUri
+```
+
+and also publishes the ChatGPT compatibility alias:
+
+```text
+_meta["openai/outputTemplate"]
+```
+
+The resource MIME type is:
+
+```text
+text/html;profile=mcp-app
+```
+
+The component supports inline and fullscreen display modes.
+
+### Embedded simulation
+
+The component embeds the existing Esbiko Doppler runtime:
+
+```text
+https://www.esbiko.com/experiments/physics.acoustics.doppler/run
+```
+
+This preserves the existing production simulation rather than copying its React implementation into a second ChatGPT-specific application.
+
+The MCP App resource declares a narrow CSP and allows frames only from:
+
+```text
+https://www.esbiko.com
+```
+
+No third-party frame origin is allowed.
+
+### Result synchronization
+
+The parent MCP App listens for the standard MCP Apps lifecycle message:
+
+```text
+ui/notifications/tool-result
+```
+
+and renders the authoritative structured result returned by `run_doppler_experiment`:
+
+- emitted frequency
+- observed frequency
+- frequency shift
+- motion
+- scientific interpretation
+
+The embedded simulation remains independently interactive.
+
+### Design rule
+
+The Doppler scientific tool must remain fully useful when a client does not render MCP App UI. The UI is an enhancement, not a dependency of the scientific result.
+
+### v0.2 acceptance criteria
+
+The phase is considered complete when:
+
+1. the public MCP server exposes `ui://esbiko/doppler-v1.html`
+2. `run_doppler_experiment` advertises that UI resource
+3. the resource can be read by an official MCP client
+4. the scientific tool still returns the expected 533.29 Hz reference result
+5. ChatGPT renders the MCP App when the connected Esbiko plugin calls the tool
+6. the embedded Esbiko simulation loads in the component
+7. interactive video generation remains available from the browser-based Doppler runtime
