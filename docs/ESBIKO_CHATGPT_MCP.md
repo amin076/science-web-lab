@@ -385,3 +385,108 @@ Notable parameter coverage:
 - Coulomb 2D: both charges, both 2D positions, Coulomb constant
 
 The live official MCP smoke test opens all ten batch-adapted simulations (v1 + v2) and verifies that each reports `integrationLevel=adapted` and round-trips its supplied parameters.
+
+
+## Lessons learned from scaling beyond the proof of concept
+
+### 1. The expensive part was not MCP itself
+
+The first simulation required substantial experimentation because several layers were being discovered at the same time:
+
+- MCP transport
+- ChatGPT tool discovery
+- MCP App resources
+- iframe/CSP behavior
+- browser audio/video restrictions
+- simulation state hydration
+- deployment ordering
+- UI responsiveness
+
+Once those concerns were separated and standardized, later simulations became much cheaper to integrate.
+
+### 2. Do not create one MCP tool per simulation
+
+The scalable solution is the generic tool:
+
+```text
+open_science_simulation
+```
+
+combined with a permanent simulation ID and manifest-driven parameter schema.
+
+### 3. Do not duplicate schemas
+
+Simulation capability metadata must come from one canonical manifest and be generated/consumed by both frontend and server runtimes.
+
+### 4. Embedded layout is a product requirement
+
+A full-screen simulation can be scientifically correct and still be unusable in ChatGPT because the MCP App iframe is smaller.
+
+Responsive/iframe compatibility must therefore be designed and tested from the beginning.
+
+### 5. Control semantics need standardization
+
+Buttons and controls should map to semantic actions such as:
+
+```text
+play
+pause
+reset
+configure
+record
+export
+```
+
+not presentation-specific names or DOM positions.
+
+Future simulations should expose stable `data-agent-action` and `data-agent-param` identities in addition to accessible labels.
+
+### 6. Browser permission boundaries must remain explicit
+
+Audio, microphone, MediaRecorder, downloads, and similar capabilities may require a user gesture.
+
+MCP should prepare and coordinate those operations, but must not claim completion before the browser operation actually runs.
+
+### 7. Runtime tests are necessary
+
+A syntax-valid MCP transport can still fail while registering resources/tools. CI therefore instantiates the real server runtime before deployment.
+
+### 8. Public official-client smoke tests are the strongest proof
+
+A successful local test is insufficient. The production endpoint is tested by the official MCP client over the public Internet.
+
+### 9. Deployment races can corrupt apparent capability state
+
+Overlapping deployments caused stale generated manifests to temporarily replace newer capability metadata.
+
+Production MCP deploys are now serialized and stale runs are cancelled.
+
+### 10. Marginal integration cost is the key platform metric
+
+The platform succeeds when adding the 20th simulation is dramatically cheaper than adding the first.
+
+The target is not merely "many integrations." The target is "new simulations are MCP-ready by construction."
+
+## Automation roadmap
+
+The next automation work should proceed in this order:
+
+1. add a simulation-agent compliance checker
+2. add semantic-control checks
+3. add Playwright responsive/iframe tests at standard viewport sizes
+4. generate adapter scaffolding from the canonical simulation contract
+5. generate smoke-test cases from manifest examples
+6. create an agent-ready simulation starter template
+7. make CI reject simulations that violate required responsive or agent-control standards
+
+The desired future workflow is:
+
+```text
+define simulation contract
+  -> scaffold simulation
+  -> generate manifest
+  -> generate hydration wiring
+  -> generate tests
+  -> run responsive checks
+  -> deploy
+```
