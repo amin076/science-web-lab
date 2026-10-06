@@ -65,6 +65,14 @@ assert.deepEqual(
   ["open", "configure", "readState", "play", "pause", "reset"],
 );
 
+const solarSystem = getSimulationAgentProfile("astronomy.space.solar-system");
+assert.equal(solarSystem.integrationLevel, "adapted");
+assert.equal(solarSystem.adapterVersion, "solar-system-adapter.v1");
+
+const orbitLab = getSimulationAgentProfile("astronomy.space.earth-orbit-lab");
+assert.equal(orbitLab.integrationLevel, "adapted");
+assert.equal(orbitLab.adapterVersion, "earth-orbit-lab-adapter.v1");
+
 const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
