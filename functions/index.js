@@ -272,3 +272,4 @@ exports.platformApi = onRequest((req, res) => {
     message: `No Platform API route found for ${path}`,
   });
 });
+\n\nexports.mcp = onRequest(async (req, res) => {\n  return handleMcpRequest(req, res);\n});\n
