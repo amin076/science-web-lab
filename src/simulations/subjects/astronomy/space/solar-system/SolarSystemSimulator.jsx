@@ -82,7 +82,7 @@ function PlaybackControls({
   compact = false,
 }) {
   const base =
-    "rounded-lg border border-white/15 text-white shadow-md transition-transform active:scale-95";
+    "min-h-11 min-w-11 rounded-lg border border-white/15 text-white shadow-md transition-transform active:scale-95";
   const pad = compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm";
 
   return (
