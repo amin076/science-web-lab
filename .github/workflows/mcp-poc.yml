@@ -1,0 +1,46 @@
+name: Esbiko MCP PoC
+
+on:
+  pull_request:
+    paths:
+      - "functions/mcp/**"
+      - "functions/index.js"
+      - "firebase.json"
+      - "scripts/test-mcp-doppler.cjs"
+      - "docs/ESBIKO_CHATGPT_MCP.md"
+      - "package.json"
+      - ".github/workflows/mcp-poc.yml"
+  workflow_dispatch:
+
+jobs:
+  verify-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check MCP source syntax
+        run: |
+          node --check functions/mcp/dopplerService.js
+          node --check functions/mcp/server.js
+          node --check scripts/test-mcp-doppler.cjs
+
+      - name: Test Doppler MCP proof of concept
+        run: npm run test:mcp-doppler
+
+      - name: Test Platform API
+        run: npm run test:platform-api
+
+      - name: Test WebMCP
+        run: npm run test:webmcp
+
+      - name: Build Esbiko
+        run: npm run build
