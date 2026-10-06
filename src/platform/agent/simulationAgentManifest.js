@@ -271,6 +271,180 @@ export const simulationAgentManifest = Object.freeze({
       },
     },
   }),
+
+  "physics.mechanics.pulley-system": Object.freeze({
+    adapterVersion: "pulley-system-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        config: {
+          type: "string",
+          enum: ["fixed", "movable", "bt_luff", "bt2", "bt_gyn", "bt3"],
+        },
+        loadMass: { type: "number", minimum: 1, maximum: 500 },
+        effortForce: { type: "number", minimum: 0, maximum: 2000 },
+        g: { type: "number", minimum: 0, maximum: 20 },
+        efficiency: { type: "number", minimum: 0.5, maximum: 1 },
+        damping: { type: "number", minimum: 0, maximum: 200 },
+        showForces: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "config", "loadMass", "effortForce", "g", "efficiency", "damping"],
+      properties: {
+        running: { type: "boolean" },
+        config: { type: "string" },
+        loadMass: { type: "number" },
+        effortForce: { type: "number" },
+        g: { type: "number" },
+        efficiency: { type: "number" },
+        damping: { type: "number" },
+        showForces: { type: "boolean" },
+      },
+    },
+  }),
+
+  "physics.mechanics.two-body-gravity": Object.freeze({
+    adapterVersion: "two-body-gravity-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        m1: { type: "number", minimum: 1, maximum: 2000 },
+        v1: { type: "number", minimum: 0, maximum: 100 },
+        ang1: { type: "number", minimum: 0, maximum: 360 },
+        x1: { type: "number", minimum: -50, maximum: 50 },
+        m2: { type: "number", minimum: 0.1, maximum: 2000 },
+        v2: { type: "number", minimum: 0, maximum: 100 },
+        ang2: { type: "number", minimum: 0, maximum: 360 },
+        x2: { type: "number", minimum: -50, maximum: 50 },
+        G: { type: "number", minimum: 0.1, maximum: 50 },
+        showVectors: { type: "boolean" },
+        showTrail: { type: "boolean" },
+        showCM: { type: "boolean" },
+        followCM: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "m1", "m2", "G"],
+      properties: {
+        running: { type: "boolean" },
+        m1: { type: "number" },
+        m2: { type: "number" },
+        G: { type: "number" },
+      },
+    },
+  }),
+
+  "physics.fluid-mechanics.archimedes-principle": Object.freeze({
+    adapterVersion: "archimedes-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        objDensity: { type: "number", minimum: 50, maximum: 20000 },
+        fluidDensity: { type: "number", minimum: 500, maximum: 14000 },
+        shape: {
+          type: "string",
+          enum: ["box", "sphere", "cylinder", "cylinderHorizontal", "pyramid"],
+        },
+        showForces: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "objDensity", "fluidDensity", "shape"],
+      properties: {
+        running: { type: "boolean" },
+        objDensity: { type: "number" },
+        fluidDensity: { type: "number" },
+        shape: { type: "string" },
+        showForces: { type: "boolean" },
+      },
+    },
+  }),
+
+  "physics.acoustics.sound-waves": Object.freeze({
+    adapterVersion: "sound-waves-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        mode: { type: "string", enum: ["generator", "beats", "mic"] },
+        freq1: { type: "number", minimum: 100, maximum: 1000 },
+        freq2: { type: "number", minimum: 100, maximum: 1000 },
+        volume: { type: "number", minimum: 0, maximum: 1 },
+        waveType: {
+          type: "string",
+          enum: ["sine", "square", "sawtooth", "triangle"],
+        },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "mode", "freq1", "freq2", "volume", "waveType"],
+      properties: {
+        running: { type: "boolean" },
+        mode: { type: "string" },
+        freq1: { type: "number" },
+        freq2: { type: "number" },
+        volume: { type: "number" },
+        waveType: { type: "string" },
+      },
+    },
+  }),
+
+  "physics.electricity.coulomb-law-2d": Object.freeze({
+    adapterVersion: "coulomb-law-2d-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        q1: { type: "number", minimum: -10, maximum: 10 },
+        q2: { type: "number", minimum: -10, maximum: 10 },
+        x1: { type: "number", minimum: -8, maximum: 8 },
+        y1: { type: "number", minimum: -5, maximum: 5 },
+        x2: { type: "number", minimum: -8, maximum: 8 },
+        y2: { type: "number", minimum: -5, maximum: 5 },
+        k: { type: "number", minimum: 0.1, maximum: 20 },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "q1", "q2", "pos1", "pos2", "k"],
+      properties: {
+        running: { type: "boolean" },
+        q1: { type: "number" },
+        q2: { type: "number" },
+        pos1: { type: "object" },
+        pos2: { type: "object" },
+        k: { type: "number" },
+      },
+    },
+  }),
 });
 
 export function getSimulationAgentManifestEntry(id) {
