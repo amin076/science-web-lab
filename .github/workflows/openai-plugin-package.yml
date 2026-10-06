@@ -31,7 +31,7 @@ jobs:
       - name: Build upload ZIP
         run: |
           cd openai-plugin/esbiko-science-lab
-          zip -r ../../../esbiko-science-lab-openai-plugin.zip .
+          zip -r ../../esbiko-science-lab-openai-plugin.zip .
 
       - name: Upload plugin ZIP artifact
         uses: actions/upload-artifact@v4
