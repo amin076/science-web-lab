@@ -41,6 +41,7 @@ import {
 
 import { latLonToECEF, ecefToInertial } from "./orbit.visibility";
 import { makeBody } from "./orbit.factory";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // Modular Components
 import {
@@ -57,26 +58,49 @@ import {
    Main Simulator
 ========================= */
 export default function SatelliteTelescopeSimulator() {
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "astronomy.space.earth-orbit-lab",
+      {
+        simMode: "educational",
+        timeScale: 200,
+        showTrails: true,
+        showVectors: false,
+        showLOS: false,
+        showOrbits: true,
+        showOnlyVisible: false,
+        showMoon: true,
+        telescopeLat: -37.8136,
+        telescopeLon: 144.9631,
+        showLagrangePoints:
+          typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+        showLabels:
+          typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
 
   const [settings, setSettings] = useState({
-    timeScale: 200,
+    timeScale: initialMcp.values.timeScale,
     dt: 0.05,
-    showTrails: true,
-    showVectors: false,
-    showLOS: false,
-    showOrbits: true,
+    showTrails: initialMcp.values.showTrails,
+    showVectors: initialMcp.values.showVectors,
+    showLOS: initialMcp.values.showLOS,
+    showOrbits: initialMcp.values.showOrbits,
     earthRotationOn: true,
-    showOnlyVisible: false,
-    showMoon: true,
-    telescopeLat: -37.8136,
-    telescopeLon: 144.9631,
-    showLagrangePoints:
-      typeof window !== "undefined" ? window.innerWidth >= 768 : true,
-
-    showLabels: typeof window !== "undefined" ? window.innerWidth >= 768 : true,
+    showOnlyVisible: initialMcp.values.showOnlyVisible,
+    showMoon: initialMcp.values.showMoon,
+    telescopeLat: initialMcp.values.telescopeLat,
+    telescopeLon: initialMcp.values.telescopeLon,
+    showLagrangePoints: initialMcp.values.showLagrangePoints,
+    showLabels: initialMcp.values.showLabels,
   });
 
-  const [simMode, setSimMode] = useState("educational");
+  const [simMode, setSimMode] = useState(initialMcp.values.simMode);
   const [isRunning, setIsRunning] = useState(true);
   const [focusedBodyId, setFocusedBodyId] = useState(null);
   const [bodyList, setBodyList] = useState([]);
@@ -631,6 +655,27 @@ export default function SatelliteTelescopeSimulator() {
           />
         </Canvas>
 
+        {initialMcp.embeddedMcpApp && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 10,
+              left: 10,
+              zIndex: 30,
+              px: 1.5,
+              py: 0.75,
+              borderRadius: 999,
+              border: "1px solid rgba(34,211,238,.35)",
+              bgcolor: "rgba(2,6,23,.82)",
+              color: "#a5f3fc",
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+          >
+            MCP configured · Orbit Lab
+          </Box>
+        )}
+
         <OrbitHUD
           focusedBodyId={focusedBodyId || "earth"}
           bodies={simRef.current.bodies}
@@ -650,6 +695,8 @@ export default function SatelliteTelescopeSimulator() {
           <Button
             variant="contained"
             size="small"
+            aria-label={isRunning ? "Pause simulation" : "Play simulation"}
+            data-agent-action={isRunning ? "pause" : "play"}
             onClick={() => setIsRunning(!isRunning)}
             sx={{
               background: isRunning
