@@ -42,6 +42,11 @@ const batchAdaptedIds = [
   "physics.mechanics.gravity-comparison",
   "physics.mechanics.seesaw",
   "physics.mechanics.collision",
+  "physics.mechanics.pulley-system",
+  "physics.mechanics.two-body-gravity",
+  "physics.fluid-mechanics.archimedes-principle",
+  "physics.acoustics.sound-waves",
+  "physics.electricity.coulomb-law-2d",
 ];
 
 for (const id of batchAdaptedIds) {
@@ -52,7 +57,7 @@ for (const id of batchAdaptedIds) {
   assert(profile.parameterSchema, `${id} should declare parameterSchema`);
 }
 
-const universal = getSimulationAgentProfile("physics.mechanics.two-body-gravity");
+const universal = getSimulationAgentProfile("physics.mechanics.gyroscope");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
 assert.deepEqual(universal.actions, ["open"]);

@@ -168,6 +168,67 @@ jobs:
                     p2Vy: 0,
                   },
                 },
+                {
+                  simulationId: 'physics.mechanics.pulley-system',
+                  parameters: {
+                    config: 'bt3',
+                    loadMass: 80,
+                    effortForce: 220,
+                    g: 9.81,
+                    efficiency: 0.9,
+                    damping: 12,
+                    showForces: true,
+                  },
+                },
+                {
+                  simulationId: 'physics.mechanics.two-body-gravity',
+                  parameters: {
+                    m1: 120,
+                    v1: 2,
+                    ang1: 90,
+                    x1: -4,
+                    m2: 15,
+                    v2: 14,
+                    ang2: 270,
+                    x2: 8,
+                    G: 12,
+                    showVectors: true,
+                    showTrail: true,
+                    showCM: true,
+                    followCM: false,
+                  },
+                },
+                {
+                  simulationId: 'physics.fluid-mechanics.archimedes-principle',
+                  parameters: {
+                    objDensity: 917,
+                    fluidDensity: 1025,
+                    shape: 'sphere',
+                    showForces: true,
+                  },
+                },
+                {
+                  simulationId: 'physics.acoustics.sound-waves',
+                  parameters: {
+                    mode: 'beats',
+                    freq1: 440,
+                    freq2: 446,
+                    volume: 0.6,
+                    waveType: 'sine',
+                  },
+                },
+                {
+                  simulationId: 'physics.electricity.coulomb-law-2d',
+                  parameters: {
+                    q1: 3,
+                    q2: -2,
+                    x1: -4,
+                    y1: 1,
+                    x2: 4,
+                    y2: -1,
+                    k: 8.99,
+                  },
+                },
               ];
 
               const batchResults = [];

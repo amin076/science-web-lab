@@ -351,3 +351,37 @@ This reduces normal simulation onboarding to:
 ```
 
 No new MCP transport registration, tool name, resource URI, ChatGPT widget, CSP rule, or server-side registry duplication is required.
+
+
+## Batch adapter onboarding v2
+
+The second manifest-driven batch adds five more simulations without introducing any new MCP tool or MCP App resource:
+
+```text
+physics.mechanics.pulley-system
+physics.mechanics.two-body-gravity
+physics.fluid-mechanics.archimedes-principle
+physics.acoustics.sound-waves
+physics.electricity.coulomb-law-2d
+```
+
+These simulations reuse the same generic integration path:
+
+```text
+open_science_simulation
+  -> simulation-agent.v1
+  -> canonical manifest
+  -> ui://esbiko/simulation-shell-v1.html
+  -> readEmbeddedMcpParameters(...)
+  -> native simulation state
+```
+
+Notable parameter coverage:
+
+- Pulley System: configuration, load, effort, gravity, efficiency, damping, force overlay
+- Two-Body Gravity: both masses, positions, velocities, angles, scaled G, visual toggles
+- Archimedes: object density, fluid density, shape, force overlay
+- Sound Waves: mode, two frequencies, volume, waveform
+- Coulomb 2D: both charges, both 2D positions, Coulomb constant
+
+The live official MCP smoke test opens all ten batch-adapted simulations (v1 + v2) and verifies that each reports `integrationLevel=adapted` and round-trips its supplied parameters.

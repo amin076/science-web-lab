@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Cylinder } from "@react-three/drei";
 import CalculateIcon from "@mui/icons-material/Calculate";
@@ -14,6 +14,7 @@ import ObjectWithWaterCut from "./ObjectWithWaterCut";
 import MathExplanation from "./MathExplanation";
 import Ruler from "./Ruler";
 import { BLOCK_SIDE } from "./constants";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // --- CUSTOM SCROLLBAR CSS ---
 const scrollbarStyle = `
@@ -107,12 +108,27 @@ const SimulationScene = ({
 
 // --- MAIN PAGE ---
 export default function ArchimedesSimulation() {
-  const [objDensity, setObjDensity] = useState(600);
-  const [fluidDensity, setFluidDensity] = useState(1000);
-  const [showForces, setShowForces] = useState(true);
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.fluid-mechanics.archimedes-principle",
+      {
+        objDensity: 600,
+        fluidDensity: 1000,
+        showForces: true,
+        shape: SHAPES.box,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const [objDensity, setObjDensity] = useState(initialMcp.values.objDensity);
+  const [fluidDensity, setFluidDensity] = useState(initialMcp.values.fluidDensity);
+  const [showForces, setShowForces] = useState(initialMcp.values.showForces);
   const [isPlaying, setIsPlaying] = useState(false);
   const [resetKey, setResetKey] = useState(0);
-  const [shape, setShape] = useState(SHAPES.box);
+  const [shape, setShape] = useState(initialMcp.values.shape);
   const [showMath, setShowMath] = useState(false); // Math state inside HUD
 
   const [hudData, setHudData] = useState({
@@ -134,6 +150,11 @@ export default function ArchimedesSimulation() {
   return (
     <div className="w-full h-full relative bg-gradient-to-b from-gray-200 to-gray-400 overflow-hidden flex flex-col">
       <style>{scrollbarStyle}</style>
+      {initialMcp.embeddedMcpApp && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+          MCP configured · object={objDensity}kg/m³ · fluid={fluidDensity}kg/m³ · shape={shape}
+        </div>
+      )}
 
       {/* 1. HUD OVERLAY (Left Side - Fixed Width, Dynamic Height) */}
       <div className="absolute top-4 left-4 z-10 w-80 max-h-[90vh] flex flex-col pointer-events-auto">
