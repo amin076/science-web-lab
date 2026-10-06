@@ -13,3 +13,5 @@ export {
   getSimulationAgentManifestEntry,
   simulationAgentManifest,
 } from "./simulationAgentManifest.js";
+
+export { readEmbeddedMcpParameters } from "./readEmbeddedMcpParameters.js";
