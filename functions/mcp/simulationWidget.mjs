@@ -89,7 +89,7 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
       if (parameters && typeof parameters === "object") {
         Object.entries(parameters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
-            url.searchParams.set(`mcp.${key}`, String(value));
+            url.searchParams.set("mcp." + key, String(value));
           }
         });
       }
