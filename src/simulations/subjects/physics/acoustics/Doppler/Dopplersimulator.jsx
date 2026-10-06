@@ -24,6 +24,9 @@ function audioError(code, message) {
 }
 
 const DopplerSimulator = () => {
+  const embeddedMcpApp =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("embed") === "mcp-app";
   const [isRunning, setIsRunning] = useState(false);
   const [masterVolume, setMasterVolume] = useState(0.5);
   const [mode, setMode] = useState(MODES.SCIENTIFIC);
@@ -386,6 +389,7 @@ const DopplerSimulator = () => {
   });
 
   const webMcpStatus = useDopplerWebMcp({
+    enabled: !embeddedMcpApp,
     getState: () => getDopplerStateSnapshot(runtimeStateRef.current),
     configure: (input) => {
       const nextState = configureDopplerExperiment(
@@ -468,6 +472,7 @@ const DopplerSimulator = () => {
         onSetMasterVolume={setMasterVolume}
         masterGainRef={masterGainRef}
         webMcpStatus={webMcpStatus}
+        hideAgentGuide={embeddedMcpApp}
         lastAgentAction={lastAgentAction}
         directorStatus={director.status}
         onStartDirector={() => director.startDirector({})}
