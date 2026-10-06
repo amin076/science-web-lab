@@ -3,6 +3,7 @@ name: Deploy Esbiko MCP PoC
 on:
   push:
     branches:
+      - main
       - "feature/esbiko-*"
     paths:
       - "functions/mcp/**"
@@ -13,6 +14,10 @@ on:
       - "firebase.json"
       - ".github/workflows/deploy-mcp-poc.yml"
   workflow_dispatch:
+
+concurrency:
+  group: esbiko-mcp-production-deploy
+  cancel-in-progress: true
 
 jobs:
   deploy-mcp:
