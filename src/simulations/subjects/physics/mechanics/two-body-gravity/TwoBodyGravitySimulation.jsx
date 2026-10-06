@@ -777,6 +777,7 @@ export default function TwoBodyGravitySimulation() {
           </div>
         )}
       <canvas ref={canvasRef} className="w-full h-full block" />
+      </div>
     </SimulationShell>
   );
 }
