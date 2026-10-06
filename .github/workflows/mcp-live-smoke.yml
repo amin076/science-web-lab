@@ -1,0 +1,86 @@
+name: Live Esbiko MCP Smoke Test
+
+on:
+  push:
+    branches:
+      - feature/esbiko-mcp-v0.1-doppler
+    paths:
+      - ".github/workflows/mcp-live-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install official MCP client
+        run: |
+          mkdir -p /tmp/esbiko-mcp-smoke
+          cd /tmp/esbiko-mcp-smoke
+          npm init -y
+          npm install @modelcontextprotocol/client@^2.0.0
+
+      - name: Connect, discover tools, and call Doppler
+        run: |
+          cat > /tmp/esbiko-mcp-smoke/smoke.mjs <<'EOF'
+          import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+
+          const endpoint = new URL('https://us-central1-sience-web-app.cloudfunctions.net/mcp');
+          let lastError;
+
+          for (let attempt = 1; attempt <= 12; attempt += 1) {
+            let client;
+            try {
+              client = new Client(
+                { name: 'esbiko-live-smoke', version: '0.1.0' },
+                { versionNegotiation: { mode: { pin: '2026-07-28' } } },
+              );
+              const transport = new StreamableHTTPClientTransport(endpoint);
+              await client.connect(transport);
+
+              const server = client.getServerVersion();
+              const { tools } = await client.listTools();
+              const names = tools.map((tool) => tool.name);
+
+              if (!names.includes('run_doppler_experiment')) {
+                throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
+              }
+
+              const result = await client.callTool({
+                name: 'run_doppler_experiment',
+                arguments: {
+                  motion: 'approaching',
+                  emittedFrequencyHz: 440,
+                  sourceSpeedMps: 60,
+                  sourcePositionM: 250,
+                  observerPositionM: 500,
+                  observerVelocityMps: 0,
+                },
+              });
+
+              const observed = result?.structuredContent?.result?.observedFrequencyHz;
+              if (observed !== 533.29) {
+                throw new Error(`Unexpected observed frequency: ${observed}`);
+              }
+
+              console.log('MCP SERVER:', server);
+              console.log('TOOLS:', names);
+              console.log('DOPPLER OBSERVED HZ:', observed);
+              console.log('LIVE MCP SMOKE TEST PASSED');
+              await client.close();
+              process.exit(0);
+            } catch (error) {
+              lastError = error;
+              console.log(`Attempt ${attempt}/12 failed: ${error?.message || error}`);
+              try { await client?.close(); } catch {}
+              if (attempt < 12) await new Promise((resolve) => setTimeout(resolve, 15000));
+            }
+          }
+
+          throw lastError || new Error('Live MCP smoke test failed.');
+          EOF
+          cd /tmp/esbiko-mcp-smoke
+          node smoke.mjs
