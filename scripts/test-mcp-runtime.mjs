@@ -70,6 +70,26 @@ const projectileEmbedded = readEmbeddedMcpParameters(
 assert.equal(projectileEmbedded.values.gravity, 3.71);
 assert.equal(projectileEmbedded.values.selectedObject, "plane");
 
+const archimedesEmbedded = readEmbeddedMcpParameters(
+  "physics.fluid-mechanics.archimedes-principle",
+  { objDensity: 600, fluidDensity: 1000, shape: "box", showForces: true },
+  "?embed=mcp-app&mcp.objDensity=25000&mcp.fluidDensity=1025&mcp.shape=sphere&mcp.showForces=false",
+);
+assert.equal(archimedesEmbedded.values.objDensity, 20000);
+assert.equal(archimedesEmbedded.values.fluidDensity, 1025);
+assert.equal(archimedesEmbedded.values.shape, "sphere");
+assert.equal(archimedesEmbedded.values.showForces, false);
+
+const soundWavesEmbedded = readEmbeddedMcpParameters(
+  "physics.acoustics.sound-waves",
+  { mode: "generator", freq1: 440, freq2: 444, volume: 0.5, waveType: "sine" },
+  "?embed=mcp-app&mcp.mode=beats&mcp.freq1=440&mcp.freq2=446&mcp.volume=0.7&mcp.waveType=triangle",
+);
+assert.equal(soundWavesEmbedded.values.mode, "beats");
+assert.equal(soundWavesEmbedded.values.freq2, 446);
+assert.equal(soundWavesEmbedded.values.volume, 0.7);
+assert.equal(soundWavesEmbedded.values.waveType, "triangle");
+
 console.log("MCP RUNTIME STARTUP TEST PASSED");
 console.log("SHARED EMBEDDED MCP PARAMETER READER TEST PASSED");
 console.log("SIMULATION PARAMETER VALIDATION TEST PASSED");
