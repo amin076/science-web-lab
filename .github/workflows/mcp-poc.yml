@@ -31,6 +31,8 @@ jobs:
         run: |
           node --check functions/mcp/dopplerService.js
           node --check functions/mcp/server.js
+          node --check functions/mcp/transport.mjs
+          node --check functions/mcp/dopplerWidget.mjs
           node --check scripts/test-mcp-doppler.cjs
 
       - name: Test Doppler MCP proof of concept
