@@ -15,6 +15,7 @@ import {
   Layers,
   Info,
 } from "lucide-react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // --- Components ---
 
@@ -47,15 +48,32 @@ const ControlCard = ({ children, title, icon: Icon }) => (
 // --- Main Simulation ---
 
 const SoundWavesLab = () => {
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.acoustics.sound-waves",
+      {
+        mode: "generator",
+        freq1: 440,
+        freq2: 444,
+        volume: 0.5,
+        waveType: "sine",
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+
   // --- Global State ---
-  const [mode, setMode] = useState("generator"); // 'generator', 'beats', 'mic'
+  const [mode, setMode] = useState(initialMcp.values.mode); // 'generator', 'beats', 'mic'
   const [isPlaying, setIsPlaying] = useState(false);
 
   // --- Generator State ---
-  const [freq1, setFreq1] = useState(440);
-  const [freq2, setFreq2] = useState(444); // For Beats mode
-  const [volume, setVolume] = useState(0.5);
-  const [waveType, setWaveType] = useState("sine");
+  const [freq1, setFreq1] = useState(initialMcp.values.freq1);
+  const [freq2, setFreq2] = useState(initialMcp.values.freq2); // For Beats mode
+  const [volume, setVolume] = useState(initialMcp.values.volume);
+  const [waveType, setWaveType] = useState(initialMcp.values.waveType);
 
   // --- Refs ---
   const audioCtxRef = useRef(null);
@@ -237,7 +255,12 @@ const SoundWavesLab = () => {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-slate-950 text-slate-200 font-sans">
+    <div className="relative w-full h-full overflow-y-auto bg-slate-950 text-slate-200 font-sans">
+      {initialMcp.embeddedMcpApp && (
+        <div className="sticky top-3 z-30 mx-auto w-fit rounded-lg border border-cyan-400/30 bg-slate-950/90 px-3 py-2 text-xs text-cyan-200">
+          MCP configured · mode={mode} · f₁={freq1}Hz · f₂={freq2}Hz · {waveType}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8 pb-32">
         {/* Header & Modes */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-slate-800 pb-6">
