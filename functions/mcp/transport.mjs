@@ -19,7 +19,10 @@ function createServer() {
       instructions:
         "Use list_science_simulations to discover Esbiko tools. " +
         "Use run_doppler_experiment for Doppler-effect calculations and " +
-        "explain the returned scientific result to the user.",
+        "explain the returned scientific result to the user. " +
+        "The Doppler tool has an attached interactive MCP App UI. " +
+        "Do not claim that no interactive widget is available merely because " +
+        "the component is rendered separately from the conversation transcript.",
     },
   );
 
@@ -72,7 +75,8 @@ function createServer() {
       title: "Run Doppler experiment",
       description:
         "Run Esbiko's scientific Doppler model and return emitted frequency, " +
-        "observed frequency, ratio, shift percentage, and interpretation.",
+        "observed frequency, ratio, shift percentage, and interpretation. " +
+        "This tool also opens Esbiko's attached interactive Doppler MCP App UI when the client supports MCP Apps.",
       inputSchema: z.object({
         motion: z.enum(["approaching", "receding", "stationary"]),
         emittedFrequencyHz: z.number().min(100).max(1000).default(440),
@@ -81,6 +85,28 @@ function createServer() {
         observerPositionM: z.number().min(0).max(1000).default(500),
         observerVelocityMps: z.number().min(-100).max(100).default(0),
       }).strict(),
+      outputSchema: z.object({
+        simulationId: z.string(),
+        engine: z.string(),
+        mode: z.string(),
+        speedOfSoundMps: z.number(),
+        input: z.object({
+          motion: z.string(),
+          emittedFrequencyHz: z.number(),
+          sourceSpeedMps: z.number(),
+          sourcePositionM: z.number(),
+          sourceVelocityMps: z.number(),
+          observerPositionM: z.number(),
+          observerVelocityMps: z.number(),
+        }).passthrough(),
+        result: z.object({
+          frequencyRatio: z.number(),
+          observedFrequencyHz: z.number(),
+          shiftPercent: z.number(),
+          motionStatus: z.string(),
+        }),
+        interpretation: z.string(),
+      }).passthrough(),
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,
