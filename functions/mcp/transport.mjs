@@ -7,7 +7,12 @@ import * as z from "zod/v4";
 import legacyServer from "./server.js";
 import {DOPPLER_WIDGET_HTML, DOPPLER_WIDGET_URI} from "./dopplerWidget.mjs";
 import {GENERIC_SIMULATION_WIDGET_HTML, GENERIC_SIMULATION_WIDGET_URI} from "./simulationWidget.mjs";
-import {listSimulationProfiles, requireSimulationProfile, SIMULATION_IDS} from "./simulationRegistry.mjs";
+import {
+  listSimulationProfiles,
+  requireSimulationProfile,
+  SIMULATION_IDS,
+  validateSimulationParameters,
+} from "./simulationRegistry.mjs";
 
 const {executeTool} = legacyServer;
 
@@ -167,10 +172,14 @@ export function createServer() {
     },
     async ({simulationId, parameters}) => {
       const simulation = requireSimulationProfile(simulationId);
+      const validatedParameters = validateSimulationParameters(
+        simulationId,
+        parameters || null,
+      );
       return {
         structuredContent: {
           simulation,
-          parameters: parameters || null,
+          parameters: validatedParameters,
         },
         content: [
           {
