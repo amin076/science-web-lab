@@ -8,3 +8,8 @@ export {
   getSimulationAgentProfile,
   simulationAgentProfiles,
 } from "./simulationAgentProfiles.js";
+
+export {
+  getSimulationAgentManifestEntry,
+  simulationAgentManifest,
+} from "./simulationAgentManifest.js";

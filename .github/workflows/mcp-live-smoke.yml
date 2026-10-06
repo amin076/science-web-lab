@@ -3,10 +3,12 @@ name: Live Esbiko MCP Smoke Test
 on:
   push:
     branches:
-      - feature/esbiko-mcp-v0.1-doppler
+      - "feature/esbiko-*"
     paths:
       - "functions/mcp/**"
       - "functions/index.js"
+      - "src/platform/agent/**"
+      - "scripts/generate-platform-catalog.cjs"
       - ".github/workflows/mcp-live-smoke.yml"
 
 jobs:
@@ -111,6 +113,20 @@ jobs:
                 },
               });
 
+              const springMassOpened = await client.callTool({
+                name: 'open_science_simulation',
+                arguments: {
+                  simulationId: 'physics.mechanics.spring-mass',
+                  parameters: {
+                    k: 30,
+                    mass: 2,
+                    displacement: 1.5,
+                    velocity: 0,
+                    damping: 0.2,
+                  },
+                },
+              });
+
               const videoRequest = video?.structuredContent?.videoRequest;
               if (
                 video?.structuredContent?.mode !== 'video' ||
@@ -120,6 +136,29 @@ jobs:
               ) {
                 throw new Error(
                   `Unexpected Doppler video preparation result: ${JSON.stringify(video?.structuredContent)}`,
+                );
+              }
+
+              const springMass = springMassOpened?.structuredContent?.simulation;
+              const springMassParameters = springMassOpened?.structuredContent?.parameters;
+
+              if (springMass?.id !== 'physics.mechanics.spring-mass') {
+                throw new Error(`Unexpected spring-mass result: ${springMass?.id}`);
+              }
+              if (springMass?.integrationLevel !== 'adapted') {
+                throw new Error(
+                  `Unexpected spring-mass integration level: ${springMass?.integrationLevel}`,
+                );
+              }
+              if (
+                springMassParameters?.k !== 30 ||
+                springMassParameters?.mass !== 2 ||
+                springMassParameters?.displacement !== 1.5 ||
+                springMassParameters?.velocity !== 0 ||
+                springMassParameters?.damping !== 0.2
+              ) {
+                throw new Error(
+                  `Unexpected spring-mass parameters: ${JSON.stringify(springMassParameters)}`,
                 );
               }
 
@@ -169,6 +208,8 @@ jobs:
               console.log('UNIVERSAL UI RESOURCE:', genericWidgetUri);
               console.log('GENERIC ADAPTED OPEN TEST:', pendulum.id, pendulum.integrationLevel);
               console.log('PENDULUM PARAMETERS:', pendulumParameters);
+              console.log('SPRING-MASS ADAPTED TEST:', springMass.id, springMass.integrationLevel);
+              console.log('SPRING-MASS PARAMETERS:', springMassParameters);
               console.log('VIDEO PREP TEST:', videoRequest);
               console.log('LIVE MCP APP SMOKE TEST PASSED');
               await client.close();

@@ -26,6 +26,16 @@ assert.deepEqual(
   ["open", "configure", "readState", "play", "pause", "reset"],
 );
 
+const springMass = getSimulationAgentProfile("physics.mechanics.spring-mass");
+assert.equal(springMass.integrationLevel, "adapted");
+assert.equal(springMass.adapterVersion, "spring-mass-adapter.v1");
+assert.equal(springMass.video, false);
+assert.equal(springMass.exportable, false);
+assert.deepEqual(
+  springMass.actions,
+  ["open", "configure", "readState", "play", "pause", "reset"],
+);
+
 const universal = getSimulationAgentProfile("physics.mechanics.projectile");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);

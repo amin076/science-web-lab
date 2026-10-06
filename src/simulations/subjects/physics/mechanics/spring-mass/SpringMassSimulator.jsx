@@ -14,18 +14,62 @@ import {
   drawSpringInfo,
 } from "@/utils/canvas/CanvasDrawing.js";
 
-export default function SpringMassSimulator({ onBack }) {
-  const METER_TO_PIXEL = 50;
-
-  const [springData, setSpringData] = useState({
+function readEmbeddedSpringMassState() {
+  const defaults = {
+    embeddedMcpApp: false,
     k: 20,
     mass: 1,
     displacement: 2,
     velocity: 0,
+    damping: 0.1,
+  };
+
+  if (typeof window === "undefined") return defaults;
+
+  const params = new URLSearchParams(window.location.search);
+  const embeddedMcpApp = params.get("embed") === "mcp-app";
+
+  if (!embeddedMcpApp) {
+    return {...defaults, embeddedMcpApp};
+  }
+
+  const readNumber = (key, fallback, min, max) => {
+    const raw = params.get(`mcp.${key}`);
+    if (raw == null || raw === "") return fallback;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return fallback;
+    return Math.min(max, Math.max(min, value));
+  };
+
+  return {
+    embeddedMcpApp,
+    k: readNumber("k", defaults.k, 1, 100),
+    mass: readNumber("mass", defaults.mass, 0.1, 10),
+    displacement: readNumber("displacement", defaults.displacement, -5, 5),
+    velocity: readNumber("velocity", defaults.velocity, -10, 10),
+    damping: readNumber("damping", defaults.damping, 0, 2),
+  };
+}
+
+export default function SpringMassSimulator({ onBack }) {
+  const METER_TO_PIXEL = 50;
+  const initialMcpStateRef = useRef(null);
+
+  if (!initialMcpStateRef.current) {
+    initialMcpStateRef.current = readEmbeddedSpringMassState();
+  }
+
+  const initialMcpState = initialMcpStateRef.current;
+
+  const [springData, setSpringData] = useState({
+    k: initialMcpState.k,
+    mass: initialMcpState.mass,
+    displacement: initialMcpState.displacement,
+    velocity: initialMcpState.velocity,
     equilibriumY: 300, // will be updated based on canvas height
   });
 
-  const [damping, setDamping] = useState(0.1);
+  const [damping, setDamping] = useState(initialMcpState.damping);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showTrails, setShowTrails] = useState(true);
   const [showVectors, setShowVectors] = useState(true);
@@ -221,6 +265,12 @@ export default function SpringMassSimulator({ onBack }) {
         <div className="h-full w-full grid grid-cols-[minmax(0,1fr)_380px] gap-4 min-h-0">
           {/* Left */}
           <div className="min-h-0 flex flex-col gap-3">
+            {initialMcpState.embeddedMcpApp && (
+              <div className="shrink-0 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
+                MCP configured · k={springData.k.toFixed(1)} N/m · m={springData.mass.toFixed(1)} kg · x₀={springData.displacement.toFixed(1)} m · b={damping.toFixed(2)}
+              </div>
+            )}
+
             <div className="shrink-0">
               <SimulationControls
                 isSimulating={isSimulating}
