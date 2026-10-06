@@ -47,9 +47,13 @@ jobs:
               const { tools } = await client.listTools();
               const names = tools.map((tool) => tool.name);
               const dopplerTool = tools.find((tool) => tool.name === 'run_doppler_experiment');
+              const openTool = tools.find((tool) => tool.name === 'open_science_simulation');
 
               if (!dopplerTool) {
                 throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
+              }
+              if (!openTool) {
+                throw new Error(`Missing universal open tool. Found: ${names.join(', ')}`);
               }
 
               const widgetUri =
@@ -78,6 +82,35 @@ jobs:
                 },
               });
 
+              const opened = await client.callTool({
+                name: 'open_science_simulation',
+                arguments: {
+                  simulationId: 'physics.mechanics.simple-pendulum',
+                },
+              });
+
+              const pendulum = opened?.structuredContent?.simulation;
+              if (pendulum?.id !== 'physics.mechanics.simple-pendulum') {
+                throw new Error(`Unexpected universal simulation result: ${pendulum?.id}`);
+              }
+              if (pendulum?.integrationLevel !== 'universal') {
+                throw new Error(`Unexpected pendulum integration level: ${pendulum?.integrationLevel}`);
+              }
+
+              const genericWidgetUri =
+                openTool?._meta?.ui?.resourceUri ||
+                openTool?._meta?.['openai/outputTemplate'];
+
+              if (genericWidgetUri !== 'ui://esbiko/simulation-shell-v1.html') {
+                throw new Error(`Unexpected universal UI resource: ${genericWidgetUri}`);
+              }
+
+              const genericResource = await client.readResource({ uri: genericWidgetUri });
+              const genericHtml = genericResource?.contents?.[0]?.text || '';
+              if (!genericHtml.includes('Esbiko interactive science simulation')) {
+                throw new Error('Universal MCP App shell is missing expected iframe content.');
+              }
+
               const observed = result?.structuredContent?.result?.observedFrequencyHz;
               if (observed !== 533.29) {
                 throw new Error(`Unexpected observed frequency: ${observed}`);
@@ -87,6 +120,8 @@ jobs:
               console.log('TOOLS:', names);
               console.log('DOPPLER UI RESOURCE:', widgetUri);
               console.log('DOPPLER OBSERVED HZ:', observed);
+              console.log('UNIVERSAL UI RESOURCE:', genericWidgetUri);
+              console.log('UNIVERSAL OPEN TEST:', pendulum.id, pendulum.integrationLevel);
               console.log('LIVE MCP APP SMOKE TEST PASSED');
               await client.close();
               process.exit(0);
