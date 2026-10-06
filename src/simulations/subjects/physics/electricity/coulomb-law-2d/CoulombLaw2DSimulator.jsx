@@ -26,10 +26,16 @@ const CoulombsLawSimulator = () => {
     setShowField,
     showFlux,
     setShowFlux,
+    embeddedMcpApp,
   } = useElectromagnetism();
 
   return (
-    <div className="h-full w-full overflow-y-auto p-6 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]">
+    <div className="relative h-full w-full overflow-y-auto p-6 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]">
+      {embeddedMcpApp && (
+        <div className="absolute left-6 top-6 z-20 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+          MCP configured · q₁={q1}µC · q₂={q2}µC · r={distance.toFixed(2)}m
+        </div>
+      )}
       {/* نکته مهم: max-w-7xl باعث میشه Canvas “هیچ‌وقت” خیلی بزرگ نشه */}
       {/* برای فول‌اسکرین بهتره محدودیت عرض رو برداریم یا بزرگ‌تر کنیم */}
       <div className="max-w-[1600px] mx-auto">
