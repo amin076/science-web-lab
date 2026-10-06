@@ -10,6 +10,7 @@ const {
   getSimulationById,
   getSimulationCapabilities,
 } = require("./api/services/simulationService");
+const {handleMcpRequest} = require("./mcp/server");
 
 admin.initializeApp();
 
@@ -272,4 +273,8 @@ exports.platformApi = onRequest((req, res) => {
     message: `No Platform API route found for ${path}`,
   });
 });
-\n\nexports.mcp = onRequest(async (req, res) => {\n  return handleMcpRequest(req, res);\n});\n
+
+
+exports.mcp = onRequest(async (req, res) => {
+  return handleMcpRequest(req, res);
+});
