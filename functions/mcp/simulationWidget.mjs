@@ -70,6 +70,7 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
 
     function render(data) {
       const simulation = data?.simulation || data;
+      const parameters = data?.parameters || null;
       if (!simulation?.runUrl) return;
 
       $("name").textContent = simulation.name || simulation.id || "Esbiko Science Lab";
@@ -84,6 +85,15 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
       const frame = $("simulation-frame");
       const url = new URL(simulation.runUrl);
       url.searchParams.set("embed", "mcp-app");
+
+      if (parameters && typeof parameters === "object") {
+        Object.entries(parameters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            url.searchParams.set(`mcp.${key}`, String(value));
+          }
+        });
+      }
+
       frame.src = url.toString();
     }
 
