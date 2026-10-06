@@ -3,10 +3,12 @@ name: Live Esbiko MCP Smoke Test
 on:
   push:
     branches:
-      - feature/esbiko-mcp-v0.1-doppler
+      - "feature/esbiko-*"
     paths:
       - "functions/mcp/**"
       - "functions/index.js"
+      - "src/platform/agent/**"
+      - "scripts/generate-platform-catalog.cjs"
       - ".github/workflows/mcp-live-smoke.yml"
 
 jobs:
