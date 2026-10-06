@@ -76,6 +76,7 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
       if (!data) return;
       const input = data.input || {};
       const result = data.result || {};
+      const videoRequest = data.videoRequest || null;
       $("emitted").textContent =
         Number.isFinite(input.emittedFrequencyHz) ? input.emittedFrequencyHz + " Hz" : "—";
       $("observed").textContent =
@@ -84,7 +85,7 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
         Number.isFinite(result.shiftPercent)
           ? (result.shiftPercent > 0 ? "+" : "") + result.shiftPercent + "%"
           : "—";
-      $("motion").textContent = input.motion || "—";
+      $("motion").textContent = input.motion || (videoRequest ? "video" : "—");
       $("status").textContent = data.interpretation || result.motionStatus || "Esbiko Doppler Lab";
 
       const frame = $("doppler-frame");
@@ -97,6 +98,13 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
           mcpSourcePositionM: input.sourcePositionM,
           mcpObserverPositionM: input.observerPositionM,
           mcpObserverVelocityMps: input.observerVelocityMps,
+          mcpVideo: videoRequest ? "1" : undefined,
+          mcpVideoStoryMode: videoRequest?.storyMode,
+          mcpVideoDurationSeconds: videoRequest?.durationSeconds,
+          mcpVideoSpeedMps: videoRequest?.speedMps,
+          mcpVideoEmittedFrequencyHz: videoRequest?.emittedFrequencyHz,
+          mcpVideoFirstInstrument: videoRequest?.firstInstrument,
+          mcpVideoSecondInstrument: videoRequest?.secondInstrument,
         };
 
         Object.entries(values).forEach(([key, value]) => {
