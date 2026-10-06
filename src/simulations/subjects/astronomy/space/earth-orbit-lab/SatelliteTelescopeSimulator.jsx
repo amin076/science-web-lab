@@ -502,6 +502,7 @@ export default function SatelliteTelescopeSimulator() {
       }}
     >
       <Box
+        data-agent-surface="earth-orbit-stage"
         sx={{
           position: "relative",
           height: { xs: "70dvh", md: "100%" },
@@ -704,7 +705,8 @@ export default function SatelliteTelescopeSimulator() {
                 : "rgba(78, 205, 196, 0.4)",
               backdropFilter: "blur(4px)",
               border: "1px solid rgba(255,255,255,0.2)",
-              minWidth: 0,
+              minWidth: 44,
+              minHeight: 44,
               px: 2,
             }}
           >
