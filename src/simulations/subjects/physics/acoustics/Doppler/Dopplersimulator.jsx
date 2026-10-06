@@ -17,24 +17,44 @@ import {
 
 import { MODES, SOURCE_PRESETS } from "./constants";
 
+function readEmbeddedVideoRequest(params) {
+  if (params.get("mcpVideo") !== "1") return null;
+
+  const readNumber = (key, fallback) => {
+    const raw = params.get(key);
+    const value = raw == null ? NaN : Number(raw);
+    return Number.isFinite(value) ? value : fallback;
+  };
+
+  return {
+    storyMode: params.get("mcpVideoStoryMode") || "single_pass",
+    durationSeconds: readNumber("mcpVideoDurationSeconds", 20),
+    speedMps: readNumber("mcpVideoSpeedMps", 60),
+    emittedFrequencyHz: readNumber("mcpVideoEmittedFrequencyHz", 440),
+    firstInstrument: params.get("mcpVideoFirstInstrument") || "ambulance_siren",
+    secondInstrument: params.get("mcpVideoSecondInstrument") || "police_siren",
+  };
+}
+
 function createEmbeddedMcpInitialState() {
   const fallback = createResetDopplerState();
 
   if (typeof window === "undefined") {
-    return { embeddedMcpApp: false, state: fallback };
+    return { embeddedMcpApp: false, embeddedVideoRequest: null, state: fallback };
   }
 
   const params = new URLSearchParams(window.location.search);
   const embeddedMcpApp = params.get("embed") === "mcp-app";
+  const embeddedVideoRequest = readEmbeddedVideoRequest(params);
 
   if (!embeddedMcpApp) {
-    return { embeddedMcpApp, state: fallback };
+    return { embeddedMcpApp, embeddedVideoRequest, state: fallback };
   }
 
   const motion = params.get("mcpMotion");
 
   if (!["approaching", "receding", "stationary"].includes(motion)) {
-    return { embeddedMcpApp, state: fallback };
+    return { embeddedMcpApp, embeddedVideoRequest, state: fallback };
   }
 
   const readOptionalNumber = (key) => {
@@ -60,6 +80,7 @@ function createEmbeddedMcpInitialState() {
   try {
     return {
       embeddedMcpApp,
+      embeddedVideoRequest,
       state: configureDopplerExperiment(fallback, input),
     };
   } catch (error) {
@@ -81,7 +102,11 @@ const DopplerSimulator = () => {
     initialMcpStateRef.current = createEmbeddedMcpInitialState();
   }
 
-  const { embeddedMcpApp, state: initialState } = initialMcpStateRef.current;
+  const {
+    embeddedMcpApp,
+    embeddedVideoRequest,
+    state: initialState,
+  } = initialMcpStateRef.current;
   const [isRunning, setIsRunning] = useState(initialState.isRunning);
   const [masterVolume, setMasterVolume] = useState(0.5);
   const [mode, setMode] = useState(initialState.mode);
@@ -528,9 +553,10 @@ const DopplerSimulator = () => {
         masterGainRef={masterGainRef}
         webMcpStatus={webMcpStatus}
         hideAgentGuide={embeddedMcpApp}
+        embeddedVideoRequest={embeddedVideoRequest}
         lastAgentAction={lastAgentAction}
         directorStatus={director.status}
-        onStartDirector={() => director.startDirector({})}
+        onStartDirector={() => director.startDirector(embeddedVideoRequest || {})}
         onStopDirector={director.stopDirector}
         onDownloadDirector={director.downloadDirector}
       />
