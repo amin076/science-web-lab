@@ -126,6 +126,11 @@ function createServer() {
         "with integrationLevel=adapted also support deeper agent controls.",
       inputSchema: z.object({
         simulationId: z.enum(SIMULATION_IDS),
+        parameters: z.record(z.string(), z.union([
+          z.string(),
+          z.number(),
+          z.boolean(),
+        ])).optional(),
       }).strict(),
       outputSchema: z.object({
         simulation: z.object({
@@ -155,10 +160,13 @@ function createServer() {
         "openai/toolInvocation/invoked": "Esbiko simulation ready.",
       },
     },
-    async ({simulationId}) => {
+    async ({simulationId, parameters}) => {
       const simulation = requireSimulationProfile(simulationId);
       return {
-        structuredContent: {simulation},
+        structuredContent: {
+          simulation,
+          parameters: parameters || null,
+        },
         content: [
           {
             type: "text",
