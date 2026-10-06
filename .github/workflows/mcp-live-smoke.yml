@@ -229,6 +229,16 @@ jobs:
                     k: 8.99,
                   },
                 },
+                {
+                  simulationId: 'physics.mechanics.gyroscope',
+                  parameters: {
+                    spinSpeed: 18,
+                    tilt: 35,
+                    mass: 1.5,
+                    showVectors: true,
+                    showTrail: false,
+                  },
+                },
               ];
 
               const batchResults = [];
