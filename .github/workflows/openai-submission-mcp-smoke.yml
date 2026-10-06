@@ -1,0 +1,113 @@
+name: OpenAI Submission MCP Smoke
+
+on:
+  pull_request:
+    paths:
+      - "openai-plugin/**"
+      - "functions/mcp/**"
+      - "firebase.json"
+      - ".github/workflows/openai-submission-mcp-smoke.yml"
+  workflow_dispatch:
+
+jobs:
+  production-domain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify production-domain MCP endpoint
+        run: |
+          npm init -y >/dev/null 2>&1
+          npm install --no-save @modelcontextprotocol/client@^2.0.0
+
+          node --input-type=module <<'EOF'
+          import { Client } from '@modelcontextprotocol/client';
+          import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client/streamableHttp.js';
+
+          const endpoint = new URL('https://www.esbiko.com/mcp');
+          let lastError;
+
+          for (let attempt = 1; attempt <= 8; attempt++) {
+            try {
+              const client = new Client(
+                { name: 'esbiko-openai-submission-smoke', version: '1.0.0' },
+                { capabilities: {} },
+              );
+
+              const transport = new StreamableHTTPClientTransport(endpoint);
+              await client.connect(transport);
+
+              const toolsResponse = await client.listTools();
+              const names = toolsResponse.tools.map((tool) => tool.name);
+
+              for (const required of [
+                'list_science_simulations',
+                'open_science_simulation',
+                'run_doppler_experiment',
+                'prepare_doppler_video',
+              ]) {
+                if (!names.includes(required)) {
+                  throw new Error(
+                    `Missing required tool ${required}. Found: ${names.join(', ')}`,
+                  );
+                }
+              }
+
+              const solar = await client.callTool({
+                name: 'open_science_simulation',
+                arguments: {
+                  simulationId: 'astronomy.space.solar-system',
+                  parameters: {
+                    speed: 5,
+                    scaleMode: 'educational',
+                    focusTarget: 'earth',
+                    showTrails: true,
+                    showOrbits: true,
+                    showAxis: false,
+                    showStars: true,
+                    showLabels: true,
+                  },
+                },
+              });
+
+              const simulation = solar?.structuredContent?.simulation;
+              if (
+                simulation?.id !== 'astronomy.space.solar-system' ||
+                simulation?.integrationLevel !== 'adapted'
+              ) {
+                throw new Error(
+                  `Unexpected Solar System response: ${JSON.stringify(solar?.structuredContent)}`,
+                );
+              }
+
+              console.log('SUBMISSION MCP ENDPOINT:', endpoint.toString());
+              console.log('TOOLS:', names);
+              console.log(
+                'SOLAR SYSTEM:',
+                simulation.id,
+                simulation.integrationLevel,
+                simulation.adapterVersion,
+              );
+              console.log('OPENAI SUBMISSION MCP SMOKE PASSED');
+
+              await client.close();
+              process.exit(0);
+            } catch (error) {
+              lastError = error;
+              console.error(
+                `Submission MCP smoke attempt ${attempt} failed:`,
+                error,
+              );
+              if (attempt < 8) {
+                await new Promise((resolve) => setTimeout(resolve, 10_000));
+              }
+            }
+          }
+
+          throw lastError;
+          EOF
