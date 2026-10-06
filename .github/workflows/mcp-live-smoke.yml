@@ -3,6 +3,7 @@ name: Live Esbiko MCP Smoke Test
 on:
   push:
     branches:
+      - main
       - "feature/esbiko-*"
     paths:
       - "functions/mcp/**"
@@ -10,6 +11,10 @@ on:
       - "src/platform/agent/**"
       - "scripts/generate-platform-catalog.cjs"
       - ".github/workflows/mcp-live-smoke.yml"
+
+concurrency:
+  group: esbiko-mcp-live-smoke
+  cancel-in-progress: true
 
 jobs:
   smoke:

@@ -20,7 +20,7 @@ export function createServer() {
   const server = new McpServer(
     {
       name: "esbiko-mcp",
-      version: "0.3.1",
+      version: "0.4.0",
     },
     {
       instructions:
