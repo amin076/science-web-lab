@@ -1,0 +1,41 @@
+name: OpenAI Plugin Package
+
+on:
+  pull_request:
+    paths:
+      - "openai-plugin/**"
+      - "src/pages/Privacy.jsx"
+      - "src/pages/Terms.jsx"
+      - "scripts/test-openai-plugin-package.mjs"
+      - "scripts/set-openai-apps-challenge.cjs"
+      - ".github/workflows/openai-plugin-package.yml"
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate submission package
+        run: node scripts/test-openai-plugin-package.mjs
+
+      - name: Build upload ZIP
+        run: |
+          cd openai-plugin/esbiko-science-lab
+          zip -r ../../../esbiko-science-lab-openai-plugin.zip .
+
+      - name: Upload plugin ZIP artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: esbiko-science-lab-openai-plugin
+          path: esbiko-science-lab-openai-plugin.zip
+          if-no-files-found: error
