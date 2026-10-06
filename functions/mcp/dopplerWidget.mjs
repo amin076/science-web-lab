@@ -87,6 +87,10 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
       $("status").textContent = data.interpretation || result.motionStatus || "Esbiko Doppler Lab";
     }
 
+    // Hydrate immediately when ChatGPT mounts the widget after the tool call.
+    // ChatGPT exposes the tool's structuredContent through window.openai.toolOutput.
+    render(window.openai?.toolOutput);
+
     window.addEventListener("message", (event) => {
       if (event.source !== window.parent) return;
       const message = event.data;
