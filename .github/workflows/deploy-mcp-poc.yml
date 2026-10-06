@@ -1,0 +1,44 @@
+name: Deploy Esbiko MCP PoC
+
+on:
+  push:
+    branches:
+      - feature/esbiko-mcp-v0.1-doppler
+    paths:
+      - "functions/mcp/**"
+      - "functions/index.js"
+      - "functions/api/**"
+      - "firebase.json"
+      - ".github/workflows/deploy-mcp-poc.yml"
+  workflow_dispatch:
+
+jobs:
+  deploy-mcp:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install Functions dependencies
+        run: npm ci --prefix functions
+
+      - name: Write Firebase service account
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+
+      - name: Deploy MCP function only
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+        run: npx firebase-tools@latest deploy --only functions:mcp --project sience-web-app --non-interactive
