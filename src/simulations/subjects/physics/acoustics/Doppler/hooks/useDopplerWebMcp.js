@@ -8,6 +8,7 @@ import {
 import { createDopplerWebMcpTools } from "../adapter/dopplerTools.js";
 
 export function useDopplerWebMcp(actions) {
+  const enabled = actions?.enabled !== false;
   const actionsRef = useRef(actions);
   const [status, setStatus] = useState(WEBMCP_REGISTRATION_STATUS.REGISTERING);
 
@@ -16,6 +17,11 @@ export function useDopplerWebMcp(actions) {
   }, [actions]);
 
   useEffect(() => {
+    if (!enabled) {
+      setStatus(WEBMCP_REGISTRATION_STATUS.UNSUPPORTED);
+      return undefined;
+    }
+
     const controller = new AbortController();
     const modelContext = getDocumentModelContext();
     const tools = createDopplerWebMcpTools({
@@ -46,7 +52,7 @@ export function useDopplerWebMcp(actions) {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [enabled]);
 
   return status;
 }

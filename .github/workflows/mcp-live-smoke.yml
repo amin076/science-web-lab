@@ -1,0 +1,187 @@
+name: Live Esbiko MCP Smoke Test
+
+on:
+  push:
+    branches:
+      - feature/esbiko-mcp-v0.1-doppler
+    paths:
+      - "functions/mcp/**"
+      - "functions/index.js"
+      - ".github/workflows/mcp-live-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install official MCP client
+        run: |
+          mkdir -p /tmp/esbiko-mcp-smoke
+          cd /tmp/esbiko-mcp-smoke
+          npm init -y
+          npm install @modelcontextprotocol/client@^2.0.0
+
+      - name: Connect, discover tools, and call Doppler
+        run: |
+          cat > /tmp/esbiko-mcp-smoke/smoke.mjs <<'EOF'
+          import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
+
+          const endpoint = new URL('https://us-central1-sience-web-app.cloudfunctions.net/mcp');
+          let lastError;
+
+          for (let attempt = 1; attempt <= 12; attempt += 1) {
+            let client;
+            try {
+              client = new Client(
+                { name: 'esbiko-live-smoke', version: '0.1.0' },
+                { versionNegotiation: { mode: { pin: '2026-07-28' } } },
+              );
+              const transport = new StreamableHTTPClientTransport(endpoint);
+              await client.connect(transport);
+
+              const server = client.getServerVersion();
+              const { tools } = await client.listTools();
+              const names = tools.map((tool) => tool.name);
+              const dopplerTool = tools.find((tool) => tool.name === 'run_doppler_experiment');
+              const openTool = tools.find((tool) => tool.name === 'open_science_simulation');
+              const videoTool = tools.find((tool) => tool.name === 'prepare_doppler_video');
+
+              if (!dopplerTool) {
+                throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
+              }
+              if (!openTool) {
+                throw new Error(`Missing universal open tool. Found: ${names.join(', ')}`);
+              }
+              if (!videoTool) {
+                throw new Error(`Missing Doppler video tool. Found: ${names.join(', ')}`);
+              }
+
+              const widgetUri =
+                dopplerTool?._meta?.ui?.resourceUri ||
+                dopplerTool?._meta?.['openai/outputTemplate'];
+
+              if (widgetUri !== 'ui://esbiko/doppler-v1.html') {
+                throw new Error(`Unexpected Doppler UI resource: ${widgetUri}`);
+              }
+
+              const resource = await client.readResource({ uri: widgetUri });
+              const html = resource?.contents?.[0]?.text || '';
+              if (!html.includes('Esbiko Doppler interactive simulation')) {
+                throw new Error('Doppler MCP App HTML resource is missing expected content.');
+              }
+
+              const result = await client.callTool({
+                name: 'run_doppler_experiment',
+                arguments: {
+                  motion: 'approaching',
+                  emittedFrequencyHz: 440,
+                  sourceSpeedMps: 60,
+                  sourcePositionM: 250,
+                  observerPositionM: 500,
+                  observerVelocityMps: 0,
+                },
+              });
+
+              const opened = await client.callTool({
+                name: 'open_science_simulation',
+                arguments: {
+                  simulationId: 'physics.mechanics.simple-pendulum',
+                  parameters: {
+                    lengthM: 1.5,
+                    massKg: 3,
+                    entryAngle: 25,
+                    elasticity: 0.995,
+                  },
+                },
+              });
+
+              const video = await client.callTool({
+                name: 'prepare_doppler_video',
+                arguments: {
+                  storyMode: 'single_pass',
+                  durationSeconds: 20,
+                  speedMps: 60,
+                  emittedFrequencyHz: 440,
+                  firstInstrument: 'ambulance_siren',
+                  secondInstrument: 'police_siren',
+                },
+              });
+
+              const videoRequest = video?.structuredContent?.videoRequest;
+              if (
+                video?.structuredContent?.mode !== 'video' ||
+                video?.structuredContent?.requiresUserGesture !== true ||
+                videoRequest?.durationSeconds !== 20 ||
+                videoRequest?.firstInstrument !== 'ambulance_siren'
+              ) {
+                throw new Error(
+                  `Unexpected Doppler video preparation result: ${JSON.stringify(video?.structuredContent)}`,
+                );
+              }
+
+              const pendulum = opened?.structuredContent?.simulation;
+              if (pendulum?.id !== 'physics.mechanics.simple-pendulum') {
+                throw new Error(`Unexpected universal simulation result: ${pendulum?.id}`);
+              }
+              if (pendulum?.integrationLevel !== 'adapted') {
+                throw new Error(`Unexpected pendulum integration level: ${pendulum?.integrationLevel}`);
+              }
+
+              const pendulumParameters = opened?.structuredContent?.parameters;
+              if (
+                pendulumParameters?.lengthM !== 1.5 ||
+                pendulumParameters?.massKg !== 3 ||
+                pendulumParameters?.entryAngle !== 25 ||
+                pendulumParameters?.elasticity !== 0.995
+              ) {
+                throw new Error(
+                  `Unexpected pendulum parameters: ${JSON.stringify(pendulumParameters)}`,
+                );
+              }
+
+              const genericWidgetUri =
+                openTool?._meta?.ui?.resourceUri ||
+                openTool?._meta?.['openai/outputTemplate'];
+
+              if (genericWidgetUri !== 'ui://esbiko/simulation-shell-v1.html') {
+                throw new Error(`Unexpected universal UI resource: ${genericWidgetUri}`);
+              }
+
+              const genericResource = await client.readResource({ uri: genericWidgetUri });
+              const genericHtml = genericResource?.contents?.[0]?.text || '';
+              if (!genericHtml.includes('Esbiko interactive science simulation')) {
+                throw new Error('Universal MCP App shell is missing expected iframe content.');
+              }
+
+              const observed = result?.structuredContent?.result?.observedFrequencyHz;
+              if (observed !== 533.29) {
+                throw new Error(`Unexpected observed frequency: ${observed}`);
+              }
+
+              console.log('MCP SERVER:', server);
+              console.log('TOOLS:', names);
+              console.log('DOPPLER UI RESOURCE:', widgetUri);
+              console.log('DOPPLER OBSERVED HZ:', observed);
+              console.log('UNIVERSAL UI RESOURCE:', genericWidgetUri);
+              console.log('GENERIC ADAPTED OPEN TEST:', pendulum.id, pendulum.integrationLevel);
+              console.log('PENDULUM PARAMETERS:', pendulumParameters);
+              console.log('VIDEO PREP TEST:', videoRequest);
+              console.log('LIVE MCP APP SMOKE TEST PASSED');
+              await client.close();
+              process.exit(0);
+            } catch (error) {
+              lastError = error;
+              console.log(`Attempt ${attempt}/12 failed: ${error?.message || error}`);
+              try { await client?.close(); } catch {}
+              if (attempt < 12) await new Promise((resolve) => setTimeout(resolve, 15000));
+            }
+          }
+
+          throw lastError || new Error('Live MCP smoke test failed.');
+          EOF
+          cd /tmp/esbiko-mcp-smoke
+          node smoke.mjs

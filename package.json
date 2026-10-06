@@ -16,7 +16,9 @@
     "pack:app": "node scripts/pack-app-json.cjs",
     "platform:catalog": "node scripts/generate-platform-catalog.cjs",
     "test:platform-api": "node scripts/test-platform-api.mjs",
-    "test:webmcp": "node scripts/test-webmcp.mjs"
+    "test:webmcp": "node scripts/test-webmcp.mjs",
+    "test:mcp-doppler": "node scripts/test-mcp-doppler.cjs",
+    "test:simulation-agent": "node scripts/test-simulation-agent-contract.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
