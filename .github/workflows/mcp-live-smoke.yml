@@ -5,6 +5,8 @@ on:
     branches:
       - feature/esbiko-mcp-v0.1-doppler
     paths:
+      - "functions/mcp/**"
+      - "functions/index.js"
       - ".github/workflows/mcp-live-smoke.yml"
 
 jobs:
@@ -44,9 +46,24 @@ jobs:
               const server = client.getServerVersion();
               const { tools } = await client.listTools();
               const names = tools.map((tool) => tool.name);
+              const dopplerTool = tools.find((tool) => tool.name === 'run_doppler_experiment');
 
-              if (!names.includes('run_doppler_experiment')) {
+              if (!dopplerTool) {
                 throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
+              }
+
+              const widgetUri =
+                dopplerTool?._meta?.ui?.resourceUri ||
+                dopplerTool?._meta?.['openai/outputTemplate'];
+
+              if (widgetUri !== 'ui://esbiko/doppler-v1.html') {
+                throw new Error(`Unexpected Doppler UI resource: ${widgetUri}`);
+              }
+
+              const resource = await client.readResource({ uri: widgetUri });
+              const html = resource?.contents?.[0]?.text || '';
+              if (!html.includes('Esbiko Doppler interactive simulation')) {
+                throw new Error('Doppler MCP App HTML resource is missing expected content.');
               }
 
               const result = await client.callTool({
@@ -68,8 +85,9 @@ jobs:
 
               console.log('MCP SERVER:', server);
               console.log('TOOLS:', names);
+              console.log('DOPPLER UI RESOURCE:', widgetUri);
               console.log('DOPPLER OBSERVED HZ:', observed);
-              console.log('LIVE MCP SMOKE TEST PASSED');
+              console.log('LIVE MCP APP SMOKE TEST PASSED');
               await client.close();
               process.exit(0);
             } catch (error) {
