@@ -31,6 +31,26 @@ export default function GravityComparisonSimulation() {
         position: "relative",
       }}
     >
+      {simulation.embeddedMcpApp && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 18,
+            left: 18,
+            zIndex: 25,
+            px: 1.5,
+            py: 1,
+            borderRadius: 2,
+            border: "1px solid rgba(34,211,238,.35)",
+            background: "rgba(2,6,23,.82)",
+            color: "#a5f3fc",
+            fontSize: 12,
+          }}
+        >
+          MCP configured · mode={simulation.mode}
+        </Box>
+      )}
+
       <Box
         sx={{
           position: "absolute",
