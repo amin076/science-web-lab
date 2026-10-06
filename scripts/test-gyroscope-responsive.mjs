@@ -18,7 +18,14 @@ const viewports = [
   { width: 1280, height: 720 },
 ];
 
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  args: [
+    "--use-gl=swiftshader",
+    "--enable-webgl",
+    "--ignore-gpu-blocklist",
+  ],
+});
 
 try {
   for (const viewport of viewports) {
@@ -40,9 +47,25 @@ try {
     const play = page.locator('[data-agent-action="play"]');
     const reset = page.locator('[data-agent-action="reset"]');
 
-    await stage.waitFor({ state: "visible" });
-    await play.waitFor({ state: "visible" });
-    await reset.waitFor({ state: "visible" });
+    try {
+      await stage.waitFor({ state: "visible", timeout: 30_000 });
+      await play.waitFor({ state: "visible", timeout: 10_000 });
+      await reset.waitFor({ state: "visible", timeout: 10_000 });
+    } catch (error) {
+      const diagnostics = await page.evaluate(() => ({
+        url: window.location.href,
+        title: document.title,
+        bodyText: document.body?.innerText?.slice(0, 3000) || "",
+        html: document.documentElement?.outerHTML?.slice(0, 5000) || "",
+      }));
+      console.error(
+        "GYROSCOPE RESPONSIVE LOAD DIAGNOSTICS",
+        viewport,
+        diagnostics,
+        { pageErrors, consoleErrors },
+      );
+      throw error;
+    }
 
     const layout = await page.evaluate(() => {
       const stageEl = document.querySelector(
