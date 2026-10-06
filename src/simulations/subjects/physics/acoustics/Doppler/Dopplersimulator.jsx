@@ -85,7 +85,7 @@ function createEmbeddedMcpInitialState() {
     };
   } catch (error) {
     console.warn("Could not initialize embedded Doppler MCP state:", error);
-    return { embeddedMcpApp, state: fallback };
+    return { embeddedMcpApp, embeddedVideoRequest, state: fallback };
   }
 }
 
