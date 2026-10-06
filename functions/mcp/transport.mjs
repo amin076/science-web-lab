@@ -15,7 +15,7 @@ function createServer() {
   const server = new McpServer(
     {
       name: "esbiko-mcp",
-      version: "0.2.1",
+      version: "0.3.0",
     },
     {
       instructions:
@@ -147,6 +147,11 @@ function createServer() {
           video: z.boolean(),
           adapterVersion: z.string().nullable(),
         }).passthrough(),
+        parameters: z.record(z.string(), z.union([
+          z.string(),
+          z.number(),
+          z.boolean(),
+        ])).nullable(),
       }).strict(),
       annotations: {
         readOnlyHint: true,
