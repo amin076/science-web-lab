@@ -57,7 +57,15 @@ for (const id of batchAdaptedIds) {
   assert(profile.parameterSchema, `${id} should declare parameterSchema`);
 }
 
-const universal = getSimulationAgentProfile("physics.mechanics.gyroscope");
+const gyroscope = getSimulationAgentProfile("physics.mechanics.gyroscope");
+assert.equal(gyroscope.integrationLevel, "adapted");
+assert.equal(gyroscope.adapterVersion, "gyroscope-adapter.v1");
+assert.deepEqual(
+  gyroscope.actions,
+  ["open", "configure", "readState", "play", "pause", "reset"],
+);
+
+const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
 assert.deepEqual(universal.actions, ["open"]);
