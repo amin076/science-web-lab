@@ -10,7 +10,6 @@ const {
   getSimulationById,
   getSimulationCapabilities,
 } = require("./api/services/simulationService");
-const {handleMcpRequest} = require("./mcp/server");
 
 admin.initializeApp();
 
@@ -276,5 +275,6 @@ exports.platformApi = onRequest((req, res) => {
 
 
 exports.mcp = onRequest(async (req, res) => {
+  const {handleMcpRequest} = await import("./mcp/transport.mjs");
   return handleMcpRequest(req, res);
 });
