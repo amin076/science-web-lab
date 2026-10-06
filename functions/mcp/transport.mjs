@@ -5,6 +5,7 @@ import {createMcpHandler, McpServer} from "@modelcontextprotocol/server";
 import {toNodeHandler} from "@modelcontextprotocol/node";
 import * as z from "zod/v4";
 import legacyServer from "./server.js";
+import {DOPPLER_WIDGET_HTML, DOPPLER_WIDGET_URI} from "./dopplerWidget.mjs";
 
 const {executeTool} = legacyServer;
 
@@ -20,6 +21,33 @@ function createServer() {
         "Use run_doppler_experiment for Doppler-effect calculations and " +
         "explain the returned scientific result to the user.",
     },
+  );
+
+  server.registerResource(
+    "esbiko-doppler-widget",
+    DOPPLER_WIDGET_URI,
+    {},
+    async () => ({
+      contents: [
+        {
+          uri: DOPPLER_WIDGET_URI,
+          mimeType: "text/html;profile=mcp-app",
+          text: DOPPLER_WIDGET_HTML,
+          _meta: {
+            ui: {
+              prefersBorder: true,
+              csp: {
+                frameDomains: ["https://www.esbiko.com"],
+                resourceDomains: ["https://www.esbiko.com"],
+              },
+            },
+            "openai/ui": {
+              availableDisplayModes: ["inline", "fullscreen"],
+            },
+          },
+        },
+      ],
+    }),
   );
 
   server.registerTool(
@@ -57,6 +85,12 @@ function createServer() {
         readOnlyHint: true,
         destructiveHint: false,
         openWorldHint: false,
+      },
+      _meta: {
+        ui: {resourceUri: DOPPLER_WIDGET_URI},
+        "openai/outputTemplate": DOPPLER_WIDGET_URI,
+        "openai/toolInvocation/invoking": "Running Esbiko Doppler experiment…",
+        "openai/toolInvocation/invoked": "Esbiko Doppler experiment ready.",
       },
     },
     async (args) => executeTool("run_doppler_experiment", args),
