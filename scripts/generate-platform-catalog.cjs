@@ -71,6 +71,140 @@ async function loadSimulationAgentManifest() {
   }
 }
 
+const CAPABILITY_KEYS = [
+  "interactive",
+  "physics",
+  "audio",
+  "camera",
+  "recording",
+  "export",
+  "timeline",
+  "presets",
+  "stateRead",
+  "commandExecution",
+  "agentReady",
+];
+
+function createUnknownCapability(key) {
+  return {
+    key,
+    supported: false,
+    verified: false,
+    confidence: "unknown",
+    source: "safe-default",
+    declared: null,
+    reason: "No verified capability source is registered for this capability.",
+  };
+}
+
+function createVerifiedCapability(key, supported, reason, declared = supported) {
+  return {
+    key,
+    supported: supported === true,
+    verified: true,
+    confidence: "high",
+    source: "simulation-agent-manifest",
+    declared,
+    reason,
+  };
+}
+
+function buildAgentCapabilityContract(simulation, profile) {
+  if (!profile) return simulation.capabilityContract || null;
+
+  const actions = new Set(profile.actions || []);
+  const capabilities = CAPABILITY_KEYS.reduce((acc, key) => {
+    acc[key] = createUnknownCapability(key);
+    return acc;
+  }, {});
+
+  capabilities.interactive = createVerifiedCapability(
+    "interactive",
+    true,
+    "The simulation declares an adapted agent profile and interactive runtime.",
+  );
+
+  if (simulation.domain === "physics") {
+    capabilities.physics = createVerifiedCapability(
+      "physics",
+      true,
+      "The simulation is registered in the physics domain.",
+      simulation.domain,
+    );
+  }
+
+  capabilities.recording = createVerifiedCapability(
+    "recording",
+    actions.has("record"),
+    actions.has("record")
+      ? "The agent manifest declares the standard record action."
+      : "The adapted agent manifest does not declare record support.",
+    actions.has("record"),
+  );
+
+  capabilities.export = createVerifiedCapability(
+    "export",
+    profile.exportable === true || actions.has("export"),
+    profile.exportable === true || actions.has("export")
+      ? "The agent manifest declares export support."
+      : "The adapted agent manifest does not declare export support.",
+    profile.exportable === true || actions.has("export"),
+  );
+
+  capabilities.stateRead = createVerifiedCapability(
+    "stateRead",
+    actions.has("readState"),
+    actions.has("readState")
+      ? "The agent manifest declares readState."
+      : "The adapted agent manifest does not declare readState.",
+    actions.has("readState"),
+  );
+
+  const commandActions = ["configure", "play", "pause", "reset"];
+  const commandExecution = commandActions.some((action) => actions.has(action));
+  capabilities.commandExecution = createVerifiedCapability(
+    "commandExecution",
+    commandExecution,
+    commandExecution
+      ? "The agent manifest declares one or more executable control actions."
+      : "The adapted agent manifest declares no executable control actions.",
+    commandActions.filter((action) => actions.has(action)),
+  );
+
+  capabilities.agentReady = createVerifiedCapability(
+    "agentReady",
+    true,
+    `Validated adapted profile ${profile.adapterVersion} is present.`,
+    profile.adapterVersion,
+  );
+
+  const values = Object.values(capabilities);
+  return {
+    version: "simulation-capabilities.v1",
+    status: "verified",
+    sourceModel: "simulation-agent-manifest-derived",
+    capabilities,
+    summary: {
+      total: values.length,
+      supported: values.filter((capability) => capability.supported).length,
+      verified: values.filter((capability) => capability.verified).length,
+      unknown: values.filter((capability) => !capability.verified).length,
+    },
+  };
+}
+
+function applyAgentCapabilityContracts(catalog, agentManifest) {
+  return catalog.map((simulation) => {
+    const profile = agentManifest[simulation.id] || null;
+    if (!profile) return simulation;
+
+    return {
+      ...simulation,
+      capabilityContract: buildAgentCapabilityContract(simulation, profile),
+    };
+  });
+}
+
 function assertJsonSafeCatalog(catalog) {
   if (!Array.isArray(catalog)) {
     throw new Error("Platform catalog generator expected an array.");
@@ -110,19 +244,23 @@ function assertJsonSafeAgentManifest(manifest) {
 async function main() {
   const catalog = await loadPlatformCatalog();
   const agentManifest = await loadSimulationAgentManifest();
+  const catalogWithAgentCapabilities = applyAgentCapabilityContracts(
+    catalog,
+    agentManifest,
+  );
 
-  assertJsonSafeCatalog(catalog);
+  assertJsonSafeCatalog(catalogWithAgentCapabilities);
   assertJsonSafeAgentManifest(agentManifest);
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(
     outputPath,
-    `${JSON.stringify(catalog, null, 2)}\n`,
+    `${JSON.stringify(catalogWithAgentCapabilities, null, 2)}\n`,
     "utf8",
   );
 
   console.log(
-    `Generated ${catalog.length} platform simulations at ${path.relative(
+    `Generated ${catalogWithAgentCapabilities.length} platform simulations at ${path.relative(
       projectRoot,
       outputPath,
     )}`,
