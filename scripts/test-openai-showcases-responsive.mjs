@@ -65,7 +65,7 @@ try {
       });
 
       await page.goto(baseUrl + testCase.path, {
-        waitUntil: "networkidle",
+        waitUntil: "domcontentloaded",
         timeout: 60_000,
       });
 
