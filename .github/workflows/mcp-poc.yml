@@ -36,6 +36,8 @@ jobs:
           node --check functions/mcp/server.js
           node --check functions/mcp/transport.mjs
           node --check functions/mcp/dopplerWidget.mjs
+          node --check functions/mcp/simulationWidget.mjs
+          node --check functions/mcp/simulationRegistry.mjs
           node --check scripts/test-mcp-doppler.cjs
 
       - name: Test MCP runtime startup
