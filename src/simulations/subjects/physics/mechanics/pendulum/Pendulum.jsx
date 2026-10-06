@@ -9,13 +9,55 @@ import Telemetry from "./Telemetry";
 import GraphPanel from "./GraphPanel";
 import { degToRad } from "./utils";
 
+function readEmbeddedPendulumState() {
+  const defaults = {
+    embeddedMcpApp: false,
+    lengthM: 2.1,
+    massKg: 2.0,
+    entryAngle: 38,
+    elasticity: 1.0,
+  };
+
+  if (typeof window === "undefined") return defaults;
+
+  const params = new URLSearchParams(window.location.search);
+  const embeddedMcpApp = params.get("embed") === "mcp-app";
+
+  if (!embeddedMcpApp) {
+    return {...defaults, embeddedMcpApp};
+  }
+
+  const readNumber = (key, fallback, min, max) => {
+    const raw = params.get(`mcp.${key}`);
+    if (raw == null || raw === "") return fallback;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return fallback;
+    return Math.min(max, Math.max(min, value));
+  };
+
+  return {
+    embeddedMcpApp,
+    lengthM: readNumber("lengthM", defaults.lengthM, 0.5, 3.0),
+    massKg: readNumber("massKg", defaults.massKg, 0.1, 10.0),
+    entryAngle: readNumber("entryAngle", defaults.entryAngle, -170, 170),
+    elasticity: readNumber("elasticity", defaults.elasticity, 0.98, 1.0),
+  };
+}
+
 export default function Pendulum() {
+  const initialMcpStateRef = useRef(null);
+
+  if (!initialMcpStateRef.current) {
+    initialMcpStateRef.current = readEmbeddedPendulumState();
+  }
+
+  const initialMcpState = initialMcpStateRef.current;
   const [running, setRunning] = useState(false);
 
-  const [lengthM, setLengthM] = useState(2.1);
-  const [massKg, setMassKg] = useState(2.0);
-  const [entryAngle, setEntryAngle] = useState(38);
-  const [elasticity, setElasticity] = useState(1.0);
+  const [lengthM, setLengthM] = useState(initialMcpState.lengthM);
+  const [massKg, setMassKg] = useState(initialMcpState.massKg);
+  const [entryAngle, setEntryAngle] = useState(initialMcpState.entryAngle);
+  const [elasticity, setElasticity] = useState(initialMcpState.elasticity);
 
   const [pxPerMeter, setPxPerMeter] = useState(160);
   const [bobRadius, setBobRadius] = useState(22);
@@ -212,6 +254,12 @@ export default function Pendulum() {
       />
 
       <div className="flex-1 relative">
+        {initialMcpState.embeddedMcpApp && (
+          <div className="absolute left-4 top-4 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
+            MCP configured · L={lengthM.toFixed(2)}m · m={massKg.toFixed(1)}kg · θ₀={entryAngle.toFixed(0)}°
+          </div>
+        )}
+
         <SimulationCanvas
           ref={canvasRef}
           lengthM={lengthM}
