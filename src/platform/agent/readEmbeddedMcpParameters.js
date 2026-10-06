@@ -43,6 +43,7 @@ export function readEmbeddedMcpParameters(
     return {
       embeddedMcpApp: false,
       values: base,
+      providedKeys: [],
     };
   }
 
@@ -53,23 +54,29 @@ export function readEmbeddedMcpParameters(
     return {
       embeddedMcpApp,
       values: base,
+      providedKeys: [],
     };
   }
 
   const manifest = getSimulationAgentManifestEntry(simulationId);
   const properties = manifest?.parameterSchema?.properties || {};
   const values = {...base};
+  const providedKeys = [];
 
   for (const [key, rule] of Object.entries(properties)) {
     const raw = params.get(`mcp.${key}`);
     if (raw === null || raw === "") continue;
 
     const parsed = parseValue(raw, rule);
-    if (parsed !== undefined) values[key] = parsed;
+    if (parsed !== undefined) {
+      values[key] = parsed;
+      providedKeys.push(key);
+    }
   }
 
   return {
     embeddedMcpApp,
     values,
+    providedKeys,
   };
 }
