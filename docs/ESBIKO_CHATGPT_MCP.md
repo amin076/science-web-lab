@@ -190,3 +190,103 @@ The phase is considered complete when:
 5. ChatGPT renders the MCP App when the connected Esbiko plugin calls the tool
 6. the embedded Esbiko simulation loads in the component
 7. interactive video generation remains available from the browser-based Doppler runtime
+
+
+## Reusable simulation integration framework
+
+Doppler is the reference integration, not a template to copy manually for every simulation.
+
+Esbiko now uses two integration levels:
+
+### Universal
+
+Every simulation in the generated Esbiko platform catalog can be discovered and opened through:
+
+```text
+list_science_simulations
+open_science_simulation
+```
+
+All universal simulations reuse one MCP App resource:
+
+```text
+ui://esbiko/simulation-shell-v1.html
+```
+
+This layer requires no simulation-specific MCP transport or UI resource.
+
+### Adapted
+
+A simulation becomes adapted when it declares a `simulation-agent.v1` profile with parameter/state schemas and supported actions.
+
+Supported standard actions are:
+
+```text
+open
+configure
+readState
+play
+pause
+reset
+record
+export
+```
+
+Adapted simulations still reuse the generic MCP transport and App shell unless they need a specialized experience.
+
+### Reference adapted simulations
+
+#### Doppler
+
+```text
+physics.acoustics.doppler
+adapterVersion: doppler-adapter.v1
+actions: open/configure/readState/play/pause/reset/record/export
+video: true
+```
+
+#### Simple Pendulum
+
+```text
+physics.mechanics.simple-pendulum
+adapterVersion: pendulum-adapter.v1
+actions: open/configure/readState/play/pause/reset
+video: false
+```
+
+Pendulum deliberately does not have a dedicated MCP tool or dedicated MCP App resource. Its parameters travel through the generic `open_science_simulation` tool and the generic App shell using the standard `mcp.*` embedded query convention.
+
+Example:
+
+```text
+simulationId = physics.mechanics.simple-pendulum
+parameters.lengthM = 1.5
+parameters.massKg = 3
+parameters.entryAngle = 25
+parameters.elasticity = 0.995
+```
+
+This proves that additional simulations do not need to repeat the Doppler integration work.
+
+## Doppler MCP Video Studio
+
+When a user requests a Doppler video, ChatGPT can use:
+
+```text
+prepare_doppler_video
+```
+
+The tool accepts:
+
+```text
+storyMode
+durationSeconds
+speedMps
+emittedFrequencyHz
+firstInstrument
+secondInstrument
+```
+
+The request is forwarded into the embedded Doppler runtime. In MCP App mode, Esbiko shows a dedicated **MCP Video Studio** instead of the legacy WebMCP testing guide.
+
+Because browser audio and MediaRecorder require a direct user gesture, ChatGPT prepares the video configuration but does not falsely claim that a WebM file already exists. The user clicks **Generate Video** once, then the existing Esbiko director/recorder pipeline runs, reports progress, and exposes **Download WebM** when ready.
