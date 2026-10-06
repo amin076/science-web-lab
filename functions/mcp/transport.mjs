@@ -1,4 +1,5 @@
 /* eslint-env node */
+// Official MCP SDK v2 Streamable HTTP transport for ChatGPT.
 
 import {createMcpHandler, McpServer} from "@modelcontextprotocol/server";
 import {toNodeHandler} from "@modelcontextprotocol/node";
