@@ -239,6 +239,36 @@ jobs:
                     showTrail: false,
                   },
                 },
+                {
+                  simulationId: 'astronomy.space.solar-system',
+                  parameters: {
+                    speed: 5,
+                    scaleMode: 'educational',
+                    focusTarget: 'earth',
+                    showTrails: true,
+                    showOrbits: true,
+                    showAxis: false,
+                    showStars: true,
+                    showLabels: true,
+                  },
+                },
+                {
+                  simulationId: 'astronomy.space.earth-orbit-lab',
+                  parameters: {
+                    simMode: 'educational',
+                    timeScale: 200,
+                    showTrails: true,
+                    showVectors: true,
+                    showLOS: false,
+                    showOrbits: true,
+                    showOnlyVisible: false,
+                    showMoon: true,
+                    showLagrangePoints: true,
+                    showLabels: true,
+                    telescopeLat: -37.8136,
+                    telescopeLon: 144.9631,
+                  },
+                },
               ];
 
               const batchResults = [];

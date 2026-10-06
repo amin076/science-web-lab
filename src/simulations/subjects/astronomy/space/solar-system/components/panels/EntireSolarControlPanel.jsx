@@ -95,6 +95,10 @@ const EntireSolarControlPanel = ({
                 <button
                   key={preset.value}
                   type="button"
+                  aria-label={`Set Solar System speed to ${preset.value}`}
+                  aria-pressed={active}
+                  data-agent-param="speed"
+                  data-agent-value={String(preset.value)}
                   onClick={() => setSpeed(preset.value)}
                   className={`rounded-xl border px-3 py-2 text-left transition-all ${
                     active
@@ -148,6 +152,11 @@ const EntireSolarControlPanel = ({
           ].map((mode) => (
             <button
               key={mode.id}
+              type="button"
+              aria-label={`Set scale mode to ${mode.id}`}
+              aria-pressed={scaleMode === mode.id}
+              data-agent-param="scaleMode"
+              data-agent-value={mode.id}
               onClick={() => setScaleMode(mode.id)}
               className={`p-2 rounded text-sm text-left transition-all ${
                 scaleMode === mode.id
@@ -171,11 +180,11 @@ const EntireSolarControlPanel = ({
       >
         <div className="flex flex-col gap-2">
           {[
-            { label: "Show Trails", val: showTrails, set: setShowTrails },
-            { label: "Show Orbits", val: showOrbits, set: setShowOrbits },
-            { label: "Show Axes", val: showAxis, set: setShowAxis },
-            { label: "Show Stars", val: showStars, set: setShowStars },
-            { label: "Show Labels", val: showLabels, set: setShowLabels },
+            { key: "showTrails", label: "Show Trails", val: showTrails, set: setShowTrails },
+            { key: "showOrbits", label: "Show Orbits", val: showOrbits, set: setShowOrbits },
+            { key: "showAxis", label: "Show Axes", val: showAxis, set: setShowAxis },
+            { key: "showStars", label: "Show Stars", val: showStars, set: setShowStars },
+            { key: "showLabels", label: "Show Labels", val: showLabels, set: setShowLabels },
           ].map((item, idx) => (
             <label
               key={idx}
@@ -196,6 +205,8 @@ const EntireSolarControlPanel = ({
 
               <input
                 type="checkbox"
+                aria-label={item.label}
+                data-agent-param={item.key}
                 checked={item.val}
                 onChange={(e) => item.set(e.target.checked)}
                 className="accent-cyan-400 w-4 h-4"
@@ -215,6 +226,10 @@ const EntireSolarControlPanel = ({
       >
         <div className="flex flex-col gap-3">
           <button
+            type="button"
+            aria-label="Focus on entire Solar System"
+            data-agent-param="focusTarget"
+            data-agent-value="system"
             onClick={() => setFocusTarget("system")}
             className={`rounded-xl border px-3 py-3 text-left transition-all ${
               focusTarget === "system"

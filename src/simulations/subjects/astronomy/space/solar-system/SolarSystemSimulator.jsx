@@ -11,6 +11,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Stars, Html } from "@react-three/drei";
 import * as THREE from "three";
 import PlanetMoonComparison3D from "./components/panels/PlanetMoonComparison3D";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // ✅ XR (ONLY mounted after user clicks Enter AR/VR)
 import { XR, XROrigin, useXR, createXRStore } from "@react-three/xr";
@@ -81,7 +82,7 @@ function PlaybackControls({
   compact = false,
 }) {
   const base =
-    "rounded-lg border border-white/15 text-white shadow-md transition-transform active:scale-95";
+    "min-h-11 min-w-11 rounded-lg border border-white/15 text-white shadow-md transition-transform active:scale-95";
   const pad = compact ? "px-3 py-2 text-xs" : "px-4 py-2 text-sm";
 
   return (
@@ -91,6 +92,7 @@ function PlaybackControls({
           type="button"
           onClick={onPause}
           aria-label="Pause simulation"
+          data-agent-action="pause"
           className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
         >
           ⏸ {compact ? "" : "Pause"}
@@ -100,6 +102,7 @@ function PlaybackControls({
           type="button"
           onClick={onStart}
           aria-label="Start simulation"
+          data-agent-action="play"
           className={`${base} ${pad} bg-emerald-500/80 hover:bg-emerald-600 border-emerald-400/40 font-semibold`}
         >
           ▶ {compact ? "" : "Start"}
@@ -110,6 +113,7 @@ function PlaybackControls({
         type="button"
         onClick={onReset}
         aria-label="Reset simulation"
+        data-agent-action="reset"
         className={`${base} ${pad} bg-white/10 hover:bg-white/15`}
       >
         ↺ {compact ? "" : "Reset"}
@@ -711,18 +715,36 @@ function SolarSystemSceneXR({
 /* ------------------------------------------------------------------ */
 export default function SolarSystemSimulator() {
   const isMobile = useMediaQuery("(max-width: 1023px)");
+  const initialMcpRef = useRef(null);
 
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "astronomy.space.solar-system",
+      {
+        speed: 1,
+        scaleMode: "educational",
+        focusTarget: "system",
+        showTrails: true,
+        showOrbits: true,
+        showAxis: true,
+        showStars: true,
+        showLabels: true,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
   const [isSimulating, setIsSimulating] = useState(true);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(initialMcp.values.speed);
 
-  const [showTrails, setShowTrails] = useState(true);
-  const [showOrbits, setShowOrbits] = useState(true);
-  const [showAxis, setShowAxis] = useState(true);
-  const [showStars, setShowStars] = useState(true);
-  const [showLabels, setShowLabels] = useState(true);
-  const [focusTarget, setFocusTarget] = useState("system");
+  const [showTrails, setShowTrails] = useState(initialMcp.values.showTrails);
+  const [showOrbits, setShowOrbits] = useState(initialMcp.values.showOrbits);
+  const [showAxis, setShowAxis] = useState(initialMcp.values.showAxis);
+  const [showStars, setShowStars] = useState(initialMcp.values.showStars);
+  const [showLabels, setShowLabels] = useState(initialMcp.values.showLabels);
+  const [focusTarget, setFocusTarget] = useState(initialMcp.values.focusTarget);
   const [focusRequestId, setFocusRequestId] = useState(0);
-  const [scaleMode, setScaleMode] = useState("educational");
+  const [scaleMode, setScaleMode] = useState(initialMcp.values.scaleMode);
 
   const [planetPositions, setPlanetPositions] = useState({});
   const [showComparison3D, setShowComparison3D] = useState(false);
@@ -887,12 +909,19 @@ export default function SolarSystemSimulator() {
 
   return (
     <div
-      className="relative h-full w-full bg-black overflow-hidden"
+      className="relative h-full min-h-[320px] w-full bg-black overflow-hidden"
+      data-agent-surface="solar-system-stage"
       style={{
         paddingTop: "env(safe-area-inset-top)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
+      {initialMcp.embeddedMcpApp && (
+        <div className="absolute right-3 top-3 z-30 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
+          MCP configured · Solar System
+        </div>
+      )}
+
       {/* 3D Canvas */}
       <div className="absolute inset-0 z-0">
         <Canvas

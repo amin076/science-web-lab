@@ -39,6 +39,8 @@ import RunSimulation from "@/pages/simulations/RunSimulation";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import Experiments from "@/pages/Experiments";
 import ExperimentDetail from "@/pages/ExperimentDetail";
 import Login from "@/pages/Login";
@@ -140,6 +142,8 @@ export default function App() {
               {/* 🔓 Public Pages */}
               <Route path="/" element={<Home />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="/about" element={<About />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

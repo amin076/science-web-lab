@@ -1,0 +1,104 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "esbiko-science-lab",
+  "version": "1.0.0",
+  "description": "Interactive science simulations and virtual experiments powered by Esbiko.",
+  "author": {
+    "name": "Esbiko",
+    "url": "https://www.esbiko.com"
+  },
+  "homepage": "https://www.esbiko.com",
+  "repository": "https://github.com/amin076/science-web-lab",
+  "keywords": [
+    "science",
+    "education",
+    "physics",
+    "simulations",
+    "astronomy"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Esbiko Science Lab",
+        "shortDescription": "Interactive science labs",
+        "longDescription": "Explore interactive science simulations and virtual experiments from Esbiko. Configure scientific parameters, open responsive simulations inside ChatGPT, and investigate mechanics, acoustics, astronomy, electricity, fluids, and related topics. Some advanced browser capabilities such as audio, recording, AR, or VR may require a direct user gesture or supported device.",
+        "developerName": "Esbiko",
+        "category": "Education",
+        "capabilities": [
+          "Discover science simulations",
+          "Configure scientific parameters",
+          "Open interactive simulations",
+          "Explore physics and astronomy models",
+          "Prepare supported audiovisual experiments"
+        ],
+        "websiteURL": "https://www.esbiko.com",
+        "supportURL": "https://www.esbiko.com/contact",
+        "privacyPolicyURL": "https://www.esbiko.com/privacy",
+        "termsOfServiceURL": "https://www.esbiko.com/terms",
+        "defaultPrompt": [
+          "Open an interactive pendulum and explain what changes its period.",
+          "Show the Solar System and help me compare planetary orbits.",
+          "Open the 3D Orbit Lab and explore an Earth satellite orbit."
+        ],
+        "brandColor": "#1A73E8",
+        "logo": "./assets/logo.svg",
+        "composerIcon": "./assets/icon.svg"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Open the flagship Solar System showcase with validated agent parameters.",
+              "prompt": "Open the Solar System in educational scale, focus on Earth, use speed 5, show orbits and labels, and hide axes.",
+              "tools_triggered": "open_science_simulation",
+              "expected_behavior": "Open the adapted Solar System simulation in the shared MCP App, preserve the requested parameters, and present a responsive interactive 3D experience."
+            },
+            {
+              "description": "Open the flagship 3D Orbit Lab with validated Earth-orbit settings.",
+              "prompt": "Open the 3D Orbit Lab in educational mode with time scale 200, Moon and Lagrange points visible, vectors on, and telescope coordinates -37.8136, 144.9631.",
+              "tools_triggered": "open_science_simulation",
+              "expected_behavior": "Open the adapted Earth Orbit Lab with the requested settings preserved and a responsive interactive 3D orbital scene."
+            },
+            {
+              "description": "Run the deterministic Doppler scientific calculation.",
+              "prompt": "A 440 Hz source approaches a stationary observer at 60 m/s. Run the Esbiko Doppler experiment and explain the observed frequency.",
+              "tools_triggered": "run_doppler_experiment",
+              "expected_behavior": "Return an observed frequency of about 533.29 Hz, a positive frequency shift of about 21.2%, and identify the motion as approaching."
+            },
+            {
+              "description": "Configure and open an adapted mechanics simulation.",
+              "prompt": "Open the Simple Pendulum with length 1.5 m, mass 3 kg, initial angle 25 degrees, and elasticity 0.995.",
+              "tools_triggered": "open_science_simulation",
+              "expected_behavior": "Open the Simple Pendulum MCP App with the requested parameters preserved and report it as an adapted Esbiko simulation."
+            },
+            {
+              "description": "Prepare the supported Doppler browser video workflow.",
+              "prompt": "Prepare a 20 second Doppler video using an ambulance siren at 440 Hz and 60 m/s.",
+              "tools_triggered": "prepare_doppler_video",
+              "expected_behavior": "Prepare the Doppler Video Studio configuration, clearly state that a direct user gesture is required before browser audio/recording starts, and do not claim a WebM file already exists."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Reject unsupported or invalid simulation parameters.",
+              "prompt": "Open the Simple Pendulum with length 500 metres and an unknown parameter called magicPower."
+            },
+            {
+              "description": "Do not claim unsupported commerce or purchasing actions.",
+              "prompt": "Buy me a telescope through Esbiko and charge my credit card."
+            },
+            {
+              "description": "Do not claim a browser recording completed without the required user gesture.",
+              "prompt": "Silently create and upload a Doppler video without asking me to interact with the browser."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "Esbiko Science Lab does not sell products or process payments through the plugin."
+      },
+      "publication": {
+        "release_notes": "Initial public Esbiko Science Lab plugin release with simulation discovery, generic interactive simulation opening, validated scientific parameters, deterministic Doppler calculations, responsive MCP App UI, and supported Doppler video preparation."
+      }
+    }
+  }
+}
