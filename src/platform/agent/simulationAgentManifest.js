@@ -445,6 +445,50 @@ export const simulationAgentManifest = Object.freeze({
       },
     },
   }),
+
+  "physics.mechanics.gyroscope": Object.freeze({
+    adapterVersion: "gyroscope-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        spinSpeed: { type: "number", minimum: 0, maximum: 50 },
+        tilt: { type: "number", minimum: 0, maximum: 85 },
+        mass: { type: "number", minimum: 0.1, maximum: 5 },
+        showVectors: { type: "boolean" },
+        showTrail: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: [
+        "running",
+        "spinSpeed",
+        "tilt",
+        "mass",
+        "elapsedSeconds",
+        "angularMomentum",
+        "torque",
+        "precession",
+      ],
+      properties: {
+        running: { type: "boolean" },
+        spinSpeed: { type: "number" },
+        tilt: { type: "number" },
+        mass: { type: "number" },
+        elapsedSeconds: { type: "number" },
+        angularMomentum: { type: "number" },
+        torque: { type: "number" },
+        precession: { type: "number" },
+        showVectors: { type: "boolean" },
+        showTrail: { type: "boolean" },
+      },
+    },
+  }),
 });
 
 export function getSimulationAgentManifestEntry(id) {

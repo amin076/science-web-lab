@@ -11,13 +11,29 @@ import GyroModel from "./GyroModel";
 
 import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG } from "./schema";
 import { pushCapped, formatNumber } from "./constants";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 export default function GyroscopeSimulation() {
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.gyroscope",
+      DEFAULT_PARAMS,
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const configuredInitialParams = {
+    ...DEFAULT_PARAMS,
+    ...initialMcp.values,
+  };
+
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
 
-  const [params, setParams] = useState(DEFAULT_PARAMS);
-  const paramsRef = useRef(DEFAULT_PARAMS);
+  const [params, setParams] = useState(configuredInitialParams);
+  const paramsRef = useRef(configuredInitialParams);
 
   const [physicsState, setPhysicsState] = useState({
     t: 0,
@@ -69,10 +85,10 @@ export default function GyroscopeSimulation() {
   return (
     <SimulationShell
       title="Scientific Gyroscope"
-      subtitle="Optimized Lab Model"
-      // We removed panelTop. The controls are now integrated into the right panel.
+      subtitle={initialMcp.embeddedMcpApp ? "Agent-ready embedded lab" : "Optimized Lab Model"}
+      rightWidth={initialMcp.embeddedMcpApp ? 420 : 520}
       panel={
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Controls
             params={params}
             setParam={setParam}
@@ -85,9 +101,18 @@ export default function GyroscopeSimulation() {
         </div>
       }
     >
-      <div className="relative w-full h-full bg-slate-950 overflow-hidden">
-        {/* --- LEFT GLASS OVERLAY --- */}
-        <div className="absolute top-4 left-4 z-10 w-80 max-h-[calc(100%-2rem)] flex flex-col gap-4 pointer-events-none">
+      <div
+        className="relative w-full h-full min-h-[260px] bg-slate-950 overflow-hidden"
+        data-agent-surface="gyroscope-stage"
+      >
+        {initialMcp.embeddedMcpApp && (
+          <div className="absolute right-3 top-3 z-20 rounded-full border border-cyan-400/30 bg-slate-950/85 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 backdrop-blur">
+            MCP configured
+          </div>
+        )}
+
+        {/* --- RESPONSIVE PHYSICS OVERLAY --- */}
+        <div className="absolute top-16 sm:top-20 left-3 right-3 sm:left-4 sm:right-auto z-10 sm:w-72 lg:w-80 max-h-[calc(100%-5rem)] flex flex-col gap-2 sm:gap-4 pointer-events-none">
           {/* We moved Time to the main control panel, so we removed it from here to reduce clutter */}
           <GlassPanel title="Physics State">
             <DataRow
@@ -109,6 +134,7 @@ export default function GyroscopeSimulation() {
             />
           </GlassPanel>
 
+          <div className="hidden sm:block">
           <GlassPanel title="Calculated Forces">
             <div className="space-y-4 text-sm font-mono text-white/80">
               <div>
@@ -137,6 +163,7 @@ export default function GyroscopeSimulation() {
               </div>
             </div>
           </GlassPanel>
+          </div>
         </div>
 
         {/* --- 3D SCENE --- */}

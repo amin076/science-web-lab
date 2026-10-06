@@ -24,14 +24,14 @@ export default function Charts({ data }) {
 
   // Data is now pre-calculated in the loop, ensuring KE matches Mass/Radius inputs
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-6">
-      <div className="text-white font-black tracking-wide text-lg">
+    <div className="bg-white/5 border border-white/10 rounded-2xl p-3 sm:p-4 space-y-4 sm:space-y-6">
+      <div className="text-white font-black tracking-wide text-base sm:text-lg">
         Physical Analysis
       </div>
 
       {/* ---------- θ(t) + Ω(t) ---------- */}
       <ChartCard title="Tilt θ(t)  &  Precession Ω(t)">
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={160}>
           <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -81,7 +81,7 @@ export default function Charts({ data }) {
 
       {/* ---------- Angular Momentum ---------- */}
       <ChartCard title="Angular Momentum L(t)">
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={160}>
           <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -111,7 +111,7 @@ export default function Charts({ data }) {
 
       {/* ---------- Energy ---------- */}
       <ChartCard title="Energy Exchange (KE & PE)">
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={160}>
           <AreaChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -150,7 +150,7 @@ export default function Charts({ data }) {
 
 function ChartCard({ title, children }) {
   return (
-    <div className="bg-black/20 border border-white/10 rounded-2xl p-3">
+    <div className="bg-black/20 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 min-w-0 overflow-hidden">
       <div className="text-white/70 font-bold text-sm mb-2">
         {title}
       </div>

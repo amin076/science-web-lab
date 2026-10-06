@@ -30,10 +30,13 @@ export default function Controls({
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_3rem] gap-2">
           <button
+            type="button"
+            aria-label={running ? "Pause simulation" : "Play simulation"}
+            data-agent-action={running ? "pause" : "play"}
             onClick={onStartStop}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg font-black tracking-wide shadow-md transition-all active:scale-[0.98] ${
+            className={`flex-1 flex items-center justify-center gap-2 min-h-11 py-3 rounded-lg font-black tracking-wide shadow-md transition-all active:scale-[0.98] ${
               running
                 ? "bg-red-500 hover:bg-red-400 text-white"
                 : "bg-emerald-500 hover:bg-emerald-400 text-white"
@@ -48,8 +51,11 @@ export default function Controls({
           </button>
 
           <button
+            type="button"
+            aria-label="Reset simulation"
+            data-agent-action="reset"
             onClick={onReset}
-            className="w-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 transition-colors"
+            className="w-12 min-h-11 flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 transition-colors"
             title="Reset Simulation"
           >
             <RotateCcw size={20} />
@@ -62,7 +68,7 @@ export default function Controls({
         <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
           View Options
         </div>
-        <div className="flex gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {toggles.map((c) => {
             const active = params[c.key];
             // Custom Icons logic (optional)
@@ -71,6 +77,10 @@ export default function Controls({
             return (
               <button
                 key={c.key}
+                type="button"
+                aria-label={c.label}
+                aria-pressed={active}
+                data-agent-param={c.key}
                 onClick={() => setParam(c.key, !active)}
                 className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-bold border transition-all ${
                   active
@@ -105,6 +115,7 @@ export default function Controls({
               min={c.min}
               max={c.max}
               step={c.step}
+              paramKey={c.key}
               onChange={(v) => setParam(c.key, v)}
             />
           ))}
@@ -116,13 +127,16 @@ export default function Controls({
 
 // --- SUBCOMPONENTS ---
 
-function ModernSlider({ label, value, unit, min, max, step, onChange }) {
+function ModernSlider({ label, value, unit, min, max, step, paramKey, onChange }) {
   const displayValue = Number.isFinite(value) ? value : min;
 
   return (
     <div className="group">
-      <div className="flex justify-between items-end mb-2">
-        <label className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">
+      <div className="flex justify-between items-end gap-3 mb-2">
+        <label
+          htmlFor={`gyro-${paramKey}`}
+          className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors"
+        >
           {label}
         </label>
         <div className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-xs font-mono text-cyan-400 min-w-[3rem] text-right">
@@ -133,7 +147,10 @@ function ModernSlider({ label, value, unit, min, max, step, onChange }) {
 
       <div className="relative h-6 flex items-center">
         <input
+          id={`gyro-${paramKey}`}
           type="range"
+          aria-label={label}
+          data-agent-param={paramKey}
           min={min}
           max={max}
           step={step}
