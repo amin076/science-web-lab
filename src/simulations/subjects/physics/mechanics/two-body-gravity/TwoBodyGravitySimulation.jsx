@@ -14,6 +14,7 @@ import {
   TRAIL_LENGTH,
 } from "./constants";
 import { useSimLoop } from "./useSimLoop";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 /**
  * Two-Body Gravity Simulation
@@ -25,12 +26,23 @@ import { useSimLoop } from "./useSimLoop";
  */
 export default function TwoBodyGravitySimulation() {
   const canvasRef = useRef(null);
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.two-body-gravity",
+      DEFAULT_PARAMS,
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const configuredInitialParams = {...DEFAULT_PARAMS, ...initialMcp.values};
 
   // Simulation running state
   const [running, setRunning] = useState(false);
 
   // User Parameters
-  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [params, setParams] = useState(configuredInitialParams);
   const paramsRef = useRef(params);
   useEffect(() => {
     paramsRef.current = params;
@@ -758,6 +770,12 @@ export default function TwoBodyGravitySimulation() {
         </div>
       }
     >
+      <div className="relative w-full h-full">
+        {initialMcp.embeddedMcpApp && (
+          <div className="absolute left-4 top-4 z-20 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+            MCP configured · m₁={params.m1}kg · m₂={params.m2}kg · G={params.G}
+          </div>
+        )}
       <canvas ref={canvasRef} className="w-full h-full block" />
     </SimulationShell>
   );
