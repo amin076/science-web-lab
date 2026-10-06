@@ -58,6 +58,7 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
     <div id="status" class="status">Waiting for Esbiko result…</div>
     <section class="frame-shell">
       <iframe
+        id="doppler-frame"
         src="${DOPPLER_RUN_URL}"
         title="Esbiko Doppler interactive simulation"
         allow="autoplay; fullscreen"
@@ -85,6 +86,31 @@ export const DOPPLER_WIDGET_HTML = `<!doctype html>
           : "—";
       $("motion").textContent = input.motion || "—";
       $("status").textContent = data.interpretation || result.motionStatus || "Esbiko Doppler Lab";
+
+      const frame = $("doppler-frame");
+      if (frame) {
+        const url = new URL("${DOPPLER_RUN_URL}");
+        const values = {
+          mcpMotion: input.motion,
+          mcpEmittedFrequencyHz: input.emittedFrequencyHz,
+          mcpSourceSpeedMps: input.sourceSpeedMps,
+          mcpSourcePositionM: input.sourcePositionM,
+          mcpObserverPositionM: input.observerPositionM,
+          mcpObserverVelocityMps: input.observerVelocityMps,
+        };
+
+        Object.entries(values).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            url.searchParams.set(key, String(value));
+          }
+        });
+
+        const nextSrc = url.toString();
+        if (frame.dataset.syncedSrc !== nextSrc) {
+          frame.dataset.syncedSrc = nextSrc;
+          frame.src = nextSrc;
+        }
+      }
     }
 
     // Hydrate immediately when ChatGPT mounts the widget after the tool call.
