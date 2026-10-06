@@ -48,12 +48,16 @@ jobs:
               const names = tools.map((tool) => tool.name);
               const dopplerTool = tools.find((tool) => tool.name === 'run_doppler_experiment');
               const openTool = tools.find((tool) => tool.name === 'open_science_simulation');
+              const videoTool = tools.find((tool) => tool.name === 'prepare_doppler_video');
 
               if (!dopplerTool) {
                 throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
               }
               if (!openTool) {
                 throw new Error(`Missing universal open tool. Found: ${names.join(', ')}`);
+              }
+              if (!videoTool) {
+                throw new Error(`Missing Doppler video tool. Found: ${names.join(', ')}`);
               }
 
               const widgetUri =
@@ -94,6 +98,30 @@ jobs:
                   },
                 },
               });
+
+              const video = await client.callTool({
+                name: 'prepare_doppler_video',
+                arguments: {
+                  storyMode: 'single_pass',
+                  durationSeconds: 20,
+                  speedMps: 60,
+                  emittedFrequencyHz: 440,
+                  firstInstrument: 'ambulance_siren',
+                  secondInstrument: 'police_siren',
+                },
+              });
+
+              const videoRequest = video?.structuredContent?.videoRequest;
+              if (
+                video?.structuredContent?.mode !== 'video' ||
+                video?.structuredContent?.requiresUserGesture !== true ||
+                videoRequest?.durationSeconds !== 20 ||
+                videoRequest?.firstInstrument !== 'ambulance_siren'
+              ) {
+                throw new Error(
+                  `Unexpected Doppler video preparation result: ${JSON.stringify(video?.structuredContent)}`,
+                );
+              }
 
               const pendulum = opened?.structuredContent?.simulation;
               if (pendulum?.id !== 'physics.mechanics.simple-pendulum') {
@@ -141,6 +169,7 @@ jobs:
               console.log('UNIVERSAL UI RESOURCE:', genericWidgetUri);
               console.log('GENERIC ADAPTED OPEN TEST:', pendulum.id, pendulum.integrationLevel);
               console.log('PENDULUM PARAMETERS:', pendulumParameters);
+              console.log('VIDEO PREP TEST:', videoRequest);
               console.log('LIVE MCP APP SMOKE TEST PASSED');
               await client.close();
               process.exit(0);
