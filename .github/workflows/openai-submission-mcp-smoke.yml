@@ -22,12 +22,13 @@ jobs:
 
       - name: Verify production-domain MCP endpoint
         run: |
+          mkdir -p /tmp/esbiko-openai-submission-smoke
+          cd /tmp/esbiko-openai-submission-smoke
           npm init -y >/dev/null 2>&1
           npm install --no-save @modelcontextprotocol/client@^2.0.0
 
-          node --input-type=module <<'EOF'
-          import { Client } from '@modelcontextprotocol/client';
-          import { StreamableHTTPClientTransport } from '@modelcontextprotocol/client/streamableHttp.js';
+          cat > smoke.mjs <<'EOF'
+          import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
           const endpoint = new URL('https://www.esbiko.com/mcp');
           let lastError;
@@ -36,7 +37,7 @@ jobs:
             try {
               const client = new Client(
                 { name: 'esbiko-openai-submission-smoke', version: '1.0.0' },
-                { capabilities: {} },
+                { versionNegotiation: { mode: { pin: '2026-07-28' } } },
               );
 
               const transport = new StreamableHTTPClientTransport(endpoint);
@@ -111,3 +112,5 @@ jobs:
 
           throw lastError;
           EOF
+
+          node smoke.mjs
