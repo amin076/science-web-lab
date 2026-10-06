@@ -19,6 +19,7 @@ import {
   configToMA,
 } from "./physics";
 import { renderScene } from "./render";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 const TABLE_HEIGHT_FROM_BOTTOM = 140;
 const LOAD_BLOCK_HEIGHT = 60;
@@ -26,8 +27,19 @@ const BEAM_HEIGHT = 40;
 
 export default function PulleySystemSimulation() {
   const canvasRef = useRef(null);
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.pulley-system",
+      DEFAULT_PARAMS,
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const configuredInitialParams = {...DEFAULT_PARAMS, ...initialMcp.values};
   const [running, setRunning] = useState(false);
-  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const [params, setParams] = useState(configuredInitialParams);
   const paramsRef = useRef(params);
   useEffect(() => {
     paramsRef.current = params;
@@ -176,7 +188,7 @@ export default function PulleySystemSimulation() {
   const onReset = () => {
     setRunning(false);
     resetClock();
-    setParams(DEFAULT_PARAMS);
+    setParams(configuredInitialParams);
     initSim();
     draw();
   };
@@ -223,7 +235,14 @@ export default function PulleySystemSimulation() {
         </div>
       }
     >
-      <canvas ref={canvasRef} className="w-full h-full block" />
+      <div className="relative w-full h-full">
+        {initialMcp.embeddedMcpApp && (
+          <div className="absolute left-4 top-4 z-20 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+            MCP configured · {params.config} · load={params.loadMass}kg · effort={params.effortForce}N
+          </div>
+        )}
+        <canvas ref={canvasRef} className="w-full h-full block" />
+      </div>
     </SimulationShell>
   );
 }
