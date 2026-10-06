@@ -36,7 +36,23 @@ assert.deepEqual(
   ["open", "configure", "readState", "play", "pause", "reset"],
 );
 
-const universal = getSimulationAgentProfile("physics.mechanics.projectile");
+const batchAdaptedIds = [
+  "physics.mechanics.projectile",
+  "physics.mechanics.circular-motion",
+  "physics.mechanics.gravity-comparison",
+  "physics.mechanics.seesaw",
+  "physics.mechanics.collision",
+];
+
+for (const id of batchAdaptedIds) {
+  const profile = getSimulationAgentProfile(id);
+  assert.equal(profile.integrationLevel, "adapted", `${id} should be adapted`);
+  assert(profile.adapterVersion, `${id} should declare an adapterVersion`);
+  assert(profile.actions.includes("configure"), `${id} should support configure`);
+  assert(profile.parameterSchema, `${id} should declare parameterSchema`);
+}
+
+const universal = getSimulationAgentProfile("physics.mechanics.two-body-gravity");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
 assert.deepEqual(universal.actions, ["open"]);

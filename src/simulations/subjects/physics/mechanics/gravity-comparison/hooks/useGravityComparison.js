@@ -13,6 +13,7 @@ import {
 } from "../constants";
 
 import { degToRad, updateTrailPoints } from "../utils/gravityMotion";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 function getInitialVelocity(mode, projectileSettings) {
   if (mode !== SIMULATION_MODES.PROJECTILE) {
@@ -27,11 +28,15 @@ function getInitialVelocity(mode, projectileSettings) {
   };
 }
 
-function createInitialBodies(mode = DEFAULT_SIMULATION_MODE, projectileSettings = DEFAULT_PROJECTILE_SETTINGS) {
+function createInitialBodies(
+  mode = DEFAULT_SIMULATION_MODE,
+  projectileSettings = DEFAULT_PROJECTILE_SETTINGS,
+  freeFallSettings = DEFAULT_FREE_FALL_SETTINGS,
+) {
   const initialY =
     mode === SIMULATION_MODES.PROJECTILE
       ? projectileSettings.height
-      : DEFAULT_FREE_FALL_SETTINGS.height;
+      : freeFallSettings.height;
 
   return GRAVITY_WORLDS.map((world) => ({
     ...world,
@@ -46,7 +51,32 @@ function createInitialBodies(mode = DEFAULT_SIMULATION_MODE, projectileSettings 
 }
 
 export function useGravityComparison() {
-  const [mode, setModeState] = useState(DEFAULT_SIMULATION_MODE);
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.gravity-comparison",
+      {
+        mode: DEFAULT_SIMULATION_MODE,
+        freeFallHeight: DEFAULT_FREE_FALL_SETTINGS.height,
+        projectileSpeed: DEFAULT_PROJECTILE_SETTINGS.speed,
+        projectileAngleDeg: DEFAULT_PROJECTILE_SETTINGS.angleDeg,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const initialProjectileSettings = {
+    ...DEFAULT_PROJECTILE_SETTINGS,
+    speed: initialMcp.values.projectileSpeed,
+    angleDeg: initialMcp.values.projectileAngleDeg,
+  };
+  const initialFreeFallSettings = {
+    ...DEFAULT_FREE_FALL_SETTINGS,
+    height: initialMcp.values.freeFallHeight,
+  };
+
+  const [mode, setModeState] = useState(initialMcp.values.mode);
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
   const [selectedWorldId, setSelectedWorldId] = useState("earth");
@@ -65,15 +95,19 @@ export function useGravityComparison() {
   });
 
   const [freeFallSettings, setFreeFallSettings] = useState(
-    DEFAULT_FREE_FALL_SETTINGS,
+    initialFreeFallSettings,
   );
 
   const [projectileSettings, setProjectileSettings] = useState(
-    DEFAULT_PROJECTILE_SETTINGS,
+    initialProjectileSettings,
   );
 
   const [bodies, setBodies] = useState(() =>
-    createInitialBodies(DEFAULT_SIMULATION_MODE, DEFAULT_PROJECTILE_SETTINGS),
+    createInitialBodies(
+      initialMcp.values.mode,
+      initialProjectileSettings,
+      initialFreeFallSettings,
+    ),
   );
 
   const animationRef = useRef(null);
@@ -92,24 +126,24 @@ export function useGravityComparison() {
   const resetSimulation = useCallback(() => {
     setIsRunning(false);
     setTime(0);
-    setBodies(createInitialBodies(mode, projectileSettings));
+    setBodies(createInitialBodies(mode, projectileSettings, freeFallSettings));
     lastTimestampRef.current = null;
 
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
-  }, [mode, projectileSettings]);
+  }, [freeFallSettings, mode, projectileSettings]);
 
   const setMode = useCallback(
     (nextMode) => {
       setModeState(nextMode);
       setIsRunning(false);
       setTime(0);
-      setBodies(createInitialBodies(nextMode, projectileSettings));
+      setBodies(createInitialBodies(nextMode, projectileSettings, freeFallSettings));
       lastTimestampRef.current = null;
     },
-    [projectileSettings],
+    [freeFallSettings, projectileSettings],
   );
 
   const toggleWorld = useCallback(
@@ -300,6 +334,7 @@ const hasLanded =
   }, [allEnabledBodiesHaveLanded]);
 
   return {
+    embeddedMcpApp: initialMcp.embeddedMcpApp,
     mode,
     setMode,
 

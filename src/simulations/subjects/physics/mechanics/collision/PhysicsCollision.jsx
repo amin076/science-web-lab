@@ -8,6 +8,7 @@ import {
   PX_PER_METER,
   MAX_DT,
 } from "./physicsUtils";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // Default Configuration
 const INITIAL_CONFIG = {
@@ -20,21 +21,58 @@ const INITIAL_CONFIG = {
 };
 
 const PhysicsCollision = () => {
-  const physicsState = useRef({
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.collision",
+      {
+        restitution: INITIAL_CONFIG.restitution,
+        timeScale: INITIAL_CONFIG.timeScale,
+        p1Mass: INITIAL_CONFIG.p1.mass,
+        p1Vx: INITIAL_CONFIG.p1.vx,
+        p1Vy: INITIAL_CONFIG.p1.vy,
+        p2Mass: INITIAL_CONFIG.p2.mass,
+        p2Vx: INITIAL_CONFIG.p2.vx,
+        p2Vy: INITIAL_CONFIG.p2.vy,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
+  const configuredInitial = {
+    ...INITIAL_CONFIG,
     p1: {
       ...INITIAL_CONFIG.p1,
-      radius: calculateRadius(INITIAL_CONFIG.p1.mass),
+      mass: initialMcp.values.p1Mass,
+      vx: initialMcp.values.p1Vx,
+      vy: initialMcp.values.p1Vy,
     },
     p2: {
       ...INITIAL_CONFIG.p2,
-      radius: calculateRadius(INITIAL_CONFIG.p2.mass),
+      mass: initialMcp.values.p2Mass,
+      vx: initialMcp.values.p2Vx,
+      vy: initialMcp.values.p2Vy,
     },
-    width: INITIAL_CONFIG.width,
-    height: INITIAL_CONFIG.height,
+    restitution: initialMcp.values.restitution,
+    timeScale: initialMcp.values.timeScale,
+  };
+
+  const physicsState = useRef({
+    p1: {
+      ...configuredInitial.p1,
+      radius: calculateRadius(configuredInitial.p1.mass),
+    },
+    p2: {
+      ...configuredInitial.p2,
+      radius: calculateRadius(configuredInitial.p2.mass),
+    },
+    width: configuredInitial.width,
+    height: configuredInitial.height,
     dpr: 1,
     isRunning: false,
-    timeScale: INITIAL_CONFIG.timeScale,
-    restitution: INITIAL_CONFIG.restitution,
+    timeScale: configuredInitial.timeScale,
+    restitution: configuredInitial.restitution,
     showVectors: true,
     showComponents: false,
     showImpactLine: true,
@@ -46,8 +84,8 @@ const PhysicsCollision = () => {
     p2: calculateStats(physicsState.current.p2),
     system: calculateSystem(physicsState.current.p1, physicsState.current.p2),
     isRunning: false,
-    timeScale: INITIAL_CONFIG.timeScale,
-    restitution: INITIAL_CONFIG.restitution,
+    timeScale: configuredInitial.timeScale,
+    restitution: configuredInitial.restitution,
     showVectors: true,
     showComponents: false,
     showImpactLine: true,
@@ -61,15 +99,15 @@ const PhysicsCollision = () => {
 
   const handleReset = () => {
     physicsState.current.p1 = {
-      ...INITIAL_CONFIG.p1,
-      radius: calculateRadius(INITIAL_CONFIG.p1.mass),
+      ...configuredInitial.p1,
+      radius: calculateRadius(configuredInitial.p1.mass),
     };
     physicsState.current.p2 = {
-      ...INITIAL_CONFIG.p2,
-      radius: calculateRadius(INITIAL_CONFIG.p2.mass),
+      ...configuredInitial.p2,
+      radius: calculateRadius(configuredInitial.p2.mass),
     };
-    physicsState.current.timeScale = INITIAL_CONFIG.timeScale;
-    physicsState.current.restitution = INITIAL_CONFIG.restitution;
+    physicsState.current.timeScale = configuredInitial.timeScale;
+    physicsState.current.restitution = configuredInitial.restitution;
     physicsState.current.isRunning = false;
     physicsState.current.impactFlash = null;
 
@@ -82,8 +120,8 @@ const PhysicsCollision = () => {
       p2: calculateStats(physicsState.current.p2),
       system: calculateSystem(physicsState.current.p1, physicsState.current.p2),
       isRunning: false,
-      timeScale: INITIAL_CONFIG.timeScale,
-      restitution: INITIAL_CONFIG.restitution,
+      timeScale: configuredInitial.timeScale,
+      restitution: configuredInitial.restitution,
       showVectors: true,
       showComponents: false,
       showImpactLine: true,
@@ -221,7 +259,12 @@ const PhysicsCollision = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen bg-[#050508] text-white overflow-hidden p-4 gap-4">
+    <div className="relative flex h-screen w-screen bg-[#050508] text-white overflow-hidden p-4 gap-4">
+      {initialMcp.embeddedMcpApp && (
+        <div className="absolute left-6 top-6 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+          MCP configured · e={uiState.restitution.toFixed(2)} · speed={uiState.timeScale.toFixed(1)} · m₁={uiState.p1.mass}kg · m₂={uiState.p2.mass}kg
+        </div>
+      )}
       {/* Pass Live Data (Box 3) to Canvas */}
       <SimulationCanvas physicsState={physicsState} liveData={uiState} />
 

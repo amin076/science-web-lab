@@ -4,11 +4,26 @@ import SimulationCanvas from "./SimulationCanvas";
 import SimulationHUD from "./SimulationHUD";
 import ControlPanel from "./ControlPanel";
 import { integratePhysics, getInitialState } from "./physics";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 export default function CircularMotionSimulation() {
   const [dims, setDims] = useState({ w: 800, h: 600 });
   const containerRef = useRef(null);
+  const initialMcpRef = useRef(null);
 
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.circular-motion",
+      {
+        radius: 140,
+        omega0: 1.5,
+        alpha: 0,
+        mass: 1,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
   const [running, setRunning] = useState(false);
   const [viewConfig, setViewConfig] = useState({
     showVectors: true,
@@ -18,11 +33,11 @@ export default function CircularMotionSimulation() {
   });
 
   const [params, setParams] = useState({
-    radius: 140,
+    radius: initialMcp.values.radius,
     theta0: 0,
-    omega0: 1.5,
-    alpha: 0,
-    mass: 1,
+    omega0: initialMcp.values.omega0,
+    alpha: initialMcp.values.alpha,
+    mass: initialMcp.values.mass,
   });
 
   const physicsRef = useRef(getInitialState(params));
@@ -119,6 +134,11 @@ export default function CircularMotionSimulation() {
         ref={containerRef}
         className="w-full h-full relative overflow-hidden bg-[#050510]"
       >
+        {initialMcp.embeddedMcpApp && (
+          <div className="absolute left-4 top-4 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
+            MCP configured · r={params.radius}m · ω₀={params.omega0} rad/s · α={params.alpha} rad/s² · m={params.mass}kg
+          </div>
+        )}
         <SimulationHUD live={uiState} />
         <SimulationCanvas
           width={dims.w}

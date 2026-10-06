@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import SeesawControlPanel from "./SeesawControlPanel.jsx";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // ============================================================================
 // --- INTERNAL CANVAS COMPONENT ---
@@ -101,6 +102,23 @@ const ControlsBar = ({ isSimulating, onStart, onPause, onReset }) => (
 // --- MAIN SIMULATOR COMPONENT ---
 // ============================================================================
 const SeesawSimulator = () => {
+  const initialMcpRef = useRef(null);
+
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.seesaw",
+      {
+        fulcrumHeight: 2,
+        leftArmLength: 3,
+        rightArmLength: 3,
+        plankMass: 10,
+        damping: 0.15,
+        friction: 0.08,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
   const METER_TO_PIXEL = 80;
   const GRAVITY = 9.8;
   const WORLD_WIDTH = 1000;
@@ -109,13 +127,13 @@ const SeesawSimulator = () => {
 
   // --- STATE ---
   const [seesawData, setSeesawData] = useState({
-    fulcrumHeight: 2.0, // Height in Meters from the ground
-    leftArmLength: 3,
-    rightArmLength: 3,
+    fulcrumHeight: initialMcp.values.fulcrumHeight,
+    leftArmLength: initialMcp.values.leftArmLength,
+    rightArmLength: initialMcp.values.rightArmLength,
     angle: 0,
     angularVelocity: 0,
     angularAcceleration: 0,
-    plankMass: 10,
+    plankMass: initialMcp.values.plankMass,
     plankThickness: 0.2,
   });
 
@@ -128,8 +146,8 @@ const SeesawSimulator = () => {
     { id: 6, mass: 30, color: "#60A5FA", placed: false, position: 0 },
   ]);
 
-  const [damping, setDamping] = useState(0.15);
-  const [friction, setFriction] = useState(0.08);
+  const [damping, setDamping] = useState(initialMcp.values.damping);
+  const [friction, setFriction] = useState(initialMcp.values.friction);
   const [isSimulating, setIsSimulating] = useState(false);
   const [showVectors, setShowVectors] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
@@ -422,6 +440,11 @@ const SeesawSimulator = () => {
   return (
     <div className="flex gap-6 h-full p-6 bg-slate-900 text-white font-sans overflow-hidden">
       <div className="flex-1 flex flex-col gap-4 relative">
+        {initialMcp.embeddedMcpApp && (
+          <div className="rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+            MCP configured · h={seesawData.fulcrumHeight}m · L={seesawData.leftArmLength}m · R={seesawData.rightArmLength}m · plank={seesawData.plankMass}kg
+          </div>
+        )}
         <ControlsBar
           isSimulating={isSimulating}
           onStart={() => setIsSimulating(true)}

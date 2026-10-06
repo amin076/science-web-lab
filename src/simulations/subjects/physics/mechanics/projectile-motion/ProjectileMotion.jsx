@@ -17,6 +17,7 @@ import GraphSection from "./SimulationGraphs";
 import { calculatePhysicsStep } from "./physics";
 import * as Draw from "./drawing";
 import { useCamera } from "./useCamera";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 // --- CONSTANTS ---
 const INITIAL_OBJECTS = [
@@ -90,7 +91,24 @@ const INITIAL_OBJECTS = [
 const MotionSimulator = () => {
   const [canvasEl, setCanvasEl] = useState(null);
   const containerRef = useRef(null);
+  const initialMcpRef = useRef(null);
 
+  if (!initialMcpRef.current) {
+    initialMcpRef.current = readEmbeddedMcpParameters(
+      "physics.mechanics.projectile",
+      {
+        gravity: 9.8,
+        airResistance: 0,
+        selectedObject: "ball",
+        x: 0,
+        y: 20,
+        vx: 15,
+        vy: 15,
+      },
+    );
+  }
+
+  const initialMcp = initialMcpRef.current;
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
   const timeElapsedRef = useRef(0);
@@ -127,16 +145,28 @@ const MotionSimulator = () => {
   const viewRef = useCamera(canvasEl, initialWorldBounds, 60);
 
   // STATE
-  const [gravity, setGravity] = useState(9.8);
-  const [airResistance, setAirResistance] = useState(0.0);
+  const [gravity, setGravity] = useState(initialMcp.values.gravity);
+  const [airResistance, setAirResistance] = useState(initialMcp.values.airResistance);
   const [isSimulating, setIsSimulating] = useState(false);
-  const [selectedObject, setSelectedObject] = useState("ball");
+  const [selectedObject, setSelectedObject] = useState(initialMcp.values.selectedObject);
 
   const [showTrails, setShowTrails] = useState(true);
   const [showInfo, setShowInfo] = useState(true);
   const [vectorMode, setVectorMode] = useState({ x: false, y: false, v: true });
   const [history, setHistory] = useState([]);
-  const [objects, setObjects] = useState(INITIAL_OBJECTS);
+  const [objects, setObjects] = useState(() => {
+    const provided = new Set(initialMcp.providedKeys);
+    return INITIAL_OBJECTS.map((object) => {
+      const isSelected = object.id === initialMcp.values.selectedObject;
+      if (!isSelected) return {...object, active: false};
+
+      const next = {...object, active: true};
+      for (const key of ["x", "y", "vx", "vy"]) {
+        if (provided.has(key)) next[key] = initialMcp.values[key];
+      }
+      return next;
+    });
+  });
 
   // Sync active state
   useEffect(() => {
@@ -415,6 +445,27 @@ const MotionSimulator = () => {
               height: "100%",
             }}
           />
+
+          {initialMcp.embeddedMcpApp && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 16,
+                left: 16,
+                zIndex: 5,
+                px: 1.5,
+                py: 1,
+                borderRadius: 2,
+                border: "1px solid rgba(34,211,238,.35)",
+                bgcolor: "rgba(2,6,23,.82)",
+                color: "#a5f3fc",
+                fontSize: 12,
+                fontFamily: "monospace",
+              }}
+            >
+              MCP configured · g={gravity} · drag={airResistance} · object={selectedObject}
+            </Box>
+          )}
 
           {/* HINT OVERLAY only */}
           <Box

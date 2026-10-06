@@ -113,6 +113,94 @@ jobs:
                 },
               });
 
+              const batchCases = [
+                {
+                  simulationId: 'physics.mechanics.circular-motion',
+                  parameters: { radius: 120, omega0: 2, alpha: 0.5, mass: 2 },
+                },
+                {
+                  simulationId: 'physics.mechanics.projectile',
+                  parameters: {
+                    gravity: 3.71,
+                    airResistance: 0.05,
+                    selectedObject: 'ball',
+                    x: 0,
+                    y: 35,
+                    vx: 18,
+                    vy: 22,
+                  },
+                },
+                {
+                  simulationId: 'physics.mechanics.gravity-comparison',
+                  parameters: {
+                    mode: 'projectile',
+                    freeFallHeight: 90,
+                    projectileSpeed: 55,
+                    projectileAngleDeg: 40,
+                  },
+                },
+                {
+                  simulationId: 'physics.mechanics.seesaw',
+                  parameters: {
+                    fulcrumHeight: 2.5,
+                    leftArmLength: 3.5,
+                    rightArmLength: 2.5,
+                    plankMass: 12,
+                    damping: 0.2,
+                    friction: 0.1,
+                  },
+                },
+                {
+                  simulationId: 'physics.mechanics.collision',
+                  parameters: {
+                    restitution: 0.8,
+                    timeScale: 1.2,
+                    p1Mass: 25,
+                    p1Vx: 6,
+                    p1Vy: 0,
+                    p2Mass: 80,
+                    p2Vx: -4,
+                    p2Vy: 0,
+                  },
+                },
+              ];
+
+              const batchResults = [];
+              for (const testCase of batchCases) {
+                const openedBatch = await client.callTool({
+                  name: 'open_science_simulation',
+                  arguments: testCase,
+                });
+
+                const simulation = openedBatch?.structuredContent?.simulation;
+                const parameters = openedBatch?.structuredContent?.parameters;
+
+                if (simulation?.id !== testCase.simulationId) {
+                  throw new Error(
+                    `Unexpected batch simulation result for ${testCase.simulationId}: ${simulation?.id}`,
+                  );
+                }
+                if (simulation?.integrationLevel !== 'adapted') {
+                  throw new Error(
+                    `Expected adapted integration for ${testCase.simulationId}, got ${simulation?.integrationLevel}`,
+                  );
+                }
+
+                for (const [key, expected] of Object.entries(testCase.parameters)) {
+                  if (parameters?.[key] !== expected) {
+                    throw new Error(
+                      `Unexpected ${testCase.simulationId} parameter ${key}: ${parameters?.[key]} !== ${expected}`,
+                    );
+                  }
+                }
+
+                batchResults.push({
+                  id: simulation.id,
+                  adapterVersion: simulation.adapterVersion,
+                  parameters,
+                });
+              }
+
               const springMassOpened = await client.callTool({
                 name: 'open_science_simulation',
                 arguments: {
@@ -211,6 +299,7 @@ jobs:
               console.log('SPRING-MASS ADAPTED TEST:', springMass.id, springMass.integrationLevel);
               console.log('SPRING-MASS PARAMETERS:', springMassParameters);
               console.log('VIDEO PREP TEST:', videoRequest);
+              console.log('BATCH ADAPTER TESTS:', batchResults);
               console.log('LIVE MCP APP SMOKE TEST PASSED');
               await client.close();
               process.exit(0);

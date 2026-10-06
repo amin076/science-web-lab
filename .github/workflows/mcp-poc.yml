@@ -6,8 +6,7 @@ on:
       - "functions/mcp/**"
       - "functions/index.js"
       - "src/platform/agent/**"
-      - "src/simulations/subjects/physics/mechanics/pendulum/**"
-      - "src/simulations/subjects/physics/mechanics/spring-mass/**"
+      - "src/simulations/**"
       - "scripts/generate-platform-catalog.cjs"
       - "scripts/test-mcp-runtime.mjs"
       - "scripts/test-simulation-agent-contract.mjs"
@@ -47,6 +46,7 @@ jobs:
           node --check functions/mcp/dopplerWidget.mjs
           node --check functions/mcp/simulationWidget.mjs
           node --check functions/mcp/simulationRegistry.mjs
+          node --check src/platform/agent/readEmbeddedMcpParameters.js
           node --check scripts/test-mcp-doppler.cjs
 
       - name: Test MCP runtime startup
