@@ -51,6 +51,7 @@ const DopplerControls = ({
   masterGainRef,
   webMcpStatus,
   hideAgentGuide = false,
+  embeddedVideoRequest = null,
   lastAgentAction,
   directorStatus,
   onStartDirector,
@@ -195,6 +196,83 @@ const DopplerControls = ({
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        {hideAgentGuide && embeddedVideoRequest && (
+          <section
+            aria-label="MCP Video Studio"
+            className="space-y-3 rounded-xl border border-violet-400/30 bg-violet-400/10 p-4"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-violet-200">
+                <Clapperboard size={14} /> MCP Video Studio
+              </div>
+              <span className="rounded-full bg-slate-950/60 px-2 py-1 text-[9px] font-bold uppercase text-slate-300">
+                {directorStatus?.state || "ready"}
+              </span>
+            </div>
+
+            <div className="text-[11px] leading-5 text-slate-300">
+              {embeddedVideoRequest.durationSeconds}s · {embeddedVideoRequest.storyMode} · {embeddedVideoRequest.speedMps} m/s · {embeddedVideoRequest.emittedFrequencyHz} Hz
+            </div>
+
+            <div className="text-[10px] text-slate-400">
+              {embeddedVideoRequest.firstInstrument}
+              {embeddedVideoRequest.storyMode === "two_vehicle"
+                ? ` → ${embeddedVideoRequest.secondInstrument}`
+                : ""}
+            </div>
+
+            {directorActive && (
+              <div>
+                <div className="mb-1 flex justify-between text-[9px] font-bold text-slate-400">
+                  <span>
+                    {Math.round(directorStatus.elapsedSeconds || 0)}s / {directorStatus.durationSeconds}s
+                  </span>
+                  <span>{Math.round(directorStatus.progressPercent || 0)}%</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+                  <div
+                    className="h-full rounded-full bg-violet-400 transition-[width] duration-200"
+                    style={{ width: `${Math.min(100, directorStatus.progressPercent || 0)}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {!directorActive && directorStatus?.state !== "ready" && (
+              <button
+                type="button"
+                onClick={() => runDirectorAction(onStartDirector)}
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-violet-400 px-3 py-2 text-[11px] font-black text-slate-950 hover:bg-violet-300"
+              >
+                <Clapperboard size={13} /> Generate Video
+              </button>
+            )}
+
+            {directorActive && directorStatus?.state !== "finalizing" && (
+              <button
+                type="button"
+                onClick={() => runDirectorAction(onStopDirector)}
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-rose-400 px-3 py-2 text-[11px] font-black text-slate-950 hover:bg-rose-300"
+              >
+                <Square size={12} fill="currentColor" /> Stop &amp; prepare
+              </button>
+            )}
+
+            {directorStatus?.state === "ready" && (
+              <button
+                type="button"
+                onClick={() => runDirectorAction(onDownloadDirector)}
+                className="flex w-full items-center justify-center gap-2 rounded-md bg-emerald-400 px-3 py-2 text-[11px] font-black text-slate-950 hover:bg-emerald-300"
+              >
+                <Download size={13} /> Download WebM
+              </button>
+            )}
+
+            <div className="text-[9px] leading-4 text-slate-400">
+              One direct click is required so the browser can unlock audio and recording.
+            </div>
+          </section>
+        )}
         {!hideAgentGuide && isAgentGuideOpen && (
           <section
             aria-label="WebMCP agent testing guide"
