@@ -21,7 +21,8 @@ function createServer() {
       instructions:
         "Use list_science_simulations to discover Esbiko simulations. " +
         "Use open_science_simulation to open any Esbiko simulation in the universal MCP App shell. " +
-        "Use run_doppler_experiment for Doppler-effect calculations and " +
+        "Use run_doppler_experiment for Doppler-effect calculations. " +
+        "Use prepare_doppler_video when the user asks for a Doppler video, animation recording, or downloadable WebM. " +
         "explain the returned scientific result to the user. " +
         "The Doppler tool has an attached interactive MCP App UI. " +
         "Do not claim that no interactive widget is available merely because " +
@@ -168,6 +169,70 @@ function createServer() {
         ],
       };
     },
+  );
+
+  server.registerTool(
+    "prepare_doppler_video",
+    {
+      title: "Prepare Doppler video",
+      description:
+        "Prepare Esbiko's browser-based Doppler Video Studio for a short audiovisual WebM. " +
+        "The user must click Generate Video once in the attached MCP App because browsers " +
+        "require a direct user gesture before audio recording can start.",
+      inputSchema: z.object({
+        storyMode: z.enum(["single_pass", "two_vehicle"]).default("single_pass"),
+        durationSeconds: z.number().min(10).max(60).default(20),
+        speedMps: z.number().min(10).max(60).default(60),
+        emittedFrequencyHz: z.number().min(100).max(1000).default(440),
+        firstInstrument: z.enum([
+          "car_engine",
+          "diesel_engine",
+          "bus_engine",
+          "tractor_engine",
+          "ambulance_siren",
+          "police_siren",
+          "esbiko_voice",
+        ]).default("ambulance_siren"),
+        secondInstrument: z.enum([
+          "car_engine",
+          "diesel_engine",
+          "bus_engine",
+          "tractor_engine",
+          "ambulance_siren",
+          "police_siren",
+          "esbiko_voice",
+        ]).default("police_siren"),
+      }).strict(),
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+      _meta: {
+        ui: {resourceUri: DOPPLER_WIDGET_URI},
+        "openai/outputTemplate": DOPPLER_WIDGET_URI,
+        "openai/toolInvocation/invoking": "Preparing Esbiko Doppler Video Studio…",
+        "openai/toolInvocation/invoked": "Doppler Video Studio ready.",
+      },
+    },
+    async (args) => ({
+      structuredContent: {
+        simulationId: "physics.acoustics.doppler",
+        mode: "video",
+        requiresUserGesture: true,
+        videoRequest: args,
+        interpretation:
+          "The Doppler Video Studio is ready. Click Generate Video in the interactive Esbiko app to start browser audio and WebM recording.",
+      },
+      content: [
+        {
+          type: "text",
+          text:
+            `Prepared a ${args.durationSeconds}-second Esbiko Doppler video (${args.storyMode}). ` +
+            "Open the attached Video Studio and click Generate Video once to start recording.",
+        },
+      ],
+    }),
   );
 
   server.registerTool(
