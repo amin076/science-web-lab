@@ -11,7 +11,7 @@ import {listSimulationProfiles, requireSimulationProfile, SIMULATION_IDS} from "
 
 const {executeTool} = legacyServer;
 
-function createServer() {
+export function createServer() {
   const server = new McpServer(
     {
       name: "esbiko-mcp",
