@@ -5,6 +5,12 @@ on:
     paths:
       - "functions/mcp/**"
       - "functions/index.js"
+      - "src/platform/agent/**"
+      - "src/simulations/subjects/physics/mechanics/pendulum/**"
+      - "src/simulations/subjects/physics/mechanics/spring-mass/**"
+      - "scripts/generate-platform-catalog.cjs"
+      - "scripts/test-mcp-runtime.mjs"
+      - "scripts/test-simulation-agent-contract.mjs"
       - "firebase.json"
       - "scripts/test-mcp-doppler.cjs"
       - "docs/ESBIKO_CHATGPT_MCP.md"
