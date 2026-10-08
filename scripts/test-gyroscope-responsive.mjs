@@ -184,6 +184,38 @@ try {
     await page.close();
   }
 
+  const portraitPage = await browser.newPage({
+    viewport: { width: 360, height: 500 },
+  });
+
+  await portraitPage.goto(
+    baseUrl + "/experiments/physics.mechanics.gyroscope/run",
+    {
+      waitUntil: "domcontentloaded",
+      timeout: 60_000,
+    },
+  );
+
+  await portraitPage
+    .locator('[data-agent-surface="gyroscope-stage"]')
+    .waitFor({ state: "visible", timeout: 30_000 });
+
+  await portraitPage.waitForTimeout(800);
+
+  const orientationAdviceVisible = await portraitPage
+    .getByText("Rotate your device", { exact: true })
+    .isVisible()
+    .catch(() => false);
+
+  assert.equal(
+    orientationAdviceVisible,
+    false,
+    "Responsive Gyroscope must not show rotate-device advice in normal portrait mode.",
+  );
+
+  console.log("GYROSCOPE PORTRAIT ROUTE PASS 360x500");
+  await portraitPage.close();
+
   console.log("GYROSCOPE V2 RESPONSIVE UX TEST PASSED");
 } finally {
   await browser.close();
