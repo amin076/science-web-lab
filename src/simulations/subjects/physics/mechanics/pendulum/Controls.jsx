@@ -93,9 +93,11 @@ export default function Controls({
   setShowVectors,
   showTrail,
   setShowTrail,
+  recordingControls,
+  webMcpStatus,
 }) {
   return (
-    <div className="w-[360px] flex flex-col h-full bg-[#0f172a]/90 backdrop-blur-xl border-r border-white/10 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
+    <div className="order-2 lg:order-first w-full lg:w-[360px] shrink-0 flex flex-col min-h-0 lg:h-full bg-[#0f172a]/90 backdrop-blur-xl border-r border-white/10 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
       <div className="p-6 border-b border-white/10 bg-gradient-to-r from-[#0f172a] to-[#1e293b]">
         <h2 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent flex items-center gap-3">
           <Activity className="text-cyan-400 w-5 h-5" />
@@ -104,7 +106,7 @@ export default function Controls({
         <p className="text-slate-400 text-xs mt-1">Harmonic Motion & Energy</p>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8">
+      <div className="flex-1 lg:min-h-0 overflow-y-visible lg:overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-8">
         <section>
           <div className="flex items-center gap-2 mb-4 text-cyan-200 text-xs font-bold uppercase tracking-widest">
             <Settings2 className="w-3.5 h-3.5" /> Physics Constants
@@ -221,6 +223,10 @@ export default function Controls({
         >
           <RotateCcw size={16} /> RESET
         </button>
+      </div>
+      <div className="border-t border-white/10 p-2">
+        {recordingControls}
+        <p className="px-2 pb-1 text-xs text-cyan-200" aria-live="polite">WebMCP: {webMcpStatus || "checking"}</p>
       </div>
     </div>
   );
