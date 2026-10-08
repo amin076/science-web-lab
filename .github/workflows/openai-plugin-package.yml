@@ -30,8 +30,15 @@ jobs:
 
       - name: Build upload ZIP
         run: |
-          cd openai-plugin/esbiko-science-lab
-          zip -r ../../esbiko-science-lab-openai-plugin.zip .
+          mkdir -p plugin-staging/.agent-plugin/assets
+          cp openai-plugin/esbiko-science-lab/plugin.json plugin-staging/.agent-plugin/plugin.json
+          cp openai-plugin/esbiko-science-lab/assets/*.svg plugin-staging/.agent-plugin/assets/
+          cp openai-plugin/esbiko-science-lab/mcp.json plugin-staging/mcp.json
+          cd plugin-staging
+          zip -r ../esbiko-science-lab-openai-plugin.zip .agent-plugin mcp.json
+          cd ..
+          unzip -l esbiko-science-lab-openai-plugin.zip
+          unzip -p esbiko-science-lab-openai-plugin.zip .agent-plugin/plugin.json | node -e 'let s="";process.stdin.on("data",x=>s+=x).on("end",()=>{const p=JSON.parse(s);if(p.extensions?.["com.openai"]?.review?.demo_recording_url!=="https://youtu.be/tig4FOonnWQ")process.exit(1);console.log("ZIP layout and review URL validated")})'
 
       - name: Upload plugin ZIP artifact
         uses: actions/upload-artifact@v4
