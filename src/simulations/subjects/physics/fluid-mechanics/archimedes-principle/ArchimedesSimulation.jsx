@@ -148,19 +148,20 @@ export default function ArchimedesSimulation() {
   };
 
   return (
-    <div className="w-full h-full relative bg-gradient-to-b from-gray-200 to-gray-400 overflow-hidden flex flex-col">
+    <div className="w-full h-full min-h-0 min-w-0 overflow-y-auto xl:overflow-hidden bg-slate-950 text-white p-2 sm:p-3">
+      <div className="flex min-h-full min-w-0 flex-col gap-3 xl:grid xl:h-full xl:min-h-0 xl:grid-cols-[minmax(250px,300px)_minmax(0,1fr)_minmax(280px,340px)] xl:grid-rows-[minmax(0,1fr)]">
       <style>{scrollbarStyle}</style>
       {initialMcp.embeddedMcpApp && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+        <div className="order-2 xl:col-start-1 xl:row-start-1 xl:self-end xl:mb-2 xl:mx-2 rounded-lg border border-cyan-400/30 bg-slate-950 px-3 py-2 text-xs text-cyan-200 break-words">
           MCP configured · object={objDensity}kg/m³ · fluid={fluidDensity}kg/m³ · shape={shape}
         </div>
       )}
 
-      {/* 1. HUD OVERLAY (Left Side - Fixed Width, Dynamic Height) */}
-      <div className="absolute top-4 left-4 z-10 w-80 max-h-[90vh] flex flex-col pointer-events-auto">
-        <div className="bg-slate-900/80 backdrop-blur-xl border border-white/20 rounded-3xl shadow-2xl text-white font-sans overflow-hidden flex flex-col">
+      {/* Analysis is below the stage on compact devices and beside it on desktops. */}
+      <div className="order-2 xl:order-none xl:col-start-1 xl:row-start-1 w-full min-w-0 xl:min-h-0 flex flex-col">
+        <div className="bg-slate-900 border border-white/20 rounded-2xl shadow-lg text-white font-sans min-w-0 xl:min-h-0 flex flex-col">
           {/* SCROLLABLE CONTENT AREA */}
-          <div className="p-5 overflow-y-auto custom-scroll">
+          <div className="p-3 sm:p-4 xl:overflow-y-auto custom-scroll min-w-0">
             {/* Header */}
             <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-3">
               <div className="flex items-center gap-3">
@@ -277,11 +278,11 @@ export default function ArchimedesSimulation() {
         </div>
       </div>
 
-      {/* 2. 3D CANVAS */}
-      <div className="flex-grow">
+      {/* Full-width, unobstructed 3D stage on narrow MCP App viewports. */}
+      <div data-esbiko-archimedes-stage className="order-first xl:order-none xl:col-start-2 xl:row-start-1 relative w-full min-w-0 shrink-0 h-[min(60dvh,560px)] min-h-[320px] xl:h-full xl:min-h-0 xl:shrink overflow-hidden rounded-2xl border border-white/10 bg-slate-200">
         <Canvas
           shadows
-          camera={{ position: [25, 15, 30], fov: 40 }}
+          camera={{ position: [23, 14, 27], fov: 48 }}
           gl={{
             antialias: true,
             powerPreference: "high-performance",
@@ -302,7 +303,8 @@ export default function ArchimedesSimulation() {
         </Canvas>
       </div>
 
-      {/* 3. CONTROLS */}
+      {/* Controls always follow the stage and analysis in narrow viewports. */}
+      <div className="order-3 xl:order-none xl:col-start-3 xl:row-start-1 min-w-0 xl:min-h-0 xl:overflow-y-auto">
       <Controls
         isPlaying={isPlaying}
         onTogglePlay={() => setIsPlaying(!isPlaying)}
@@ -317,6 +319,8 @@ export default function ArchimedesSimulation() {
         shape={shape}
         setShape={setShape}
       />
+      </div>
+      </div>
     </div>
   );
 }
