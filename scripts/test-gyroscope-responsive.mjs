@@ -112,6 +112,15 @@ try {
       };
     });
 
+    const screenshotPath = path.join(
+      screenshotDir,
+      `gyroscope-${viewport.width}x${viewport.height}.png`,
+    );
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: true,
+    });
+
     assert(
       layout.documentScrollWidth <= layout.viewportWidth + 1,
       `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.documentScrollWidth}px`,
@@ -157,15 +166,6 @@ try {
       0,
       blockingConsoleErrors.join("\n"),
     );
-
-    const screenshotPath = path.join(
-      screenshotDir,
-      `gyroscope-${viewport.width}x${viewport.height}.png`,
-    );
-    await page.screenshot({
-      path: screenshotPath,
-      fullPage: true,
-    });
 
     console.log(
       `GYROSCOPE V2 RESPONSIVE PASS ${viewport.width}x${viewport.height}`,
