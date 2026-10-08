@@ -232,7 +232,7 @@ const GraphPanel = forwardRef(({ onClose }, ref) => {
   const sidebarItems = ORDERED_KEYS.filter((k) => GRAPH_TYPES[k]);
 
   return (
-    <div className="absolute bottom-6 left-6 right-6 h-80 bg-slate-950/60 border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-30">
+    <div className="relative mx-3 my-3 h-[360px] min-h-[320px] bg-slate-950/95 border border-white/20 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
       <div className="h-10 border-b border-white/10 flex items-center justify-between px-4 bg-black/20">
         <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 uppercase tracking-widest">
           <TrendingUp size={14} /> Physics Analysis
@@ -243,9 +243,9 @@ const GraphPanel = forwardRef(({ onClose }, ref) => {
       </div>
 
       {/* ✅ min-h-0 is CRITICAL for scroll + recharts sizing inside flex */}
-      <div className="flex-1 min-h-0 flex">
+      <div className="flex-1 min-h-0 flex flex-col sm:flex-row">
         {/* ✅ Sidebar scroll works now */}
-        <div className="w-56 min-h-0 border-r border-white/10 p-2 overflow-y-auto bg-black/30 custom-scrollbar">
+        <div className="w-full sm:w-44 lg:w-48 shrink-0 max-h-20 sm:max-h-none min-h-0 border-b sm:border-b-0 sm:border-r border-white/10 p-2 overflow-auto bg-black/30 custom-scrollbar">
           <div className="text-[10px] text-slate-500 font-bold uppercase mb-2 px-2">
             Select Parameter
           </div>
@@ -285,8 +285,8 @@ const GraphPanel = forwardRef(({ onClose }, ref) => {
               <ResponsiveContainer
                 width="100%"
                 height="100%"
-                minHeight={220}
-                minWidth={320}
+                minHeight={140}
+                minWidth={0}
               >
                 <LineChart
                   data={data}
