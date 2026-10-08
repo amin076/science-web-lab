@@ -40,6 +40,16 @@ assert.deepEqual(
   ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
 );
 
+for (const id of ["creative.patterns.ambient-pattern-studio", "physics.challenges.moon-lander"]) {
+  const profile = getSimulationAgentProfile(id);
+  assert.equal(profile.integrationLevel, "adapted");
+  assert.equal(profile.video, true);
+  assert.equal(profile.exportable, true);
+  assert(profile.actions.includes("configure"));
+  assert(profile.actions.includes("record"));
+  assert(profile.actions.includes("export"));
+}
+
 const batchAdaptedIds = [
   "physics.mechanics.projectile",
   "physics.mechanics.circular-motion",
