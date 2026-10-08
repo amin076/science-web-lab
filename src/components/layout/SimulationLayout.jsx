@@ -39,6 +39,7 @@ export default function SimulationLayout({
   children,
   onBack,
   hideBackButton = false,
+  showOrientationAdvice = false,
 }) {
   const embeddedMcpApp =
     typeof window !== "undefined" &&
@@ -63,7 +64,7 @@ export default function SimulationLayout({
       data-esbiko-simulation-layout="true"
       sx={simulationShellSx}
     >
-      {!embeddedMcpApp && <OrientationNotice />}
+      {showOrientationAdvice && !embeddedMcpApp && <OrientationNotice />}
       {!hideBackButton && (
         <MobileFloatingButton
           label="Back to Lab"
