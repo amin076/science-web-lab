@@ -1,10 +1,19 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
+import { useRef } from "react";
+import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
+import AgentCanvasRecorder from "@/components/shared/video/AgentCanvasRecorder.jsx";
 import { Flame, Play, Target } from "lucide-react";
 import MoonLanderControls from "./components/MoonLanderControls";
 import MoonLanderHUD from "./components/MoonLanderHUD";
 import MoonLanderSummary from "./components/MoonLanderSummary";
 import useMoonLanderRuntime from "./hooks/useMoonLanderRuntime";
 import MoonScene from "./scene/MoonScene";
+
+const LANDER_AGENT_PARAMETERS = Object.freeze({
+  mainThrust: { type: "boolean" },
+  rotateLeft: { type: "boolean" },
+  rotateRight: { type: "boolean" },
+});
 
 function TrainingBriefing({ onStart }) {
   return (
@@ -153,6 +162,48 @@ function TrainingBriefing({ onStart }) {
 
 export default function MoonLanderChallenge() {
   const runtime = useMoonLanderRuntime();
+  const recordingRef = useRef(null);
+  const liveRef = useRef(runtime);
+  liveRef.current = runtime;
+
+  const webMcpStatus = useAgentSimulationTools({
+    simulationId: "physics.challenges.moon-lander",
+    prefix: "esbiko_moon_lander",
+    properties: LANDER_AGENT_PARAMETERS,
+    actions: {
+      getState: () => {
+        const current = liveRef.current;
+        return {
+          simulationId: "physics.challenges.moon-lander",
+          status: current.state?.status || "loading",
+          running: current.state?.status === "running",
+          lander: current.state?.lander || null,
+          mission: current.state?.mission || null,
+          input: current.input,
+          recording: recordingRef.current?.getVideoStatus() || null,
+        };
+      },
+      configure: (input) => {
+        for (const [control, active] of Object.entries(input)) {
+          liveRef.current.setControlActive(control, active);
+        }
+        return { accepted: input };
+      },
+      setPlayback: ({ running }) => {
+        if (running) liveRef.current.resume();
+        else liveRef.current.pause();
+        return { running };
+      },
+      reset: () => {
+        liveRef.current.reset();
+        return { reset: true, running: true };
+      },
+      startVideo: ({ mode } = {}) => recordingRef.current?.startVideo({ mode }),
+      stopVideo: () => recordingRef.current?.stopVideo(),
+      getVideoStatus: () => recordingRef.current?.getVideoStatus(),
+      downloadVideo: () => recordingRef.current?.downloadVideo(),
+    },
+  });
 
   return (
     <Box
@@ -185,6 +236,10 @@ export default function MoonLanderChallenge() {
             onReset={runtime.reset}
           />
           {runtime.isReady && <TrainingBriefing onStart={runtime.start} />}
+          <Box sx={{ position: "absolute", zIndex: 32, bottom: { xs: 146, sm: 112 }, left: "50%", transform: "translateX(-50%)", maxWidth: "calc(100% - 24px)", borderRadius: 2, background: "rgba(5, 12, 28, 0.75)" }}>
+            <AgentCanvasRecorder ref={recordingRef} canvasSelector="[data-esbiko-moon-stage] canvas" filePrefix="esbiko-moon-lander" />
+            <Typography component="div" sx={{ fontSize: 10, color: "#bae6fd", px: 1.2, pb: 0.3 }} aria-live="polite">WebMCP: {webMcpStatus}</Typography>
+          </Box>
         </>
       )}
 
