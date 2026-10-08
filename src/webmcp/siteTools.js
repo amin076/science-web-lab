@@ -2,6 +2,14 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "astronomy.space.earth-orbit-lab",
+    name: "3D Orbit Lab",
+    topic: "Satellites, telescopes, orbital mechanics",
+    description: "Read, configure, focus, pause, reset and add satellite presets in the 3D Earth Orbit Lab.",
+    route: "/experiments/astronomy.space.earth-orbit-lab/run",
+    capabilities: ["state-read", "configure", "focus", "playback", "reset", "satellite-presets"],
+  }),
+  Object.freeze({
     id: "astronomy.space.solar-system",
     name: "Solar System",
     topic: "Astronomy and planetary motion",
