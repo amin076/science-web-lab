@@ -50,6 +50,10 @@
     ],
     "rewrites": [
       {
+        "source": "/privacy",
+        "destination": "/privacy.html"
+      },
+      {
         "source": "/mcp",
         "function": "mcp"
       },
