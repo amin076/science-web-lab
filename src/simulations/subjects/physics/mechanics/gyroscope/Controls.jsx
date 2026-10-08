@@ -1,6 +1,6 @@
 // src/simulations/subjects/physics/mechanics/gyroscope/Controls.jsx
 import React from "react";
-import { Play, Pause, RotateCcw, Eye, Activity } from "lucide-react";
+import { Activity, Eye, Pause, Play, RotateCcw } from "lucide-react";
 import { CONTROL_SCHEMA } from "./schema";
 import { clamp, formatNumber } from "./constants";
 
@@ -12,42 +12,48 @@ export default function Controls({
   onReset,
   t,
 }) {
-  // Separate schema into categories for better layout
-  const toggles = CONTROL_SCHEMA.filter((c) => c.type === "toggle");
-  const sliders = CONTROL_SCHEMA.filter((c) => c.type === "number");
+  const toggles = CONTROL_SCHEMA.filter((control) => control.type === "toggle");
+  const sliders = CONTROL_SCHEMA.filter((control) => control.type === "number");
 
   return (
-    <div className="flex flex-col gap-4 font-sans text-slate-100">
-      {/* --- TOP DASHBOARD (Timer & Actions) --- */}
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <div className="text-center mb-4">
-          <div className="text-slate-400 text-xs font-bold tracking-wider uppercase mb-1">
-            Elapsed Time
+    <div className="flex flex-col gap-3 text-slate-100">
+      <section className="rounded-2xl border border-white/10 bg-slate-950/30 p-3 backdrop-blur-2xl">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/35">
+              Experiment
+            </div>
+            <div className="mt-0.5 font-mono text-xl font-black tabular-nums text-cyan-300">
+              {t.toFixed(2)}
+              <span className="ml-1 text-xs font-semibold text-white/35">s</span>
+            </div>
           </div>
-          <div className="text-4xl font-mono font-black text-cyan-400 tabular-nums">
-            {t.toFixed(2)}
-            <span className="text-lg text-slate-500 ml-1">s</span>
+
+          <div
+            className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] ${
+              running
+                ? "bg-emerald-400/10 text-emerald-300"
+                : "bg-white/[0.05] text-white/40"
+            }`}
+          >
+            {running ? "Running" : "Ready"}
           </div>
         </div>
 
-        <div className="grid grid-cols-[minmax(0,1fr)_3rem] gap-2">
+        <div className="grid grid-cols-[minmax(0,1fr)_48px] gap-2">
           <button
             type="button"
             aria-label={running ? "Pause simulation" : "Play simulation"}
             data-agent-action={running ? "pause" : "play"}
             onClick={onStartStop}
-            className={`flex-1 flex items-center justify-center gap-2 min-h-11 py-3 rounded-lg font-black tracking-wide shadow-md transition-all active:scale-[0.98] ${
+            className={`flex min-h-12 items-center justify-center gap-2 rounded-xl border font-black tracking-wide transition active:scale-[0.985] ${
               running
-                ? "bg-red-500 hover:bg-red-400 text-white"
-                : "bg-emerald-500 hover:bg-emerald-400 text-white"
+                ? "border-rose-300/30 bg-rose-400/15 text-rose-100 hover:bg-rose-400/20"
+                : "border-emerald-300/30 bg-emerald-400/15 text-emerald-100 hover:bg-emerald-400/20"
             }`}
           >
-            {running ? (
-              <Pause size={20} fill="currentColor" />
-            ) : (
-              <Play size={20} fill="currentColor" />
-            )}
-            {running ? "PAUSE" : "START"}
+            {running ? <Pause size={19} fill="currentColor" /> : <Play size={19} fill="currentColor" />}
+            {running ? "Pause" : "Start"}
           </button>
 
           <button
@@ -55,113 +61,114 @@ export default function Controls({
             aria-label="Reset simulation"
             data-agent-action="reset"
             onClick={onReset}
-            className="w-12 min-h-11 flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg text-slate-300 transition-colors"
-            title="Reset Simulation"
+            className="flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-slate-300 transition hover:bg-white/[0.09] hover:text-white"
+            title="Reset simulation"
           >
-            <RotateCcw size={20} />
+            <RotateCcw size={19} />
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* --- VISUAL OPTIONS (Toggles) --- */}
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-          View Options
+      <section className="rounded-2xl border border-white/10 bg-slate-950/25 p-3 backdrop-blur-2xl">
+        <div className="mb-3 text-[10px] font-bold uppercase tracking-[0.15em] text-white/35">
+          Initial conditions
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {toggles.map((c) => {
-            const active = params[c.key];
-            // Custom Icons logic (optional)
-            const Icon = c.key === "showVectors" ? Eye : Activity;
+
+        <div className="space-y-4">
+          {sliders.map((control) => (
+            <ModernSlider
+              key={control.key}
+              label={control.label}
+              value={params[control.key]}
+              unit={control.unit}
+              min={control.min}
+              max={control.max}
+              step={control.step}
+              paramKey={control.key}
+              onChange={(value) => setParam(control.key, value)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-white/10 bg-slate-950/25 p-3 backdrop-blur-2xl">
+        <div className="mb-2.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white/35">
+          View options
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          {toggles.map((control) => {
+            const active = params[control.key];
+            const Icon = control.key === "showVectors" ? Eye : Activity;
 
             return (
               <button
-                key={c.key}
+                key={control.key}
                 type="button"
-                aria-label={c.label}
+                aria-label={control.label}
                 aria-pressed={active}
-                data-agent-param={c.key}
-                onClick={() => setParam(c.key, !active)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-sm font-bold border transition-all ${
+                data-agent-param={control.key}
+                onClick={() => setParam(control.key, !active)}
+                className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-2 text-xs font-bold transition ${
                   active
-                    ? "bg-cyan-950 border-cyan-500/50 text-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.1)]"
-                    : "bg-slate-800 border-slate-700 text-slate-400 hover:bg-slate-750"
+                    ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+                    : "border-white/10 bg-white/[0.035] text-slate-400 hover:bg-white/[0.06] hover:text-slate-200"
                 }`}
               >
-                <Icon size={16} />
-                {c.label}
+                <Icon size={15} />
+                <span className="truncate">{control.label.replace("Show ", "")}</span>
               </button>
             );
           })}
         </div>
-      </div>
-
-      {/* --- INITIAL CONDITIONS (Sliders) --- */}
-      <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-            Initial Conditions
-          </div>
-          {/* Decorative chevron could go here if collapsible */}
-        </div>
-
-        <div className="space-y-6">
-          {sliders.map((c) => (
-            <ModernSlider
-              key={c.key}
-              label={c.label}
-              value={params[c.key]}
-              unit={c.unit}
-              min={c.min}
-              max={c.max}
-              step={c.step}
-              paramKey={c.key}
-              onChange={(v) => setParam(c.key, v)}
-            />
-          ))}
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
 
-// --- SUBCOMPONENTS ---
-
-function ModernSlider({ label, value, unit, min, max, step, paramKey, onChange }) {
+function ModernSlider({
+  label,
+  value,
+  unit,
+  min,
+  max,
+  step,
+  paramKey,
+  onChange,
+}) {
   const displayValue = Number.isFinite(value) ? value : min;
 
   return (
     <div className="group">
-      <div className="flex justify-between items-end gap-3 mb-2">
+      <div className="mb-1.5 flex items-center justify-between gap-3">
         <label
           htmlFor={`gyro-${paramKey}`}
-          className="text-sm font-bold text-slate-300 group-hover:text-white transition-colors"
+          className="min-w-0 truncate text-xs font-semibold text-slate-300 transition group-hover:text-white"
         >
           {label}
         </label>
-        <div className="bg-slate-800 border border-slate-700 px-2 py-0.5 rounded text-xs font-mono text-cyan-400 min-w-[3rem] text-right">
+
+        <div className="shrink-0 rounded-lg border border-white/10 bg-black/20 px-2 py-1 font-mono text-[11px] font-bold text-cyan-300">
           {formatNumber(displayValue, step < 0.1 ? 2 : 1)}
-          {unit && <span className="text-slate-500 ml-0.5">{unit}</span>}
+          {unit && <span className="ml-1 text-[9px] font-medium text-white/35">{unit}</span>}
         </div>
       </div>
 
-      <div className="relative h-6 flex items-center">
-        <input
-          id={`gyro-${paramKey}`}
-          type="range"
-          aria-label={label}
-          data-agent-param={paramKey}
-          min={min}
-          max={max}
-          step={step}
-          value={displayValue}
-          onChange={(e) => {
-            const num = parseFloat(e.target.value);
-            onChange(clamp(num, min, max));
-          }}
-          className="w-full h-1.5 bg-slate-700 rounded-full appearance-none cursor-pointer accent-cyan-400 hover:accent-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500/30"
-        />
-      </div>
+      <input
+        id={`gyro-${paramKey}`}
+        type="range"
+        aria-label={label}
+        data-agent-param={paramKey}
+        min={min}
+        max={max}
+        step={step}
+        value={displayValue}
+        onChange={(event) => {
+          const next = Number.parseFloat(event.target.value);
+          onChange(clamp(next, min, max));
+        }}
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-300/30"
+      />
     </div>
   );
 }
