@@ -11,7 +11,18 @@ try {
     page.on("pageerror",e=>errors.push(e.message));
     await page.goto("http://127.0.0.1:4173/experiments/physics.fluid-mechanics.archimedes-principle/run?embed=mcp-app&mcp.objDensity=600&mcp.fluidDensity=1000", {waitUntil:"domcontentloaded",timeout:60000});
     const stage = page.locator("[data-esbiko-archimedes-stage]");
-    await stage.waitFor({state:"visible",timeout:30000});
+    try {
+      await stage.waitFor({state:"visible",timeout:15000});
+    } catch (error) {
+      const debug = await page.evaluate(() => ({
+        url: location.href,
+        text: document.body?.innerText?.slice(0,2500),
+        element: Boolean(document.querySelector('[data-esbiko-archimedes-stage]')),
+      }));
+      console.error("ARCHIMEDES LOAD FAILURE", {width,height,debug,errors});
+      await page.screenshot({path:output+"/diagnostic-"+width+"x"+height+".png",fullPage:true});
+      throw error;
+    }
     const layout = await page.evaluate(()=>{
       const stage=document.querySelector("[data-esbiko-archimedes-stage]").getBoundingClientRect();
       const analysis=[...document.querySelectorAll("h3")].find(e=>e.textContent.trim()==="Analysis")?.closest(".flex.flex-col");
