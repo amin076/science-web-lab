@@ -26,6 +26,8 @@ import CinematicTour from "./components/camera/CinematicTour";
 import TourHudPanel from "./components/panels/TourHudPanel";
 import SizeComparison3D from "./components/panels/SizeComparison3D";
 import SolarSystemControlPanel from "./components/panels/EntireSolarControlPanel";
+import SolarSystemVideoRecorder from "./components/video/SolarSystemVideoRecorder";
+import { useSolarSystemWebMcp } from "./hooks/useSolarSystemWebMcp";
 
 // ✅ DATA
 import {
@@ -69,6 +71,27 @@ function useMediaQuery(query) {
   }, [query]);
 
   return matches;
+}
+
+function readEmbeddedSolarVideoRequest() {
+  if (typeof window === "undefined") return null;
+
+  const query = new URLSearchParams(window.location.search);
+  if (query.get("mcpVideo") !== "1") return null;
+
+  const duration = Number(query.get("mcpVideoDurationSeconds"));
+  const storyMode = query.get("mcpVideoStoryMode");
+  const aspectRatio = query.get("mcpVideoAspectRatio");
+
+  return {
+    storyMode:
+      storyMode === "focus_target" ? "focus_target" : "cinematic_tour",
+    durationSeconds:
+      Number.isFinite(duration) && duration >= 5 && duration <= 60
+        ? duration
+        : 20,
+    aspectRatio: aspectRatio === "9:16" ? "9:16" : "16:9",
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -143,6 +166,7 @@ function XRButtons({
           onClick={onEnterAR}
           disabled={xrBusy || arSupported === false}
           aria-label="Enter augmented reality"
+          title={arSupported === false ? "AR is unavailable on this browser or device." : "Enter augmented reality"}
           className={`${base} ${pad} bg-blue-600 hover:bg-blue-500`}
         >
           📱 {xrBusy ? "Starting…" : compact ? "AR" : "Enter AR"}
@@ -153,29 +177,87 @@ function XRButtons({
           onClick={onEnterVR}
           disabled={xrBusy || vrSupported === false}
           aria-label="Enter virtual reality"
+          title={vrSupported === false ? "VR is unavailable on this browser or headset." : "Enter virtual reality"}
           className={`${base} ${pad} bg-purple-600 hover:bg-purple-500`}
         >
           🥽 {xrBusy ? "Starting…" : compact ? "VR" : "Enter VR"}
         </button>
       </div>
 
-      {(xrError || arSupported === false || vrSupported === false) && (
+      {xrError && (
         <div
-          role={xrError ? "alert" : "status"}
-          className="max-w-xs rounded-md bg-black/60 px-2 py-1 text-xs text-white/90"
+          role="alert"
+          className="max-w-xs rounded-md bg-rose-950/75 px-2 py-1 text-xs text-rose-100"
         >
-          {xrError ||
-            [
-              arSupported === false
-                ? "AR is unavailable on this browser or device."
-                : null,
-              vrSupported === false
-                ? "VR is unavailable on this browser or headset."
-                : null,
-            ]
-              .filter(Boolean)
-              .join(" ")}
+          {xrError}
         </div>
+      )}
+    </div>
+  );
+}
+
+function VideoStudioControls({
+  status,
+  preparedRequest,
+  onStart,
+  onStop,
+  onDownload,
+  compact = false,
+}) {
+  const state = status?.state || "idle";
+  const active = ["preparing", "recording", "finalizing"].includes(state);
+  const label = preparedRequest
+    ? `AI Video ${preparedRequest.durationSeconds}s`
+    : "Record";
+
+  return (
+    <div className="flex items-center gap-2">
+      {!active && state !== "ready" && (
+        <button
+          type="button"
+          data-agent-action="record"
+          aria-label="Record Solar System video"
+          onClick={onStart}
+          className={`min-h-11 rounded-lg border border-violet-300/35 bg-violet-500/80 font-bold text-white shadow-md transition hover:bg-violet-500 active:scale-95 ${
+            compact ? "min-w-11 px-2 text-xs" : "px-4 py-2 text-sm"
+          }`}
+        >
+          🎥 {compact ? "" : label}
+        </button>
+      )}
+
+      {active && state !== "finalizing" && (
+        <button
+          type="button"
+          data-agent-action="stop-recording"
+          aria-label="Stop Solar System video recording"
+          onClick={onStop}
+          className={`min-h-11 rounded-lg border border-rose-300/35 bg-rose-500/85 font-bold text-white shadow-md transition hover:bg-rose-500 active:scale-95 ${
+            compact ? "min-w-11 px-2 text-xs" : "px-4 py-2 text-sm"
+          }`}
+        >
+          ■ {compact ? "" : "Stop"}
+        </button>
+      )}
+
+      {state === "ready" && (
+        <button
+          type="button"
+          data-agent-action="download-video"
+          aria-label="Download Solar System WebM video"
+          onClick={onDownload}
+          className={`min-h-11 rounded-lg border border-emerald-300/35 bg-emerald-400 font-bold text-slate-950 shadow-md transition hover:bg-emerald-300 active:scale-95 ${
+            compact ? "min-w-11 px-2 text-xs" : "px-4 py-2 text-sm"
+          }`}
+        >
+          ↓ {compact ? "" : "Download WebM"}
+        </button>
+      )}
+
+      {active && (
+        <span className="rounded-full border border-white/10 bg-black/45 px-2 py-1 text-[10px] font-bold text-white/75">
+          {Math.round(status?.progressPercent || 0)}%
+        </span>
       )}
     </div>
   );
@@ -716,6 +798,10 @@ function SolarSystemSceneXR({
 export default function SolarSystemSimulator() {
   const isMobile = useMediaQuery("(max-width: 1023px)");
   const initialMcpRef = useRef(null);
+  const initialVideoRequestRef = useRef(null);
+  const threeCanvasRef = useRef(null);
+  const videoRecorderRef = useRef(null);
+  const runtimeStateRef = useRef(null);
 
   if (!initialMcpRef.current) {
     initialMcpRef.current = readEmbeddedMcpParameters(
@@ -733,7 +819,12 @@ export default function SolarSystemSimulator() {
     );
   }
 
+  if (!initialVideoRequestRef.current) {
+    initialVideoRequestRef.current = readEmbeddedSolarVideoRequest();
+  }
+
   const initialMcp = initialMcpRef.current;
+  const embeddedVideoRequest = initialVideoRequestRef.current;
   const [isSimulating, setIsSimulating] = useState(true);
   const [speed, setSpeed] = useState(initialMcp.values.speed);
 
@@ -757,6 +848,16 @@ export default function SolarSystemSimulator() {
     phase: "APPROACH",
     targetId: "sun",
     progress: 0,
+  });
+  const [videoStatus, setVideoStatus] = useState({
+    state: "idle",
+    elapsedSeconds: 0,
+    durationSeconds: embeddedVideoRequest?.durationSeconds || 15,
+    progressPercent: 0,
+    fileName: null,
+    bytes: 0,
+    downloadReady: false,
+    error: null,
   });
 
   // XR stays mounted so its store remains connected to Three.js before session entry
@@ -826,6 +927,54 @@ export default function SolarSystemSimulator() {
     setFocusRequestId((prev) => prev + 1);
   }, []);
 
+  runtimeStateRef.current = {
+    simulationId: "astronomy.space.solar-system",
+    running: isSimulating,
+    speed,
+    scaleMode,
+    focusTarget,
+    showTrails,
+    showOrbits,
+    showAxis,
+    showStars,
+    showLabels,
+    isTouring,
+    tourInfo,
+    video: videoStatus,
+  };
+
+  const getSolarState = useCallback(
+    () => ({
+      ...runtimeStateRef.current,
+      video: videoRecorderRef.current?.getStatus?.() || videoStatus,
+    }),
+    [videoStatus],
+  );
+
+  const configureSolarSystem = useCallback(
+    (input = {}) => {
+      if (input.speed !== undefined) setSpeed(input.speed);
+      if (input.scaleMode !== undefined) setScaleMode(input.scaleMode);
+      if (input.focusTarget !== undefined) handleFocusTarget(input.focusTarget);
+      if (input.showTrails !== undefined) setShowTrails(input.showTrails);
+      if (input.showOrbits !== undefined) setShowOrbits(input.showOrbits);
+      if (input.showAxis !== undefined) setShowAxis(input.showAxis);
+      if (input.showStars !== undefined) setShowStars(input.showStars);
+      if (input.showLabels !== undefined) setShowLabels(input.showLabels);
+
+      runtimeStateRef.current = {
+        ...runtimeStateRef.current,
+        ...input,
+      };
+
+      return {
+        ...runtimeStateRef.current,
+        ...input,
+      };
+    },
+    [handleFocusTarget],
+  );
+
   const effectiveSpeed = isTouring
     ? Math.max(speed, 1)
     : isSimulating
@@ -836,28 +985,207 @@ export default function SolarSystemSimulator() {
     setPlanetPositions((prev) => ({ ...prev, [id]: pos }));
   }, []);
 
-  const handleStart = () => setIsSimulating(true);
-  const handlePause = () => setIsSimulating(false);
+  const handleStart = useCallback(() => {
+    setIsSimulating(true);
+    runtimeStateRef.current = {
+      ...runtimeStateRef.current,
+      running: true,
+    };
+    return getSolarState();
+  }, [getSolarState]);
 
-  const handleReset = () => {
+  const handlePause = useCallback(() => {
+    setIsSimulating(false);
+    runtimeStateRef.current = {
+      ...runtimeStateRef.current,
+      running: false,
+    };
+    return getSolarState();
+  }, [getSolarState]);
+
+  const handleReset = useCallback(() => {
     setIsSimulating(false);
     setSpeed(1);
+    setScaleMode("educational");
+    setShowTrails(true);
+    setShowOrbits(true);
+    setShowAxis(true);
+    setShowStars(true);
+    setShowLabels(true);
     setFocusTarget("system");
     setFocusRequestId((prev) => prev + 1);
     setIsTouring(false);
     setTourInfo({ phase: "APPROACH", targetId: "sun", progress: 0 });
-  };
+    runtimeStateRef.current = {
+      ...runtimeStateRef.current,
+      running: false,
+      speed: 1,
+      scaleMode: "educational",
+      focusTarget: "system",
+      showTrails: true,
+      showOrbits: true,
+      showAxis: true,
+      showStars: true,
+      showLabels: true,
+      isTouring: false,
+    };
+    return getSolarState();
+  }, [getSolarState]);
 
-  const handleToggleTour = () => {
-    setIsTouring((prev) => {
-      const next = !prev;
+  const setTourAction = useCallback(
+    (action) => {
+      const next = action === "start";
+      setIsTouring(next);
       if (next) {
         setIsSimulating(true);
-        if (speed === 0) setSpeed(1);
+        if (runtimeStateRef.current?.speed === 0) setSpeed(1);
       }
-      return next;
-    });
+      runtimeStateRef.current = {
+        ...runtimeStateRef.current,
+        isTouring: next,
+        running: next ? true : runtimeStateRef.current?.running,
+      };
+      return getSolarState();
+    },
+    [getSolarState],
+  );
+
+  const handleToggleTour = () => {
+    setTourAction(isTouring ? "stop" : "start");
   };
+
+  const startSolarVideo = useCallback(
+    async (input = {}) => {
+      if (!videoRecorderRef.current) {
+        const error = new Error("The Solar System recorder is not mounted yet.");
+        error.code = "RECORDER_NOT_READY";
+        throw error;
+      }
+
+      const request = {
+        storyMode:
+          input.storyMode ||
+          embeddedVideoRequest?.storyMode ||
+          "cinematic_tour",
+        durationSeconds:
+          input.durationSeconds ||
+          embeddedVideoRequest?.durationSeconds ||
+          15,
+        aspectRatio:
+          input.aspectRatio ||
+          embeddedVideoRequest?.aspectRatio ||
+          "16:9",
+        speed: input.speed ?? runtimeStateRef.current?.speed ?? 5,
+        scaleMode:
+          input.scaleMode || runtimeStateRef.current?.scaleMode || "educational",
+        focusTarget:
+          input.focusTarget || runtimeStateRef.current?.focusTarget || "earth",
+        showTrails:
+          input.showTrails ?? runtimeStateRef.current?.showTrails ?? true,
+        showOrbits:
+          input.showOrbits ?? runtimeStateRef.current?.showOrbits ?? true,
+        showAxis:
+          input.showAxis ?? runtimeStateRef.current?.showAxis ?? false,
+        showStars:
+          input.showStars ?? runtimeStateRef.current?.showStars ?? true,
+        showLabels:
+          input.showLabels ?? runtimeStateRef.current?.showLabels ?? true,
+      };
+
+      configureSolarSystem(request);
+      setIsSimulating(true);
+
+      if (request.storyMode === "cinematic_tour") {
+        setIsTouring(true);
+      } else {
+        setIsTouring(false);
+        handleFocusTarget(request.focusTarget);
+      }
+
+      runtimeStateRef.current = {
+        ...runtimeStateRef.current,
+        ...request,
+        running: true,
+        isTouring: request.storyMode === "cinematic_tour",
+      };
+
+      await new Promise((resolve) =>
+        window.requestAnimationFrame(() =>
+          window.requestAnimationFrame(resolve),
+        ),
+      );
+
+      const result = await videoRecorderRef.current.startRecording({
+        durationSeconds: request.durationSeconds,
+        aspectRatio: request.aspectRatio,
+        fileName: `esbiko-solar-system-${request.storyMode}-${Date.now()}.webm`,
+      });
+
+      if (!result?.ok) {
+        const error = new Error(
+          result?.error?.message || "The Solar System video could not start.",
+        );
+        error.code = result?.error?.code || "RECORDING_START_FAILED";
+        throw error;
+      }
+
+      return {
+        ...getSolarState(),
+        videoRequest: request,
+        video: videoRecorderRef.current.getStatus(),
+      };
+    },
+    [
+      configureSolarSystem,
+      embeddedVideoRequest,
+      getSolarState,
+      handleFocusTarget,
+    ],
+  );
+
+  const stopSolarVideo = useCallback(() => {
+    const result = videoRecorderRef.current?.stopRecording?.();
+    if (!result?.ok) {
+      const error = new Error(
+        result?.error?.message || "The Solar System recording is not active.",
+      );
+      error.code = result?.error?.code || "RECORDING_NOT_ACTIVE";
+      throw error;
+    }
+    return getSolarState();
+  }, [getSolarState]);
+
+  const downloadSolarVideo = useCallback(() => {
+    const result = videoRecorderRef.current?.downloadRecording?.();
+    if (!result?.ok) {
+      const error = new Error(
+        result?.error?.message || "No Solar System video is ready to download.",
+      );
+      error.code = result?.error?.code || "VIDEO_NOT_READY";
+      throw error;
+    }
+    return {
+      ...getSolarState(),
+      downloaded: true,
+      fileName: result.fileName,
+      bytes: result.bytes,
+    };
+  }, [getSolarState]);
+
+  const webMcpStatus = useSolarSystemWebMcp({
+    enabled: !initialMcp.embeddedMcpApp,
+    getState: getSolarState,
+    configure: configureSolarSystem,
+    setPlayback: (action) =>
+      action === "pause" ? handlePause() : handleStart(),
+    reset: handleReset,
+    setTour: (action) => setTourAction(action),
+    startVideo: startSolarVideo,
+    getVideoStatus: () =>
+      videoRecorderRef.current?.getStatus?.() || videoStatus,
+    stopVideo: stopSolarVideo,
+    downloadVideo: downloadSolarVideo,
+  });
 
   const enterAR = async () => {
     if (xrSupport.ar === false) {
@@ -917,8 +1245,9 @@ export default function SolarSystemSimulator() {
       }}
     >
       {initialMcp.embeddedMcpApp && (
-        <div className="absolute right-3 top-3 z-30 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
-          MCP configured · Solar System
+        <div className="absolute right-3 top-16 sm:top-20 z-20 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
+          <span className="sm:hidden">MCP · Solar</span>
+          <span className="hidden sm:inline">MCP configured · Solar System</span>
         </div>
       )}
 
@@ -926,6 +1255,10 @@ export default function SolarSystemSimulator() {
       <div className="absolute inset-0 z-0">
         <Canvas
           shadows
+          gl={{ preserveDrawingBuffer: true, antialias: true }}
+          onCreated={({ gl }) => {
+            threeCanvasRef.current = gl.domElement;
+          }}
           camera={{ position: [0, 60, 200], fov: 60, far: 50_000_000 }}
         >
           <Suspense fallback={<Html center>Loading...</Html>}>
@@ -1021,19 +1354,33 @@ export default function SolarSystemSimulator() {
               compact={isMobile}
             />
 
-            {/* Middle */}
-            <XRButtons
-              onEnterAR={enterAR}
-              onEnterVR={enterVR}
-              arSupported={xrSupport.ar}
-              vrSupported={xrSupport.vr}
-              xrBusy={xrBusy}
-              xrError={xrError}
-              compact
+            {/* Desktop XR controls */}
+            {!isMobile && (
+              <XRButtons
+                onEnterAR={enterAR}
+                onEnterVR={enterVR}
+                arSupported={xrSupport.ar}
+                vrSupported={xrSupport.vr}
+                xrBusy={xrBusy}
+                xrError={xrError}
+                compact
+              />
+            )}
+
+            <VideoStudioControls
+              status={videoStatus}
+              preparedRequest={embeddedVideoRequest}
+              onStart={() => startSolarVideo(embeddedVideoRequest || {})}
+              onStop={stopSolarVideo}
+              onDownload={downloadSolarVideo}
+              compact={isMobile}
             />
 
             {/* Right */}
             <button
+              type="button"
+              aria-label={isTouring ? "Stop cinematic tour" : "Start cinematic tour"}
+              data-agent-action={isTouring ? "stop-tour" : "start-tour"}
               onClick={handleToggleTour}
               className={`rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95 ${
                 isMobile ? "px-3 py-2 text-xs" : "px-5 py-2 text-sm"
@@ -1055,6 +1402,9 @@ export default function SolarSystemSimulator() {
             {/* Mobile: open controls */}
             {isMobile && (
               <button
+                type="button"
+                aria-label="Open Solar System controls"
+                data-agent-action="open-controls"
                 onClick={() => setControlsOpen(true)}
                 className="ml-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
                 title="Open controls"
@@ -1068,7 +1418,7 @@ export default function SolarSystemSimulator() {
 
       {/* Desktop right panel (same as before) */}
       {!isMobile && (
-        <div className="absolute top-24 right-4 z-30 w-80 pointer-events-auto">
+        <div className="absolute bottom-4 right-4 top-24 z-30 w-80 pointer-events-auto">
           <SolarSystemControlPanel
             speed={speed}
             setSpeed={setSpeed}
@@ -1122,6 +1472,9 @@ export default function SolarSystemSimulator() {
                   </span>
                 </div>
                 <button
+                  type="button"
+                  aria-label="Close Solar System controls"
+                  data-agent-action="close-controls"
                   onClick={() => setControlsOpen(false)}
                   className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
                 >
@@ -1131,6 +1484,24 @@ export default function SolarSystemSimulator() {
 
               {/* Scroll area */}
               <div className="max-h-[70vh] overflow-auto p-2">
+                <div className="mb-2 rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-white/45">
+                    Mobile immersive controls
+                  </div>
+                  <XRButtons
+                    onEnterAR={enterAR}
+                    onEnterVR={enterVR}
+                    arSupported={xrSupport.ar}
+                    vrSupported={xrSupport.vr}
+                    xrBusy={xrBusy}
+                    xrError={xrError}
+                    compact
+                  />
+                  <div className="mt-2 text-[10px] text-white/40">
+                    WebMCP: {webMcpStatus}
+                  </div>
+                </div>
+
                 <SolarSystemControlPanel
                   speed={speed}
                   setSpeed={setSpeed}
@@ -1149,6 +1520,7 @@ export default function SolarSystemSimulator() {
                   scaleMode={scaleMode}
                   setScaleMode={setScaleMode}
                   setShowComparison3D={setShowComparison3D}
+                  setShowPlanetMoonComparison={setShowPlanetMoonComparison}
                 />
               </div>
             </div>
@@ -1168,6 +1540,19 @@ export default function SolarSystemSimulator() {
         scaleData={scale}
         scaleMode={scaleMode}
       />
+      <SolarSystemVideoRecorder
+        ref={videoRecorderRef}
+        sourceCanvasRef={threeCanvasRef}
+        getFrameState={() => runtimeStateRef.current}
+        onStatusChange={setVideoStatus}
+      />
+
+      {embeddedVideoRequest && videoStatus.state === "idle" && (
+        <div className="pointer-events-none absolute bottom-3 left-1/2 z-30 -translate-x-1/2 rounded-full border border-violet-300/30 bg-slate-950/75 px-3 py-1.5 text-[10px] font-semibold text-violet-100 backdrop-blur-xl">
+          AI video prepared · click the purple Record button
+        </div>
+      )}
+
       {/* Music prompt */}
       <AudioOverlay active={isTouring} />
     </div>

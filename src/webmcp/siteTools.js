@@ -2,6 +2,25 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "astronomy.space.solar-system",
+    name: "Solar System",
+    topic: "Astronomy and planetary motion",
+    description:
+      "Configure, focus, run, tour, record, inspect, and download the interactive 3D Solar System.",
+    route: "/experiments/astronomy.space.solar-system/run",
+    capabilities: [
+      "state-read",
+      "configure",
+      "focus",
+      "playback",
+      "reset",
+      "cinematic-tour",
+      "video-recording",
+      "video-status",
+      "video-download",
+    ],
+  }),
+  Object.freeze({
     id: "physics.acoustics.doppler",
     name: "Doppler Effect",
     topic: "Sound waves",

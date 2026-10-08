@@ -492,10 +492,10 @@ export const simulationAgentManifest = Object.freeze({
 
   "astronomy.space.solar-system": Object.freeze({
     adapterVersion: "solar-system-adapter.v1",
-    actions: ["open", "configure", "readState", "play", "pause", "reset"],
-    tools: ["open_science_simulation"],
-    video: false,
-    exportable: false,
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
+    tools: ["open_science_simulation", "prepare_solar_system_video"],
+    video: true,
+    exportable: true,
     parameterSchema: {
       type: "object",
       properties: {
@@ -518,7 +518,7 @@ export const simulationAgentManifest = Object.freeze({
     },
     stateSchema: {
       type: "object",
-      required: ["running", "speed", "scaleMode", "focusTarget"],
+      required: ["running", "speed", "scaleMode", "focusTarget", "isTouring"],
       properties: {
         running: { type: "boolean" },
         speed: { type: "number" },
@@ -529,6 +529,8 @@ export const simulationAgentManifest = Object.freeze({
         showAxis: { type: "boolean" },
         showStars: { type: "boolean" },
         showLabels: { type: "boolean" },
+        isTouring: { type: "boolean" },
+        video: { type: "object" },
       },
     },
   }),

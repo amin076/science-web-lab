@@ -7,6 +7,7 @@ import {
   createResetDopplerState,
 } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerAdapter.js";
 import { createDopplerWebMcpTools } from "../src/simulations/subjects/physics/acoustics/Doppler/adapter/dopplerTools.js";
+import { createSolarSystemWebMcpTools } from "../src/simulations/subjects/astronomy/space/solar-system/adapter/solarSystemTools.js";
 import { refreshDopplerMeasurements } from "../src/simulations/subjects/physics/acoustics/Doppler/engine/dopplerEngine.js";
 import {
   registerWebMcpTools,
@@ -364,6 +365,128 @@ assert.equal(videoStatusResult.ok, true);
 assert.equal(videoStatusResult.data.audioIncluded, true);
 assert.equal(videoStatusResult.data.audioSignalDetected, true);
 
+
+let solarRuntimeState = {
+  simulationId: "astronomy.space.solar-system",
+  running: true,
+  speed: 1,
+  scaleMode: "educational",
+  focusTarget: "system",
+  showTrails: true,
+  showOrbits: true,
+  showAxis: true,
+  showStars: true,
+  showLabels: true,
+  isTouring: false,
+  video: { state: "idle", downloadReady: false },
+};
+
+const solarTools = createSolarSystemWebMcpTools({
+  getState: () => solarRuntimeState,
+  configure: (input) => {
+    solarRuntimeState = { ...solarRuntimeState, ...input };
+    return solarRuntimeState;
+  },
+  setPlayback: (action) => {
+    solarRuntimeState = {
+      ...solarRuntimeState,
+      running: action === "run",
+    };
+    return solarRuntimeState;
+  },
+  reset: () => {
+    solarRuntimeState = {
+      ...solarRuntimeState,
+      running: false,
+      speed: 1,
+      scaleMode: "educational",
+      focusTarget: "system",
+      showTrails: true,
+      showOrbits: true,
+      showAxis: true,
+      showStars: true,
+      showLabels: true,
+      isTouring: false,
+    };
+    return solarRuntimeState;
+  },
+  setTour: (action) => {
+    solarRuntimeState = {
+      ...solarRuntimeState,
+      isTouring: action === "start",
+      running: action === "start" ? true : solarRuntimeState.running,
+    };
+    return solarRuntimeState;
+  },
+  startVideo: (input) => {
+    solarRuntimeState = {
+      ...solarRuntimeState,
+      video: {
+        state: "recording",
+        durationSeconds: input.durationSeconds || 20,
+        progressPercent: 0,
+        downloadReady: false,
+      },
+    };
+    return solarRuntimeState;
+  },
+  getVideoStatus: () => solarRuntimeState.video,
+  stopVideo: () => ({
+    ...solarRuntimeState,
+    video: { ...solarRuntimeState.video, state: "finalizing" },
+  }),
+  downloadVideo: () => ({
+    ...solarRuntimeState,
+    video: { state: "ready", downloadReady: true },
+    downloaded: true,
+  }),
+});
+
+assert.deepEqual(
+  solarTools.map((tool) => tool.name),
+  [
+    "get_solar_system_state",
+    "configure_solar_system",
+    "set_solar_system_playback",
+    "reset_solar_system",
+    "set_solar_system_tour",
+    "create_solar_system_video",
+    "get_solar_system_video_status",
+    "stop_solar_system_video",
+    "download_solar_system_video",
+  ],
+);
+assert.equal(solarTools[0].annotations.readOnlyHint, true);
+assert.equal(solarTools[1].annotations.readOnlyHint, false);
+assert.deepEqual(
+  solarTools[5].inputSchema.properties.aspectRatio.enum,
+  ["16:9", "9:16"],
+);
+
+const solarConfigureResult = JSON.parse(
+  await solarTools[1].execute({
+    speed: 5,
+    focusTarget: "earth",
+    showAxis: false,
+  }),
+);
+assert.equal(solarConfigureResult.ok, true);
+assert.equal(solarConfigureResult.data.speed, 5);
+assert.equal(solarConfigureResult.data.focusTarget, "earth");
+assert.equal(solarConfigureResult.data.showAxis, false);
+
+const solarVideoResult = JSON.parse(
+  await solarTools[5].execute({
+    storyMode: "cinematic_tour",
+    durationSeconds: 20,
+    aspectRatio: "16:9",
+    speed: 5,
+  }),
+);
+assert.equal(solarVideoResult.ok, true);
+assert.equal(solarVideoResult.data.video.state, "recording");
+assert.equal(solarVideoResult.data.video.durationSeconds, 20);
+
 let navigatedTo = null;
 const siteTools = createEsbikoSiteTools({
   navigate: (route) => {
@@ -377,18 +500,42 @@ assert.equal(
   listResult.data.simulations.length,
   WEBMCP_ENABLED_SIMULATIONS.length,
 );
-assert.ok(
-  listResult.data.simulations[0].capabilities.includes("video-director") &&
-    listResult.data.simulations[0].capabilities.includes("video-download"),
-  "Site discovery must advertise the verified video-director capabilities.",
+const listedDoppler = listResult.data.simulations.find(
+  (simulation) => simulation.id === "physics.acoustics.doppler",
+);
+const listedSolar = listResult.data.simulations.find(
+  (simulation) => simulation.id === "astronomy.space.solar-system",
 );
 
-const openResult = JSON.parse(
+assert.ok(
+  listedDoppler?.capabilities.includes("video-director") &&
+    listedDoppler?.capabilities.includes("video-download"),
+  "Site discovery must advertise Doppler video-director capabilities.",
+);
+assert.ok(
+  listedSolar?.capabilities.includes("video-recording") &&
+    listedSolar?.capabilities.includes("cinematic-tour") &&
+    listedSolar?.capabilities.includes("video-download"),
+  "Site discovery must advertise Solar System AI/video capabilities.",
+);
+
+const openSolarResult = JSON.parse(
+  await siteTools[1].execute({
+    simulationId: "astronomy.space.solar-system",
+  }),
+);
+assert.equal(openSolarResult.ok, true);
+assert.equal(
+  navigatedTo,
+  "/experiments/astronomy.space.solar-system/run",
+);
+
+const openDopplerResult = JSON.parse(
   await siteTools[1].execute({
     simulationId: "physics.acoustics.doppler",
   }),
 );
-assert.equal(openResult.ok, true);
+assert.equal(openDopplerResult.ok, true);
 assert.equal(
   navigatedTo,
   "/experiments/physics.acoustics.doppler/run",
@@ -403,14 +550,17 @@ const registration = await registerWebMcpTools({
       registeredTools.push(tool.name);
     },
   },
-  tools: [...siteTools, ...dopplerTools],
+  tools: [...siteTools, ...dopplerTools, ...solarTools],
   signal: controller.signal,
 });
 
 assert.equal(registration.status, WEBMCP_REGISTRATION_STATUS.READY);
-assert.equal(registeredTools.length, 11);
+assert.equal(
+  registeredTools.length,
+  siteTools.length + dopplerTools.length + solarTools.length,
+);
 assert.ok(
-  [...siteTools, ...dopplerTools].every(
+  [...siteTools, ...dopplerTools, ...solarTools].every(
     (tool) => tool.name.length <= 30 && tool.description.length <= 500,
   ),
   "Tool names and descriptions must stay inside recommended WebMCP budgets.",

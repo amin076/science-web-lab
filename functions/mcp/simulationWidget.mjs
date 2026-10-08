@@ -71,6 +71,7 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
     function render(data) {
       const simulation = data?.simulation || data;
       const parameters = data?.parameters || null;
+      const launchQuery = data?.launchQuery || null;
       if (!simulation?.runUrl) return;
 
       $("name").textContent = simulation.name || simulation.id || "Esbiko Science Lab";
@@ -90,6 +91,14 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
         Object.entries(parameters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
             url.searchParams.set("mcp." + key, String(value));
+          }
+        });
+      }
+
+      if (launchQuery && typeof launchQuery === "object") {
+        Object.entries(launchQuery).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            url.searchParams.set(key, String(value));
           }
         });
       }

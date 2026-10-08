@@ -68,6 +68,10 @@ assert.deepEqual(
 const solarSystem = getSimulationAgentProfile("astronomy.space.solar-system");
 assert.equal(solarSystem.integrationLevel, "adapted");
 assert.equal(solarSystem.adapterVersion, "solar-system-adapter.v1");
+assert.equal(solarSystem.video, true);
+assert.equal(solarSystem.exportable, true);
+assert(solarSystem.actions.includes("record"));
+assert(solarSystem.actions.includes("export"));
 
 const orbitLab = getSimulationAgentProfile("astronomy.space.earth-orbit-lab");
 assert.equal(orbitLab.integrationLevel, "adapted");
