@@ -2,6 +2,22 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.mechanics.simple-pendulum",
+    name: "Pendulum Lab",
+    topic: "Oscillations, harmonic motion, and energy",
+    description: "Read live pendulum physics, set UI controls, pause, reset, and record silent WebM video.",
+    route: "/experiments/physics.mechanics.simple-pendulum/run",
+    capabilities: ["state-read", "configure", "playback", "reset", "video-recording", "video-status", "video-download"],
+  }),
+  Object.freeze({
+    id: "physics.mechanics.spring-mass",
+    name: "Spring-Mass Lab",
+    topic: "Hooke's law, damping, and oscillations",
+    description: "Read live spring physics, configure visible UI controls, pause, reset, and record silent WebM video.",
+    route: "/experiments/physics.mechanics.spring-mass/run",
+    capabilities: ["state-read", "configure", "playback", "reset", "video-recording", "video-status", "video-download"],
+  }),
+  Object.freeze({
     id: "physics.waves.multi-source-interference",
     name: "Multi-Source Interference",
     topic: "Superposition, traveling water waves and cinematic interference patterns",
