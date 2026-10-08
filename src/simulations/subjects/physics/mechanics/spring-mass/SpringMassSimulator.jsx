@@ -4,6 +4,19 @@ import BaseCanvas from "@/components/shared/BaseCanvas.jsx";
 import SimulationControls from "@/components/shared/SimulationControls.jsx";
 import SpringControlPanel from "./SpringControlPanel.jsx";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
+import AgentCanvasRecorder from "@/components/shared/video/AgentCanvasRecorder.jsx";
+
+const SPRING_AGENT_PROPERTIES = Object.freeze({
+  k: { type: "number", minimum: 1, maximum: 100 },
+  mass: { type: "number", minimum: 0.1, maximum: 10 },
+  displacement: { type: "number", minimum: -5, maximum: 5 },
+  velocity: { type: "number", minimum: -10, maximum: 10 },
+  damping: { type: "number", minimum: 0, maximum: 2 },
+  showTrails: { type: "boolean" },
+  showVectors: { type: "boolean" },
+  showInfo: { type: "boolean" },
+});
 
 // ✅ Adjust this import to your actual file name/path (case-sensitive!)
 import {
@@ -51,6 +64,10 @@ export default function SpringMassSimulator({ onBack }) {
 
   const lastTimeRef = useRef(Date.now());
   const animationRef = useRef(null);
+  const videoRef = useRef(null);
+  const agentStateRef = useRef({});
+  agentStateRef.current = { running: isSimulating, ...springData, damping,
+    showTrails, showVectors, showInfo };
 
   // ✅ Responsive canvas sizing
   const stageRef = useRef(null);
@@ -63,7 +80,7 @@ export default function SpringMassSimulator({ onBack }) {
 
     const update = () => {
       const rect = el.getBoundingClientRect();
-      const w = Math.max(320, Math.floor(rect.width));
+      const w = Math.max(1, Math.floor(rect.width));
       const h = Math.max(240, Math.floor(rect.height));
       setCanvasSize({ width: w, height: h });
 
@@ -231,20 +248,53 @@ export default function SpringMassSimulator({ onBack }) {
     }));
   }, []);
 
+  const webMcpStatus = useAgentSimulationTools({
+    simulationId: "physics.mechanics.spring-mass",
+    prefix: "esbiko_spring_mass",
+    properties: SPRING_AGENT_PROPERTIES,
+    actions: {
+      getState: () => ({ simulationId: "physics.mechanics.spring-mass",
+        ...agentStateRef.current, canvas: canvasSize,
+        recording: videoRef.current?.getVideoStatus() || null }),
+      configure: (values) => {
+        const { damping: nextDamping, showTrails: nextTrails,
+          showVectors: nextVectors, showInfo: nextInfo, ...physics } = values;
+        if (Object.keys(physics).length) {
+          setSpringData((previous) => ({ ...previous, ...physics }));
+        }
+        if (nextDamping !== undefined) setDamping(nextDamping);
+        if (nextTrails !== undefined) setShowTrails(nextTrails);
+        if (nextVectors !== undefined) setShowVectors(nextVectors);
+        if (nextInfo !== undefined) setShowInfo(nextInfo);
+        return { accepted: values };
+      },
+      setPlayback: ({ running }) => {
+        if (typeof running !== "boolean") throw new Error("running must be boolean.");
+        if (running) handleStart(); else handlePause();
+        return { running };
+      },
+      reset: () => { handleReset(); return { running: false, reset: true }; },
+      startVideo: ({ mode } = {}) => videoRef.current?.startVideo({ mode }),
+      getVideoStatus: () => videoRef.current?.getVideoStatus(),
+      stopVideo: () => videoRef.current?.stopVideo(),
+      downloadVideo: () => videoRef.current?.downloadVideo(),
+    },
+  });
+
   return (
     <SimulationLayout onBack={onBack}>
-      <div className="h-full w-full p-4">
+      <div className="h-full w-full p-2 sm:p-4">
         {/* ✅ Important: min-h-0 enables inner scrolling in flex/grid */}
-        <div className="h-full w-full grid grid-cols-[minmax(0,1fr)_380px] gap-4 min-h-0">
+        <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] content-start lg:content-stretch gap-3 lg:gap-4 min-h-0 overflow-y-auto lg:overflow-hidden">
           {/* Left */}
-          <div className="min-h-0 flex flex-col gap-3">
+          <div className="min-w-0 min-h-0 flex flex-col gap-3">
             {initialMcpState.embeddedMcpApp && (
               <div className="shrink-0 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
                 MCP configured · k={springData.k.toFixed(1)} N/m · m={springData.mass.toFixed(1)} kg · x₀={springData.displacement.toFixed(1)} m · b={damping.toFixed(2)}
               </div>
             )}
 
-            <div className="shrink-0">
+            <div className="order-2 lg:order-first shrink-0">
               <SimulationControls
                 isSimulating={isSimulating}
                 onStart={handleStart}
@@ -253,10 +303,16 @@ export default function SpringMassSimulator({ onBack }) {
               />
             </div>
 
+            <div className="order-3 shrink-0">
+              <AgentCanvasRecorder ref={videoRef} canvasSelector="[data-esbiko-spring-stage] canvas" filePrefix="esbiko-spring-mass" />
+              <p className="px-2 text-xs text-cyan-300">WebMCP: {webMcpStatus}</p>
+            </div>
+
             {/* Canvas Stage */}
             <div
               ref={stageRef}
-              className="min-h-0 flex-1 rounded-2xl border border-white/10 bg-white/5 overflow-hidden"
+              data-esbiko-spring-stage="true"
+              className="order-first lg:order-none h-[min(60dvh,520px)] min-h-[300px] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1 rounded-2xl border border-white/10 bg-white/5 overflow-hidden"
             >
               <BaseCanvas
                 width={canvasSize.width}
@@ -267,8 +323,8 @@ export default function SpringMassSimulator({ onBack }) {
           </div>
 
           {/* Right: ✅ Scrollable panel */}
-          <div className="min-h-0">
-            <div className="h-full overflow-y-auto pr-1">
+          <div className="min-w-0 lg:min-h-0">
+            <div className="h-auto lg:h-full lg:overflow-y-auto pr-1">
               <SpringControlPanel
                 springData={springData}
                 updateSpringProperty={updateSpringProperty}
