@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { GRID_STEP, ARROW_SCALE, getMag } from "./physicsUtils";
-import LiveHUD from "./LiveHUD"; // Import the new HUD
 
-const SimulationCanvas = ({ physicsState, liveData }) => {
+const SimulationCanvas = ({ physicsState }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const viewportRef = useRef({ width: 800, height: 600, dpr: 1 });
 
   const drawVector = (ctx, x, y, vx, vy, color, width = 2) => {
     const len = getMag(vx, vy) * ARROW_SCALE;
@@ -45,9 +45,14 @@ const SimulationCanvas = ({ physicsState, liveData }) => {
         showImpactLine,
       } = physicsState.current;
 
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const viewport = viewportRef.current;
+      const scale = Math.min(viewport.width / w, viewport.height / h);
+      const offsetX = (viewport.width - w * scale) / 2;
+      const offsetY = (viewport.height - h * scale) / 2;
+      ctx.setTransform(viewport.dpr, 0, 0, viewport.dpr, 0, 0);
       ctx.fillStyle = "#08080c";
-      ctx.fillRect(0, 0, w, h);
+      ctx.fillRect(0, 0, viewport.width, viewport.height);
+      ctx.setTransform(viewport.dpr * scale, 0, 0, viewport.dpr * scale, viewport.dpr * offsetX, viewport.dpr * offsetY);
 
       ctx.strokeStyle = "#ffffff05";
       ctx.beginPath();
@@ -87,36 +92,36 @@ const SimulationCanvas = ({ physicsState, liveData }) => {
           drawVector(ctx, p.x, p.y, 0, p.vy, p.color + "88", 1.5);
         }
       });
-      requestAnimationFrame(draw);
+      frameId = requestAnimationFrame(draw);
     };
-    const id = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(id);
+    let frameId = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frameId);
   }, []);
 
   useEffect(() => {
-    const res = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const w = containerRef.current.clientWidth;
-      const h = containerRef.current.clientHeight;
-      canvasRef.current.width = w * dpr;
-      canvasRef.current.height = h * dpr;
-      physicsState.current.width = w;
-      physicsState.current.height = h;
-      physicsState.current.dpr = dpr;
+    const container = containerRef.current;
+    if (!container) return;
+    const resize = () => {
+      const width = Math.max(1, Math.floor(container.clientWidth));
+      const height = Math.max(1, Math.floor(container.clientHeight));
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      viewportRef.current = { width, height, dpr };
+      canvasRef.current.width = Math.round(width * dpr);
+      canvasRef.current.height = Math.round(height * dpr);
+      // Physics remains in its 800 × 600 world, independent of device size.
     };
-    window.addEventListener("resize", res);
-    res();
-    return () => window.removeEventListener("resize", res);
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(container);
+    return () => observer.disconnect();
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className="flex-1 bg-black rounded-3xl overflow-hidden relative border border-white/5"
+      className="w-full h-full min-w-0 bg-black overflow-hidden relative"
     >
       <canvas ref={canvasRef} className="block w-full h-full" />
-      {/* Box 3 is now rendered here */}
-      <LiveHUD data={liveData} />
     </div>
   );
 };
