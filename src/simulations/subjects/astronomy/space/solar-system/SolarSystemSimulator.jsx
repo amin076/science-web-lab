@@ -1184,10 +1184,10 @@ export default function SolarSystemSimulator() {
     enabled: !initialMcp.embeddedMcpApp,
     getState: getSolarState,
     configure: configureSolarSystem,
-    setPlayback: ({ action } = {}) =>
+    setPlayback: (action) =>
       action === "pause" ? handlePause() : handleStart(),
     reset: handleReset,
-    setTour: ({ action } = {}) => setTourAction(action),
+    setTour: (action) => setTourAction(action),
     startVideo: startSolarVideo,
     getVideoStatus: () =>
       videoRecorderRef.current?.getStatus?.() || videoStatus,
@@ -1253,7 +1253,7 @@ export default function SolarSystemSimulator() {
       }}
     >
       {initialMcp.embeddedMcpApp && (
-        <div className="absolute right-3 top-3 z-30 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
+        <div className="absolute right-3 top-16 sm:top-20 z-20 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
           <span className="sm:hidden">MCP · Solar</span>
           <span className="hidden sm:inline">MCP configured · Solar System</span>
         </div>
@@ -1420,7 +1420,7 @@ export default function SolarSystemSimulator() {
 
       {/* Desktop right panel (same as before) */}
       {!isMobile && (
-        <div className="absolute top-24 right-4 z-30 w-80 pointer-events-auto">
+        <div className="absolute bottom-4 right-4 top-24 z-30 w-80 pointer-events-auto">
           <SolarSystemControlPanel
             speed={speed}
             setSpeed={setSpeed}
