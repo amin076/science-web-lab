@@ -19,7 +19,8 @@
     "test:webmcp": "node scripts/test-webmcp.mjs",
     "test:mcp-doppler": "node scripts/test-mcp-doppler.cjs",
     "test:simulation-agent": "node scripts/test-simulation-agent-contract.mjs",
-    "test:gyroscope-responsive": "node scripts/test-gyroscope-responsive.mjs"
+    "test:gyroscope-responsive": "node scripts/test-gyroscope-responsive.mjs",
+    "test:solar-system-complete": "node scripts/test-solar-system-complete.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
