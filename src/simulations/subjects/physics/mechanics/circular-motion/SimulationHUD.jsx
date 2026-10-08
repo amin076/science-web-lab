@@ -10,8 +10,8 @@ export default function SimulationHUD({ live }) {
   const [showFormulas, setShowFormulas] = useState(false);
 
   return (
-    <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 font-mono">
-      <div className="bg-slate-900/90 border border-white/20 rounded-xl p-4 text-white shadow-2xl w-80 backdrop-blur-none">
+    <div className="relative z-10 flex flex-col gap-2 font-mono max-w-full">
+      <div className="bg-slate-900/90 border border-white/20 rounded-xl p-2 sm:p-3 text-white shadow-xl w-full max-w-sm">
         <div className="flex justify-between items-center mb-2 border-b border-white/10 pb-2">
           <span className="font-bold text-cyan-400 text-sm">Live Telemetry</span>
           <span className="text-xs text-white/50">t = {fmt(live.t)} s</span>
@@ -37,7 +37,7 @@ export default function SimulationHUD({ live }) {
       </div>
       
       {showFormulas && (
-        <div className="bg-slate-900/90 border border-white/20 rounded-xl p-4 text-white shadow-2xl w-80 text-[10px] opacity-95">
+        <div className="bg-slate-900/95 border border-white/20 rounded-xl p-3 text-white shadow-xl w-full max-w-sm text-[10px]">
           <ul className="space-y-2 text-white/80">
             {/* New Period Formula */}
             <li className="flex justify-between border-b border-white/5 pb-1"><span>Period</span> <span className="text-yellow-300">T = 2π / |ω|</span></li>
