@@ -23,7 +23,7 @@
         "shortDescription": "Interactive science labs",
         "longDescription": "Explore interactive science simulations and virtual experiments from Esbiko. Configure scientific parameters, open responsive simulations inside ChatGPT, and investigate mechanics, acoustics, astronomy, electricity, fluids, and related topics. Some advanced browser capabilities such as audio, recording, AR, or VR may require a direct user gesture or supported device.",
         "developerName": "Esbiko",
-        "category": "Education",
+        "category": "Education and Research",
         "capabilities": [
           "Discover science simulations",
           "Configure scientific parameters",
