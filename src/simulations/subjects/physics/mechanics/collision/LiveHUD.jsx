@@ -16,7 +16,7 @@ const LiveHUD = ({ data }) => {
 
   return (
     // UPDATED: Much clearer background (bg-black/10) and lighter blur for visibility
-    <div className="absolute top-4 right-4 w-60 bg-black/10 backdrop-blur-[2px] border border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-none">
+    <div className="relative w-full min-w-0 bg-slate-900/95 border border-white/10 rounded-2xl p-3 sm:p-4 shadow-xl">
       {/* HEADER WITH GLOWING DOT */}
       <div className="flex justify-between items-center mb-3 border-b border-white/10 pb-2">
         <h3 className="text-[10px] font-black uppercase tracking-widest text-white/50">
