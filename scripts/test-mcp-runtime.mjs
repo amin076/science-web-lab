@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createServer } from "../functions/mcp/transport.mjs";
 import {
   getSimulationProfile,
+  listSimulationProfiles,
   validateSimulationParameters,
 } from "../functions/mcp/simulationRegistry.mjs";
 import { readEmbeddedMcpParameters } from "../src/platform/agent/readEmbeddedMcpParameters.js";
@@ -116,6 +117,25 @@ assert.equal(
   true,
   "Gyroscope commandExecution capability should be supported",
 );
+
+
+const allProfiles = listSimulationProfiles();
+const adaptedIds = new Set(allProfiles
+  .filter((profile) => profile.integrationLevel === "adapted")
+  .map((profile) => profile.id));
+assert(allProfiles.length >= 20, "MCP discovery should expose the full simulation catalog");
+assert(adaptedIds.size >= 5, "Generated agent manifest is stale: fewer than five adapted labs");
+for (const id of [
+  "physics.acoustics.doppler",
+  "physics.mechanics.simple-pendulum",
+  "physics.mechanics.spring-mass",
+  "physics.mechanics.circular-motion",
+  "astronomy.space.solar-system",
+  "astronomy.space.earth-orbit-lab",
+]) {
+  assert(adaptedIds.has(id), `Missing MCP agent-ready simulation: ${id}`);
+}
+console.log("MCP CATALOG DISCOVERY PASSED:", allProfiles.length, "total;", adaptedIds.size, "adapted");
 
 console.log("MCP RUNTIME STARTUP TEST PASSED");
 console.log("SHARED EMBEDDED MCP PARAMETER READER TEST PASSED");
