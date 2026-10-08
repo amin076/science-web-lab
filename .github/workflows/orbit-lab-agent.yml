@@ -7,6 +7,7 @@ on:
       - "src/webmcp/**"
       - "src/platform/agent/**"
       - "scripts/test-orbit-lab-agent.mjs"
+      - "scripts/test-orbit-lab-responsive.mjs"
       - ".github/workflows/orbit-lab-agent.yml"
   push:
     branches: [main]
@@ -32,3 +33,22 @@ jobs:
         run: node scripts/test-orbit-lab-agent.mjs
       - name: Build full application
         run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run responsive browser tests
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/orbit-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-orbit-lab-responsive.mjs
+      - name: Upload visual diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orbit-lab-responsive
+          path: artifacts/orbit-lab-agent/*.png
+          if-no-files-found: warn
