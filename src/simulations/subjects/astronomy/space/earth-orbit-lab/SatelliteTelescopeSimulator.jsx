@@ -507,13 +507,93 @@ export default function SatelliteTelescopeSimulator() {
     return null;
   }
 
+  const startOrbitVideo = async (input = {}) => {
+    const recorder = videoRecorderRef.current;
+    if (!recorder) {
+      const error = new Error("Orbit Lab recorder is not ready.");
+      error.code = "RECORDER_NOT_READY";
+      throw error;
+    }
+    const state = recorder.getStatus();
+    if (["preparing", "recording", "finalizing"].includes(state.state)) {
+      const error = new Error("A recording is already active.");
+      error.code = "RECORDING_ACTIVE";
+      throw error;
+    }
+    const request = {
+      storyMode: input.storyMode || preparedVideo?.storyMode || "focus_target",
+      durationSeconds: input.durationSeconds || preparedVideo?.durationSeconds || 15,
+      aspectRatio: input.aspectRatio || preparedVideo?.aspectRatio || "16:9",
+    };
+    if (input.focusTarget) {
+      if (input.focusTarget !== "earth" && input.focusTarget !== "moon" &&
+        !simRef.current.bodies.some((body) => body.id === input.focusTarget)) {
+        const error = new Error("Unknown focus target. Read live Orbit Lab state first.");
+        error.code = "UNKNOWN_ORBIT_BODY";
+        throw error;
+      }
+      setFocusedBodyId(input.focusTarget === "earth" ? null : input.focusTarget);
+    }
+    if (input.timeScale !== undefined) setSettings((prev) => ({ ...prev, timeScale: input.timeScale }));
+    setIsRunning(true);
+    window.clearInterval(tourTimerRef.current);
+    if (request.storyMode === "cinematic_tour") {
+      const targets = [null, ...simRef.current.bodies.slice(0, 3).map((body) => body.id), "moon"];
+      let index = 0;
+      setFocusedBodyId(targets[index]);
+      tourTimerRef.current = window.setInterval(() => {
+        index = (index + 1) % targets.length;
+        setFocusedBodyId(targets[index]);
+      }, 3500);
+    }
+    await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+    const result = await recorder.startRecording({
+      durationSeconds: request.durationSeconds,
+      aspectRatio: request.aspectRatio,
+      fileName: "esbiko-orbit-lab-" + request.storyMode + "-" + Date.now() + ".webm",
+    });
+    if (!result.ok) {
+      window.clearInterval(tourTimerRef.current);
+      const error = new Error(result.error?.message || "Orbit Lab recording failed.");
+      error.code = result.error?.code || "RECORDING_START_FAILED";
+      throw error;
+    }
+    window.setTimeout(() => window.clearInterval(tourTimerRef.current), request.durationSeconds * 1000 + 350);
+    return { ...result, videoRequest: request };
+  };
+  const stopOrbitVideo = () => {
+    window.clearInterval(tourTimerRef.current);
+    const result = videoRecorderRef.current?.stopRecording();
+    if (!result?.ok) {
+      const error = new Error(result?.error?.message || "No active recording.");
+      error.code = result?.error?.code || "RECORDING_NOT_ACTIVE";
+      throw error;
+    }
+    return result;
+  };
+  const downloadOrbitVideo = () => {
+    const result = videoRecorderRef.current?.downloadRecording();
+    if (!result?.ok) {
+      const error = new Error(result?.error?.message || "No video is ready.");
+      error.code = result?.error?.code || "VIDEO_NOT_READY";
+      throw error;
+    }
+    return result;
+  };
+
   const orbitWebMcpStatus = useOrbitLabWebMcp({
+    enabled: !initialMcp.embeddedMcpApp,
+    startVideo: startOrbitVideo,
+    getVideoStatus: () => videoRecorderRef.current?.getStatus() || videoStatus,
+    stopVideo: stopOrbitVideo,
+    downloadVideo: downloadOrbitVideo,
     getState: () => ({
       simulationId: "astronomy.space.earth-orbit-lab",
       running: isRunning,
       simMode,
       ...settings,
       simulationTimeSeconds: simRef.current.t,
+      video: videoRecorderRef.current?.getStatus() || videoStatus,
       focusedBodyId: focusedBodyId || "earth",
       bodies: simRef.current.bodies.map((body) => ({ id: body.id, name: body.name })),
     }),
@@ -568,7 +648,9 @@ export default function SatelliteTelescopeSimulator() {
             antialias: true,
             alpha: false,
             logarithmicDepthBuffer: true,
+            preserveDrawingBuffer: true,
           }}
+          onCreated={({ gl }) => { threeCanvasRef.current = gl.domElement; }}
           camera={{
             position: [0, 5, 20],
             fov: 45,
