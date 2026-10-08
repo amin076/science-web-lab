@@ -100,7 +100,8 @@ export default function GyroscopeSimulation() {
 
           {initialMcp.embeddedMcpApp && (
             <div className="shrink-0 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-bold text-cyan-200 backdrop-blur-xl">
-              MCP configured
+              <span className="sm:hidden">MCP</span>
+              <span className="hidden sm:inline">MCP configured</span>
             </div>
           )}
         </header>
