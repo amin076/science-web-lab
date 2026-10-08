@@ -5,9 +5,9 @@ export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
     id: "astronomy.space.earth-orbit-lab",
     name: "3D Orbit Lab",
     topic: "Satellites, telescopes, orbital mechanics",
-    description: "Read, configure, focus, pause, reset and add satellite presets in the 3D Earth Orbit Lab.",
+    description: "Read, configure, focus, pause, reset, record and download WebM videos in the 3D Earth Orbit Lab.",
     route: "/experiments/astronomy.space.earth-orbit-lab/run",
-    capabilities: ["state-read", "configure", "focus", "playback", "reset", "satellite-presets"],
+    capabilities: ["state-read", "configure", "focus", "playback", "reset", "satellite-presets", "video-recording", "video-status", "video-download"],
   }),
   Object.freeze({
     id: "astronomy.space.solar-system",
