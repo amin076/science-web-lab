@@ -183,11 +183,11 @@ function LiveVectors({ targetRef }) {
   return (
     <group ref={LRef}>
         {/* Scaled down L vector */}
-        <VectorArrow color="#3b82f6" length={0.7} label="L" />
+        <VectorArrow color="#3b82f6" length={0.55} label="L" />
         
         {/* Scaled down Torque vector */}
         <group rotation={[0, 0, -Math.PI/2]}>
-            <VectorArrow color="#ef4444" length={0.5} label="τ" />
+            <VectorArrow color="#ef4444" length={0.4} label="τ" />
         </group>
     </group>
   );
