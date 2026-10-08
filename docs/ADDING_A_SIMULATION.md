@@ -420,3 +420,16 @@ A new simulation is complete only when:
 - MCP configuration works when adapted
 - build/tests pass
 - no console errors occur
+
+
+### Orientation advice
+
+Responsive simulations must support portrait mode without forcing the user to rotate the device. The shared `SimulationLayout` no longer shows orientation advice by default.
+
+Only simulations that genuinely cannot provide a usable portrait experience may opt in with:
+
+```text
+showOrientationAdvice=true
+```
+
+For MCP App / iframe mode, orientation advice must remain disabled so the embedded experience is never blocked by a rotate-device prompt.
