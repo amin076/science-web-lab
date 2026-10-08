@@ -104,18 +104,35 @@ export function createServer() {
       },
     },
     async () => {
-      const simulations = listSimulationProfiles();
+      // Keep discovery compact: full profiles include large schemas and capability
+      // contracts, which can cause clients to truncate the list after a few items.
+      const simulations = listSimulationProfiles()
+        .map(({id, name, domain, topic, description, integrationLevel, stateSync, video}) => ({
+          id, name, domain, topic,
+          description: description.slice(0, 180),
+          integrationLevel, stateSync, video,
+        }))
+        .sort((a, b) =>
+          Number(b.integrationLevel === "adapted") -
+          Number(a.integrationLevel === "adapted") ||
+          a.name.localeCompare(b.name),
+        );
+      const adapted = simulations.filter((simulation) => simulation.integrationLevel === "adapted");
       return {
         structuredContent: {
           count: simulations.length,
+          adaptedCount: adapted.length,
+          universalCount: simulations.length - adapted.length,
           simulations,
         },
         content: [
           {
             type: "text",
             text:
-              `Esbiko exposes ${simulations.length} simulations through the universal MCP integration. ` +
-              "Simulations marked adapted have deeper agent controls.",
+              `Esbiko has ${simulations.length} discoverable simulations, including ${adapted.length} with deeper agent controls. ` +
+              "All simulation IDs and names are returned in structuredContent.simulations. " +
+              "Do not describe the list as limited to three simulations. " +
+              `Agent-adapted simulations: ${adapted.map((item) => item.name).join(", ")}.`,
           },
         ],
       };
