@@ -97,10 +97,14 @@ try {
     await page.goto(base + "/experiments/" + lab.id + "/run", { waitUntil: "domcontentloaded", timeout: 60000 });
     await page.locator(lab.canvas).waitFor({ state: "visible", timeout: 30000 });
     await page.waitForFunction((name) => Boolean(window.__mechanicsTools?.[name]), lab.prefix + "_start_video");
-    const downloadPromise = page.waitForEvent("download", { timeout: 35000 });
     await page.getByRole("button", { name: "Record 16:9" }).click();
-    await page.waitForTimeout(2200);
-    await page.getByRole("button", { name: "Stop", exact: true }).click();
+    await page.waitForTimeout(250);
+    const stateAfterStart = await call(page, lab.prefix + "_video_status");
+    console.log("MECHANICS VIDEO STATUS AFTER START", lab.id, JSON.stringify(stateAfterStart), "PAGE_ERRORS", errors);
+    assert.equal(stateAfterStart.data?.status, "recording", "Video did not start: " + JSON.stringify(stateAfterStart));
+    await page.waitForTimeout(1950);
+    const downloadPromise = page.waitForEvent("download", { timeout: 8000 });
+    await page.locator('[aria-label="Simulation video recording"]').getByRole("button", { name: "Stop", exact: true }).click({ timeout: 5000 });
     await page.waitForTimeout(900);
     const earlyState = await call(page, lab.prefix + "_video_status");
     console.log("MECHANICS VIDEO STATUS AFTER STOP", lab.id, JSON.stringify(earlyState));
