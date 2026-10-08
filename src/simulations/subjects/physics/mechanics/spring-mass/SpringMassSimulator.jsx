@@ -285,9 +285,9 @@ export default function SpringMassSimulator({ onBack }) {
     <SimulationLayout onBack={onBack}>
       <div className="h-full w-full p-2 sm:p-4">
         {/* ✅ Important: min-h-0 enables inner scrolling in flex/grid */}
-        <div className="h-full w-full grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] content-start lg:content-stretch gap-3 lg:gap-4 min-h-0 overflow-y-auto lg:overflow-hidden">
+        <div className="h-full w-full min-h-0 flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_380px] gap-3 lg:gap-4 overflow-y-auto lg:overflow-hidden">
           {/* Left */}
-          <div className="min-w-0 min-h-0 flex flex-col gap-3">
+          <div className="min-w-0 shrink-0 lg:shrink lg:min-h-0 lg:h-full flex flex-col gap-3">
             {initialMcpState.embeddedMcpApp && (
               <div className="shrink-0 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
                 MCP configured · k={springData.k.toFixed(1)} N/m · m={springData.mass.toFixed(1)} kg · x₀={springData.displacement.toFixed(1)} m · b={damping.toFixed(2)}
@@ -303,7 +303,7 @@ export default function SpringMassSimulator({ onBack }) {
               />
             </div>
 
-            <div className="order-3 shrink-0">
+            <div className="order-3 shrink-0 relative z-10">
               <AgentCanvasRecorder ref={videoRef} canvasSelector="[data-esbiko-spring-stage] canvas" filePrefix="esbiko-spring-mass" />
               <p className="px-2 text-xs text-cyan-300">WebMCP: {webMcpStatus}</p>
             </div>
@@ -323,7 +323,7 @@ export default function SpringMassSimulator({ onBack }) {
           </div>
 
           {/* Right: ✅ Scrollable panel */}
-          <div className="min-w-0 lg:min-h-0">
+          <div className="min-w-0 shrink-0 lg:shrink lg:min-h-0">
             <div className="h-auto lg:h-full lg:overflow-y-auto pr-1">
               <SpringControlPanel
                 springData={springData}
