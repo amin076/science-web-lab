@@ -19,21 +19,25 @@ assert(doppler.actions.includes("export"));
 const pendulum = getSimulationAgentProfile("physics.mechanics.simple-pendulum");
 assert.equal(pendulum.integrationLevel, "adapted");
 assert.equal(pendulum.adapterVersion, "pendulum-adapter.v1");
-assert.equal(pendulum.video, false);
-assert.equal(pendulum.exportable, false);
+assert.equal(pendulum.video, true);
+assert.equal(pendulum.exportable, true);
+assert(pendulum.actions.includes("record"));
+assert(pendulum.actions.includes("export"));
 assert.deepEqual(
   pendulum.actions,
-  ["open", "configure", "readState", "play", "pause", "reset"],
+  ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
 );
 
 const springMass = getSimulationAgentProfile("physics.mechanics.spring-mass");
 assert.equal(springMass.integrationLevel, "adapted");
 assert.equal(springMass.adapterVersion, "spring-mass-adapter.v1");
-assert.equal(springMass.video, false);
-assert.equal(springMass.exportable, false);
+assert.equal(springMass.video, true);
+assert.equal(springMass.exportable, true);
+assert(springMass.actions.includes("record"));
+assert(springMass.actions.includes("export"));
 assert.deepEqual(
   springMass.actions,
-  ["open", "configure", "readState", "play", "pause", "reset"],
+  ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
 );
 
 const batchAdaptedIds = [
