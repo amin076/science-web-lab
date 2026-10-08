@@ -20,6 +20,7 @@ import EarthVisual from "./EarthVisual";
 import MoonVisual from "./MoonVisual";
 import SatellitesTelescopesControlPanel from "./SatellitesTelescopesControlPanel";
 import OrbitHUD from "./OrbitHUD";
+import OrbitLabVideoRecorder from "./video/OrbitLabVideoRecorder";
 
 // Logic & Factories
 import {
@@ -60,6 +61,24 @@ import {
 ========================= */
 export default function SatelliteTelescopeSimulator() {
   const initialMcpRef = useRef(null);
+  const threeCanvasRef = useRef(null);
+  const videoRecorderRef = useRef(null);
+  const tourTimerRef = useRef(null);
+  const [videoStatus, setVideoStatus] = useState({
+    state: "idle", progressPercent: 0, downloadReady: false, error: null,
+  });
+  const preparedVideo = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("mcpVideo") !== "1") return null;
+    const duration = Number(query.get("mcpVideoDurationSeconds"));
+    return {
+      storyMode: query.get("mcpVideoStoryMode") === "cinematic_tour" ? "cinematic_tour" : "focus_target",
+      durationSeconds: Number.isFinite(duration) && duration >= 5 && duration <= 60 ? duration : 15,
+      aspectRatio: query.get("mcpVideoAspectRatio") === "9:16" ? "9:16" : "16:9",
+    };
+  }, []);
+  useEffect(() => () => window.clearInterval(tourTimerRef.current), []);
 
   if (!initialMcpRef.current) {
     initialMcpRef.current = readEmbeddedMcpParameters(
