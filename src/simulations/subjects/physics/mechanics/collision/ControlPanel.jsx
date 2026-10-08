@@ -50,7 +50,7 @@ const ControlPanel = ({
   );
 
   return (
-    <div className="w-[400px] h-full flex flex-col gap-3 overflow-hidden">
+    <div className="w-full min-w-0 flex flex-col gap-3">
       <style>{`.custom-scroll::-webkit-scrollbar { width: 3px; } .custom-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }`}</style>
 
       <div className="flex gap-2">
@@ -78,7 +78,7 @@ const ControlPanel = ({
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scroll pr-1 space-y-3">
+      <div className="min-w-0 space-y-3">
         {/* Controls */}
         <div className="bg-white/5 p-3 rounded-2xl border border-white/5 space-y-2">
           <div className="flex gap-1 mb-2">
@@ -170,7 +170,7 @@ const InputCard = ({ id, data, label, color, onInput }) => (
     <div className="text-[9px] font-bold mb-2 uppercase opacity-70">
       {label}
     </div>
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-3 gap-2 min-w-0">
       {["mass", "vx", "vy"].map((f) => (
         <div key={f} className="relative group">
           <span className="absolute -top-2 left-1 text-[8px] bg-[#1a1a1a] px-1 text-white/40 uppercase">
