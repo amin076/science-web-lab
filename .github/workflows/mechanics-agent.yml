@@ -10,6 +10,7 @@ on:
       - "src/platform/agent/**"
       - "scripts/test-simulation-agent-contract.mjs"
       - "scripts/test-mechanics-agent-browser.mjs"
+      - "scripts/audit-all-simulation-readiness.mjs"
       - ".github/workflows/mechanics-agent.yml"
   push:
     branches: [main]
@@ -21,6 +22,7 @@ on:
       - "src/platform/agent/**"
       - "scripts/test-simulation-agent-contract.mjs"
       - "scripts/test-mechanics-agent-browser.mjs"
+      - "scripts/audit-all-simulation-readiness.mjs"
       - ".github/workflows/mechanics-agent.yml"
   workflow_dispatch:
 
@@ -44,6 +46,8 @@ jobs:
       - run: npm ci
       - name: Validate simulation agent contracts
         run: node scripts/test-simulation-agent-contract.mjs
+      - name: Inventory all 32 simulation capabilities
+        run: node scripts/audit-all-simulation-readiness.mjs
       - name: Build Esbiko application
         run: npm run build
       - name: Install Chromium
@@ -66,4 +70,5 @@ jobs:
           path: |
             artifacts/mechanics-agent/*.png
             artifacts/mechanics-agent/*.webm
+            artifacts/readiness/all-simulations.json
           if-no-files-found: warn
