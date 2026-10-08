@@ -1,0 +1,69 @@
+name: Mechanics Labs Agent Ready
+
+on:
+  pull_request:
+    paths:
+      - "src/simulations/subjects/physics/mechanics/pendulum/**"
+      - "src/simulations/subjects/physics/mechanics/spring-mass/**"
+      - "src/components/shared/video/**"
+      - "src/webmcp/**"
+      - "src/platform/agent/**"
+      - "scripts/test-simulation-agent-contract.mjs"
+      - "scripts/test-mechanics-agent-browser.mjs"
+      - ".github/workflows/mechanics-agent.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/simulations/subjects/physics/mechanics/pendulum/**"
+      - "src/simulations/subjects/physics/mechanics/spring-mass/**"
+      - "src/components/shared/video/**"
+      - "src/webmcp/**"
+      - "src/platform/agent/**"
+      - "scripts/test-simulation-agent-contract.mjs"
+      - "scripts/test-mechanics-agent-browser.mjs"
+      - ".github/workflows/mechanics-agent.yml"
+  workflow_dispatch:
+
+jobs:
+  mechanics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validate simulation agent contracts
+        run: node scripts/test-simulation-agent-contract.mjs
+      - name: Build Esbiko application
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run browser responsive and WebM verification
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/mechanics-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-mechanics-agent-browser.mjs || { cat /tmp/mechanics-preview.log; exit 1; }
+      - name: Upload test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mechanics-responsive-webm
+          path: |
+            artifacts/mechanics-agent/*.png
+            artifacts/mechanics-agent/*.webm
+          if-no-files-found: warn
