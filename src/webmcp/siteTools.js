@@ -2,6 +2,22 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "creative.patterns.ambient-pattern-studio",
+    name: "Ambient Pattern Studio",
+    topic: "Generative patterns and cinematic backgrounds",
+    description: "Read and configure the live pattern canvas, control playback, and record and download silent WebM video.",
+    route: "/experiments/creative.patterns.ambient-pattern-studio/run",
+    capabilities: ["state-read", "configure", "playback", "reset", "video-recording", "video-status", "video-download"],
+  }),
+  Object.freeze({
+    id: "physics.challenges.moon-lander",
+    name: "Moon Lander",
+    topic: "Lunar landing, thrust, fuel, and flight dynamics",
+    description: "Control the live lander, read flight telemetry, pause, reset, and capture its WebGL canvas as WebM video.",
+    route: "/experiments/physics.challenges.moon-lander/run",
+    capabilities: ["state-read", "configure", "playback", "reset", "video-recording", "video-status", "video-download"],
+  }),
+  Object.freeze({
     id: "physics.mechanics.simple-pendulum",
     name: "Pendulum Lab",
     topic: "Oscillations, harmonic motion, and energy",
