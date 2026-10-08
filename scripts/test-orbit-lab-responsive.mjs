@@ -15,7 +15,21 @@ try {
     page.on("pageerror", (e) => pageErrors.push(String(e)));
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
     const stage = page.locator('[data-agent-surface="earth-orbit-stage"]');
-    await stage.waitFor({ state: "visible", timeout: 30000 });
+    try {
+      await stage.waitFor({ state: "visible", timeout: 30000 });
+    } catch (error) {
+      const body = await page.locator("body").innerText().catch(() => "(no body)");
+      const markup = await page.locator("body").innerHTML().catch(() => "(no body)");
+      await page.screenshot({ path: path.join(outDir, "orbit-failed-" + viewport.width + ".png"), fullPage: true }).catch(() => {});
+      console.error("ORBIT DIAGNOSTIC", JSON.stringify({
+        url: page.url(),
+        title: await page.title(),
+        body: body.slice(0, 6000),
+        markup: markup.slice(0, 2500),
+        errors: pageErrors,
+      }));
+      throw error;
+    }
     const play = page.locator('[data-agent-action="pause"], [data-agent-action="play"]').first();
     const reset = page.locator('[data-agent-action="reset"]').first();
     await play.waitFor({ state: "visible" });
