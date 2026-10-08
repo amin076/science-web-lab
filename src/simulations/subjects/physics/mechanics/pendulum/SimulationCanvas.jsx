@@ -11,6 +11,8 @@ const SimulationCanvas = forwardRef(
   ({ lengthM, pxPerMeter, bobRadius, trailLen = 200, onReady }, ref) => {
     const canvasRef = useRef(null);
     const sizeRef = useRef({ w: 1, h: 1, dpr: 1 });
+    const onReadyRef = useRef(onReady);
+    onReadyRef.current = onReady;
 
     const getPivot = () => {
       const { w } = sizeRef.current;
@@ -23,7 +25,7 @@ const SimulationCanvas = forwardRef(
         if (!parent || !canvasRef.current) return;
 
         const { width, height } = parent.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
+        const dpr = Math.min(2, window.devicePixelRatio || 1);
 
         canvasRef.current.width = Math.max(1, Math.floor(width * dpr));
         canvasRef.current.height = Math.max(1, Math.floor(height * dpr));
@@ -33,13 +35,15 @@ const SimulationCanvas = forwardRef(
         sizeRef.current = { w: width, h: height, dpr };
 
         // ✅ very important: let parent draw AFTER canvas has real size
-        onReady?.();
+        onReadyRef.current?.();
       };
 
+      const observer = new ResizeObserver(handleResize);
+      if (canvasRef.current?.parentElement) observer.observe(canvasRef.current.parentElement);
       window.addEventListener("resize", handleResize);
-      requestAnimationFrame(handleResize); // ✅ better than timeout
-      return () => window.removeEventListener("resize", handleResize);
-    }, [onReady]);
+      const frame = requestAnimationFrame(handleResize);
+      return () => { observer.disconnect(); cancelAnimationFrame(frame); window.removeEventListener("resize", handleResize); };
+    }, []);
 
     useImperativeHandle(ref, () => ({
       draw: (state, showVectors, showTrail) => {
@@ -56,7 +60,12 @@ const SimulationCanvas = forwardRef(
         drawGrid(ctx, w, h);
 
         const origin = { x: w / 2, y: 100 };
-        const lengthPx = Math.max(0.1, lengthM) * pxPerMeter;
+        // Contain the entire swing inside narrow portrait viewports without changing physics.
+        const availableScale = Math.min(
+          Math.max(28, (h - 140 - bobRadius) / Math.max(0.1, lengthM)),
+          Math.max(28, (w / 2 - bobRadius - 16) / Math.max(0.1, lengthM)),
+        );
+        const lengthPx = Math.max(0.1, lengthM) * Math.min(pxPerMeter, availableScale);
 
         const bobX = origin.x + lengthPx * Math.sin(theta);
         const bobY = origin.y + lengthPx * Math.cos(theta);
@@ -175,7 +184,7 @@ const SimulationCanvas = forwardRef(
     return (
       <canvas
         ref={canvasRef}
-        className="block cursor-crosshair w-full h-full"
+        className="pendulum-record-canvas block cursor-crosshair w-full h-full"
       />
     );
   }
