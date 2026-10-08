@@ -1,4 +1,71 @@
 export const simulationAgentManifest = Object.freeze({
+  "creative.patterns.ambient-pattern-studio": Object.freeze({
+    adapterVersion: "ambient-pattern-studio-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
+    tools: ["open_science_simulation"],
+    video: true,
+    exportable: true,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        pattern: { type: "string" },
+        palette: { type: "string" },
+        speed: { type: "number", minimum: 1, maximum: 6 },
+        loopSeconds: { type: "number", minimum: 15, maximum: 180 },
+        symmetry: { type: "number", minimum: 3, maximum: 24 },
+        intensity: { type: "number", minimum: 0.1, maximum: 2 },
+        bloom: { type: "number", minimum: 0, maximum: 3 },
+        depth: { type: "number", minimum: 0, maximum: 2 },
+        complexity: { type: "number", minimum: 0, maximum: 1 },
+        rotation: { type: "number", minimum: -2, maximum: 2 },
+        drift: { type: "number", minimum: 0, maximum: 1.5 },
+        particles: { type: "number", minimum: 0, maximum: 260 },
+        backgroundGlow: { type: "number", minimum: 0, maximum: 2 },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["simulationId", "running", "pattern", "palette", "recording"],
+      properties: {
+        simulationId: { const: "creative.patterns.ambient-pattern-studio" },
+        running: { type: "boolean" },
+        pattern: { type: "string" },
+        palette: { type: "string" },
+        recording: { type: "object" },
+      },
+    },
+  }),
+
+  "physics.challenges.moon-lander": Object.freeze({
+    adapterVersion: "moon-lander-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
+    tools: ["open_science_simulation"],
+    video: true,
+    exportable: true,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        mainThrust: { type: "boolean" },
+        rotateLeft: { type: "boolean" },
+        rotateRight: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["simulationId", "status", "running", "lander", "input"],
+      properties: {
+        simulationId: { const: "physics.challenges.moon-lander" },
+        status: { type: "string" },
+        running: { type: "boolean" },
+        lander: { type: "object" },
+        input: { type: "object" },
+        recording: { type: "object" },
+      },
+    },
+  }),
+
   "physics.acoustics.doppler": Object.freeze({
     adapterVersion: "doppler-adapter.v1",
     actions: [
