@@ -55,17 +55,16 @@ export default function Controls({
   return (
     <Card
       sx={{
-        position: "absolute",
-        top: 20,
-        right: 20,
-        width: 320,
+        position: "relative",
+        width: "100%",
+        minWidth: 0,
         bgcolor: "rgba(15, 23, 42, 0.95)",
         color: "white",
         backdropFilter: "blur(10px)",
         border: "1px solid #334155",
         borderRadius: 2,
-        maxHeight: "90vh",
-        overflowY: "auto",
+        maxHeight: "none",
+        overflowY: "visible",
       }}
     >
       <CardContent>
