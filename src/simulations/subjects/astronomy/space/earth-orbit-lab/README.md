@@ -39,5 +39,26 @@ Validation: `node scripts/test-orbit-lab-agent.mjs` and
 preview server and Playwright Chromium. CI runs contract, build and browser
 checks on pull requests and main.
 
-**Current scope:** Orbit Lab video recording and remote video preparation are
-not implemented by this change. They must not be advertised as supported.
+## Orbit Lab WebM capture
+
+The 3D Orbit Lab can now capture its rendered WebGL scene to a browser-side
+WebM recording. Record, stop and download controls are accessible in the scene.
+A 5–60 second recording supports both 16:9 landscape and 9:16 portrait.
+
+Two capture story modes are available: `focus_target` (stay with the focused
+object) and `cinematic_tour` (cycle focus across Earth and orbiting objects).
+The video is silent (`audioIncluded: false`). Browser support for
+`MediaRecorder` and canvas stream capture is required.
+
+Live WebMCP exposes four additional tools:
+
+- `create_orbit_lab_video` — configure and start video capture.
+- `get_orbit_lab_video_status` — read progress and download availability.
+- `stop_orbit_lab_video` — stop and finalize a capture.
+- `download_orbit_lab_video` — download the completed WebM.
+
+Remote MCP clients may open the simulation with initial parameters;
+`mcpVideo=1` prepares an embedded recording but requires the visible Record
+button to initiate browser capture. This respects browser permissions.
+
+CI uses Firebase build credentials and real Chromium viewport and WebM tests.
