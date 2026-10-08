@@ -368,6 +368,7 @@ export default function MultiWaveControls({
 
   return (
     <div
+      data-agent-surface="multi-source-controls"
       className="
         min-w-0 w-full shrink-0 overflow-visible border-t border-white/10
         lg:h-full lg:w-[360px] lg:overflow-y-auto lg:border-l lg:border-t-0
