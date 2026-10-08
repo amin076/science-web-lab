@@ -258,7 +258,8 @@ export default function Pendulum() {
         }
       `}</style>
 
-      <div className="relative w-full shrink-0 min-w-0 h-[min(60dvh,540px)] min-h-[300px] lg:h-full lg:min-h-0 lg:flex-1">
+      <div className="relative w-full min-w-0 shrink-0 lg:flex-1 lg:min-h-0 lg:h-full overflow-y-auto custom-scrollbar">
+        <div className="relative h-[min(58dvh,480px)] min-h-[280px] w-full overflow-hidden lg:h-[min(68dvh,650px)]">
         {initialMcpState.embeddedMcpApp && (
           <div className="absolute left-4 top-4 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
             MCP configured · L={lengthM.toFixed(2)}m · m={massKg.toFixed(1)}kg · θ₀={entryAngle.toFixed(0)}°
@@ -274,6 +275,7 @@ export default function Pendulum() {
           onReady={() => drawFrame(engine.current)} // ✅ fixes "invisible until change something"
         />
 
+        </div>
         <Telemetry ref={hudRef} />
 
         {showGraph ? (
@@ -281,9 +283,9 @@ export default function Pendulum() {
         ) : (
           <button
             onClick={() => setShowGraph(true)}
-            className="absolute bottom-6 right-6 bg-slate-900/70 p-3 rounded-full border border-white/20 text-cyan-400 hover:bg-slate-800"
+            className="mx-4 my-3 flex items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-lg border border-white/20 text-cyan-400 hover:bg-slate-800"
           >
-            <TrendingUp size={24} />
+            <TrendingUp size={20} /> <span className="text-sm">Show physics graphs</span>
           </button>
         )}
       </div>
