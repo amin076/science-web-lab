@@ -24,14 +24,19 @@ export default function Charts({ data }) {
 
   // Data is now pre-calculated in the loop, ensuring KE matches Mass/Radius inputs
   return (
-    <div className="bg-white/5 border border-white/10 rounded-2xl p-3 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="text-white font-black tracking-wide text-base sm:text-lg">
-        Physical Analysis
+    <div className="space-y-3 rounded-2xl border border-white/10 bg-slate-950/25 p-3 backdrop-blur-2xl">
+      <div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/35">
+          Physical analysis
+        </div>
+        <div className="mt-1 text-xs text-white/45">
+          Live tilt, precession, angular momentum and energy
+        </div>
       </div>
 
       {/* ---------- θ(t) + Ω(t) ---------- */}
       <ChartCard title="Tilt θ(t)  &  Precession Ω(t)">
-        <ResponsiveContainer width="100%" height={160}>
+        <ResponsiveContainer width="100%" height={130}>
           <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -81,7 +86,7 @@ export default function Charts({ data }) {
 
       {/* ---------- Angular Momentum ---------- */}
       <ChartCard title="Angular Momentum L(t)">
-        <ResponsiveContainer width="100%" height={160}>
+        <ResponsiveContainer width="100%" height={130}>
           <LineChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -111,7 +116,7 @@ export default function Charts({ data }) {
 
       {/* ---------- Energy ---------- */}
       <ChartCard title="Energy Exchange (KE & PE)">
-        <ResponsiveContainer width="100%" height={160}>
+        <ResponsiveContainer width="100%" height={130}>
           <AreaChart data={d}>
             <CartesianGrid stroke="rgba(255,255,255,0.06)" />
             <XAxis dataKey="t" tickFormatter={timeFmt} />
@@ -150,8 +155,8 @@ export default function Charts({ data }) {
 
 function ChartCard({ title, children }) {
   return (
-    <div className="bg-black/20 border border-white/10 rounded-xl sm:rounded-2xl p-2 sm:p-3 min-w-0 overflow-hidden">
-      <div className="text-white/70 font-bold text-sm mb-2">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.025] p-2">
+      <div className="mb-2 text-xs font-bold text-white/55">
         {title}
       </div>
       {children}

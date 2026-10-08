@@ -30,8 +30,8 @@ export default function GyroModel({
   }), []);
 
   return (
-    <>
-      <ContactShadows opacity={0.4} scale={10} blur={2} far={4} />
+    <group scale={1.32} position={[0, -0.04, 0]}>
+      <ContactShadows opacity={0.32} scale={7} blur={2.5} far={3} />
 
       {/* --- STATIONARY BASE & FRAME --- */}
       <group position={[0, 0, 0]}>
@@ -158,7 +158,7 @@ export default function GyroModel({
       </group> {/* End Base */}
 
       {params.showVectors && <LiveVectors targetRef={rotorRef} />}
-    </>
+    </group>
   );
 }
 
@@ -183,11 +183,11 @@ function LiveVectors({ targetRef }) {
   return (
     <group ref={LRef}>
         {/* Scaled down L vector */}
-        <VectorArrow color="#3b82f6" length={0.7} label="L" />
+        <VectorArrow color="#3b82f6" length={0.55} label="L" />
         
         {/* Scaled down Torque vector */}
         <group rotation={[0, 0, -Math.PI/2]}>
-            <VectorArrow color="#ef4444" length={0.5} label="τ" />
+            <VectorArrow color="#ef4444" length={0.4} label="τ" />
         </group>
     </group>
   );

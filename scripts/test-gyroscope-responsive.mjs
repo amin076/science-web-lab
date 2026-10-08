@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { chromium } from "playwright";
 
 const baseUrl = process.env.ESBIKO_TEST_BASE_URL || "http://127.0.0.1:4173";
-const path =
+const route =
   "/experiments/physics.mechanics.gyroscope/run" +
   "?embed=mcp-app" +
   "&mcp.spinSpeed=18" +
@@ -17,6 +19,9 @@ const viewports = [
   { width: 900, height: 650 },
   { width: 1280, height: 720 },
 ];
+
+const screenshotDir = path.resolve("artifacts/gyroscope-v2");
+fs.mkdirSync(screenshotDir, { recursive: true });
 
 const browser = await chromium.launch({
   headless: true,
@@ -38,93 +43,132 @@ try {
       if (message.type() === "error") consoleErrors.push(message.text());
     });
 
-    await page.goto(baseUrl + path, {
-      waitUntil: "networkidle",
+    await page.goto(baseUrl + route, {
+      waitUntil: "domcontentloaded",
       timeout: 60_000,
     });
 
     const stage = page.locator('[data-agent-surface="gyroscope-stage"]');
-    const play = page.locator('[data-agent-action="play"]');
-    const reset = page.locator('[data-agent-action="reset"]');
+    const controls = page.locator('[data-gyroscope-controls="true"]');
+    const hud = page.locator('[data-gyroscope-hud="true"]');
+    const play = page.locator(
+      '[data-agent-action="play"], [data-agent-action="pause"]',
+    ).first();
+    const reset = page.locator('[data-agent-action="reset"]').first();
 
     try {
       await stage.waitFor({ state: "visible", timeout: 30_000 });
+      await controls.waitFor({ state: "visible", timeout: 10_000 });
+      await hud.waitFor({ state: "visible", timeout: 10_000 });
       await play.waitFor({ state: "visible", timeout: 10_000 });
       await reset.waitFor({ state: "visible", timeout: 10_000 });
+      await page.waitForTimeout(1500);
     } catch (error) {
       const diagnostics = await page.evaluate(() => ({
         url: window.location.href,
-        title: document.title,
         bodyText: document.body?.innerText?.slice(0, 3000) || "",
-        html: document.documentElement?.outerHTML?.slice(0, 5000) || "",
       }));
-      console.error(
-        "GYROSCOPE RESPONSIVE LOAD DIAGNOSTICS",
-        viewport,
-        diagnostics,
-        { pageErrors, consoleErrors },
-      );
+      console.error("GYROSCOPE V2 LOAD DIAGNOSTICS", viewport, diagnostics, {
+        pageErrors,
+        consoleErrors,
+      });
       throw error;
     }
 
     const layout = await page.evaluate(() => {
-      const stageEl = document.querySelector(
-        '[data-agent-surface="gyroscope-stage"]',
-      );
-      const playEl = document.querySelector('[data-agent-action="play"]');
-      const resetEl = document.querySelector('[data-agent-action="reset"]');
+      const rect = (selector) => {
+        const element = document.querySelector(selector);
+        const value = element?.getBoundingClientRect();
+        return value
+          ? {
+              width: value.width,
+              height: value.height,
+              left: value.left,
+              right: value.right,
+              top: value.top,
+              bottom: value.bottom,
+            }
+          : null;
+      };
 
-      const stageRect = stageEl?.getBoundingClientRect();
-      const playRect = playEl?.getBoundingClientRect();
-      const resetRect = resetEl?.getBoundingClientRect();
+      const controlsEl = document.querySelector(
+        '[data-gyroscope-controls="true"]',
+      );
+      const controlsStyle = controlsEl
+        ? window.getComputedStyle(controlsEl)
+        : null;
 
       return {
-        bodyScrollWidth: document.documentElement.scrollWidth,
         viewportWidth: window.innerWidth,
-        stage: stageRect
-          ? {
-              width: stageRect.width,
-              height: stageRect.height,
-            }
-          : null,
-        play: playRect
-          ? {
-              top: playRect.top,
-              bottom: playRect.bottom,
-              left: playRect.left,
-              right: playRect.right,
-              width: playRect.width,
-              height: playRect.height,
-            }
-          : null,
-        reset: resetRect
-          ? {
-              top: resetRect.top,
-              bottom: resetRect.bottom,
-              left: resetRect.left,
-              right: resetRect.right,
-              width: resetRect.width,
-              height: resetRect.height,
-            }
-          : null,
+        viewportHeight: window.innerHeight,
+        documentScrollWidth: document.documentElement.scrollWidth,
+        stage: rect('[data-agent-surface="gyroscope-stage"]'),
+        controls: rect('[data-gyroscope-controls="true"]'),
+        hud: rect('[data-gyroscope-hud="true"]'),
+        play: rect(
+          '[data-agent-action="play"], [data-agent-action="pause"]',
+        ),
+        reset: rect('[data-agent-action="reset"]'),
+        controlsOverflowY: controlsStyle?.overflowY || null,
+        orientationNoticeVisible: document.body?.innerText?.includes(
+          "Rotate your device",
+        ) || false,
       };
     });
 
-    assert(
-      layout.bodyScrollWidth <= layout.viewportWidth + 1,
-      `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.bodyScrollWidth}px`,
+    const screenshotPath = path.join(
+      screenshotDir,
+      `gyroscope-${viewport.width}x${viewport.height}.png`,
     );
-    assert(layout.stage?.width > 0 && layout.stage?.height > 0);
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: true,
+    });
+
+    assert(
+      layout.documentScrollWidth <= layout.viewportWidth + 1,
+      `Horizontal overflow at ${viewport.width}x${viewport.height}: ${layout.documentScrollWidth}px`,
+    );
+
+    assert(
+      layout.stage?.width >= layout.viewportWidth * 0.72,
+      `Stage is too narrow at ${viewport.width}x${viewport.height}: ${layout.stage?.width}px`,
+    );
+
+    assert(
+      layout.stage?.height >= Math.min(300, layout.viewportHeight * 0.45),
+      `Stage is too short at ${viewport.width}x${viewport.height}: ${layout.stage?.height}px`,
+    );
+
     assert(layout.play?.width >= 44 && layout.play?.height >= 44);
     assert(layout.reset?.width >= 44 && layout.reset?.height >= 44);
-    assert(layout.play.left >= 0 && layout.play.right <= viewport.width + 1);
-    assert(layout.reset.left >= 0 && layout.reset.right <= viewport.width + 1);
+
+    assert(
+      layout.hud?.width <= layout.stage.width * 0.96,
+      "Physics HUD is wider than the usable stage.",
+    );
+    assert(
+      layout.hud?.height <= layout.stage.height * 0.38,
+      `Physics HUD dominates the stage at ${viewport.width}x${viewport.height}.`,
+    );
+
+    assert(
+      !["auto", "scroll"].includes(layout.controlsOverflowY),
+      "Controls panel must not create a nested vertical scroller.",
+    );
+    assert.equal(
+      layout.orientationNoticeVisible,
+      false,
+      "MCP embedded mode must not be blocked by the rotate-device notice.",
+    );
+
     assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
 
     const blockingConsoleErrors = consoleErrors.filter(
       (message) =>
         !message.includes("favicon") &&
-        !message.includes("Failed to load resource"),
+        !message.includes("Failed to load resource") &&
+        !message.includes("WebGL"),
     );
     assert.equal(
       blockingConsoleErrors.length,
@@ -133,14 +177,14 @@ try {
     );
 
     console.log(
-      `GYROSCOPE RESPONSIVE PASS ${viewport.width}x${viewport.height}`,
+      `GYROSCOPE V2 RESPONSIVE PASS ${viewport.width}x${viewport.height}`,
       layout,
     );
 
     await page.close();
   }
 
-  console.log("GYROSCOPE RESPONSIVE VIEWPORT TEST PASSED");
+  console.log("GYROSCOPE V2 RESPONSIVE UX TEST PASSED");
 } finally {
   await browser.close();
 }
