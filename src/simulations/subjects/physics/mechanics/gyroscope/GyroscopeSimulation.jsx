@@ -1,16 +1,16 @@
 // src/simulations/subjects/physics/mechanics/gyroscope/GyroscopeSimulation.jsx
 
-import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import SimulationShell from "@/system/SimulationShell";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Environment } from "@react-three/drei";
+import { Environment, OrbitControls } from "@react-three/drei";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 import Controls from "./Controls";
 import Charts from "./Charts";
 import GyroModel from "./GyroModel";
 
-import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG } from "./schema";
-import { pushCapped, formatNumber } from "./constants";
+import { DEFAULT_CHART_CONFIG, DEFAULT_PARAMS } from "./schema";
+import { formatNumber, pushCapped } from "./constants";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
 
 export default function GyroscopeSimulation() {
@@ -31,14 +31,14 @@ export default function GyroscopeSimulation() {
 
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
-
   const [params, setParams] = useState(configuredInitialParams);
   const paramsRef = useRef(configuredInitialParams);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const [physicsState, setPhysicsState] = useState({
     t: 0,
-    tilt: 0,
-    omega: 0,
+    tilt: configuredInitialParams.tilt,
+    omega: configuredInitialParams.spinSpeed,
     L: 0,
     tau: 0,
     Omega: 0,
@@ -49,12 +49,12 @@ export default function GyroscopeSimulation() {
   const chartCfg = useMemo(() => DEFAULT_CHART_CONFIG, []);
   const samplesRef = useRef([]);
   const [chartData, setChartData] = useState([]);
-
   const tRef = useRef(0);
 
   useEffect(() => {
     runningRef.current = running;
   }, [running]);
+
   useEffect(() => {
     paramsRef.current = params;
   }, [params]);
@@ -65,163 +65,164 @@ export default function GyroscopeSimulation() {
     tRef.current = 0;
     samplesRef.current = [];
     setChartData([]);
-    setPhysicsState((s) => ({
-      ...s,
+    setPhysicsState((state) => ({
+      ...state,
       t: 0,
       tilt: params.tilt,
-      omega: 0,
+      omega: params.spinSpeed,
       Omega: 0,
     }));
-  }, [params.tilt]);
+  }, [params.spinSpeed, params.tilt]);
 
   const onStartStop = useCallback(() => {
-    setRunning((s) => !s);
+    setRunning((state) => !state);
   }, []);
 
   const setParam = useCallback((key, value) => {
-    setParams((prev) => ({ ...prev, [key]: value }));
+    setParams((previous) => ({ ...previous, [key]: value }));
   }, []);
 
   return (
-    <SimulationShell
-      title="Scientific Gyroscope"
-      subtitle={initialMcp.embeddedMcpApp ? "Agent-ready embedded lab" : "Optimized Lab Model"}
-      rightWidth={initialMcp.embeddedMcpApp ? 420 : 520}
-      panel={
-        <div className="space-y-4 sm:space-y-6">
-          <Controls
-            params={params}
-            setParam={setParam}
-            running={running}
-            onStartStop={onStartStop}
-            onReset={onReset}
-            t={physicsState.t}
-          />
-          <Charts data={chartData} />
-        </div>
-      }
+    <div
+      className="h-full w-full overflow-y-auto bg-[radial-gradient(circle_at_50%_18%,#17213b_0%,#070b17_36%,#03050b_76%)] text-slate-100 lg:overflow-hidden"
+      data-gyroscope-layout="v2"
     >
-      <div
-        className="relative w-full h-full min-h-[260px] bg-slate-950 overflow-hidden"
-        data-agent-surface="gyroscope-stage"
-      >
-        {initialMcp.embeddedMcpApp && (
-          <div className="absolute right-3 top-3 z-20 rounded-full border border-cyan-400/30 bg-slate-950/85 px-3 py-1.5 text-[11px] font-semibold text-cyan-200 backdrop-blur">
-            MCP configured
+      <div className="mx-auto flex min-h-full w-full max-w-[1800px] flex-col px-3 pb-3 pt-3 sm:px-4 sm:pb-4 lg:h-full lg:min-h-0 lg:px-5 lg:pb-5">
+        <header className="flex min-h-14 shrink-0 items-center justify-between gap-3 pl-14 sm:pl-16">
+          <div className="min-w-0">
+            <h1 className="truncate text-lg font-black tracking-tight text-white sm:text-xl">
+              Scientific Gyroscope
+            </h1>
+            <p className="mt-0.5 hidden text-xs text-slate-400 sm:block">
+              Spin, torque and precession in an interactive 3D lab
+            </p>
           </div>
-        )}
 
-        {/* --- RESPONSIVE PHYSICS OVERLAY --- */}
-        <div className="absolute top-16 sm:top-20 left-3 right-3 sm:left-4 sm:right-auto z-10 sm:w-72 lg:w-80 max-h-[calc(100%-5rem)] flex flex-col gap-2 sm:gap-4 pointer-events-none">
-          {/* We moved Time to the main control panel, so we removed it from here to reduce clutter */}
-          <GlassPanel title="Physics State">
-            <DataRow
-              label="Tilt Angle (θ)"
-              value={physicsState.tilt}
-              unit="°"
-              color="#22d3ee"
-            />
-            <DataRow
-              label="Spin Speed (ω)"
-              value={physicsState.omega}
-              unit="rad/s"
-            />
-            <DataRow
-              label="Precession (Ω)"
-              value={physicsState.Omega}
-              unit="rad/s"
-              color="#fbbf24"
-            />
-          </GlassPanel>
+          {initialMcp.embeddedMcpApp && (
+            <div className="shrink-0 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1.5 text-[11px] font-bold text-cyan-200 backdrop-blur-xl">
+              MCP configured
+            </div>
+          )}
+        </header>
 
-          <div className="hidden sm:block">
-          <GlassPanel title="Calculated Forces">
-            <div className="space-y-4 text-sm font-mono text-white/80">
-              <div>
-                <div className="text-xs text-white/40 uppercase font-bold mb-1">
-                  1. Angular Momentum
-                </div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-blue-400">L = I · ω</span>
-                  <span>
-                    {formatNumber(physicsState.L)}{" "}
-                    <span className="text-white/30 text-xs">kg·m²/s</span>
-                  </span>
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-white/40 uppercase font-bold mb-1">
-                  2. Gravitational Torque
-                </div>
-                <div className="flex justify-between items-center mb-1">
-                  <span className="text-red-400">τ = M·g·r·cos(θ)</span>
-                  <span>
-                    {formatNumber(physicsState.tau)}{" "}
-                    <span className="text-white/30 text-xs">N·m</span>
-                  </span>
-                </div>
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_390px]">
+          <section
+            className="relative min-h-[320px] overflow-hidden rounded-[24px] border border-white/10 bg-black/20 shadow-[0_28px_80px_rgba(0,0,0,0.35)] sm:min-h-[390px] lg:min-h-0"
+            data-agent-surface="gyroscope-stage"
+          >
+            <Canvas
+              shadows
+              dpr={[1, 1.5]}
+              camera={{ position: [1.72, 1.28, 2.05], fov: 31 }}
+            >
+              <PhysicsController
+                runningRef={runningRef}
+                paramsRef={paramsRef}
+                tRef={tRef}
+                chartCfg={chartCfg}
+                samplesRef={samplesRef}
+                setPhysicsState={setPhysicsState}
+                setChartData={setChartData}
+                params={params}
+              />
+
+              <OrbitControls
+                makeDefault
+                target={[0, 0.53, 0]}
+                minDistance={1.25}
+                maxDistance={4.5}
+                enablePan={false}
+              />
+
+              <Environment preset="warehouse" />
+              <ambientLight intensity={0.65} />
+              <directionalLight
+                position={[4, 7, 5]}
+                intensity={1.55}
+                castShadow
+                shadow-bias={-0.0001}
+              />
+              <pointLight position={[-3, 2, 2]} intensity={0.45} color="#67e8f9" />
+            </Canvas>
+
+            <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 sm:inset-x-auto sm:bottom-4 sm:left-4">
+              <PhysicsHud state={physicsState} />
+            </div>
+
+            <div className="pointer-events-none absolute right-3 top-3 z-20 hidden sm:block">
+              <div className="rounded-full border border-white/10 bg-black/25 px-3 py-1.5 text-[11px] font-semibold text-white/60 backdrop-blur-xl">
+                Drag to orbit · Scroll to zoom
               </div>
             </div>
-          </GlassPanel>
-          </div>
+          </section>
+
+          <aside
+            className="min-h-0 rounded-[24px] border border-white/10 bg-white/[0.035] p-3 shadow-[0_24px_60px_rgba(0,0,0,0.24)] backdrop-blur-2xl sm:p-4"
+            data-gyroscope-controls="true"
+          >
+            <Controls
+              params={params}
+              setParam={setParam}
+              running={running}
+              onStartStop={onStartStop}
+              onReset={onReset}
+              t={physicsState.t}
+            />
+
+            <div className="mt-3 border-t border-white/10 pt-3">
+              <button
+                type="button"
+                className="flex min-h-11 w-full items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-slate-300 transition hover:bg-white/[0.07] hover:text-white"
+                aria-expanded={showAnalysis}
+                onClick={() => setShowAnalysis((value) => !value)}
+              >
+                <span>Physical analysis</span>
+                {showAnalysis ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {showAnalysis && (
+                <div className="mt-3">
+                  <Charts data={chartData} />
+                </div>
+              )}
+            </div>
+          </aside>
         </div>
-
-        {/* --- 3D SCENE --- */}
-        <Canvas
-          shadows
-          dpr={[1, 1.5]}
-          camera={{ position: [3, 2.5, 3.5], fov: 35 }}
-        >
-          <PhysicsController
-            runningRef={runningRef}
-            paramsRef={paramsRef}
-            tRef={tRef}
-            chartCfg={chartCfg}
-            samplesRef={samplesRef}
-            setPhysicsState={setPhysicsState}
-            setChartData={setChartData}
-            params={params}
-          />
-          <OrbitControls makeDefault target={[0, 1.3, 0]} />
-
-          <Environment preset="warehouse" />
-          <ambientLight intensity={0.5} />
-          <directionalLight
-            position={[5, 10, 5]}
-            intensity={1.5}
-            castShadow
-            shadow-bias={-0.0001}
-          />
-        </Canvas>
       </div>
-    </SimulationShell>
+    </div>
   );
 }
 
-// --- UI COMPONENTS ---
-const GlassPanel = React.memo(({ title, children }) => (
-  <div className="pointer-events-auto backdrop-blur-xl bg-slate-900/60 border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
-    <div className="bg-white/5 px-4 py-3 border-b border-white/5 flex items-center gap-2">
-      <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-      <div className="text-white font-bold tracking-wide text-sm">{title}</div>
-    </div>
-    <div className="p-4 space-y-2">{children}</div>
+const PhysicsHud = React.memo(({ state }) => (
+  <div
+    className="pointer-events-auto grid grid-cols-3 gap-1.5 rounded-2xl border border-white/10 bg-slate-950/35 p-2 shadow-xl backdrop-blur-2xl sm:min-w-[400px] sm:gap-2 sm:p-2.5"
+    data-gyroscope-hud="true"
+  >
+    <Metric label="Spin ω" value={state.omega} unit="rad/s" />
+    <Metric label="Momentum L" value={state.L} unit="kg·m²/s" accent="text-sky-300" />
+    <Metric label="Torque τ" value={state.tau} unit="N·m" accent="text-rose-300" />
+    <Metric label="Tilt θ" value={state.tilt} unit="°" accent="text-cyan-300" />
+    <Metric label="Precession Ω" value={state.Omega} unit="rad/s" accent="text-amber-300" />
+    <Metric label="Time" value={state.t} unit="s" />
   </div>
 ));
 
-function DataRow({ label, value, unit, color }) {
+function Metric({ label, value, unit, accent = "text-white" }) {
   return (
-    <div className="flex justify-between items-center text-sm">
-      <span className="text-white/50 font-medium">{label}</span>
-      <span className="font-mono font-bold" style={{ color: color || "white" }}>
-        {formatNumber(value)}{" "}
-        <span className="text-white/30 text-xs ml-0.5">{unit}</span>
-      </span>
+    <div className="min-w-0 rounded-xl border border-white/[0.06] bg-white/[0.035] px-2 py-2 sm:px-2.5">
+      <div className="truncate text-[9px] font-bold uppercase tracking-[0.11em] text-white/40 sm:text-[10px]">
+        {label}
+      </div>
+      <div className={`mt-0.5 truncate font-mono text-[12px] font-bold sm:text-sm ${accent}`}>
+        {formatNumber(value)}
+        <span className="ml-1 text-[9px] font-medium text-white/35 sm:text-[10px]">
+          {unit}
+        </span>
+      </div>
     </div>
   );
 }
 
-// --- LOGIC CONTROLLER (No Changes) ---
 function PhysicsController({
   runningRef,
   paramsRef,
@@ -246,11 +247,11 @@ function PhysicsController({
     const g = 9.81;
     const M = p.mass;
     const R = p.diskRadius;
-    const r_weight = R + 0.15;
+    const rWeight = R + 0.15;
     const weightMass = 0.2;
     const I = 0.5 * M * R ** 2;
-    const I_trans = 0.25 * M * R ** 2 + (M * 0.05 ** 2) / 12;
-    const nutationFreq = (I / I_trans) * p.spinSpeed;
+    const ITrans = 0.25 * M * R ** 2 + (M * 0.05 ** 2) / 12;
+    const nutationFreq = (I / ITrans) * p.spinSpeed;
     const nutationAmp = runningRef.current
       ? 0.05 * Math.exp(-0.2 * tRef.current)
       : 0;
@@ -261,16 +262,18 @@ function PhysicsController({
         ? nutationAmp * Math.sin(nutationFreq * tRef.current)
         : 0);
     const L = I * p.spinSpeed;
-    const tau = weightMass * g * r_weight * Math.cos(currentTilt);
+    const tau = weightMass * g * rWeight * Math.cos(currentTilt);
     const Omega = L > 0.0001 ? tau / L : 0;
     const KE = 0.5 * I * p.spinSpeed ** 2;
-    const PE = weightMass * g * r_weight * Math.sin(currentTilt);
+    const PE = weightMass * g * rWeight * Math.sin(currentTilt);
 
     if (innerRef.current) innerRef.current.rotation.z = currentTilt;
+
     if (runningRef.current) {
       tRef.current += dt;
       angles.current.spin += p.spinSpeed * dt;
       angles.current.prec += Omega * dt;
+
       if (rotorRef.current) rotorRef.current.rotation.x = angles.current.spin;
       if (outerRef.current) outerRef.current.rotation.y = angles.current.prec;
 
@@ -288,9 +291,10 @@ function PhysicsController({
             KE,
             PE,
           },
-          chartCfg.maxPoints
+          chartCfg.maxPoints,
         );
       }
+
       uiAcc.current += dt;
       if (uiAcc.current > 0.1) {
         uiAcc.current = 0;
@@ -302,18 +306,18 @@ function PhysicsController({
           tau,
           Omega,
           I,
-          r_weight,
+          r_weight: rWeight,
         });
         setChartData([...samplesRef.current]);
       }
     } else {
       if (outerRef.current) outerRef.current.rotation.y = angles.current.prec;
-      setPhysicsState((prev) => ({
-        ...prev,
+      setPhysicsState((previous) => ({
+        ...previous,
         tilt: p.tilt,
         omega: p.spinSpeed,
-        L: I * p.spinSpeed,
-        tau: weightMass * g * r_weight * Math.cos(baseTiltRad),
+        L,
+        tau,
         Omega,
         KE,
         PE,
