@@ -62,6 +62,7 @@ try {
       await hud.waitFor({ state: "visible", timeout: 10_000 });
       await play.waitFor({ state: "visible", timeout: 10_000 });
       await reset.waitFor({ state: "visible", timeout: 10_000 });
+      await page.waitForTimeout(1500);
     } catch (error) {
       const diagnostics = await page.evaluate(() => ({
         url: window.location.href,
@@ -109,6 +110,9 @@ try {
         ),
         reset: rect('[data-agent-action="reset"]'),
         controlsOverflowY: controlsStyle?.overflowY || null,
+        orientationNoticeVisible: document.body?.innerText?.includes(
+          "Rotate your device",
+        ) || false,
       };
     });
 
@@ -151,6 +155,11 @@ try {
     assert(
       !["auto", "scroll"].includes(layout.controlsOverflowY),
       "Controls panel must not create a nested vertical scroller.",
+    );
+    assert.equal(
+      layout.orientationNoticeVisible,
+      false,
+      "MCP embedded mode must not be blocked by the rotate-device notice.",
     );
 
     assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
