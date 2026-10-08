@@ -9,6 +9,21 @@ import Telemetry from "./Telemetry";
 import GraphPanel from "./GraphPanel";
 import { degToRad } from "./utils";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
+import AgentCanvasRecorder from "@/components/shared/video/AgentCanvasRecorder.jsx";
+
+const PENDULUM_AGENT_PARAMETERS = Object.freeze({
+  lengthM: { type: "number", minimum: 0.5, maximum: 3 },
+  massKg: { type: "number", minimum: 0.1, maximum: 10 },
+  entryAngle: { type: "number", minimum: -170, maximum: 170 },
+  elasticity: { type: "number", minimum: 0.98, maximum: 1 },
+  pxPerMeter: { type: "number", minimum: 100, maximum: 250 },
+  bobRadius: { type: "number", minimum: 10, maximum: 50 },
+  trailLen: { type: "number", minimum: 0, maximum: 400 },
+  showVectors: { type: "boolean" },
+  showTrail: { type: "boolean" },
+  showGraph: { type: "boolean" },
+});
 
 export default function Pendulum() {
   const initialMcpStateRef = useRef(null);
@@ -40,6 +55,11 @@ export default function Pendulum() {
   const [showVectors, setShowVectors] = useState(true);
   const [showTrail, setShowTrail] = useState(true);
   const [showGraph, setShowGraph] = useState(false);
+
+  const videoRef = useRef(null);
+  const agentStateRef = useRef({});
+  agentStateRef.current = { running, lengthM, massKg, entryAngle, elasticity,
+    pxPerMeter, bobRadius, trailLen, showVectors, showTrail, showGraph };
 
   const canvasRef = useRef(null);
   const hudRef = useRef(null);
@@ -183,6 +203,44 @@ export default function Pendulum() {
     trailLen,
   ]);
 
+  const webMcpStatus = useAgentSimulationTools({
+    simulationId: "physics.mechanics.simple-pendulum",
+    prefix: "esbiko_pendulum",
+    properties: PENDULUM_AGENT_PARAMETERS,
+    actions: {
+      getState: () => ({
+        simulationId: "physics.mechanics.simple-pendulum",
+        ...agentStateRef.current,
+        thetaRadians: engine.current.theta,
+        angularVelocity: engine.current.omega,
+        elapsedSeconds: engine.current.tSec,
+        recording: videoRef.current?.getVideoStatus() || null,
+      }),
+      configure: (values) => {
+        if ("entryAngle" in values && agentStateRef.current.running) {
+          throw new Error("Pause the pendulum before changing its initial angle.");
+        }
+        const setters = { lengthM: setLengthM, massKg: setMassKg,
+          entryAngle: setEntryAngle, elasticity: setElasticity,
+          pxPerMeter: setPxPerMeter, bobRadius: setBobRadius,
+          trailLen: setTrailLen, showVectors: setShowVectors,
+          showTrail: setShowTrail, showGraph: setShowGraph };
+        Object.entries(values).forEach(([key, value]) => setters[key](value));
+        return { accepted: values };
+      },
+      setPlayback: ({ running: next }) => {
+        if (typeof next !== "boolean") throw new Error("running must be a boolean.");
+        setRunning(next);
+        return { running: next };
+      },
+      reset: () => { setRunning(false); resetPhysics(); return { running: false, reset: true }; },
+      startVideo: ({ mode } = {}) => videoRef.current?.startVideo({ mode }),
+      getVideoStatus: () => videoRef.current?.getVideoStatus(),
+      stopVideo: () => videoRef.current?.stopVideo(),
+      downloadVideo: () => videoRef.current?.downloadVideo(),
+    },
+  });
+
   // ✅ initial draw (still kept)
   useEffect(() => {
     drawFrame(engine.current);
@@ -190,7 +248,7 @@ export default function Pendulum() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full bg-[#020617] text-white overflow-hidden">
+    <div className="flex h-full w-full min-w-0 flex-col lg:flex-row bg-[#020617] text-white overflow-y-auto lg:overflow-hidden">
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -200,34 +258,7 @@ export default function Pendulum() {
         }
       `}</style>
 
-      <Controls
-        running={running}
-        toggleRun={() => setRunning((v) => !v)}
-        onReset={() => {
-          setRunning(false);
-          resetPhysics();
-        }}
-        lengthM={lengthM}
-        setLengthM={setLengthM}
-        massKg={massKg}
-        setMassKg={setMassKg}
-        entryAngle={entryAngle}
-        setEntryAngle={setEntryAngle}
-        elasticity={elasticity}
-        setElasticity={setElasticity}
-        pxPerMeter={pxPerMeter}
-        setPxPerMeter={setPxPerMeter}
-        bobRadius={bobRadius}
-        setBobRadius={setBobRadius}
-        trailLen={trailLen}
-        setTrailLen={setTrailLen}
-        showVectors={showVectors}
-        setShowVectors={setShowVectors}
-        showTrail={showTrail}
-        setShowTrail={setShowTrail}
-      />
-
-      <div className="flex-1 relative">
+      <div className="relative w-full shrink-0 min-w-0 h-[min(60dvh,540px)] min-h-[300px] lg:h-full lg:min-h-0 lg:flex-1">
         {initialMcpState.embeddedMcpApp && (
           <div className="absolute left-4 top-4 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
             MCP configured · L={lengthM.toFixed(2)}m · m={massKg.toFixed(1)}kg · θ₀={entryAngle.toFixed(0)}°
@@ -256,6 +287,35 @@ export default function Pendulum() {
           </button>
         )}
       </div>
+      <Controls
+        running={running}
+        recordingControls={<AgentCanvasRecorder ref={videoRef} canvasSelector=".pendulum-record-canvas" filePrefix="esbiko-pendulum" />}
+        webMcpStatus={webMcpStatus}
+        toggleRun={() => setRunning((v) => !v)}
+        onReset={() => {
+          setRunning(false);
+          resetPhysics();
+        }}
+        lengthM={lengthM}
+        setLengthM={setLengthM}
+        massKg={massKg}
+        setMassKg={setMassKg}
+        entryAngle={entryAngle}
+        setEntryAngle={setEntryAngle}
+        elasticity={elasticity}
+        setElasticity={setElasticity}
+        pxPerMeter={pxPerMeter}
+        setPxPerMeter={setPxPerMeter}
+        bobRadius={bobRadius}
+        setBobRadius={setBobRadius}
+        trailLen={trailLen}
+        setTrailLen={setTrailLen}
+        showVectors={showVectors}
+        setShowVectors={setShowVectors}
+        showTrail={showTrail}
+        setShowTrail={setShowTrail}
+      />
+
     </div>
   );
 }
