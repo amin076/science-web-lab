@@ -105,7 +105,7 @@ export default function GyroscopeSimulation() {
           )}
         </header>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_280px] xl:grid-cols-[minmax(0,1fr)_300px]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_276px] xl:grid-cols-[minmax(0,1fr)_288px]">
           <section
             className="relative min-h-[320px] overflow-hidden rounded-[24px] border border-white/10 bg-black/20 shadow-[0_28px_80px_rgba(0,0,0,0.35)] sm:min-h-[390px] lg:min-h-0"
             data-agent-surface="gyroscope-stage"
