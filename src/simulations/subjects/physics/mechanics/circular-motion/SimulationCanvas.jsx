@@ -47,6 +47,8 @@ export default function SimulationCanvas({ width, height, state, radius, config 
     ctx.fillStyle = "#050510";
     ctx.fillRect(0, 0, width, height);
 
+    const safeRadius = Math.max(1, Math.min(radius, (Math.min(width, height) - 30) / 2));
+    const ratio = safeRadius / Math.max(1, radius);
     const cx = width / 2;
     const cy = height / 2;
 
@@ -66,13 +68,13 @@ export default function SimulationCanvas({ width, height, state, radius, config 
     // Orbit
     ctx.strokeStyle = "#ffffff20";
     ctx.beginPath();
-    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.arc(cx, cy, safeRadius, 0, Math.PI * 2);
     ctx.stroke();
 
     if (!state) return;
 
-    const px = cx + state.x;
-    const py = cy - state.y;
+    const px = cx + state.x * ratio;
+    const py = cy - state.y * ratio;
 
     // Projections
     if (config.showProjections) {
@@ -142,5 +144,5 @@ export default function SimulationCanvas({ width, height, state, radius, config 
 
   }, [width, height, state, radius, config]);
 
-  return <canvas ref={canvasRef} width={width} height={height} className="block w-full h-full" />;
+  return <canvas ref={canvasRef} width={width} height={height} className="circular-record-canvas block w-full h-full" />;
 }
