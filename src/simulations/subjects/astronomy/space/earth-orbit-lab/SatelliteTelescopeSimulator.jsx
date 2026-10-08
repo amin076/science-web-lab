@@ -20,6 +20,7 @@ import EarthVisual from "./EarthVisual";
 import MoonVisual from "./MoonVisual";
 import SatellitesTelescopesControlPanel from "./SatellitesTelescopesControlPanel";
 import OrbitHUD from "./OrbitHUD";
+import OrbitLabVideoRecorder from "./video/OrbitLabVideoRecorder";
 
 // Logic & Factories
 import {
@@ -42,6 +43,7 @@ import {
 import { latLonToECEF, ecefToInertial } from "./orbit.visibility";
 import { makeBody } from "./orbit.factory";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useOrbitLabWebMcp } from "./hooks/useOrbitLabWebMcp.js";
 
 // Modular Components
 import {
@@ -59,6 +61,24 @@ import {
 ========================= */
 export default function SatelliteTelescopeSimulator() {
   const initialMcpRef = useRef(null);
+  const threeCanvasRef = useRef(null);
+  const videoRecorderRef = useRef(null);
+  const tourTimerRef = useRef(null);
+  const [videoStatus, setVideoStatus] = useState({
+    state: "idle", progressPercent: 0, downloadReady: false, error: null,
+  });
+  const preparedVideo = useMemo(() => {
+    if (typeof window === "undefined") return null;
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("mcpVideo") !== "1") return null;
+    const duration = Number(query.get("mcpVideoDurationSeconds"));
+    return {
+      storyMode: query.get("mcpVideoStoryMode") === "cinematic_tour" ? "cinematic_tour" : "focus_target",
+      durationSeconds: Number.isFinite(duration) && duration >= 5 && duration <= 60 ? duration : 15,
+      aspectRatio: query.get("mcpVideoAspectRatio") === "9:16" ? "9:16" : "16:9",
+    };
+  }, []);
+  useEffect(() => () => window.clearInterval(tourTimerRef.current), []);
 
   if (!initialMcpRef.current) {
     initialMcpRef.current = readEmbeddedMcpParameters(
@@ -138,16 +158,15 @@ export default function SatelliteTelescopeSimulator() {
     });
   }, []);
 
-  // Mode Switching
-  useEffect(() => {
-    if (simMode === "educational") {
-      setSettings((p) => ({ ...p, timeScale: 200 }));
-    } else if (simMode === "semi") {
-      setSettings((p) => ({ ...p, timeScale: 100 }));
-    } else if (simMode === "realistic") {
-      setSettings((p) => ({ ...p, timeScale: 1 }));
-    }
-  }, [simMode]);
+  // Keep the explicitly requested MCP time scale on mount. UI mode selection
+  // changes the speed intentionally, while remote configure may override it.
+  const changeModeFromUI = (mode) => {
+    setSimMode(mode);
+    setSettings((prev) => ({
+      ...prev,
+      timeScale: mode === "realistic" ? 1 : mode === "semi" ? 100 : 200,
+    }));
+  };
 
   const satVisualScale = useMemo(() => {
     if (simMode === "educational") return 1.2;
@@ -488,6 +507,117 @@ export default function SatelliteTelescopeSimulator() {
     return null;
   }
 
+  const startOrbitVideo = async (input = {}) => {
+    const recorder = videoRecorderRef.current;
+    if (!recorder) {
+      const error = new Error("Orbit Lab recorder is not ready.");
+      error.code = "RECORDER_NOT_READY";
+      throw error;
+    }
+    const state = recorder.getStatus();
+    if (["preparing", "recording", "finalizing"].includes(state.state)) {
+      const error = new Error("A recording is already active.");
+      error.code = "RECORDING_ACTIVE";
+      throw error;
+    }
+    const request = {
+      storyMode: input.storyMode || preparedVideo?.storyMode || "focus_target",
+      durationSeconds: input.durationSeconds || preparedVideo?.durationSeconds || 15,
+      aspectRatio: input.aspectRatio || preparedVideo?.aspectRatio || "16:9",
+    };
+    if (input.focusTarget) {
+      if (input.focusTarget !== "earth" && input.focusTarget !== "moon" &&
+        !simRef.current.bodies.some((body) => body.id === input.focusTarget)) {
+        const error = new Error("Unknown focus target. Read live Orbit Lab state first.");
+        error.code = "UNKNOWN_ORBIT_BODY";
+        throw error;
+      }
+      setFocusedBodyId(input.focusTarget === "earth" ? null : input.focusTarget);
+    }
+    if (input.timeScale !== undefined) setSettings((prev) => ({ ...prev, timeScale: input.timeScale }));
+    setIsRunning(true);
+    window.clearInterval(tourTimerRef.current);
+    if (request.storyMode === "cinematic_tour") {
+      const targets = [null, ...simRef.current.bodies.slice(0, 3).map((body) => body.id), "moon"];
+      let index = 0;
+      setFocusedBodyId(targets[index]);
+      tourTimerRef.current = window.setInterval(() => {
+        index = (index + 1) % targets.length;
+        setFocusedBodyId(targets[index]);
+      }, 3500);
+    }
+    await new Promise((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(resolve)));
+    const result = await recorder.startRecording({
+      durationSeconds: request.durationSeconds,
+      aspectRatio: request.aspectRatio,
+      fileName: "esbiko-orbit-lab-" + request.storyMode + "-" + Date.now() + ".webm",
+    });
+    if (!result.ok) {
+      window.clearInterval(tourTimerRef.current);
+      const error = new Error(result.error?.message || "Orbit Lab recording failed.");
+      error.code = result.error?.code || "RECORDING_START_FAILED";
+      throw error;
+    }
+    window.setTimeout(() => window.clearInterval(tourTimerRef.current), request.durationSeconds * 1000 + 350);
+    return { ...result, videoRequest: request };
+  };
+  const stopOrbitVideo = () => {
+    window.clearInterval(tourTimerRef.current);
+    const result = videoRecorderRef.current?.stopRecording();
+    if (!result?.ok) {
+      const error = new Error(result?.error?.message || "No active recording.");
+      error.code = result?.error?.code || "RECORDING_NOT_ACTIVE";
+      throw error;
+    }
+    return result;
+  };
+  const downloadOrbitVideo = () => {
+    const result = videoRecorderRef.current?.downloadRecording();
+    if (!result?.ok) {
+      const error = new Error(result?.error?.message || "No video is ready.");
+      error.code = result?.error?.code || "VIDEO_NOT_READY";
+      throw error;
+    }
+    return result;
+  };
+
+  const orbitWebMcpStatus = useOrbitLabWebMcp({
+    enabled: !initialMcp.embeddedMcpApp,
+    startVideo: startOrbitVideo,
+    getVideoStatus: () => videoRecorderRef.current?.getStatus() || videoStatus,
+    stopVideo: stopOrbitVideo,
+    downloadVideo: downloadOrbitVideo,
+    getState: () => ({
+      simulationId: "astronomy.space.earth-orbit-lab",
+      running: isRunning,
+      simMode,
+      ...settings,
+      simulationTimeSeconds: simRef.current.t,
+      video: videoRecorderRef.current?.getStatus() || videoStatus,
+      focusedBodyId: focusedBodyId || "earth",
+      bodies: simRef.current.bodies.map((body) => ({ id: body.id, name: body.name })),
+    }),
+    configure: (input) => {
+      const { simMode: nextMode, ...options } = input;
+      if (nextMode !== undefined) setSimMode(nextMode);
+      if (Object.keys(options).length) setSettings((previous) => ({ ...previous, ...options }));
+      return { applied: input };
+    },
+    setPlayback: (action) => {
+      setIsRunning(action === "run");
+      return { running: action === "run" };
+    },
+    focus: (bodyId) => {
+      if (!["earth", "moon"].includes(bodyId) && !simRef.current.bodies.some((b) => b.id === bodyId)) {
+        throw Object.assign(new Error("Unknown body ID; read the live body list first."), { code: "UNKNOWN_ORBIT_BODY" });
+      }
+      setFocusedBodyId(bodyId === "earth" ? null : bodyId);
+      return { focusedBodyId: bodyId };
+    },
+    addPreset: (preset) => { onAddPreset(preset); return { preset }; },
+    reset: () => { resetSim(); return { reset: true }; },
+  });
+
   return (
     <Box
       sx={{
@@ -505,8 +635,10 @@ export default function SatelliteTelescopeSimulator() {
         data-agent-surface="earth-orbit-stage"
         sx={{
           position: "relative",
-          height: { xs: "70dvh", md: "100%" },
-          minHeight: { xs: "70dvh", md: 0 },
+          height: { xs: "min(70dvh, 650px)", md: "100%" },
+          minHeight: { xs: 340, md: 0 },
+          width: "100%",
+          touchAction: "pan-y",
           flex: { xs: "none", md: 1 },
         }}
       >
@@ -516,7 +648,9 @@ export default function SatelliteTelescopeSimulator() {
             antialias: true,
             alpha: false,
             logarithmicDepthBuffer: true,
+            preserveDrawingBuffer: true,
           }}
+          onCreated={({ gl }) => { threeCanvasRef.current = gl.domElement; }}
           camera={{
             position: [0, 5, 20],
             fov: 45,
@@ -673,9 +807,73 @@ export default function SatelliteTelescopeSimulator() {
               fontWeight: 700,
             }}
           >
-            MCP configured · Orbit Lab
+            Orbit Lab · {orbitWebMcpStatus === "ready" ? "WebMCP ready" : "MCP configured"}
           </Box>
         )}
+
+        <OrbitLabVideoRecorder
+          ref={videoRecorderRef}
+          sourceCanvasRef={threeCanvasRef}
+          getFrameState={() => ({
+            focusedBodyId: focusedBodyId || "earth",
+            simMode,
+            timeScale: settings.timeScale,
+            storyMode: tourTimerRef.current ? "cinematic_tour" : "focus_target",
+          })}
+          onStatusChange={setVideoStatus}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 52,
+            left: 10,
+            right: 10,
+            zIndex: 25,
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+            alignItems: "center",
+            pointerEvents: "auto",
+          }}
+        >
+          {!["preparing", "recording", "finalizing"].includes(videoStatus.state) && (
+            <Button variant="contained" size="small" data-agent-action="record"
+              aria-label="Record Orbit Lab WebM video"
+              onClick={() => startOrbitVideo().catch((error) =>
+                setVideoStatus((prev) => ({ ...prev, state: "error", error: { code: error.code, message: error.message } }))
+              )}
+              sx={{ minHeight: 44, bgcolor: "#7c3aed", color: "white", fontWeight: 700 }}
+            >
+              Record WebM
+            </Button>
+          )}
+          {["preparing", "recording"].includes(videoStatus.state) && (
+            <Button variant="contained" size="small" color="error"
+              data-agent-action="stop-recording" aria-label="Stop Orbit Lab video recording"
+              onClick={stopOrbitVideo} sx={{ minHeight: 44 }}>Stop video</Button>
+          )}
+          {videoStatus.state === "ready" && (
+            <Button variant="contained" size="small" color="success"
+              data-agent-action="download-video" aria-label="Download Orbit Lab WebM video"
+              onClick={downloadOrbitVideo} sx={{ minHeight: 44 }}>Download WebM</Button>
+          )}
+          {["preparing", "recording", "finalizing"].includes(videoStatus.state) && (
+            <Typography role="status" sx={{ color: "white", bgcolor: "#020617db", borderRadius: 1, px: 1, py: 0.5, fontSize: 12 }}>
+              Recording: {Math.round(videoStatus.progressPercent || 0)}%
+            </Typography>
+          )}
+          {videoStatus.state === "error" && (
+            <Typography role="alert" sx={{ color: "#fecaca", bgcolor: "#450a0acc", fontSize: 12 }}>
+              {videoStatus.error?.message || "Recording failed"}
+            </Typography>
+          )}
+          {preparedVideo && videoStatus.state === "idle" && (
+            <Typography sx={{ bgcolor: "#020617cc", color: "#ddd6fe", px: 1, fontSize: 11 }}>
+              AI video prepared · press Record
+            </Typography>
+          )}
+        </Box>
 
         <OrbitHUD
           focusedBodyId={focusedBodyId || "earth"}
@@ -740,7 +938,9 @@ export default function SatelliteTelescopeSimulator() {
         sx={{
           width: { xs: "100%", md: 320 },
 
-          height: { xs: "50dvh", md: "calc(100% - 40px)" },
+          height: { xs: "auto", md: "calc(100% - 40px)" },
+          minHeight: { xs: 360, md: 0 },
+          maxHeight: { xs: "none", md: "calc(100% - 40px)" },
 
           flexShrink: 0,
 
@@ -773,7 +973,7 @@ export default function SatelliteTelescopeSimulator() {
             setFocusedBodyId={setFocusedBodyId}
             onRemoveBody={removeBody}
             simMode={simMode}
-            setSimMode={setSimMode}
+            setSimMode={changeModeFromUI}
           />
         </Box>
       </Box>
