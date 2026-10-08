@@ -42,6 +42,7 @@ import {
 import { latLonToECEF, ecefToInertial } from "./orbit.visibility";
 import { makeBody } from "./orbit.factory";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useOrbitLabWebMcp } from "./hooks/useOrbitLabWebMcp.js";
 
 // Modular Components
 import {
@@ -138,16 +139,15 @@ export default function SatelliteTelescopeSimulator() {
     });
   }, []);
 
-  // Mode Switching
-  useEffect(() => {
-    if (simMode === "educational") {
-      setSettings((p) => ({ ...p, timeScale: 200 }));
-    } else if (simMode === "semi") {
-      setSettings((p) => ({ ...p, timeScale: 100 }));
-    } else if (simMode === "realistic") {
-      setSettings((p) => ({ ...p, timeScale: 1 }));
-    }
-  }, [simMode]);
+  // Keep the explicitly requested MCP time scale on mount. UI mode selection
+  // changes the speed intentionally, while remote configure may override it.
+  const changeModeFromUI = (mode) => {
+    setSimMode(mode);
+    setSettings((prev) => ({
+      ...prev,
+      timeScale: mode === "realistic" ? 1 : mode === "semi" ? 100 : 200,
+    }));
+  };
 
   const satVisualScale = useMemo(() => {
     if (simMode === "educational") return 1.2;
@@ -488,6 +488,37 @@ export default function SatelliteTelescopeSimulator() {
     return null;
   }
 
+  const orbitWebMcpStatus = useOrbitLabWebMcp({
+    getState: () => ({
+      simulationId: "astronomy.space.earth-orbit-lab",
+      running: isRunning,
+      simMode,
+      ...settings,
+      simulationTimeSeconds: simRef.current.t,
+      focusedBodyId: focusedBodyId || "earth",
+      bodies: simRef.current.bodies.map((body) => ({ id: body.id, name: body.name })),
+    }),
+    configure: (input) => {
+      const { simMode: nextMode, ...options } = input;
+      if (nextMode !== undefined) setSimMode(nextMode);
+      if (Object.keys(options).length) setSettings((previous) => ({ ...previous, ...options }));
+      return { applied: input };
+    },
+    setPlayback: (action) => {
+      setIsRunning(action === "run");
+      return { running: action === "run" };
+    },
+    focus: (bodyId) => {
+      if (!["earth", "moon"].includes(bodyId) && !simRef.current.bodies.some((b) => b.id === bodyId)) {
+        throw Object.assign(new Error("Unknown body ID; read the live body list first."), { code: "UNKNOWN_ORBIT_BODY" });
+      }
+      setFocusedBodyId(bodyId === "earth" ? null : bodyId);
+      return { focusedBodyId: bodyId };
+    },
+    addPreset: (preset) => { onAddPreset(preset); return { preset }; },
+    reset: () => { resetSim(); return { reset: true }; },
+  });
+
   return (
     <Box
       sx={{
@@ -505,8 +536,10 @@ export default function SatelliteTelescopeSimulator() {
         data-agent-surface="earth-orbit-stage"
         sx={{
           position: "relative",
-          height: { xs: "70dvh", md: "100%" },
-          minHeight: { xs: "70dvh", md: 0 },
+          height: { xs: "min(70dvh, 650px)", md: "100%" },
+          minHeight: { xs: 340, md: 0 },
+          width: "100%",
+          touchAction: "pan-y",
           flex: { xs: "none", md: 1 },
         }}
       >
@@ -673,7 +706,7 @@ export default function SatelliteTelescopeSimulator() {
               fontWeight: 700,
             }}
           >
-            MCP configured · Orbit Lab
+            Orbit Lab · {orbitWebMcpStatus === "ready" ? "WebMCP ready" : "MCP configured"}
           </Box>
         )}
 
@@ -740,7 +773,9 @@ export default function SatelliteTelescopeSimulator() {
         sx={{
           width: { xs: "100%", md: 320 },
 
-          height: { xs: "50dvh", md: "calc(100% - 40px)" },
+          height: { xs: "auto", md: "calc(100% - 40px)" },
+          minHeight: { xs: 360, md: 0 },
+          maxHeight: { xs: "none", md: "calc(100% - 40px)" },
 
           flexShrink: 0,
 
@@ -773,7 +808,7 @@ export default function SatelliteTelescopeSimulator() {
             setFocusedBodyId={setFocusedBodyId}
             onRemoveBody={removeBody}
             simMode={simMode}
-            setSimMode={setSimMode}
+            setSimMode={changeModeFromUI}
           />
         </Box>
       </Box>
