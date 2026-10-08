@@ -256,28 +256,32 @@ const PhysicsCollision = () => {
       }
       requestAnimationFrame(loop);
     };
-    requestAnimationFrame(loop);
+    const frame = requestAnimationFrame(loop);
+    return () => {
+      cancelAnimationFrame(frame);
+      physicsState.current.isRunning = false;
+    };
   }, []);
 
   return (
     <div className="w-full h-full min-h-0 overflow-y-auto xl:overflow-hidden bg-[#050508] text-white p-2 sm:p-4">
       <div className="w-full min-w-0 flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] xl:h-full gap-3 xl:gap-4">
-      {initialMcp.embeddedMcpApp && (
-        <div className="xl:col-span-2 order-first rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
-          MCP configured · e={uiState.restitution.toFixed(2)} · speed={uiState.timeScale.toFixed(1)} · m₁={uiState.p1.mass}kg · m₂={uiState.p2.mass}kg
-        </div>
-      )}
       <div data-esbiko-collision-stage className="order-first xl:order-none relative w-full min-w-0 h-[min(56dvh,500px)] min-h-[280px] xl:h-full xl:min-h-0 rounded-2xl overflow-hidden border border-white/10">
         <SimulationCanvas physicsState={physicsState} />
       </div>
 
-      <section className="w-full min-w-0 xl:min-h-0 flex flex-col gap-3">
+      <section className="w-full min-w-0 xl:min-h-0 xl:overflow-y-auto flex flex-col gap-3">
+      {initialMcp.embeddedMcpApp && (
+        <div className="shrink-0 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+          MCP configured · e={uiState.restitution.toFixed(2)} · speed={uiState.timeScale.toFixed(1)} · m₁={uiState.p1.mass}kg · m₂={uiState.p2.mass}kg
+        </div>
+      )}
       <ControlPanel
         uiState={uiState}
         setUiState={setUiState}
         physicsState={physicsState}
-        wallReport={wallReport} // Box 1
-        collisionReport={collisionReport} // Box 2
+        wallReport={wallReport}
+        collisionReport={collisionReport}
         onReset={handleReset}
       />
       <LiveHUD data={uiState} />
