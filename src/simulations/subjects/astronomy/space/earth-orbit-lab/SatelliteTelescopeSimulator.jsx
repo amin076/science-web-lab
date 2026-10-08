@@ -811,6 +811,70 @@ export default function SatelliteTelescopeSimulator() {
           </Box>
         )}
 
+        <OrbitLabVideoRecorder
+          ref={videoRecorderRef}
+          sourceCanvasRef={threeCanvasRef}
+          getFrameState={() => ({
+            focusedBodyId: focusedBodyId || "earth",
+            simMode,
+            timeScale: settings.timeScale,
+            storyMode: tourTimerRef.current ? "cinematic_tour" : "focus_target",
+          })}
+          onStatusChange={setVideoStatus}
+        />
+
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 52,
+            left: 10,
+            right: 10,
+            zIndex: 25,
+            display: "flex",
+            gap: 1,
+            flexWrap: "wrap",
+            alignItems: "center",
+            pointerEvents: "auto",
+          }}
+        >
+          {!["preparing", "recording", "finalizing"].includes(videoStatus.state) && (
+            <Button variant="contained" size="small" data-agent-action="record"
+              aria-label="Record Orbit Lab WebM video"
+              onClick={() => startOrbitVideo().catch((error) =>
+                setVideoStatus((prev) => ({ ...prev, state: "error", error: { code: error.code, message: error.message } }))
+              )}
+              sx={{ minHeight: 44, bgcolor: "#7c3aed", color: "white", fontWeight: 700 }}
+            >
+              Record WebM
+            </Button>
+          )}
+          {["preparing", "recording"].includes(videoStatus.state) && (
+            <Button variant="contained" size="small" color="error"
+              data-agent-action="stop-recording" aria-label="Stop Orbit Lab video recording"
+              onClick={stopOrbitVideo} sx={{ minHeight: 44 }}>Stop video</Button>
+          )}
+          {videoStatus.state === "ready" && (
+            <Button variant="contained" size="small" color="success"
+              data-agent-action="download-video" aria-label="Download Orbit Lab WebM video"
+              onClick={downloadOrbitVideo} sx={{ minHeight: 44 }}>Download WebM</Button>
+          )}
+          {["preparing", "recording", "finalizing"].includes(videoStatus.state) && (
+            <Typography role="status" sx={{ color: "white", bgcolor: "#020617db", borderRadius: 1, px: 1, py: 0.5, fontSize: 12 }}>
+              Recording: {Math.round(videoStatus.progressPercent || 0)}%
+            </Typography>
+          )}
+          {videoStatus.state === "error" && (
+            <Typography role="alert" sx={{ color: "#fecaca", bgcolor: "#450a0acc", fontSize: 12 }}>
+              {videoStatus.error?.message || "Recording failed"}
+            </Typography>
+          )}
+          {preparedVideo && videoStatus.state === "idle" && (
+            <Typography sx={{ bgcolor: "#020617cc", color: "#ddd6fe", px: 1, fontSize: 11 }}>
+              AI video prepared · press Record
+            </Typography>
+          )}
+        </Box>
+
         <OrbitHUD
           focusedBodyId={focusedBodyId || "earth"}
           bodies={simRef.current.bodies}
