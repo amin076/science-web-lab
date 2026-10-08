@@ -1,4 +1,4 @@
-import { createSafeToolExecutor } from "@/webmcp/registerWebMcpTools.js";
+import { createSafeToolExecutor } from "../../../../../../webmcp/registerWebMcpTools.js";
 
 export const SOLAR_FOCUS_TARGETS = Object.freeze([
   "system",
