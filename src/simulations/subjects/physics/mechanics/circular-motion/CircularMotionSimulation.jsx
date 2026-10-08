@@ -5,6 +5,20 @@ import SimulationHUD from "./SimulationHUD";
 import ControlPanel from "./ControlPanel";
 import { integratePhysics, getInitialState } from "./physics";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
+import AgentCanvasRecorder from "@/components/shared/video/AgentCanvasRecorder.jsx";
+
+const CIRCULAR_AGENT_PROPERTIES = Object.freeze({
+  radius: { type: "number", minimum: 10, maximum: 200 },
+  theta0: { type: "number", minimum: -6.283185307, maximum: 6.283185307 },
+  omega0: { type: "number", minimum: -5, maximum: 5 },
+  alpha: { type: "number", minimum: -2, maximum: 2 },
+  mass: { type: "number", minimum: 0.1, maximum: 10 },
+  showVectors: { type: "boolean" },
+  showProjections: { type: "boolean" },
+  showAngle: { type: "boolean" },
+  showComponents: { type: "boolean" },
+});
 
 export default function CircularMotionSimulation() {
   const [dims, setDims] = useState({ w: 800, h: 600 });
@@ -45,6 +59,10 @@ export default function CircularMotionSimulation() {
   const [history, setHistory] = useState([]);
 
   const lastTimeRef = useRef(0);
+  const videoRef = useRef(null);
+  const agentStateRef = useRef({});
+  agentStateRef.current = { running, ...params, ...viewConfig };
+
   const rafRef = useRef(0);
 
   // Resize Observer
@@ -52,7 +70,7 @@ export default function CircularMotionSimulation() {
     if (!containerRef.current) return;
     const ro = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
-      setDims({ w: width, h: height });
+      setDims((prev) => prev.w === width && prev.h === height ? prev : { w: width, h: height });
     });
     ro.observe(containerRef.current);
     return () => ro.disconnect();
@@ -92,12 +110,50 @@ export default function CircularMotionSimulation() {
     setHistory([]);
   };
 
+  const webMcpStatus = useAgentSimulationTools({
+    simulationId: "physics.mechanics.circular-motion",
+    prefix: "esbiko_circular_motion",
+    properties: CIRCULAR_AGENT_PROPERTIES,
+    actions: {
+      getState: () => ({ simulationId: "physics.mechanics.circular-motion", ...agentStateRef.current,
+        physics: physicsRef.current, recording: videoRef.current?.getVideoStatus() || null }),
+      configure: (values) => {
+        if (agentStateRef.current.running && Object.keys(values).some((key) => key in params)) {
+          throw new Error("Pause circular motion before changing physics parameters.");
+        }
+        const physics = Object.fromEntries(Object.entries(values).filter(([key]) => key in params));
+        const display = Object.fromEntries(Object.entries(values).filter(([key]) => key in viewConfig));
+        if (Object.keys(physics).length) {
+          const next = { ...params, ...physics };
+          setParams(next);
+          const initial = getInitialState(next);
+          physicsRef.current = initial;
+          setUiState(initial);
+          setHistory([]);
+        }
+        if (Object.keys(display).length) setViewConfig((prev) => ({ ...prev, ...display }));
+        return { accepted: values };
+      },
+      setPlayback: ({ running: shouldRun }) => {
+        if (shouldRun) lastTimeRef.current = performance.now();
+        setRunning(shouldRun);
+        return { running: shouldRun };
+      },
+      reset: () => { handleReset(); return { running: false, reset: true }; },
+      startVideo: ({ mode } = {}) => videoRef.current?.startVideo({ mode }),
+      getVideoStatus: () => videoRef.current?.getVideoStatus(),
+      stopVideo: () => videoRef.current?.stopVideo(),
+      downloadVideo: () => videoRef.current?.downloadVideo(),
+    },
+  });
+
   return (
     <SimulationShell
       title="Circular Motion"
       subtitle="Projections & Vectors"
       topOffset="0px"
       panelTop={
+        <div className="space-y-2">
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => {
@@ -119,6 +175,9 @@ export default function CircularMotionSimulation() {
             RESET
           </button>
         </div>
+        <AgentCanvasRecorder ref={videoRef} canvasSelector=".circular-record-canvas" filePrefix="esbiko-circular-motion" />
+        <p className="text-xs text-cyan-200" aria-live="polite">WebMCP: {webMcpStatus}</p>
+        </div>
       }
       panel={
         <ControlPanel
@@ -132,14 +191,15 @@ export default function CircularMotionSimulation() {
     >
       <div
         ref={containerRef}
-        className="w-full h-full relative overflow-hidden bg-[#050510]"
+        className="w-full h-full relative overflow-hidden bg-[#050510] flex flex-col"
       >
         {initialMcp.embeddedMcpApp && (
           <div className="absolute left-4 top-4 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200 backdrop-blur">
             MCP configured · r={params.radius}m · ω₀={params.omega0} rad/s · α={params.alpha} rad/s² · m={params.mass}kg
           </div>
         )}
-        <SimulationHUD live={uiState} />
+        <div className="relative z-10 shrink-0 p-2"><SimulationHUD live={uiState} /></div>
+        <div className="min-h-0 flex-1 relative">
         <SimulationCanvas
           width={dims.w}
           height={dims.h}
@@ -147,6 +207,7 @@ export default function CircularMotionSimulation() {
           radius={params.radius}
           config={viewConfig}
         />
+        </div>
       </div>
     </SimulationShell>
   );
