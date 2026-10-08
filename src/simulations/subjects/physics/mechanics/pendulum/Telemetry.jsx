@@ -65,7 +65,7 @@ const Telemetry = forwardRef((props, ref) => {
   }));
 
   return (
-    <div className="absolute top-6 right-6 w-80 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-5 shadow-2xl pointer-events-none select-none">
+    <div className="relative mx-3 mt-3 w-auto bg-slate-900/95 border border-white/10 rounded-xl p-4 shadow-xl pointer-events-none select-none">
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 to-purple-500 opacity-70" />
 
       <div className="flex items-center gap-2 mb-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
