@@ -492,10 +492,10 @@ export const simulationAgentManifest = Object.freeze({
 
   "astronomy.space.solar-system": Object.freeze({
     adapterVersion: "solar-system-adapter.v1",
-    actions: ["open", "configure", "readState", "play", "pause", "reset"],
-    tools: ["open_science_simulation"],
-    video: false,
-    exportable: false,
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
+    tools: ["open_science_simulation", "prepare_solar_system_video"],
+    video: true,
+    exportable: true,
     parameterSchema: {
       type: "object",
       properties: {
