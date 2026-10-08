@@ -149,12 +149,13 @@ export default function CircularMotionSimulation() {
 
   return (
     <SimulationShell
-      title="Circular Motion"
-      subtitle="Projections & Vectors"
+      title={null}
+      subtitle={null}
       topOffset="0px"
       mobileStack
       panelTop={
         <div className="space-y-2">
+        <div><h2 className="font-bold text-white">Circular Motion</h2><p className="text-xs text-white/60">Projections &amp; Vectors</p></div>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => {
