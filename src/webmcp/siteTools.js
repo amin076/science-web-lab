@@ -2,6 +2,14 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.waves.multi-source-interference",
+    name: "Multi-Source Interference",
+    topic: "Superposition, traveling water waves and cinematic interference patterns",
+    description: "Configure every source, source motion, water rendering, simulation and WebM recording through the visible shared wave engine.",
+    route: "/experiments/physics.waves.multi-source-interference/run",
+    capabilities: ["state-read", "source-create", "source-update", "source-delete", "configure", "playback", "reset", "water-art", "video-recording", "video-status", "video-download"],
+  }),
+  Object.freeze({
     id: "astronomy.space.earth-orbit-lab",
     name: "3D Orbit Lab",
     topic: "Satellites, telescopes, orbital mechanics",
