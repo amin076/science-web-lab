@@ -518,7 +518,7 @@ export const simulationAgentManifest = Object.freeze({
     },
     stateSchema: {
       type: "object",
-      required: ["running", "speed", "scaleMode", "focusTarget"],
+      required: ["running", "speed", "scaleMode", "focusTarget", "isTouring"],
       properties: {
         running: { type: "boolean" },
         speed: { type: "number" },
@@ -529,6 +529,8 @@ export const simulationAgentManifest = Object.freeze({
         showAxis: { type: "boolean" },
         showStars: { type: "boolean" },
         showLabels: { type: "boolean" },
+        isTouring: { type: "boolean" },
+        video: { type: "object" },
       },
     },
   }),
