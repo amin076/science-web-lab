@@ -282,7 +282,8 @@ export default function MultiWaveSimulation() {
 
   const onClipReady = (mode, clip) => {
     lastClipRef.current = { mode, fileName: clip.fileName, bytes: clip.blob.size, part: clip.part };
-    setLiveVideoStatus({ state: "ready", mode, fileName: clip.fileName,
+    const segmentActive = (mode === "shorts" ? shortsRecorderRef : landscapeRecorderRef).current?.isRecording?.();
+    setLiveVideoStatus({ state: segmentActive ? "recording" : "ready", mode, fileName: clip.fileName,
       bytes: clip.blob.size, part: clip.part, downloadReady: true,
       elapsedSeconds: Math.min(recordingDurationRef.current, (performance.now() - recordingStartRef.current) / 1000),
       error: null });
@@ -606,14 +607,12 @@ export default function MultiWaveSimulation() {
           outputMode="landscape"
           fileName={`esbiko-water-engine-landscape-${Date.now()}.webm`}
           fps={recordingFps}
-          videoBitsPerSecond={90000000}
+          videoBitsPerSecond={12000000}
           codecMode="realtime-quality"
           segmentDurationSeconds={60}
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
-          onRecordingReady={(clip) => onClipReady("shorts", clip)}
-          onRecordingError={onVideoError}
           onRecordingReady={(clip) => onClipReady("landscape", clip)}
           onRecordingError={onVideoError}
         />
@@ -623,12 +622,14 @@ export default function MultiWaveSimulation() {
           outputMode="shorts"
           fileName={`esbiko-water-engine-shorts-${Date.now()}.webm`}
           fps={recordingFps}
-          videoBitsPerSecond={75000000}
+          videoBitsPerSecond={10000000}
           codecMode="realtime-quality"
           segmentDurationSeconds={60}
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
+          onRecordingReady={(clip) => onClipReady("shorts", clip)}
+          onRecordingError={onVideoError}
         />
 
         <div aria-live="polite" data-agent-video-status={videoStatus.state} className="pointer-events-none absolute bottom-2 left-2 z-20 rounded bg-black/70 px-2 py-1 text-[10px] text-white/80">
