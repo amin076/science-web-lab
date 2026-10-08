@@ -9,10 +9,14 @@ export function useOrbitLabWebMcp(actions) {
   useEffect(() => {
     const controller = new AbortController();
     const forwarded = Object.fromEntries(
-      ["getState", "configure", "setPlayback", "focus", "addPreset", "reset"].map(
+      ["getState", "configure", "setPlayback", "focus", "addPreset", "reset", "startVideo", "getVideoStatus", "stopVideo", "downloadVideo"].map(
         (name) => [name, (...args) => actionsRef.current[name](...args)],
       ),
     );
+    if (actionsRef.current.enabled === false) {
+      setStatus(WEBMCP_REGISTRATION_STATUS.UNSUPPORTED);
+      return () => controller.abort();
+    }
     registerWebMcpTools({
       modelContext: getDocumentModelContext(),
       tools: createOrbitLabWebMcpTools(forwarded),
