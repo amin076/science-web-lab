@@ -52,6 +52,30 @@ try {
     console.log("ORBIT LAB RESPONSIVE PASS", viewport.width, viewport.height);
     await page.close();
   }
+
+  // Real in-browser WebM verification; no mocked recorder or synthetic video.
+  const videoPage = await browser.newPage({ viewport: { width: 600, height: 600 }, acceptDownloads: true });
+  const videoUrl = origin + "/experiments/astronomy.space.earth-orbit-lab/run?embed=mcp-app&mcpVideo=1&mcpVideoDurationSeconds=5&mcpVideoStoryMode=focus_target&mcpVideoAspectRatio=16%3A9";
+  const videoErrors = [];
+  videoPage.on("pageerror", (error) => videoErrors.push(String(error)));
+  await videoPage.goto(videoUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+  const videoRecord = videoPage.locator('[data-agent-action="record"]').first();
+  await videoRecord.waitFor({ state: "visible", timeout: 30000 });
+  await videoPage.waitForTimeout(1500);
+  await videoRecord.click();
+  const videoDownload = videoPage.locator('[data-agent-action="download-video"]').first();
+  await videoDownload.waitFor({ state: "visible", timeout: 30000 });
+  const downloadPromise = videoPage.waitForEvent("download", { timeout: 15000 });
+  await videoDownload.click();
+  const download = await downloadPromise;
+  const videoPath = path.join(outDir, "orbit-lab-test.webm");
+  await download.saveAs(videoPath);
+  assert(fs.statSync(videoPath).size > 1000, "Orbit Lab video file is empty");
+  assert(download.suggestedFilename().endsWith(".webm"), "Expected a .webm file");
+  assert.equal(videoErrors.length, 0, videoErrors.join("\\n"));
+  await videoPage.screenshot({ path: path.join(outDir, "orbit-video-ready.png"), fullPage: true });
+  await videoPage.close();
+  console.log("ORBIT LAB REAL WEBM RECORDING PASS");
 } finally {
   await browser.close();
 }
