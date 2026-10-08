@@ -58,4 +58,21 @@ jobs:
           exit 1
 
       - name: Test responsive embedded Gyroscope
-        run: npm run test:gyroscope-responsive
+        id: responsive_test
+        shell: bash
+        run: |
+          set +e
+          npm run test:gyroscope-responsive 2>&1 | tee gyroscope-responsive.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=${code}" >> "${GITHUB_OUTPUT}"
+          exit "${code}"
+
+      - name: Upload Gyroscope visual diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gyroscope-v2-responsive-artifacts
+          path: |
+            artifacts/gyroscope-v2/*.png
+            gyroscope-responsive.log
+          if-no-files-found: warn
