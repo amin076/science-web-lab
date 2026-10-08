@@ -1386,6 +1386,9 @@ export default function SolarSystemSimulator() {
 
             {/* Right */}
             <button
+              type="button"
+              aria-label={isTouring ? "Stop cinematic tour" : "Start cinematic tour"}
+              data-agent-action={isTouring ? "stop-tour" : "start-tour"}
               onClick={handleToggleTour}
               className={`rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 active:scale-95 ${
                 isMobile ? "px-3 py-2 text-xs" : "px-5 py-2 text-sm"
@@ -1407,6 +1410,9 @@ export default function SolarSystemSimulator() {
             {/* Mobile: open controls */}
             {isMobile && (
               <button
+                type="button"
+                aria-label="Open Solar System controls"
+                data-agent-action="open-controls"
                 onClick={() => setControlsOpen(true)}
                 className="ml-1 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
                 title="Open controls"
@@ -1474,6 +1480,9 @@ export default function SolarSystemSimulator() {
                   </span>
                 </div>
                 <button
+                  type="button"
+                  aria-label="Close Solar System controls"
+                  data-agent-action="close-controls"
                   onClick={() => setControlsOpen(false)}
                   className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 border border-white/15 text-white text-xs font-semibold active:scale-95"
                 >
