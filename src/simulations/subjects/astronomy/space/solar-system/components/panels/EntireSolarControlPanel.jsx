@@ -261,6 +261,11 @@ const EntireSolarControlPanel = ({
               return (
                 <button
                   key={item.id}
+                  type="button"
+                  aria-label={`Focus on ${item.id}`}
+                  aria-pressed={active}
+                  data-agent-param="focusTarget"
+                  data-agent-value={item.id}
                   onClick={() => setFocusTarget(item.id)}
                   className={`rounded-lg border px-2 py-2 text-xs font-medium transition-all ${
                     active
@@ -286,6 +291,9 @@ const EntireSolarControlPanel = ({
       >
         <div className="flex flex-col gap-3">
           <button
+            type="button"
+            aria-label="Open 3D planet size comparison"
+            data-agent-action="open-size-comparison"
             onClick={() => setShowComparison3D(true)}
             className="p-2 rounded text-sm bg-white/10 text-gray-200 hover:bg-white/20 transition-all"
           >
@@ -293,6 +301,9 @@ const EntireSolarControlPanel = ({
           </button>
 
           <button
+            type="button"
+            aria-label="Open planet and moon family comparison"
+            data-agent-action="open-planet-moon-comparison"
             onClick={() => setShowPlanetMoonComparison(true)}
             className="p-2 rounded text-sm bg-white/10 text-gray-200 hover:bg-white/20 transition-all"
           >
