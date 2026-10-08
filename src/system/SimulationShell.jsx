@@ -15,16 +15,17 @@ export default function SimulationShell({
   panelTop = null,
   panel = null,
   leftOverlay = null,
+  mobileStack = false,
   children,
 }) {
   return (
     <section
-      className="w-full min-h-0 overflow-hidden"
+      className={mobileStack ? "w-full min-h-0 overflow-y-auto xl:overflow-hidden" : "w-full min-h-0 overflow-hidden"}
       style={{ height: `calc(100dvh - ${topOffset})` }}
     >
-      <div className="h-full min-h-0 flex flex-col xl:flex-row gap-6 p-4">
+      <div className={mobileStack ? "min-h-full xl:h-full flex flex-col xl:flex-row gap-3 xl:gap-6 p-2 sm:p-4" : "h-full min-h-0 flex flex-col xl:flex-row gap-6 p-4"}>
         {/* LEFT: STAGE CARD */}
-        <div className="flex-[1.35] xl:flex-1 min-h-0 min-w-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl">
+        <div className={mobileStack ? "h-[min(65dvh,580px)] shrink-0 xl:shrink xl:h-full xl:flex-1 min-h-[300px] xl:min-h-0 min-w-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl" : "flex-[1.35] xl:flex-1 min-h-0 min-w-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden relative shadow-2xl"}>
           <div className="absolute inset-0">{children}</div>
 
           {(title || subtitle) && (
@@ -49,10 +50,10 @@ export default function SimulationShell({
 
         {/* RIGHT: PANEL (ONE UNIFIED CARD) */}
         <aside
-          className="flex-1 xl:flex-none min-h-0 min-w-0"
+          className={mobileStack ? "shrink-0 xl:shrink xl:flex-none min-h-0 min-w-0" : "flex-1 xl:flex-none min-h-0 min-w-0"}
           style={{ width: `min(100%, ${rightWidth}px)` }}
         >
-          <div className="h-full min-h-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+          <div className={mobileStack ? "h-auto xl:h-full min-h-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col" : "h-full min-h-0 bg-black/40 border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col"}>
             {/* Top (fixed) */}
             {panelTop ? (
               <div className="flex-none p-4 bg-white/5 border-b border-white/10">

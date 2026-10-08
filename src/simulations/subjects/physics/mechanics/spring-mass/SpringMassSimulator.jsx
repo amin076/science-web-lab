@@ -63,6 +63,7 @@ export default function SpringMassSimulator({ onBack }) {
   const [trail, setTrail] = useState([]);
 
   const lastTimeRef = useRef(Date.now());
+  const initialValuesRef = useRef({ displacement: initialMcpState.values.displacement, velocity: initialMcpState.values.velocity });
   const animationRef = useRef(null);
   const videoRef = useRef(null);
   const agentStateRef = useRef({});
@@ -82,12 +83,12 @@ export default function SpringMassSimulator({ onBack }) {
       const rect = el.getBoundingClientRect();
       const w = Math.max(1, Math.floor(rect.width));
       const h = Math.max(240, Math.floor(rect.height));
-      setCanvasSize({ width: w, height: h });
+      setCanvasSize((previous) => previous.width === w && previous.height === h ? previous : { width: w, height: h });
 
       // keep equilibrium line visually centered-ish
-      setSpringData((prev) => ({
+      setSpringData((prev) => prev.equilibriumY === Math.floor(h * 0.48) ? prev : ({
         ...prev,
-        equilibriumY: Math.floor(h * 0.65),
+        equilibriumY: Math.floor(h * 0.48),
       }));
     };
 
@@ -145,6 +146,7 @@ export default function SpringMassSimulator({ onBack }) {
       animationRef.current = requestAnimationFrame(animate);
     };
 
+    lastTimeRef.current = Date.now();
     animationRef.current = requestAnimationFrame(animate);
 
     return () => {
@@ -156,8 +158,9 @@ export default function SpringMassSimulator({ onBack }) {
     (ctx, { width, height }) => {
       drawSpringBackground(ctx, width, height);
 
-      const massY =
-        springData.equilibriumY + springData.displacement * METER_TO_PIXEL;
+      const scale = Math.min(METER_TO_PIXEL, Math.max(12, (height - 110) / 11));
+      const massY = Math.max(85, Math.min(height - 38,
+        springData.equilibriumY + springData.displacement * scale));
       const massX = width / 2;
 
       drawSpring(ctx, {
@@ -172,7 +175,7 @@ export default function SpringMassSimulator({ onBack }) {
       drawMass(ctx, {
         x: massX,
         y: massY,
-        radius: 30,
+        radius: Math.min(30, Math.max(16, width * 0.045)),
         mass: springData.mass,
         color: "#FF6B6B",
       });
@@ -196,22 +199,22 @@ export default function SpringMassSimulator({ onBack }) {
           velocity: springData.velocity,
           k: springData.k,
           damping,
-          meterToPixel: METER_TO_PIXEL,
+          meterToPixel: scale,
         });
       }
 
-      if (showTrails && trail.length > 1) {
+      if (showTrails && trail.length > 1 && width >= 550) {
         drawSpringTrail(ctx, {
           trail,
           startX: width - 170,
           startY: 30,
           graphWidth: 150,
           graphHeight: height - 60,
-          meterToPixel: METER_TO_PIXEL,
+          meterToPixel: scale,
         });
       }
 
-      if (showInfo) {
+      if (showInfo && width >= 550) {
         drawSpringInfo(ctx, {
           springData,
           damping,
@@ -234,8 +237,7 @@ export default function SpringMassSimulator({ onBack }) {
     setIsSimulating(false);
     setSpringData((prev) => ({
       ...prev,
-      displacement: 2,
-      velocity: 0,
+      ...initialValuesRef.current,
     }));
     setTrail([]);
     lastTimeRef.current = Date.now();
@@ -257,8 +259,16 @@ export default function SpringMassSimulator({ onBack }) {
         ...agentStateRef.current, canvas: canvasSize,
         recording: videoRef.current?.getVideoStatus() || null }),
       configure: (values) => {
+        if (agentStateRef.current.running && ("displacement" in values || "velocity" in values)) {
+          throw new Error("Pause the simulation before changing initial displacement or velocity.");
+        }
         const { damping: nextDamping, showTrails: nextTrails,
           showVectors: nextVectors, showInfo: nextInfo, ...physics } = values;
+        if ("displacement" in physics || "velocity" in physics) {
+          initialValuesRef.current = { ...initialValuesRef.current,
+            ...(physics.displacement !== undefined ? { displacement: physics.displacement } : {}),
+            ...(physics.velocity !== undefined ? { velocity: physics.velocity } : {}) };
+        }
         if (Object.keys(physics).length) {
           setSpringData((previous) => ({ ...previous, ...physics }));
         }

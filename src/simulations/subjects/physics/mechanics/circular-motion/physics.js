@@ -46,11 +46,11 @@ export const getInitialState = (params) => {
     omega: omega,
     x: params.radius * Math.cos(params.theta0),
     y: params.radius * Math.sin(params.theta0),
-    v: 0,
-    vx: 0,
-    vy: 0,
-    a: 0,
+    v: params.radius * omega,
+    vx: -params.radius * omega * Math.sin(params.theta0),
+    vy: params.radius * omega * Math.cos(params.theta0),
+    a: Math.hypot(params.radius * omega * omega, params.radius * params.alpha),
     period: Math.abs(omega) > 0.0001 ? (2 * Math.PI) / Math.abs(omega) : Infinity,
-    force: 0,
+    force: params.mass * Math.hypot(params.radius * omega * omega, params.radius * params.alpha),
   };
 };
