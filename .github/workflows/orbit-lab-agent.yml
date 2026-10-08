@@ -16,6 +16,8 @@ on:
       - "src/webmcp/**"
       - "src/platform/agent/**"
       - "scripts/test-orbit-lab-agent.mjs"
+      - "scripts/test-orbit-lab-responsive.mjs"
+      - ".github/workflows/orbit-lab-agent.yml"
   workflow_dispatch:
 
 jobs:
@@ -44,11 +46,13 @@ jobs:
             if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
             sleep 1
           done
-          node scripts/test-orbit-lab-responsive.mjs
+          node scripts/test-orbit-lab-responsive.mjs || { cat /tmp/orbit-preview.log; exit 1; }
       - name: Upload visual diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: orbit-lab-responsive
-          path: artifacts/orbit-lab-agent/*.png
+          path: |
+            artifacts/orbit-lab-agent/*.png
+            artifacts/orbit-lab-agent/*.webm
           if-no-files-found: warn
