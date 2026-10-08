@@ -14,6 +14,7 @@ import {
   Video,
 } from "lucide-react";
 import VideoRecorderControls from "@/components/shared/video/VideoRecorderControls.jsx";
+import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
 import {
   PALETTE_PRESETS,
   PATTERN_PRESETS,
@@ -23,6 +24,22 @@ import {
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
 const MAX_FRAME_DELTA_SECONDS = 1 / 60;
+
+const AMBIENT_AGENT_PARAMETERS = Object.freeze({
+  pattern: { type: "string", enum: PATTERN_PRESETS.map((item) => item.value) },
+  palette: { type: "string", enum: PALETTE_PRESETS.map((item) => item.value) },
+  speed: { type: "number", minimum: 1, maximum: 6 },
+  loopSeconds: { type: "number", minimum: 15, maximum: 180 },
+  symmetry: { type: "number", minimum: 3, maximum: 24 },
+  intensity: { type: "number", minimum: 0.1, maximum: 2 },
+  bloom: { type: "number", minimum: 0, maximum: 3 },
+  depth: { type: "number", minimum: 0, maximum: 2 },
+  complexity: { type: "number", minimum: 0, maximum: 1 },
+  rotation: { type: "number", minimum: -2, maximum: 2 },
+  drift: { type: "number", minimum: 0, maximum: 1.5 },
+  particles: { type: "number", minimum: 0, maximum: 260 },
+  backgroundGlow: { type: "number", minimum: 0, maximum: 2 },
+});
 
 const CAPTURE_GUIDES = {
   landscape: {
@@ -122,6 +139,7 @@ export default function AmbientPatternStudio() {
   const landscapeRecorderRef = useRef(null);
   const shortsRecorderRef = useRef(null);
   const recordingTimeoutRef = useRef(null);
+  const agentRecordingRef = useRef({ status: "idle", mode: null, lastReadyMode: null, file: null, error: null });
 
   const [isPlaying, setIsPlaying] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
@@ -147,6 +165,8 @@ export default function AmbientPatternStudio() {
     backgroundGlow: 0.95,
   });
   const settingsRef = useRef(settings);
+  const liveStateRef = useRef({});
+  liveStateRef.current = { ...settings, running: isPlaying, recordingSeconds, recordingFps, captureGuide };
 
   useEffect(() => {
     settingsRef.current = settings;
@@ -165,20 +185,35 @@ export default function AmbientPatternStudio() {
 
   const stopRecording = useCallback(() => {
     clearRecordingTimer();
-    landscapeRecorderRef.current?.stopRecording?.();
-    shortsRecorderRef.current?.stopRecording?.();
+    const stopped = landscapeRecorderRef.current?.stopRecording?.() ||
+      shortsRecorderRef.current?.stopRecording?.();
+    if (stopped) agentRecordingRef.current = { ...agentRecordingRef.current, status: "processing" };
+    return Boolean(stopped);
   }, [clearRecordingTimer]);
+
+  const onRecorderReady = (mode) => ({ blob, fileName }) => {
+    agentRecordingRef.current = {
+      status: "ready", mode: null, lastReadyMode: mode,
+      file: { fileName, bytes: blob.size }, error: null,
+    };
+  };
+  const onRecorderError = ({ code, message }) => {
+    agentRecordingRef.current = {
+      ...agentRecordingRef.current, status: "failed", error: { code, message },
+    };
+  };
 
   const startRecording = useCallback(
     (mode) => {
-      if (isRecording) return;
+      if (isRecording || agentRecordingRef.current.status === "recording" || agentRecordingRef.current.status === "processing") return false;
 
       setCaptureGuide(mode);
       const recorder =
         mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
       const started = recorder?.startRecording?.();
 
-      if (!started) return;
+      if (!started) return false;
+      agentRecordingRef.current = { ...agentRecordingRef.current, status: "recording", mode, error: null };
 
       const durationMs = Math.max(0, recordingSeconds) * 1000;
       if (durationMs > 0) {
@@ -188,6 +223,7 @@ export default function AmbientPatternStudio() {
           recordingTimeoutRef.current = null;
         }, durationMs);
       }
+      return true;
     },
     [clearRecordingTimer, isRecording, recordingSeconds],
   );
@@ -316,9 +352,53 @@ export default function AmbientPatternStudio() {
 
   useEffect(() => () => clearRecordingTimer(), [clearRecordingTimer]);
 
+  const webMcpStatus = useAgentSimulationTools({
+    simulationId: "creative.patterns.ambient-pattern-studio",
+    prefix: "esbiko_ambient_pattern",
+    properties: AMBIENT_AGENT_PARAMETERS,
+    actions: {
+      getState: () => ({
+        simulationId: "creative.patterns.ambient-pattern-studio",
+        ...liveStateRef.current,
+        elapsedSeconds: elapsedRef.current,
+        recording: agentRecordingRef.current,
+      }),
+      configure: (values) => {
+        setSettings((current) => ({ ...current, ...values }));
+        return { accepted: values };
+      },
+      setPlayback: ({ running }) => {
+        setIsPlaying(running);
+        return { running };
+      },
+      reset: () => {
+        setIsPlaying(false);
+        resetTime();
+        return { running: false, reset: true };
+      },
+      startVideo: ({ mode = "landscape" } = {}) => {
+        if (!["landscape", "shorts"].includes(mode)) throw new Error("Invalid recording mode.");
+        if (!startRecording(mode)) throw new Error("Recording could not start.");
+        return { status: "recording", mode, audioIncluded: false };
+      },
+      stopVideo: () => {
+        if (!stopRecording()) throw new Error("No recording to stop.");
+        return { status: "processing" };
+      },
+      getVideoStatus: () => ({ ...agentRecordingRef.current, audioIncluded: false }),
+      downloadVideo: () => {
+        const ref = agentRecordingRef.current.lastReadyMode === "shorts"
+          ? shortsRecorderRef.current : landscapeRecorderRef.current;
+        const file = ref?.downloadLastRecording?.();
+        if (!file) throw new Error("No finished video is available.");
+        return file;
+      },
+    },
+  });
+
   return (
-    <div className="flex h-full w-full overflow-hidden bg-black text-white">
-      <div ref={containerRef} className="relative flex-1 bg-black">
+    <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto overflow-x-hidden bg-black text-white lg:flex-row lg:overflow-hidden">
+      <div ref={containerRef} className="relative aspect-video min-h-[210px] w-full shrink-0 bg-black lg:aspect-auto lg:min-h-0 lg:w-auto lg:flex-1">
         <canvas
           id="ambient-pattern-recording-canvas"
           ref={canvasRef}
@@ -339,6 +419,8 @@ export default function AmbientPatternStudio() {
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
+          onRecordingReady={onRecorderReady("landscape")}
+          onRecordingError={onRecorderError}
         />
         <VideoRecorderControls
           ref={shortsRecorderRef}
@@ -352,6 +434,8 @@ export default function AmbientPatternStudio() {
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
+          onRecordingReady={onRecorderReady("shorts")}
+          onRecordingError={onRecorderError}
         />
 
         <CaptureGuide
@@ -361,7 +445,7 @@ export default function AmbientPatternStudio() {
         />
       </div>
 
-      <aside className="h-full w-[390px] shrink-0 overflow-y-auto border-l border-white/10 bg-slate-950/88 p-4 shadow-[-24px_0_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+      <aside className="h-auto w-full min-w-0 shrink-0 overflow-visible border-t border-white/10 bg-slate-950/88 p-4 backdrop-blur-2xl lg:h-full lg:w-[390px] lg:overflow-y-auto lg:border-l lg:border-t-0 lg:shadow-[-24px_0_80px_rgba(0,0,0,0.45)]">
         <div className="mb-4 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.18)]">
             <Sparkles size={23} />
@@ -369,6 +453,7 @@ export default function AmbientPatternStudio() {
           <div>
             <h2 className="text-lg font-black leading-tight">Ambient Pattern</h2>
             <p className="text-xs text-white/55">Seamless video background studio</p>
+            <p className="text-xs text-cyan-200" aria-live="polite">WebMCP: {webMcpStatus}</p>
           </div>
         </div>
 

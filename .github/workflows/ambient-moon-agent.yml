@@ -1,0 +1,63 @@
+name: Ambient and Moon Agent Ready
+
+on:
+  pull_request:
+    paths:
+      - "src/simulations/subjects/creative/patterns/ambient-pattern-studio/**"
+      - "src/simulations/subjects/challenges/moon-lander/**"
+      - "src/webmcp/**"
+      - "src/platform/agent/**"
+      - "src/components/shared/video/**"
+      - "scripts/test-ambient-moon-agent-browser.mjs"
+      - ".github/workflows/ambient-moon-agent.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/simulations/subjects/creative/patterns/ambient-pattern-studio/**"
+      - "src/simulations/subjects/challenges/moon-lander/**"
+      - "src/webmcp/**"
+      - "src/platform/agent/**"
+      - "scripts/test-ambient-moon-agent-browser.mjs"
+      - ".github/workflows/ambient-moon-agent.yml"
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/test-simulation-agent-contract.mjs
+      - run: node scripts/test-webmcp.mjs
+      - run: npm run build
+      - name: Install Chromium for real responsive and WebM checks
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test two simulations at four screen sizes and record two video formats
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/esbiko-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-ambient-moon-agent-browser.mjs || { cat /tmp/esbiko-preview.log; exit 1; }
+      - name: Upload screenshots and recorded videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ambient-moon-browser-evidence
+          path: artifacts/ambient-moon-agent/*
+          if-no-files-found: warn

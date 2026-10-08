@@ -19,6 +19,7 @@ export default function MoonScene({ state, input }) {
 
   return (
     <div
+      data-esbiko-moon-stage
       style={{
         position: "absolute",
         inset: 0,
