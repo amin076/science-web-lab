@@ -122,6 +122,29 @@ try {
     assert.equal(status.ok, true);
     assert.equal(status.data.status, "ready", JSON.stringify(status));
     assert.equal(status.data.audioIncluded, false);
+
+    // Verify agent-driven recording, not just the manual buttons, and the 9:16 preset.
+    const shortsDownloadPromise = page.waitForEvent("download", { timeout: 12000 });
+    const shortsStart = await call(page, lab.prefix + "_start_video", { mode: "shorts" });
+    assert.equal(shortsStart.ok, true, "WebMCP vertical video did not start: " + JSON.stringify(shortsStart));
+    assert.equal(shortsStart.data.mode, "shorts");
+    await page.waitForTimeout(2200);
+    const shortsStop = await call(page, lab.prefix + "_stop_video");
+    assert.equal(shortsStop.ok, true, "WebMCP vertical video did not stop: " + JSON.stringify(shortsStop));
+    const shortsDownload = await shortsDownloadPromise;
+    const shortsPath = path.join(output, lab.prefix + "-shorts.webm");
+    await shortsDownload.saveAs(shortsPath);
+    assert(fs.statSync(shortsPath).size > 1000, "Agent-started 9:16 WebM was empty");
+    const shortsStatus = await call(page, lab.prefix + "_video_status");
+    assert.equal(shortsStatus.ok, true);
+    assert.equal(shortsStatus.data.status, "ready", JSON.stringify(shortsStatus));
+    assert.equal(shortsStatus.data.lastReadyMode, "shorts");
+
+    const agentDownloadPromise = page.waitForEvent("download", { timeout: 12000 });
+    const downloadedByAgent = await call(page, lab.prefix + "_download_video");
+    assert.equal(downloadedByAgent.ok, true, "WebMCP download did not work");
+    const agentDownload = await agentDownloadPromise;
+    assert(agentDownload.suggestedFilename().endsWith(".webm"));
     assert.equal(errors.length, 0, "Video browser errors: " + errors.join("\n"));
     await page.close();
     console.log("MECHANICS REAL WEBM PASS", lab.id, fs.statSync(saved).size);
