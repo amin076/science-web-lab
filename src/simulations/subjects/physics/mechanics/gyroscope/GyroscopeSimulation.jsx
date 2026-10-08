@@ -199,11 +199,17 @@ const PhysicsHud = React.memo(({ state }) => (
     data-gyroscope-hud="true"
   >
     <Metric label="Spin ω" value={state.omega} unit="rad/s" />
-    <Metric label="Momentum L" value={state.L} unit="kg·m²/s" accent="text-sky-300" />
-    <Metric label="Torque τ" value={state.tau} unit="N·m" accent="text-rose-300" />
     <Metric label="Tilt θ" value={state.tilt} unit="°" accent="text-cyan-300" />
     <Metric label="Precession Ω" value={state.Omega} unit="rad/s" accent="text-amber-300" />
-    <Metric label="Time" value={state.t} unit="s" />
+    <div className="hidden sm:block">
+      <Metric label="Momentum L" value={state.L} unit="kg·m²/s" accent="text-sky-300" />
+    </div>
+    <div className="hidden sm:block">
+      <Metric label="Torque τ" value={state.tau} unit="N·m" accent="text-rose-300" />
+    </div>
+    <div className="hidden sm:block">
+      <Metric label="Time" value={state.t} unit="s" />
+    </div>
   </div>
 ));
 
