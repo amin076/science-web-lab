@@ -101,6 +101,10 @@ try {
     await page.getByRole("button", { name: "Record 16:9" }).click();
     await page.waitForTimeout(2200);
     await page.getByRole("button", { name: "Stop", exact: true }).click();
+    await page.waitForTimeout(900);
+    const earlyState = await call(page, lab.prefix + "_video_status");
+    console.log("MECHANICS VIDEO STATUS AFTER STOP", lab.id, JSON.stringify(earlyState));
+    if (earlyState.data?.status === "failed") throw new Error("Media recorder failed: " + JSON.stringify(earlyState));
     const download = await downloadPromise;
     const saved = path.join(output, lab.prefix + "-webm.webm");
     await download.saveAs(saved);
