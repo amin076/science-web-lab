@@ -152,6 +152,7 @@ export default function CircularMotionSimulation() {
       title="Circular Motion"
       subtitle="Projections & Vectors"
       topOffset="0px"
+      mobileStack
       panelTop={
         <div className="space-y-2">
         <div className="grid grid-cols-2 gap-3">
