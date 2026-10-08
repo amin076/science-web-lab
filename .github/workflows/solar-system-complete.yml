@@ -1,0 +1,80 @@
+name: Solar System Complete Test
+
+on:
+  pull_request:
+    paths:
+      - "src/simulations/subjects/astronomy/space/solar-system/**"
+      - "src/webmcp/**"
+      - "src/platform/agent/**"
+      - "functions/mcp/**"
+      - "scripts/test-solar-system-complete.mjs"
+      - ".github/workflows/solar-system-complete.yml"
+      - "package.json"
+      - "package-lock.json"
+  workflow_dispatch:
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Build Esbiko
+        run: npm run build
+
+      - name: Start preview server
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/esbiko-preview.log 2>&1 &
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/esbiko-preview.log
+          exit 1
+
+      - name: Verify Solar System responsive UX and WebM recording
+        id: solar_test
+        shell: bash
+        run: |
+          set +e
+          node scripts/test-solar-system-complete.mjs 2>&1 | tee solar-system-complete.log
+          code=${PIPESTATUS[0]}
+          echo "exit_code=${code}" >> "${GITHUB_OUTPUT}"
+          exit "${code}"
+
+      - name: Upload Solar System visual diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solar-system-complete-artifacts
+          path: |
+            artifacts/solar-system-complete/*.png
+            solar-system-complete.log
+          if-no-files-found: warn
