@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import SimulationCanvas from "./SimulationCanvas";
 import ControlPanel from "./ControlPanel";
+import LiveHUD from "./LiveHUD";
 import {
   calculateStats,
   calculateSystem,
@@ -259,15 +260,18 @@ const PhysicsCollision = () => {
   }, []);
 
   return (
-    <div className="relative flex h-screen w-screen bg-[#050508] text-white overflow-hidden p-4 gap-4">
+    <div className="w-full h-full min-h-0 overflow-y-auto xl:overflow-hidden bg-[#050508] text-white p-2 sm:p-4">
+      <div className="w-full min-w-0 flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(320px,400px)] xl:h-full gap-3 xl:gap-4">
       {initialMcp.embeddedMcpApp && (
-        <div className="absolute left-6 top-6 z-30 rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
+        <div className="xl:col-span-2 order-first rounded-lg border border-cyan-400/30 bg-slate-950/80 px-3 py-2 text-xs text-cyan-200">
           MCP configured · e={uiState.restitution.toFixed(2)} · speed={uiState.timeScale.toFixed(1)} · m₁={uiState.p1.mass}kg · m₂={uiState.p2.mass}kg
         </div>
       )}
-      {/* Pass Live Data (Box 3) to Canvas */}
-      <SimulationCanvas physicsState={physicsState} liveData={uiState} />
+      <div data-esbiko-collision-stage className="order-first xl:order-none relative w-full min-w-0 h-[min(56dvh,500px)] min-h-[280px] xl:h-full xl:min-h-0 rounded-2xl overflow-hidden border border-white/10">
+        <SimulationCanvas physicsState={physicsState} />
+      </div>
 
+      <section className="w-full min-w-0 xl:min-h-0 flex flex-col gap-3">
       <ControlPanel
         uiState={uiState}
         setUiState={setUiState}
@@ -276,6 +280,9 @@ const PhysicsCollision = () => {
         collisionReport={collisionReport} // Box 2
         onReset={handleReset}
       />
+      <LiveHUD data={uiState} />
+      </section>
+      </div>
     </div>
   );
 };
