@@ -20,13 +20,14 @@ export function createServer() {
   const server = new McpServer(
     {
       name: "esbiko-mcp",
-      version: "0.4.0",
+      version: "0.5.0",
     },
     {
       instructions:
         "Use list_science_simulations to discover Esbiko simulations. " +
         "Use open_science_simulation to open any Esbiko simulation in the universal MCP App shell. " +
         "Use run_doppler_experiment for Doppler-effect calculations. " +
+        "Use prepare_solar_system_video when the user asks for a Solar System recording, cinematic tour video, or downloadable WebM. " +
         "Use prepare_doppler_video when the user asks for a Doppler video, animation recording, or downloadable WebM. " +
         "explain the returned scientific result to the user. " +
         "The Doppler tool has an attached interactive MCP App UI. " +
@@ -187,6 +188,97 @@ export function createServer() {
             text:
               `Opened ${simulation.name} in Esbiko's interactive MCP App shell. ` +
               `Integration level: ${simulation.integrationLevel}.`,
+          },
+        ],
+      };
+    },
+  );
+
+  server.registerTool(
+    "prepare_solar_system_video",
+    {
+      title: "Prepare Solar System video",
+      description:
+        "Prepare Esbiko's interactive 3D Solar System and browser WebM Video Studio. " +
+        "ChatGPT can configure speed, scale, focus, visual overlays, aspect ratio, and either a cinematic tour or a focused-target recording. " +
+        "The attached MCP App asks for one direct user click before recording starts so browser media behavior remains explicit.",
+      inputSchema: z.object({
+        storyMode: z.enum(["focus_target", "cinematic_tour"]).default("cinematic_tour"),
+        durationSeconds: z.number().min(5).max(60).default(20),
+        aspectRatio: z.enum(["16:9", "9:16"]).default("16:9"),
+        speed: z.number().min(0.25).max(30).default(5),
+        scaleMode: z.enum(["educational", "semiRealistic", "realistic"]).default("educational"),
+        focusTarget: z.enum([
+          "system",
+          "sun",
+          "mercury",
+          "venus",
+          "earth",
+          "moon",
+          "mars",
+          "jupiter",
+          "saturn",
+          "uranus",
+          "neptune",
+        ]).default("earth"),
+        showTrails: z.boolean().default(true),
+        showOrbits: z.boolean().default(true),
+        showAxis: z.boolean().default(false),
+        showStars: z.boolean().default(true),
+        showLabels: z.boolean().default(true),
+      }).strict(),
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        openWorldHint: false,
+      },
+      _meta: {
+        ui: {resourceUri: GENERIC_SIMULATION_WIDGET_URI},
+        "openai/outputTemplate": GENERIC_SIMULATION_WIDGET_URI,
+        "openai/toolInvocation/invoking": "Preparing Esbiko Solar System Video Studio…",
+        "openai/toolInvocation/invoked": "Solar System Video Studio ready.",
+      },
+    },
+    async (args) => {
+      const simulationId = "astronomy.space.solar-system";
+      const simulation = requireSimulationProfile(simulationId);
+      const parameters = validateSimulationParameters(simulationId, {
+        speed: args.speed,
+        scaleMode: args.scaleMode,
+        focusTarget: args.focusTarget,
+        showTrails: args.showTrails,
+        showOrbits: args.showOrbits,
+        showAxis: args.showAxis,
+        showStars: args.showStars,
+        showLabels: args.showLabels,
+      });
+
+      return {
+        structuredContent: {
+          simulation,
+          parameters,
+          mode: "video",
+          requiresUserGesture: true,
+          videoRequest: {
+            storyMode: args.storyMode,
+            durationSeconds: args.durationSeconds,
+            aspectRatio: args.aspectRatio,
+          },
+          launchQuery: {
+            mcpVideo: "1",
+            mcpVideoStoryMode: args.storyMode,
+            mcpVideoDurationSeconds: args.durationSeconds,
+            mcpVideoAspectRatio: args.aspectRatio,
+          },
+          interpretation:
+            "The Solar System Video Studio is prepared with the requested scene. Click Record once in the interactive Esbiko app to begin browser WebM capture.",
+        },
+        content: [
+          {
+            type: "text",
+            text:
+              `Prepared a ${args.durationSeconds}-second Esbiko Solar System ${args.storyMode === "cinematic_tour" ? "cinematic tour" : "focused"} video in ${args.aspectRatio}. ` +
+              "Open the attached interactive app and click Record once to start browser capture.",
           },
         ],
       };
