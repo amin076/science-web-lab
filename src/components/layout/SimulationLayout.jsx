@@ -40,6 +40,10 @@ export default function SimulationLayout({
   onBack,
   hideBackButton = false,
 }) {
+  const embeddedMcpApp =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("embed") === "mcp-app";
+
   // Lock page scroll while simulation overlay is mounted
   useEffect(() => {
     lockScroll();
@@ -59,7 +63,7 @@ export default function SimulationLayout({
       data-esbiko-simulation-layout="true"
       sx={simulationShellSx}
     >
-      <OrientationNotice />
+      {!embeddedMcpApp && <OrientationNotice />}
       {!hideBackButton && (
         <MobileFloatingButton
           label="Back to Lab"
