@@ -44,10 +44,10 @@ export const simulationAgentManifest = Object.freeze({
 
   "physics.mechanics.simple-pendulum": Object.freeze({
     adapterVersion: "pendulum-adapter.v1",
-    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
     tools: ["open_science_simulation"],
-    video: false,
-    exportable: false,
+    video: true,
+    exportable: true,
     parameterSchema: {
       type: "object",
       properties: {
@@ -73,10 +73,10 @@ export const simulationAgentManifest = Object.freeze({
 
   "physics.mechanics.spring-mass": Object.freeze({
     adapterVersion: "spring-mass-adapter.v1",
-    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    actions: ["open", "configure", "readState", "play", "pause", "reset", "record", "export"],
     tools: ["open_science_simulation"],
-    video: false,
-    exportable: false,
+    video: true,
+    exportable: true,
     parameterSchema: {
       type: "object",
       properties: {
