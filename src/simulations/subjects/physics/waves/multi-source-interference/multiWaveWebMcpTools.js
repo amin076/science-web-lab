@@ -31,7 +31,7 @@ const configurationFields = Object.freeze({
   damping: number(0, 0.1), ...visualFields,
 });
 const videoFields = Object.freeze({
-  durationSeconds: number(5, 600), fps: option([30, 60]),
+  durationSeconds: number(5, 600), fps: { type: "number", enum: [30, 60], minimum: 30, maximum: 60 },
   aspectRatio: option(["16:9", "9:16"]),
 });
 
@@ -60,7 +60,7 @@ export function validateWavePatch(input, fields, { required = [], allowEmpty = f
     if (rule.type === "boolean" && typeof value !== "boolean") {
       fail("INVALID_PARAMETER", key + " must be boolean.");
     }
-    if (rule.type === "string" && !rule.enum.includes(value)) {
+    if (Array.isArray(rule.enum) && !rule.enum.includes(value)) {
       fail("INVALID_PARAMETER", key + " must be one of " + rule.enum.join(", "));
     }
   }
