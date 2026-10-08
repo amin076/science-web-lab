@@ -236,6 +236,7 @@ const PhysicsCollision = () => {
   };
 
   useEffect(() => {
+    let rafId;
     const loop = (t) => {
       if (!lastTimeRef.current) lastTimeRef.current = t;
       const dt = Math.min((t - lastTimeRef.current) / 1000, MAX_DT);
@@ -254,11 +255,11 @@ const PhysicsCollision = () => {
           ),
         }));
       }
-      requestAnimationFrame(loop);
+      rafId = requestAnimationFrame(loop);
     };
-    const frame = requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
     return () => {
-      cancelAnimationFrame(frame);
+      cancelAnimationFrame(rafId);
       physicsState.current.isRunning = false;
     };
   }, []);
