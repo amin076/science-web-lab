@@ -151,11 +151,7 @@ export default function ArchimedesSimulation() {
     <div className="w-full h-full min-h-0 min-w-0 overflow-y-auto xl:overflow-hidden bg-slate-950 text-white p-2 sm:p-3">
       <div className="flex min-h-full min-w-0 flex-col gap-3 xl:grid xl:h-full xl:min-h-0 xl:grid-cols-[minmax(250px,300px)_minmax(0,1fr)_minmax(280px,340px)] xl:grid-rows-[minmax(0,1fr)]">
       <style>{scrollbarStyle}</style>
-      {initialMcp.embeddedMcpApp && (
-        <div className="order-2 xl:col-start-1 xl:row-start-1 xl:self-end xl:mb-2 xl:mx-2 rounded-lg border border-cyan-400/30 bg-slate-950 px-3 py-2 text-xs text-cyan-200 break-words">
-          MCP configured · object={objDensity}kg/m³ · fluid={fluidDensity}kg/m³ · shape={shape}
-        </div>
-      )}
+
 
       {/* Analysis is below the stage on compact devices and beside it on desktops. */}
       <div className="order-2 xl:order-none xl:col-start-1 xl:row-start-1 w-full min-w-0 xl:min-h-0 flex flex-col">
@@ -305,6 +301,11 @@ export default function ArchimedesSimulation() {
 
       {/* Controls always follow the stage and analysis in narrow viewports. */}
       <div className="order-3 xl:order-none xl:col-start-3 xl:row-start-1 min-w-0 xl:min-h-0 xl:overflow-y-auto">
+      {initialMcp.embeddedMcpApp && (
+        <div className="mb-3 rounded-lg border border-cyan-400/30 bg-slate-950 px-3 py-2 text-xs text-cyan-200 break-words">
+          MCP configured · object={objDensity}kg/m³ · fluid={fluidDensity}kg/m³ · shape={shape}
+        </div>
+      )}
       <Controls
         isPlaying={isPlaying}
         onTogglePlay={() => setIsPlaying(!isPlaying)}
