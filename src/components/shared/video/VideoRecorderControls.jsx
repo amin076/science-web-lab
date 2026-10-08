@@ -126,11 +126,13 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
     showButton = true,
     onRecordingChange,
     onRecordingReady,
+    onRecordingError,
   },
   ref,
 ) {
   const recorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const latestRecordingRef = useRef(null);
   const frameTimerRef = useRef(null);
   const segmentTimerRef = useRef(null);
   const streamRef = useRef(null);
@@ -153,6 +155,7 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
     const sourceCanvas = document.querySelector(canvasSelector);
 
     if (!sourceCanvas) {
+      onRecordingError?.({ code: "CANVAS_NOT_FOUND", message: `Canvas not found: ${canvasSelector}` });
       alert(`Canvas not found: ${canvasSelector}`);
       return false;
     }
@@ -280,6 +283,10 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
         videoBitsPerSecond,
       });
 
+      recorder.onerror = (event) => {
+        onRecordingError?.({ code: "MEDIA_RECORDER_ERROR", message: event?.error?.message || "MediaRecorder failed." });
+      };
+
       recorder.ondataavailable = (event) => {
         if (event.data && event.data.size > 0) {
           chunksRef.current.push(event.data);
@@ -304,8 +311,11 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
         }
 
         const saveCurrentBlob = async () => {
-          if (blob.size <= 0) return;
-
+          if (blob.size <= 0) {
+            onRecordingError?.({ code: "EMPTY_VIDEO", message: "The recorded WebM was empty." });
+            return;
+          }
+          latestRecordingRef.current = { blob, fileName: outputName, part };
           const result = await saveBlob(blob, outputName, saveDirectoryHandle);
           onRecordingReady?.({
             blob,
@@ -354,10 +364,22 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
     return true;
   };
 
+  const downloadLastRecording = () => {
+    const completed = latestRecordingRef.current;
+    if (!completed) return null;
+    downloadBlob(completed.blob, completed.fileName);
+    return { fileName: completed.fileName, bytes: completed.blob.size, part: completed.part };
+  };
+
   useImperativeHandle(ref, () => ({
     startRecording,
     stopRecording,
     isRecording: () => Boolean(recorderRef.current),
+    getLastRecording: () => {
+      const value = latestRecordingRef.current;
+      return value ? { fileName: value.fileName, bytes: value.blob.size, part: value.part } : null;
+    },
+    downloadLastRecording,
   }));
 
   if (!showButton) return null;

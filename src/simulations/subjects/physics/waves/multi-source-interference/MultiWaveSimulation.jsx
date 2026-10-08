@@ -2,6 +2,9 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import VideoRecorderControls from "@/components/shared/video/VideoRecorderControls.jsx";
 import MultiWaveControls from "./MultiWaveControls";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { useMultiWaveWebMcp } from "./hooks/useMultiWaveWebMcp.js";
+import { sourceWithMotionDefaults as makeSource } from "./MultiWavePhysics.js";
 
 // Import physics core from previous simulation
 import {
@@ -79,13 +82,32 @@ export default function MultiWaveSimulation() {
   const landscapeRecorderRef = useRef(null);
   const shortsRecorderRef = useRef(null);
   const recordingTimeoutRef = useRef(null);
+  const recordingStartRef = useRef(0);
+  const recordingModeRef = useRef("landscape");
+  const recordingDurationRef = useRef(60);
+  const lastClipRef = useRef(null);
+  const videoStatusRef = useRef({ state: "idle", downloadReady: false, elapsedSeconds: 0 });
+  const [videoStatus, setVideoStatus] = useState(videoStatusRef.current);
+  const setLiveVideoStatus = (patch) => {
+    const next = { ...videoStatusRef.current, ...patch };
+    videoStatusRef.current = next;
+    setVideoStatus(next);
+  };
+  const embeddedRef = useRef(null);
+  if (!embeddedRef.current) {
+    embeddedRef.current = readEmbeddedMcpParameters("physics.waves.multi-source-interference", {
+      renderMode: "pattern", waveSpeed: 15, damping: 0.015,
+      durationSeconds: 60, fps: 30,
+    });
+  }
+  const embedded = embeddedRef.current;
 
   // --- State ---
   const [isSimulating, setIsSimulating] = useState(true);
-  const [renderMode, setRenderMode] = useState("pattern");
+  const [renderMode, setRenderMode] = useState(embedded.values.renderMode);
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingSeconds, setRecordingSeconds] = useState(60);
-  const [recordingFps, setRecordingFps] = useState(30);
+  const [recordingSeconds, setRecordingSeconds] = useState(embedded.values.durationSeconds);
+  const [recordingFps, setRecordingFps] = useState(embedded.values.fps);
   const [recordingDirectory, setRecordingDirectory] = useState(null);
   const [recordingDirectoryName, setRecordingDirectoryName] = useState("");
   const [captureGuide, setCaptureGuide] = useState("landscape");
@@ -103,12 +125,13 @@ export default function MultiWaveSimulation() {
     surfaceDetail: 0.5,
     lightAngle: 0.4,
     backgroundGlow: 0.3,
+    ...Object.fromEntries(Object.entries(embedded.values).filter(([key]) => ["preset", "causticStyle", "bloom", "depth", "contrast", "caustics", "colorShift", "orbGlow", "highlightSoftness", "surfaceDetail", "lightAngle", "backgroundGlow"].includes(key))),
   });
 
   // Medium Properties (Shared)
   const [medium, setMedium] = useState({
-    waveSpeed: 15.0,
-    damping: 0.015,
+    waveSpeed: embedded.values.waveSpeed,
+    damping: embedded.values.damping,
   });
 
   // Sources Array
@@ -177,34 +200,42 @@ export default function MultiWaveSimulation() {
   }, []);
 
   const stopRecording = useCallback(() => {
+    const mode = recordingModeRef.current;
+    const recorder = mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
+    if (!recorder?.isRecording?.()) return false;
     clearRecordingTimer();
-    landscapeRecorderRef.current?.stopRecording?.();
-    shortsRecorderRef.current?.stopRecording?.();
+    setLiveVideoStatus({ state: "finalizing" });
+    return recorder.stopRecording();
   }, [clearRecordingTimer]);
 
-  const startRecording = useCallback(
-    (mode) => {
-      if (isRecording) return;
-
-      setCaptureGuide(mode);
-
-      const recorder =
-        mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
-      const started = recorder?.startRecording?.();
-
-      if (!started) return;
-
-      const durationMs = Math.max(0, recordingSeconds) * 1000;
-      if (durationMs > 0) {
-        clearRecordingTimer();
-        recordingTimeoutRef.current = window.setTimeout(() => {
-          recorder?.stopRecording?.();
-          recordingTimeoutRef.current = null;
-        }, durationMs);
-      }
-    },
-    [clearRecordingTimer, isRecording, recordingSeconds],
-  );
+  const startRecording = useCallback((mode, durationSeconds = recordingSeconds) => {
+    const recorder = mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
+    if (!recorder) throw Object.assign(new Error("Recorder not available."), { code: "RECORDER_NOT_READY" });
+    if (landscapeRecorderRef.current?.isRecording?.() || shortsRecorderRef.current?.isRecording?.()) {
+      throw Object.assign(new Error("A video recording is already active."), { code: "RECORDING_ACTIVE" });
+    }
+    if (typeof MediaRecorder === "undefined" || !canvasRef.current?.captureStream) {
+      throw Object.assign(new Error("This browser cannot capture WebM video."), { code: "RECORDING_UNSUPPORTED" });
+    }
+    recordingModeRef.current = mode;
+    recordingDurationRef.current = durationSeconds;
+    setCaptureGuide(mode);
+    try {
+      if (!recorder.startRecording()) throw new Error("Could not start browser recording.");
+    } catch (error) {
+      setLiveVideoStatus({ state: "error", error: { code: error.code || "RECORDING_START_FAILED", message: error.message } });
+      throw error;
+    }
+    recordingStartRef.current = performance.now();
+    lastClipRef.current = null;
+    setLiveVideoStatus({ state: "recording", mode, durationSeconds, elapsedSeconds: 0,
+      fps: recordingFps, downloadReady: false, error: null, fileName: null, bytes: 0 });
+    clearRecordingTimer();
+    recordingTimeoutRef.current = window.setTimeout(() => {
+      stopRecording();
+    }, durationSeconds * 1000);
+    return { state: "recording", mode, durationSeconds, fps: recordingFps, audioIncluded: false };
+  }, [clearRecordingTimer, recordingSeconds, recordingFps, stopRecording]);
 
   const chooseRecordingFolder = useCallback(async () => {
     if (!window.showDirectoryPicker) {
@@ -236,6 +267,97 @@ export default function MultiWaveSimulation() {
       }
     }
   }, []);
+
+  const getVideoStatus = () => {
+    const value = videoStatusRef.current;
+    const active = ["recording", "finalizing"].includes(value.state);
+    const elapsedSeconds = value.state === "recording"
+      ? Math.min(recordingDurationRef.current, (performance.now() - recordingStartRef.current) / 1000)
+      : value.elapsedSeconds || 0;
+    return { ...value, elapsedSeconds: Number(elapsedSeconds.toFixed(1)),
+      progressPercent: active ? Math.round(100 * elapsedSeconds / Math.max(1, recordingDurationRef.current)) :
+        value.state === "ready" ? 100 : 0,
+      downloadReady: Boolean(lastClipRef.current) && !active };
+  };
+
+  const onClipReady = (mode, clip) => {
+    lastClipRef.current = { mode, fileName: clip.fileName, bytes: clip.blob.size, part: clip.part };
+    const segmentActive = (mode === "shorts" ? shortsRecorderRef : landscapeRecorderRef).current?.isRecording?.();
+    setLiveVideoStatus({ state: segmentActive ? "recording" : "ready", mode, fileName: clip.fileName,
+      bytes: clip.blob.size, part: clip.part, downloadReady: true,
+      elapsedSeconds: Math.min(recordingDurationRef.current, (performance.now() - recordingStartRef.current) / 1000),
+      error: null });
+  };
+  const onVideoError = (error) => setLiveVideoStatus({ state: "error", error, downloadReady: false });
+  const configureVideo = (input) => {
+    if (input.durationSeconds !== undefined) setRecordingSeconds(input.durationSeconds);
+    if (input.fps !== undefined) setRecordingFps(input.fps);
+    if (input.aspectRatio) setCaptureGuide(input.aspectRatio === "9:16" ? "shorts" : "landscape");
+    return { configured: input };
+  };
+  const startVideo = async (input = {}) => {
+    configureVideo(input);
+    const mode = input.aspectRatio === "9:16" ? "shorts" :
+      input.aspectRatio === "16:9" ? "landscape" :
+        captureGuide === "shorts" ? "shorts" : "landscape";
+    // The recorder receives the newly selected FPS on the next React commit.
+    if (input.fps !== undefined) {
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+    return startRecording(mode, input.durationSeconds ?? recordingSeconds);
+  };
+  const multiWaveMcpStatus = useMultiWaveWebMcp({
+    enabled: !embedded.embeddedMcpApp,
+    getState: () => ({ simulationId: "physics.waves.multi-source-interference",
+      running: isSimulating, elapsedSeconds: elapsedRef.current, renderMode,
+      medium: { ...medium }, sources: sources.map((source) => ({ ...source })),
+      waterStyle: { ...waterStyle }, captureGuide, video: getVideoStatus() }),
+    configure: (input) => {
+      const { renderMode: nextRender, waveSpeed, damping, ...visual } = input;
+      if (nextRender !== undefined) setRenderMode(nextRender);
+      if (waveSpeed !== undefined || damping !== undefined) {
+        setMedium((old) => ({ ...old, ...(waveSpeed === undefined ? {} : { waveSpeed }),
+          ...(damping === undefined ? {} : { damping }) }));
+      }
+      if (Object.keys(visual).length) setWaterStyle((old) => ({ ...old, ...visual }));
+      return { applied: input };
+    },
+    playback: (action) => {
+      if (action === "reset") handleReset();
+      else setIsSimulating(action === "run");
+      return { action };
+    },
+    addSource: (patch) => {
+      if (sources.length >= 24) throw Object.assign(new Error("Maximum 24 sources to protect frame rate."), { code: "SOURCE_LIMIT" });
+      const id = Math.max(0, ...sources.map((source) => source.id)) + 1;
+      const source = makeSource({ id, x: 0.5, y: 0.5, frequency: 2, amplitude: 2, active: true, ...patch });
+      setSources((previous) => [...previous, source]);
+      return { source };
+    },
+    updateSource: (id, patch) => {
+      if (!sources.some((source) => source.id === id)) throw Object.assign(new Error("Source ID not found."), { code: "SOURCE_NOT_FOUND" });
+      setSources((previous) => previous.map((source) => source.id === id ? { ...source, ...patch } : source));
+      return { sourceId: id, applied: patch };
+    },
+    removeSource: (id) => {
+      if (!sources.some((source) => source.id === id)) throw Object.assign(new Error("Source ID not found."), { code: "SOURCE_NOT_FOUND" });
+      if (sources.length < 2) throw Object.assign(new Error("At least one wave source is required."), { code: "MINIMUM_SOURCES" });
+      setSources((previous) => previous.filter((source) => source.id !== id));
+      return { sourceId: id, removed: true };
+    },
+    configureVideo, startVideo, getVideoStatus,
+    stopVideo: () => {
+      if (!stopRecording()) throw Object.assign(new Error("No active recording."), { code: "RECORDING_NOT_ACTIVE" });
+      return { state: "finalizing" };
+    },
+    downloadVideo: () => {
+      const mode = lastClipRef.current?.mode;
+      const recorder = mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
+      const result = mode && recorder?.downloadLastRecording?.();
+      if (!result) throw Object.assign(new Error("No completed video to download."), { code: "VIDEO_NOT_READY" });
+      return result;
+    },
+  });
 
   // --- Main Loop ---
   const draw = useCallback(() => {
@@ -420,17 +542,17 @@ export default function MultiWaveSimulation() {
     const y = (e.clientY - rect.top) / rect.height;
 
     // Check hit on existing sources
-    // Hit radius approx 30px normalized
-    const HIT_RADIUS = 30 / rect.width;
+    const hitRadiusPx = e.pointerType === "touch" ? 38 : 26;
     const animatedSources = getAnimatedSources(sources, elapsedRef.current);
 
     const hit = animatedSources.find((s) => {
       const dx = s.x - x;
       const dy = s.y - y; // aspect ratio correction omitted for simplicity interaction
-      return dx * dx + dy * dy < HIT_RADIUS * HIT_RADIUS;
+      return (dx * rect.width) ** 2 + (dy * rect.height) ** 2 < hitRadiusPx ** 2;
     });
 
     if (hit) {
+      e.currentTarget.setPointerCapture?.(e.pointerId);
       setDraggingId(hit.id);
     }
   };
@@ -459,15 +581,17 @@ export default function MultiWaveSimulation() {
   };
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-black text-white">
+    <div data-agent-surface="multi-source-root" className="flex h-full min-h-0 w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto bg-black text-white lg:flex-row lg:overflow-hidden">
       {/* Canvas Area */}
       <div
         ref={containerRef}
-        className="relative flex-1 bg-[#050505] cursor-crosshair touch-none"
+        data-agent-surface="multi-source-stage"
+        className="relative aspect-video min-h-[210px] w-full shrink-0 cursor-crosshair bg-[#050505] touch-none sm:min-h-[300px] lg:aspect-auto lg:min-h-0 lg:min-w-0 lg:flex-1"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onLostPointerCapture={handlePointerUp}
       >
         <canvas
           id="multi-wave-recording-canvas"
@@ -483,12 +607,14 @@ export default function MultiWaveSimulation() {
           outputMode="landscape"
           fileName={`esbiko-water-engine-landscape-${Date.now()}.webm`}
           fps={recordingFps}
-          videoBitsPerSecond={90000000}
+          videoBitsPerSecond={12000000}
           codecMode="realtime-quality"
           segmentDurationSeconds={60}
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
+          onRecordingReady={(clip) => onClipReady("landscape", clip)}
+          onRecordingError={onVideoError}
         />
         <VideoRecorderControls
           ref={shortsRecorderRef}
@@ -496,14 +622,22 @@ export default function MultiWaveSimulation() {
           outputMode="shorts"
           fileName={`esbiko-water-engine-shorts-${Date.now()}.webm`}
           fps={recordingFps}
-          videoBitsPerSecond={75000000}
+          videoBitsPerSecond={10000000}
           codecMode="realtime-quality"
           segmentDurationSeconds={60}
           saveDirectoryHandle={recordingDirectory}
           showButton={false}
           onRecordingChange={setIsRecording}
+          onRecordingReady={(clip) => onClipReady("shorts", clip)}
+          onRecordingError={onVideoError}
         />
 
+        <div aria-live="polite" data-agent-video-status={videoStatus.state} className="pointer-events-none absolute bottom-2 left-2 z-20 rounded bg-black/70 px-2 py-1 text-[10px] text-white/80">
+          {videoStatus.state === "recording" ? "Recording WebM…" :
+            videoStatus.state === "finalizing" ? "Finishing WebM…" :
+            videoStatus.state === "ready" ? "Video ready to download" :
+            videoStatus.state === "error" ? videoStatus.error?.message : multiWaveMcpStatus === "ready" ? "WebMCP ready" : "Multi-source lab"}
+        </div>
         <CaptureGuide
           mode={captureGuide}
           bounds={canvasBounds}
@@ -531,6 +665,12 @@ export default function MultiWaveSimulation() {
         onChooseRecordingFolder={chooseRecordingFolder}
         captureGuide={captureGuide}
         setCaptureGuide={setCaptureGuide}
+        videoStatus={videoStatus}
+        webMcpStatus={multiWaveMcpStatus}
+        onDownloadVideo={() => {
+          const recorder = lastClipRef.current?.mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
+          recorder?.downloadLastRecording?.();
+        }}
         onRecordLandscape={() => startRecording("landscape")}
         onRecordShorts={() => startRecording("shorts")}
         onStopRecording={stopRecording}

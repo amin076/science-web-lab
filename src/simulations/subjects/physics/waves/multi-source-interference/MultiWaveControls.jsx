@@ -38,12 +38,13 @@ const Slider = ({ label, value, min, max, step, onChange, unit = "" }) => (
     </div>
     <input
       type="range"
+      aria-label={label}
       min={min}
       max={max}
       step={step}
       value={value}
       onChange={(e) => onChange(parseFloat(e.target.value))}
-      className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-cyan-300 transition-colors hover:bg-white/20"
+      className="h-7 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-cyan-300 transition-colors hover:bg-white/20"
     />
   </div>
 );
@@ -56,7 +57,7 @@ const SelectField = ({ label, value, options, onChange }) => (
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs font-medium text-white outline-none transition-colors hover:border-cyan-300/40 focus:border-cyan-300/70"
+      className="min-h-[44px] w-full rounded-lg border border-white/10 bg-black/40 px-2 py-2 text-xs font-medium text-white outline-none transition-colors hover:border-cyan-300/40 focus:border-cyan-300/70"
     >
       {options.map((option) => (
         <option key={option.value} value={option.value} className="bg-slate-950">
@@ -102,8 +103,10 @@ const SourceCard = ({ source, index, updateSource, removeSource }) => {
           </span>
         </div>
         <button
+          type="button"
+          aria-label={`Remove source ${safeSource.id}`}
           onClick={() => removeSource(safeSource.id)}
-          className="text-white/30 hover:text-red-400 transition-colors"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-white/50 hover:text-red-400 transition-colors"
         >
           <Trash2 size={14} />
         </button>
@@ -289,10 +292,14 @@ export default function MultiWaveControls({
   onRecordLandscape,
   onRecordShorts,
   onStopRecording,
+  onDownloadVideo,
+  videoStatus,
+  webMcpStatus,
   onToggle,
   onReset,
 }) {
   const addSource = () => {
+    if (sources.length >= 24) return;
     const newId = Math.max(0, ...sources.map((s) => s.id)) + 1;
     setSources([
       ...sources,
@@ -316,6 +323,7 @@ export default function MultiWaveControls({
   };
 
   const addArtSourceSet = () => {
+    if (sources.length > 19) return;
     const startId = Math.max(0, ...sources.map((s) => s.id)) + 1;
     const motions = ["circle", "ellipse", "figure-eight", "random-drift"];
     const baseFrequency = 0.85 + Math.random() * 0.35;
@@ -360,8 +368,10 @@ export default function MultiWaveControls({
 
   return (
     <div
+      data-agent-surface="multi-source-controls"
       className="
-        h-full w-[360px] overflow-y-auto border-l border-white/10
+        min-w-0 w-full shrink-0 overflow-visible border-t border-white/10
+        lg:h-full lg:w-[360px] lg:overflow-y-auto lg:border-l lg:border-t-0
         bg-slate-950/50 text-white shadow-[-24px_0_70px_rgba(0,0,0,0.35)]
         backdrop-blur-2xl
         [&::-webkit-scrollbar]:w-1.5
@@ -372,7 +382,10 @@ export default function MultiWaveControls({
       "
     >
       {/* Header */}
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
+        <p data-agent-mcp-status={webMcpStatus} className="mb-3 text-[11px] text-cyan-200/70" role="status">
+          Agent tools: {webMcpStatus === "ready" ? "WebMCP ready" : webMcpStatus === "unsupported" ? "Browser WebMCP unavailable" : webMcpStatus}
+        </p>
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 rounded-lg border border-cyan-300/15 bg-cyan-300/10 text-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.12)]">
             <Waves size={20} />
@@ -388,7 +401,9 @@ export default function MultiWaveControls({
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={onToggle}
-            className={`flex items-center justify-center gap-2 rounded-lg border py-2 text-xs font-bold uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.2)] transition-all ${
+            data-agent-action={isSimulating ? "pause" : "play"}
+            aria-label={isSimulating ? "Pause interference" : "Run interference"}
+            className={`flex items-center justify-center gap-2 rounded-lg border min-h-[44px] py-2 text-xs font-bold uppercase tracking-wide shadow-[0_10px_28px_rgba(0,0,0,0.2)] transition-all ${
               isSimulating
                 ? "border-amber-300/10 bg-amber-400/12 text-amber-300 hover:bg-amber-400/20"
                 : "border-emerald-300/10 bg-emerald-400/12 text-emerald-300 hover:bg-emerald-400/20"
@@ -399,7 +414,9 @@ export default function MultiWaveControls({
           </button>
           <button
             onClick={onReset}
-            className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.06] py-2 text-xs font-bold uppercase tracking-wide text-white/70 shadow-[0_10px_28px_rgba(0,0,0,0.18)] transition-colors hover:bg-white/10 hover:text-white"
+            data-agent-action="reset"
+            aria-label="Reset interference"
+            className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.06] min-h-[44px] py-2 text-xs font-bold uppercase tracking-wide text-white/70 shadow-[0_10px_28px_rgba(0,0,0,0.18)] transition-colors hover:bg-white/10 hover:text-white"
           >
             <RotateCcw size={14} />
             Reset
@@ -413,8 +430,8 @@ export default function MultiWaveControls({
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => setRenderMode("pattern")}
-              className={`rounded-lg px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition-colors ${
+              data-agent-action="render-pattern" onClick={() => setRenderMode("pattern")}
+              className={`min-h-[44px] rounded-lg px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition-colors ${
                 renderMode === "pattern"
                   ? "bg-white/15 text-white shadow-[0_0_16px_rgba(255,255,255,0.08)]"
                   : "bg-black/25 text-white/45 hover:bg-white/10 hover:text-white/75"
@@ -423,8 +440,8 @@ export default function MultiWaveControls({
               Classic
             </button>
             <button
-              onClick={() => setRenderMode("water")}
-              className={`rounded-lg px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition-colors ${
+              data-agent-action="render-water" onClick={() => setRenderMode("water")}
+              className={`min-h-[44px] rounded-lg px-2 py-2 text-[11px] font-bold uppercase tracking-wide transition-colors ${
                 renderMode === "water"
                   ? "bg-cyan-300/20 text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.16)]"
                   : "bg-black/25 text-cyan-200/55 hover:bg-cyan-300/10 hover:text-cyan-100"
@@ -629,6 +646,7 @@ export default function MultiWaveControls({
           </div>
           {isRecording ? (
             <button
+              data-agent-action="stop-recording"
               onClick={onStopRecording}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-red-300/15 bg-red-500/20 py-2 text-[11px] font-bold uppercase tracking-wide text-red-100 transition-colors hover:bg-red-500/30"
             >
@@ -638,20 +656,38 @@ export default function MultiWaveControls({
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <button
-                onClick={onRecordLandscape}
+                data-agent-action="record-landscape"
+              onClick={onRecordLandscape}
                 className="flex items-center justify-center gap-1 rounded-lg border border-white/5 bg-black/25 px-2 py-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100/80 transition-colors hover:bg-emerald-300/15 hover:text-emerald-50"
               >
                 <Monitor size={12} />
                 16:9
               </button>
               <button
-                onClick={onRecordShorts}
+                data-agent-action="record-shorts"
+              onClick={onRecordShorts}
                 className="flex items-center justify-center gap-1 rounded-lg border border-white/5 bg-black/25 px-2 py-2 text-[10px] font-bold uppercase tracking-wide text-emerald-100/80 transition-colors hover:bg-emerald-300/15 hover:text-emerald-50"
               >
                 <Smartphone size={12} />
                 9:16
               </button>
             </div>
+          )}
+          {videoStatus?.state === "ready" && (
+            <button type="button" data-agent-action="download-video" onClick={onDownloadVideo}
+              className="mt-2 flex min-h-[44px] w-full items-center justify-center gap-2 rounded-lg bg-emerald-600/30 px-3 py-2 text-xs font-semibold text-emerald-100">
+              Download latest WebM
+            </button>
+          )}
+          {videoStatus?.state === "error" && (
+            <p role="alert" className="mt-2 rounded border border-red-500/50 p-2 text-xs text-red-200">
+              {videoStatus.error?.message || "Recording failed"}
+            </p>
+          )}
+          {["recording", "finalizing"].includes(videoStatus?.state) && (
+            <p role="status" className="mt-2 text-xs text-emerald-200">
+              {videoStatus.state === "finalizing" ? "Finalizing video…" : "Recording in progress…"}
+            </p>
           )}
         </div>
       </div>
@@ -689,6 +725,8 @@ export default function MultiWaveControls({
           <div className="flex items-center gap-2">
             <button
               onClick={addArtSourceSet}
+              aria-label="Add five artistic wave sources"
+              disabled={sources.length > 19}
               className="rounded-lg border border-fuchsia-300/15 bg-fuchsia-300/15 p-1.5 text-fuchsia-100 shadow-[0_0_18px_rgba(217,70,239,0.12)] transition-colors hover:bg-fuchsia-300/25"
               title="Add ambient art source set"
             >
@@ -696,6 +734,8 @@ export default function MultiWaveControls({
             </button>
             <button
               onClick={addSource}
+              aria-label="Add a wave source"
+              disabled={sources.length >= 24}
               className="rounded-lg border border-cyan-300/15 bg-cyan-300/15 p-1.5 text-cyan-200 shadow-[0_0_18px_rgba(34,211,238,0.12)] transition-colors hover:bg-cyan-300/25"
               title="Add source"
             >
