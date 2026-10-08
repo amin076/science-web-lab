@@ -56,6 +56,9 @@ jobs:
               const dopplerTool = tools.find((tool) => tool.name === 'run_doppler_experiment');
               const openTool = tools.find((tool) => tool.name === 'open_science_simulation');
               const videoTool = tools.find((tool) => tool.name === 'prepare_doppler_video');
+              const solarVideoTool = tools.find(
+                (tool) => tool.name === 'prepare_solar_system_video',
+              );
 
               if (!dopplerTool) {
                 throw new Error(`Missing Doppler tool. Found: ${names.join(', ')}`);
@@ -65,6 +68,11 @@ jobs:
               }
               if (!videoTool) {
                 throw new Error(`Missing Doppler video tool. Found: ${names.join(', ')}`);
+              }
+              if (!solarVideoTool) {
+                throw new Error(
+                  `Missing Solar System video tool. Found: ${names.join(', ')}`,
+                );
               }
 
               const widgetUri =
@@ -103,6 +111,23 @@ jobs:
                     entryAngle: 25,
                     elasticity: 0.995,
                   },
+                },
+              });
+
+              const solarVideo = await client.callTool({
+                name: 'prepare_solar_system_video',
+                arguments: {
+                  storyMode: 'cinematic_tour',
+                  durationSeconds: 20,
+                  aspectRatio: '16:9',
+                  speed: 5,
+                  scaleMode: 'educational',
+                  focusTarget: 'earth',
+                  showTrails: true,
+                  showOrbits: true,
+                  showAxis: false,
+                  showStars: true,
+                  showLabels: true,
                 },
               });
 
@@ -321,6 +346,28 @@ jobs:
                 },
               });
 
+              const solarVideoRequest =
+                solarVideo?.structuredContent?.videoRequest;
+              const solarVideoSimulation =
+                solarVideo?.structuredContent?.simulation;
+              const solarLaunchQuery =
+                solarVideo?.structuredContent?.launchQuery;
+
+              if (
+                solarVideoSimulation?.id !== 'astronomy.space.solar-system' ||
+                solarVideoSimulation?.video !== true ||
+                solarVideo?.structuredContent?.requiresUserGesture !== true ||
+                solarVideoRequest?.durationSeconds !== 20 ||
+                solarVideoRequest?.aspectRatio !== '16:9' ||
+                solarLaunchQuery?.mcpVideo !== '1'
+              ) {
+                throw new Error(
+                  `Unexpected Solar System video preparation result: ${JSON.stringify(
+                    solarVideo?.structuredContent,
+                  )}`,
+                );
+              }
+
               const videoRequest = video?.structuredContent?.videoRequest;
               if (
                 video?.structuredContent?.mode !== 'video' ||
@@ -404,6 +451,11 @@ jobs:
               console.log('PENDULUM PARAMETERS:', pendulumParameters);
               console.log('SPRING-MASS ADAPTED TEST:', springMass.id, springMass.integrationLevel);
               console.log('SPRING-MASS PARAMETERS:', springMassParameters);
+              console.log('SOLAR VIDEO PREP TEST:', {
+                simulation: solarVideoSimulation?.id,
+                videoRequest: solarVideoRequest,
+                launchQuery: solarLaunchQuery,
+              });
               console.log('VIDEO PREP TEST:', videoRequest);
               console.log('BATCH ADAPTER TESTS:', batchResults);
               console.log('LIVE MCP APP SMOKE TEST PASSED');
