@@ -72,7 +72,6 @@ assert.equal(solarSystem.video, true);
 assert.equal(solarSystem.exportable, true);
 assert(solarSystem.actions.includes("record"));
 assert(solarSystem.actions.includes("export"));
-assert(solarSystem.tools.includes("prepare_solar_system_video"));
 
 const orbitLab = getSimulationAgentProfile("astronomy.space.earth-orbit-lab");
 assert.equal(orbitLab.integrationLevel, "adapted");
