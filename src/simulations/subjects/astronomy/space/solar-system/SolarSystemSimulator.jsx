@@ -166,6 +166,7 @@ function XRButtons({
           onClick={onEnterAR}
           disabled={xrBusy || arSupported === false}
           aria-label="Enter augmented reality"
+          title={arSupported === false ? "AR is unavailable on this browser or device." : "Enter augmented reality"}
           className={`${base} ${pad} bg-blue-600 hover:bg-blue-500`}
         >
           📱 {xrBusy ? "Starting…" : compact ? "AR" : "Enter AR"}
@@ -176,28 +177,19 @@ function XRButtons({
           onClick={onEnterVR}
           disabled={xrBusy || vrSupported === false}
           aria-label="Enter virtual reality"
+          title={vrSupported === false ? "VR is unavailable on this browser or headset." : "Enter virtual reality"}
           className={`${base} ${pad} bg-purple-600 hover:bg-purple-500`}
         >
           🥽 {xrBusy ? "Starting…" : compact ? "VR" : "Enter VR"}
         </button>
       </div>
 
-      {(xrError || arSupported === false || vrSupported === false) && (
+      {xrError && (
         <div
-          role={xrError ? "alert" : "status"}
-          className="max-w-xs rounded-md bg-black/60 px-2 py-1 text-xs text-white/90"
+          role="alert"
+          className="max-w-xs rounded-md bg-rose-950/75 px-2 py-1 text-xs text-rose-100"
         >
-          {xrError ||
-            [
-              arSupported === false
-                ? "AR is unavailable on this browser or device."
-                : null,
-              vrSupported === false
-                ? "VR is unavailable on this browser or headset."
-                : null,
-            ]
-              .filter(Boolean)
-              .join(" ")}
+          {xrError}
         </div>
       )}
     </div>
