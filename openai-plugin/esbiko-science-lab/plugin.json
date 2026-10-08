@@ -94,7 +94,8 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "Esbiko Science Lab does not sell products or process payments through the plugin."
+        "commerce_description": "Esbiko Science Lab does not sell products or process payments through the plugin.",
+        "demo_recording_url": "https://youtu.be/tig4FOonnWQ"
       },
       "publication": {
         "release_notes": "Initial public Esbiko Science Lab plugin release with simulation discovery, generic interactive simulation opening, validated scientific parameters, deterministic Doppler calculations, responsive MCP App UI, and supported Doppler video preparation."
