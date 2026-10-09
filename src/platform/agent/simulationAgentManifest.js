@@ -16,7 +16,6 @@ export const simulationAgentManifest = Object.freeze({
         x2: { type: "number", minimum: -8, maximum: 8 },
         y2: { type: "number", minimum: -5, maximum: 5 },
         z2: { type: "number", minimum: -8, maximum: 8 },
-        k: { type: "number", minimum: 0.1, maximum: 20 },
         showField: { type: "boolean" },
         showFlux: { type: "boolean" },
       },
