@@ -1,137 +1,5 @@
-// src/simulations/subjects/creative/patterns/ambient-pattern-studio/AmbientPatternStudio.jsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  Download,
-  FolderOpen,
-  Frame,
-  Monitor,
-  Pause,
-  Play,
-  RefreshCcw,
-  Shuffle,
-  Smartphone,
-  Sparkles,
-  Video,
-} from "lucide-react";
-import VideoRecorderControls from "@/components/shared/video/VideoRecorderControls.jsx";
-import {
-  PALETTE_PRESETS,
-  PATTERN_PRESETS,
-  renderAmbientPattern,
-} from "./patternRenderer";
-
-const CANVAS_W = 1920;
-const CANVAS_H = 1080;
-const MAX_FRAME_DELTA_SECONDS = 1 / 60;
-
-const CAPTURE_GUIDES = {
-  landscape: {
-    label: "16:9 YouTube",
-    crop: { x: 0, y: 0, width: 1, height: 1 },
-  },
-  shorts: {
-    label: "9:16 Shorts",
-    crop: { x: 0.33125, y: 0, width: 0.3375, height: 1 },
-  },
-};
-
-const Slider = ({ label, value, min, max, step, onChange, unit = "" }) => (
-  <label className="block">
-    <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-white/55">
-      <span>{label}</span>
-      <span className="text-cyan-200">
-        {Number(value).toFixed(step < 0.1 ? 2 : 1)}
-        {unit}
-      </span>
-    </div>
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(event) => onChange(parseFloat(event.target.value))}
-      className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-cyan-300 transition-colors hover:bg-white/20"
-    />
-  </label>
-);
-
-const SelectField = ({ label, value, options, onChange }) => (
-  <label className="block">
-    <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-white/55">
-      {label}
-    </span>
-    <select
-      value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className="w-full rounded-lg border border-white/10 bg-black/45 px-3 py-2 text-sm font-semibold text-white outline-none transition-colors hover:border-cyan-300/40 focus:border-cyan-300/70"
-    >
-      {options.map((option) => (
-        <option key={option.value} value={option.value} className="bg-slate-950">
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </label>
-);
-
-function CaptureGuide({ mode, bounds, isRecording }) {
-  const guide = CAPTURE_GUIDES[mode];
-
-  if (!guide || !bounds) return null;
-
-  const style = {
-    left: bounds.left + guide.crop.x * bounds.width,
-    top: bounds.top + guide.crop.y * bounds.height,
-    width: guide.crop.width * bounds.width,
-    height: guide.crop.height * bounds.height,
-  };
-
-  return (
-    <div className="pointer-events-none absolute inset-0 z-10">
-      <div
-        style={style}
-        className="absolute border border-cyan-200/80 shadow-[0_0_24px_rgba(34,211,238,0.28),inset_0_0_24px_rgba(34,211,238,0.08)]"
-      >
-        <div className="absolute left-4 top-3 rounded bg-black/55 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-cyan-100 backdrop-blur-md">
-          {isRecording ? "Recording" : "Capture Area"} {guide.label}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function Panel({ title, icon, children }) {
-  return (
-    <section className="rounded-xl border border-white/10 bg-white/[0.055] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-      <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100/85">
-        {React.createElement(icon, { size: 14 })}
-        {title}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-export default function AmbientPatternStudio() {
-  const canvasRef = useRef(null);
-  const containerRef = useRef(null);
-  const rafRef = useRef(null);
-  const lastRef = useRef(0);
-  const elapsedRef = useRef(0);
-  const landscapeRecorderRef = useRef(null);
-  const shortsRecorderRef = useRef(null);
-  const recordingTimeoutRef = useRef(null);
-
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
-  const [captureGuide, setCaptureGuide] = useState("landscape");
-  const [canvasBounds, setCanvasBounds] = useState(null);
-  const [recordingSeconds, setRecordingSeconds] = useState(60);
-  const [recordingFps, setRecordingFps] = useState(30);
-  const [recordingDirectory, setRecordingDirectory] = useState(null);
-  const [recordingDirectoryName, setRecordingDirectoryName] = useState("");
-  const [settings, setSettings] = useState({
+  const initialMcp = useMemo(
+    () => readEmbeddedMcpParameters("creative.patterns.ambient-pattern-studio", {
     pattern: "kaleidoscope",
     palette: "aurora",
     speed: 2,
@@ -145,6 +13,10 @@ export default function AmbientPatternStudio() {
     drift: 0.55,
     particles: 130,
     backgroundGlow: 0.95,
+  }),[]);
+  const [settings,setSettings]=useState(() => {
+    const {recordingSeconds,recordingFps,...patternSettings}=initialMcp.values;
+    return patternSettings;
   });
   const settingsRef = useRef(settings);
 
@@ -155,6 +27,90 @@ export default function AmbientPatternStudio() {
   const updateSetting = useCallback((key, value) => {
     setSettings((current) => ({ ...current, [key]: value }));
   }, []);
+
+  const liveRef=useRef({});
+  liveRef.current={settings,isPlaying,isRecording,recordingSeconds,recordingFps,captureGuide};
+  const actionsRef=useRef({});
+  // Recorder callbacks below are registered after their definitions; tools use current callbacks.
+  useEffect(()=>{
+    const controller=new AbortController();
+    const keys={
+      pattern:{type:"string",enum:PATTERN_PRESETS.map(p=>p.value)},
+      palette:{type:"string",enum:PALETTE_PRESETS.map(p=>p.value)},
+      speed:{type:"number",minimum:1,maximum:6},
+      loopSeconds:{type:"number",minimum:15,maximum:180},
+      symmetry:{type:"number",minimum:3,maximum:24},
+      complexity:{type:"number",minimum:0,maximum:1},
+      intensity:{type:"number",minimum:0.1,maximum:2},
+      bloom:{type:"number",minimum:0,maximum:3},
+      depth:{type:"number",minimum:0,maximum:2},
+      drift:{type:"number",minimum:0,maximum:1.5},
+      rotation:{type:"number",minimum:-2,maximum:2},
+      backgroundGlow:{type:"number",minimum:0,maximum:2},
+      particles:{type:"number",minimum:0,maximum:260},
+      recordingSeconds:{type:"number",minimum:15,maximum:600},
+      recordingFps:{type:"number",enum:[30,60]},
+    };
+    const empty={type:"object",properties:{},additionalProperties:false};
+    const tools=[
+      {name:"esbiko_ambient_get_state",description:"Read pattern, palette, all visual settings, timeline and recording status.",
+       annotations:{readOnlyHint:true},inputSchema:empty,
+       execute:createSafeToolExecutor("ambient_get_state",async()=>({
+         simulationId:"creative.patterns.ambient-pattern-studio",
+         ...liveRef.current,elapsedSeconds:elapsedRef.current,
+       }))},
+      {name:"esbiko_ambient_configure",description:"Configure the same visual and recording settings controlled by the Ambient Pattern Studio interface.",
+       inputSchema:{type:"object",properties:keys,additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_configure",async(input)=>{
+         if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Expected ambient settings object");
+         for(const [key,value] of Object.entries(input)){
+           const rule=keys[key];
+           if(!rule||typeof value!==rule.type||(rule.enum&&!rule.enum.includes(value))||
+             (rule.type==="number"&&(!Number.isFinite(value)|| (rule.minimum!==undefined&&value<rule.minimum)||
+                (rule.maximum!==undefined&&value>rule.maximum))))
+             throw Error("Invalid Ambient Studio parameter: "+key);
+         }
+         if(liveRef.current.isRecording)throw Error("Stop recording before changing recording configuration");
+         const {recordingSeconds,recordingFps,...visual}=input;
+         if(recordingSeconds!==undefined)actionsRef.current.setRecordingSeconds(recordingSeconds);
+         if(recordingFps!==undefined)actionsRef.current.setRecordingFps(recordingFps);
+         if(Object.keys(visual).length)actionsRef.current.setSettings(previous=>({...previous,...visual}));
+         liveRef.current={...liveRef.current,settings:{...liveRef.current.settings,...visual},
+           ...(recordingSeconds!==undefined?{recordingSeconds}:{}),
+           ...(recordingFps!==undefined?{recordingFps}:{})};
+         return {accepted:input};
+       })},
+      {name:"esbiko_ambient_set_playback",description:"Play or pause the ambient canvas animation.",
+       inputSchema:{type:"object",properties:{playing:{type:"boolean"}},required:["playing"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_set_playback",async({playing})=>{
+         if(typeof playing!=="boolean")throw Error("playing must be boolean");
+         actionsRef.current.setIsPlaying(playing);liveRef.current={...liveRef.current,isPlaying:playing};
+         return {playing};
+       })},
+      {name:"esbiko_ambient_reset",description:"Reset the animation timeline (keeps current visual settings).",
+       inputSchema:empty,execute:createSafeToolExecutor("ambient_reset",async()=>{
+         actionsRef.current.resetTime();return {elapsedSeconds:0};
+       })},
+      {name:"esbiko_ambient_randomize",description:"Generate a new random pattern and palette using the same UI randomizer.",
+       inputSchema:empty,execute:createSafeToolExecutor("ambient_randomize",async()=>{
+         actionsRef.current.randomize();return {randomized:true};
+       })},
+      {name:"esbiko_ambient_record",description:"Start or stop WebM recording of landscape or shorts canvas. Requires browser MediaRecorder support; download handled by shared recorder.",
+       inputSchema:{type:"object",properties:{command:{type:"string",enum:["start","stop"]},
+         mode:{type:"string",enum:["landscape","shorts"]}},required:["command"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_record",async({command,mode="landscape"})=>{
+         if(!["start","stop"].includes(command)||!["landscape","shorts"].includes(mode))
+           throw Error("Invalid recording operation");
+         if(command==="stop"){actionsRef.current.stopRecording();return {requestedStop:true};}
+         const started=actionsRef.current.startRecording(mode);
+         if(!started)throw Error("Could not start recording; check browser MediaRecorder permissions and recorder availability");
+         return {started:true,mode};
+       })},
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch(error=>{if(!controller.signal.aborted)console.warn("Ambient WebMCP",error)});
+    return ()=>controller.abort();
+  },[]);
 
   const clearRecordingTimer = useCallback(() => {
     if (recordingTimeoutRef.current) {
@@ -171,14 +127,14 @@ export default function AmbientPatternStudio() {
 
   const startRecording = useCallback(
     (mode) => {
-      if (isRecording) return;
+      if (isRecording) return false;
 
       setCaptureGuide(mode);
       const recorder =
         mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
       const started = recorder?.startRecording?.();
 
-      if (!started) return;
+      if (!started) return false;
 
       const durationMs = Math.max(0, recordingSeconds) * 1000;
       if (durationMs > 0) {
@@ -188,6 +144,7 @@ export default function AmbientPatternStudio() {
           recordingTimeoutRef.current = null;
         }, durationMs);
       }
+      return true;
     },
     [clearRecordingTimer, isRecording, recordingSeconds],
   );
@@ -314,11 +271,13 @@ export default function AmbientPatternStudio() {
     };
   }, []);
 
+  actionsRef.current={setSettings,setIsPlaying,setRecordingSeconds,setRecordingFps,
+    resetTime,randomize,startRecording,stopRecording};
   useEffect(() => () => clearRecordingTimer(), [clearRecordingTimer]);
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-black text-white">
-      <div ref={containerRef} className="relative flex-1 bg-black">
+    <div className="flex flex-col xl:flex-row h-full w-full min-w-0 overflow-y-auto xl:overflow-hidden bg-black text-white">
+      <div ref={containerRef} data-esbiko-ambient-stage className="relative w-full shrink-0 h-[min(58dvh,560px)] min-h-[260px] xl:h-full xl:min-h-0 xl:flex-1 xl:shrink bg-black">
         <canvas
           id="ambient-pattern-recording-canvas"
           ref={canvasRef}
@@ -361,7 +320,7 @@ export default function AmbientPatternStudio() {
         />
       </div>
 
-      <aside className="h-full w-[390px] shrink-0 overflow-y-auto border-l border-white/10 bg-slate-950/88 p-4 shadow-[-24px_0_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+      <aside data-esbiko-ambient-controls className="w-full xl:w-[390px] shrink-0 xl:h-full overflow-y-auto border-l border-white/10 bg-slate-950/88 p-4 shadow-[-24px_0_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
         <div className="mb-4 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.18)]">
             <Sparkles size={23} />
