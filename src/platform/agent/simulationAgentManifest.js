@@ -1,4 +1,45 @@
 export const simulationAgentManifest = Object.freeze({
+  "physics.waves.surface-waves-double-slit": Object.freeze({
+    adapterVersion: "ripple-tank-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        sourceMode: { type: "string", enum: ["continuous", "click"] },
+        amplitude: { type: "number", minimum: 0.1, maximum: 3 },
+        frequency: { type: "number", minimum: 0.2, maximum: 5 },
+        waveSpeed: { type: "number", minimum: 1, maximum: 20 },
+        damping: { type: "number", minimum: 0, maximum: 0.1 },
+        barrierEnabled: { type: "boolean" },
+        barrierX01: { type: "number", minimum: 0.1, maximum: 0.9 },
+        barrierThickness: { type: "number", minimum: 1, maximum: 10 },
+        slitGap: { type: "number", minimum: 10, maximum: 100 },
+        slitWidth: { type: "number", minimum: 2, maximum: 40 },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "sourceMode", "amplitude", "frequency", "waveSpeed", "damping", "barrierEnabled", "barrierX01", "barrierThickness", "slitGap", "slitWidth"],
+      properties: {
+        running: { type: "boolean" },
+        sourceMode: { type: "string" },
+        amplitude: { type: "number" },
+        frequency: { type: "number" },
+        waveSpeed: { type: "number" },
+        damping: { type: "number" },
+        barrierEnabled: { type: "boolean" },
+        barrierX01: { type: "number" },
+        barrierThickness: { type: "number" },
+        slitGap: { type: "number" },
+        slitWidth: { type: "number" },
+      },
+    },
+  }),
+
   "astronomy.kepler-lab": Object.freeze({
     adapterVersion: "kepler-lab-adapter.v1",
     actions: ["open", "configure", "readState", "play", "pause", "reset"],
