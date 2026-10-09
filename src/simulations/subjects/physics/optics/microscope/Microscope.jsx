@@ -1,4 +1,6 @@
-import React, { useState, useRef, useMemo, createContext, useContext } from "react";
+import React, { useState, useRef, useMemo, useEffect, createContext, useContext } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { RoundedBox, Sphere } from "@react-three/drei";
 import { motion } from "framer-motion";
@@ -228,9 +230,82 @@ const Knob = ({ label, value, min, max, onChange }) => {
    5. MAIN COMPONENT
    ========================================= */
 export default function MicroscopeSimulation() {
-  const [focus, setFocus] = useState(0.5); 
-  const [zoom, setZoom] = useState(1);    
-  const [light, setLight] = useState(1);   
+  const initialMcp = useMemo(
+    () => readEmbeddedMcpParameters("physics.optics.microscope", { focus: 0.5, zoom: 1, light: 1 }),
+    [],
+  );
+  const [focus, setFocus] = useState(initialMcp.values.focus);
+  const [zoom, setZoom] = useState(initialMcp.values.zoom);
+  const [light, setLight] = useState(initialMcp.values.light);
+  // Both agent tools and the visible knobs operate on the same React state.
+  const currentRef = useRef({ focus, zoom, light });
+  currentRef.current = { focus, zoom, light };
+  const settersRef = useRef({ focus: setFocus, zoom: setZoom, light: setLight });
+  const defaults = useRef(initialMcp.values);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const empty = { type: "object", properties: {}, additionalProperties: false };
+    const props = {
+      focus: { type: "number", minimum: 0, maximum: 1 },
+      zoom: { type: "number", minimum: 1, maximum: 10 },
+      light: { type: "number", minimum: 0.2, maximum: 2 },
+    };
+    const tools = [
+      {
+        name: "esbiko_microscope_get_state",
+        description: "Read actual live focus, zoom and illumination settings from the virtual microscope.",
+        inputSchema: empty,
+        annotations: { readOnlyHint: true },
+        execute: createSafeToolExecutor("microscope_get_state", async () => ({
+          simulationId: "physics.optics.microscope", ...currentRef.current,
+        })),
+      },
+      {
+        name: "esbiko_microscope_configure",
+        description: "Change the microscope's actual focus (0-1), zoom (1-10), and light (0.2-2) knobs.",
+        inputSchema: { type: "object", properties: props, additionalProperties: false },
+        execute: createSafeToolExecutor("microscope_configure", async (values) => {
+          if (!values || typeof values !== "object" || Array.isArray(values)) {
+            throw new Error("Expected microscope settings object.");
+          }
+          for (const [key, value] of Object.entries(values)) {
+            const rule = props[key];
+            if (!rule || typeof value !== "number" || !Number.isFinite(value) ||
+                value < rule.minimum || value > rule.maximum) {
+              throw new Error("Invalid microscope parameter: " + key);
+            }
+          }
+          for (const [key, value] of Object.entries(values)) {
+            settersRef.current[key](value);
+          }
+          currentRef.current = { ...currentRef.current, ...values };
+          return { simulationId: "physics.optics.microscope", ...currentRef.current };
+        }),
+      },
+      {
+        name: "esbiko_microscope_reset",
+        description: "Reset microscope focus, zoom and light to initial values.",
+        inputSchema: empty,
+        execute: createSafeToolExecutor("microscope_reset", async () => {
+          for (const [key, value] of Object.entries(defaults.current)) {
+            settersRef.current[key](value);
+          }
+          currentRef.current = { ...defaults.current };
+          return { simulationId: "physics.optics.microscope", ...currentRef.current };
+        }),
+      },
+    ];
+    registerWebMcpTools({
+      modelContext: getDocumentModelContext(),
+      tools,
+      signal: controller.signal,
+    }).catch((error) => {
+      if (!controller.signal.aborted) console.warn("Microscope WebMCP:", error);
+    });
+    return () => controller.abort();
+  }, []);
+
 
   return (
     <MicroscopeContext.Provider value={{ focus, zoom, light }}>
