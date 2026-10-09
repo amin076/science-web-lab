@@ -8,15 +8,15 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 
 | ID | Simulation | Advanced contract | State readback | Functional test |
 |---|---|---|---|---|
-| `creative.patterns.ambient-pattern-studio` | Ambient Pattern Studio | [ ] | [ ] | [ ] |
+| `creative.patterns.ambient-pattern-studio` | Ambient Pattern Studio | [x] | [x] | [x] |
 | `physics.electricity.coulomb-law-3d` | Coulomb's Law 3D | [x] | [x] | [x] |
-| `physics.electricity.circuits` | Electric Circuits Lab | [ ] | [ ] | [ ] |
+| `physics.electricity.circuits` | Electric Circuits Lab | [x] | [x] | [x] |
 | `evolution-of-life` | Evolution of Life | [ ] | [ ] | [ ] |
 | `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [ ] | [ ] | [ ] |
 | `physics.thermodynamics.gas` | Ideal Gas Law | [x] | [x] | [x] |
 | `astronomy.kepler-lab` | Kepler's Laws | [x] | [x] | [x] |
 | `physics.challenges.moon-lander` | Moon Lander | [ ] | [ ] | [ ] |
-| `physics.optics.lens-mirror-2d` | Optics Bench 2D | [ ] | [ ] | [ ] |
+| `physics.optics.lens-mirror-2d` | Optics Bench 2D | [x] | [x] | [x] |
 | `physics.optics.lens-mirror-3d` | Optics Bench 3D | [ ] | [ ] | [ ] |
 | `earth-science.geology.plate-tectonics` | Plate Tectonics | [ ] | [ ] | [ ] |
 | `physics.waves.surface-waves-double-slit` | Ripple Tank | [x] | [x] | [x] |
@@ -26,7 +26,7 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 
 ## Current result (October 9, 2026)
 
-**23/32** manifest contracts now exist, **9/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas and Spatial Audio contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145 and #148.
+**26/32** manifest contracts now exist, **6/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits, and Ambient Pattern Studio contracts have browser-tested live agent operations of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145, #148 and #153. Ambient WebM recording support is wired but recording success/download still need dedicated acceptance.
 
 ## Non-negotiable acceptance for each checkbox
 
