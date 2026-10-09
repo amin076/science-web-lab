@@ -120,6 +120,7 @@ export default function AmbientPatternStudio() {
   const containerRef = useRef(null);
   const rafRef = useRef(null);
   const lastRef = useRef(0);
+  const lastRenderRef = useRef(0);
   const elapsedRef = useRef(0);
   const landscapeRecorderRef = useRef(null);
   const shortsRecorderRef = useRef(null);
@@ -365,8 +366,15 @@ export default function AmbientPatternStudio() {
   useEffect(() => {
     const draw = (now) => {
       const canvas = canvasRef.current;
-
       if (!canvas) return;
+      // Full-resolution canvas recording stays at the requested FPS. In normal
+      // preview mode, avoid redrawing 2M pixels at 60fps on phones and MCP iframes.
+      const targetFps = isRecording ? recordingFps : (isPlaying ? 16 : 4);
+      if (lastRenderRef.current && now - lastRenderRef.current < 1000 / targetFps) {
+        rafRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      lastRenderRef.current = now;
 
       const ctx = canvas.getContext("2d", { alpha: false });
       const rawDt = (now - (lastRef.current || now)) / 1000;
@@ -387,7 +395,7 @@ export default function AmbientPatternStudio() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [isPlaying]);
+  }, [isPlaying, isRecording, recordingFps]);
 
   useEffect(() => {
     const container = containerRef.current;
