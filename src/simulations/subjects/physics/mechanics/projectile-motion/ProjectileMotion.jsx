@@ -311,9 +311,11 @@ const MotionSimulator = () => {
       const ctx = canvasEl.getContext("2d");
       const { width, height } = containerRef.current.getBoundingClientRect();
 
-      if (canvasEl.width !== width || canvasEl.height !== height) {
-        canvasEl.width = width;
-        canvasEl.height = height;
+      const pixelWidth = Math.max(1, Math.round(width));
+      const pixelHeight = Math.max(1, Math.round(height));
+      if (canvasEl.width !== pixelWidth || canvasEl.height !== pixelHeight) {
+        canvasEl.width = pixelWidth;
+        canvasEl.height = pixelHeight;
       }
 
       const view = viewRef.current;
@@ -408,9 +410,9 @@ const MotionSimulator = () => {
     <Box
       sx={{
         width: "100%",
-        height: "100vh",
+        minHeight: "100dvh",
         bgcolor: "#0f1115",
-        overflowY: "auto",
+        overflowX: "hidden",
         "&::-webkit-scrollbar": { width: "10px" },
         "&::-webkit-scrollbar-track": { background: "#0f1115" },
         "&::-webkit-scrollbar-thumb": {
@@ -420,19 +422,23 @@ const MotionSimulator = () => {
       }}
     >
       <Box
-        sx={{ display: "flex", height: "95vh", p: 2, gap: 0, minHeight: 650 }}
+        sx={{ display: "flex", flexDirection: "row", containerType: "inline-size", height: "min(92dvh, 960px)", minHeight: 600, p: 1, gap: 2, alignItems: "stretch", "@container (max-width: 900px)": { flexDirection: "column", height: "auto", minHeight: 0 } }}
       >
         {/* CANVAS AREA - Sharp Corners */}
         <Box
           ref={containerRef}
           sx={{
-            flex: 1,
+            flex: { lg: 1 },
+            minWidth: 0,
+            width: "100%",
+            height: "100%",
+            "@container (max-width: 900px)": { height: "clamp(340px, 62dvh, 640px)", flex: "none" },
             position: "relative",
-            borderRadius: 0, // Sharp corners requested
+            borderRadius: 3,
             overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.05)",
-            borderRight: "none",
-            bgcolor: "#000",
+            boxShadow: "0 18px 48px rgba(0,0,0,.26)",
+            bgcolor: "#102a43",
           }}
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -443,6 +449,7 @@ const MotionSimulator = () => {
               cursor: "crosshair",
               width: "100%",
               height: "100%",
+              touchAction: "pan-y",
             }}
           />
 
@@ -450,14 +457,18 @@ const MotionSimulator = () => {
             <Box
               sx={{
                 position: "absolute",
-                top: 16,
-                left: 16,
+                top: 12,
+                left: 12,
+                right: "auto",
+                maxWidth: "calc(100% - 24px)",
+                overflowWrap: "anywhere",
                 zIndex: 5,
                 px: 1.5,
                 py: 1,
                 borderRadius: 2,
                 border: "1px solid rgba(34,211,238,.35)",
-                bgcolor: "rgba(2,6,23,.82)",
+                bgcolor: "rgba(2,6,23,.48)",
+                backdropFilter: "blur(8px)",
                 color: "#a5f3fc",
                 fontSize: 12,
                 fontFamily: "monospace",
@@ -492,7 +503,7 @@ const MotionSimulator = () => {
         </Box>
 
         {/* SIDEBAR PANEL */}
-        <Box sx={{ width: 350, height: "100%", flexShrink: 0 }}>
+        <Box sx={{ width: 350, maxWidth: "100%", height: "100%", minWidth: 0, flexShrink: 0, "@container (max-width: 900px)": { width: "100%", height: "auto" } }}>
           <ControlPanel
             // Control Props
             isSimulating={isSimulating}
@@ -520,7 +531,7 @@ const MotionSimulator = () => {
       </Box>
 
       {/* GRAPH SECTION */}
-      <Box sx={{ minHeight: "80vh", p: 4, bgcolor: "#0f1115" }}>
+      <Box sx={{ minHeight: { xs: "auto", lg: "60vh" }, p: { xs: 1, sm: 3 }, bgcolor: "#0f1115" }}>
         <GraphSection data={history} onClear={() => setHistory([])} />
       </Box>
     </Box>

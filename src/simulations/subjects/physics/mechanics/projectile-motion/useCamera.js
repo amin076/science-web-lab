@@ -25,6 +25,7 @@ export const useCamera = (
     if (!canvasElement || !initialWorldBounds) return;
 
     const { width } = canvasElement.getBoundingClientRect();
+    if (width <= 0) return;
 
     // 1. Calculate ideal scale to fit the world width
     const worldWidth = initialWorldBounds.maxX - initialWorldBounds.minX;
@@ -55,8 +56,10 @@ export const useCamera = (
   useEffect(() => {
     if (!canvasElement) return;
 
-    // Auto-reset view on mount once canvas is ready
+    // Refit when the available canvas width changes (including MCP embeds).
     resetView();
+    const observer = new ResizeObserver(() => resetView());
+    observer.observe(canvasElement);
 
     const handleWheel = (e) => {
       e.preventDefault();
@@ -103,6 +106,7 @@ export const useCamera = (
     window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
+      observer.disconnect();
       canvasElement.removeEventListener("wheel", handleWheel);
       canvasElement.removeEventListener("mousedown", handleMouseDown);
       window.removeEventListener("mousemove", handleMouseMove);
