@@ -43,7 +43,7 @@ function Slider({ label, min, max, value, onChange, unit }) {
           {value} {unit}
         </span>
       </div>
-      <div className="relative h-1.5 w-full mt-1">
+      <div className="relative h-6 w-full mt-1 flex items-center">
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/40 rounded-full border border-white/5"></div>
         <input
           type="range"

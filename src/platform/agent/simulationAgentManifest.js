@@ -1,4 +1,32 @@
 export const simulationAgentManifest = Object.freeze({
+  "physics.optics.lens-mirror-2d": Object.freeze({
+    adapterVersion: "optics-2d.v1",
+    actions: ["open","configure","readState","reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: { type: "object", properties: {"lensType":{"type":"string","enum":["convex-lens","concave-lens","concave-mirror","convex-mirror"]},"objDistance":{"type":"number","minimum":50,"maximum":450},"focalLength":{"type":"number","minimum":50,"maximum":300},"objHeight":{"type":"number","minimum":20,"maximum":63},"objType":{"type":"string","enum":["tree","arrow"]},"objSide":{"type":"string","enum":["left","right"]}}, additionalProperties: false },
+    stateSchema: { type:"object", properties: {"lensType":{"type":"string"},"objDistance":{"type":"number"},"focalLength":{"type":"number"},"objHeight":{"type":"number"},"objType":{"type":"string"},"objSide":{"type":"string"}} },
+  }),
+  "physics.electricity.circuits": Object.freeze({
+    adapterVersion: "electric-circuits.v1",
+    actions: ["open","configure","readState","play","pause","reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: { type: "object", properties: {"componentType":{"type":"string","enum":["battery","ac_source","resistor","capacitor","inductor","switch","diode","led","ground","node"]},"x":{"type":"number","minimum":0,"maximum":3000},"y":{"type":"number","minimum":0,"maximum":3000}}, additionalProperties: false },
+    stateSchema: { type:"object", properties: {"isSimulating":{"type":"boolean"},"components":{"type":"array"},"connections":{"type":"array"},"selectedId":{"type":["string","null"]},"results":{"type":"object"}} },
+  }),
+  "creative.patterns.ambient-pattern-studio": Object.freeze({
+    adapterVersion: "ambient-pattern.v1",
+    actions: ["open","configure","readState","play","pause","reset","record"],
+    tools: ["open_science_simulation"],
+    video: true,
+    exportable: true,
+    parameterSchema: { type: "object", properties: {"pattern":{"type":"string","enum":["kaleidoscope","tunnel","neon-contours","laser-trails","prism-ribbons","neon-vortex","mandala","aurora","particles","solar-system","flow-field","lissajous","metaballs"]},"palette":{"type":"string","enum":["aurora","ember","ocean","violet","cyberpop","laserwave","prism","cosmic","mono"]},"speed":{"type":"number","minimum":1,"maximum":6},"loopSeconds":{"type":"number","minimum":15,"maximum":180},"symmetry":{"type":"number","minimum":3,"maximum":24},"complexity":{"type":"number","minimum":0,"maximum":1},"intensity":{"type":"number","minimum":0.1,"maximum":2},"bloom":{"type":"number","minimum":0,"maximum":3},"depth":{"type":"number","minimum":0,"maximum":2},"drift":{"type":"number","minimum":0,"maximum":1.5},"rotation":{"type":"number","minimum":-2,"maximum":2},"backgroundGlow":{"type":"number","minimum":0,"maximum":2},"particles":{"type":"number","minimum":0,"maximum":260},"recordingSeconds":{"type":"number","minimum":15,"maximum":600},"recordingFps":{"type":"number","minimum":30,"maximum":60}}, additionalProperties: false },
+    stateSchema: { type:"object", properties: {"isPlaying":{"type":"boolean"},"isRecording":{"type":"boolean"},"settings":{"type":"object"},"elapsedSeconds":{"type":"number"},"captureGuide":{"type":"string"}} },
+  }),
+
   "physics.thermodynamics.gas": Object.freeze({
     adapterVersion: "ideal-gas.v1",
     actions: ["open","configure","readState","reset"],

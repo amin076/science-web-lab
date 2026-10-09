@@ -129,7 +129,17 @@ for (const [id, version, keys, actions] of [
   assert.equal(profile.video,false);
 }
 
-const universal = getSimulationAgentProfile("physics.electricity.circuits");
+for (const [id, version, keys] of [
+  ["physics.optics.lens-mirror-2d","optics-2d.v1",["lensType","objDistance","focalLength","objHeight","objType","objSide"]],
+  ["physics.electricity.circuits","electric-circuits.v1",["componentType","x","y"]],
+  ["creative.patterns.ambient-pattern-studio","ambient-pattern.v1",["pattern","palette","speed","loopSeconds","symmetry"]],
+]) {
+  const profile=getSimulationAgentProfile(id);
+  assert.equal(profile.integrationLevel,"adapted");
+  assert.equal(profile.adapterVersion,version);
+  for(const key of keys)assert(profile.parameterSchema.properties[key],id+" missing "+key);
+}
+const universal = getSimulationAgentProfile("physics.optics.lens-mirror-3d");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
 assert.deepEqual(universal.actions, ["open"]);

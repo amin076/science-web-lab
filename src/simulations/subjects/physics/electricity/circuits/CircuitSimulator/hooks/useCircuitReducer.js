@@ -25,7 +25,7 @@ function reducer(state, action) {
   switch (action.type) {
     case "ADD_COMPONENT": {
       const { compType, x, y } = action;
-      const id = generateId();
+      const id = action.id || generateId();
 
       const newComp = {
         id,

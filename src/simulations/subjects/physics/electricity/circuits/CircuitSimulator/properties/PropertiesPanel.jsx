@@ -27,7 +27,7 @@ export default function PropertiesPanel({
     !!selectedId && Array.isArray(scopeSamples) && scopeSamples.length > 5;
 
   return (
-    <aside className="w-[320px] bg-[#16213e] text-white p-3 flex flex-col gap-4 border-l border-[#0f3460] h-full min-h-0 overflow-y-auto">
+    <aside className="w-full xl:w-[320px] bg-[#16213e] text-white p-3 flex flex-col gap-4 border-l border-[#0f3460] xl:h-full min-h-0 overflow-y-auto">
       {/* PROPERTIES */}
       <div className="bg-[#0f3460] rounded-lg p-3 shrink-0">
         <h3 className="text-sm font-bold tracking-wide text-red-300 mb-3">

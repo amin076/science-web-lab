@@ -1,5 +1,7 @@
 // src/simulations/subjects/creative/patterns/ambient-pattern-studio/AmbientPatternStudio.jsx
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import {
   Download,
   FolderOpen,
@@ -118,6 +120,7 @@ export default function AmbientPatternStudio() {
   const containerRef = useRef(null);
   const rafRef = useRef(null);
   const lastRef = useRef(0);
+  const lastRenderRef = useRef(0);
   const elapsedRef = useRef(0);
   const landscapeRecorderRef = useRef(null);
   const shortsRecorderRef = useRef(null);
@@ -131,7 +134,8 @@ export default function AmbientPatternStudio() {
   const [recordingFps, setRecordingFps] = useState(30);
   const [recordingDirectory, setRecordingDirectory] = useState(null);
   const [recordingDirectoryName, setRecordingDirectoryName] = useState("");
-  const [settings, setSettings] = useState({
+  const initialMcp = useMemo(
+    () => readEmbeddedMcpParameters("creative.patterns.ambient-pattern-studio", {
     pattern: "kaleidoscope",
     palette: "aurora",
     speed: 2,
@@ -145,7 +149,15 @@ export default function AmbientPatternStudio() {
     drift: 0.55,
     particles: 130,
     backgroundGlow: 0.95,
+  }),[]);
+  const [settings,setSettings]=useState(() => {
+    const {recordingSeconds,recordingFps,...patternSettings}=initialMcp.values;
+    return patternSettings;
   });
+  useEffect(() => {
+    if (initialMcp.values.recordingSeconds !== undefined) setRecordingSeconds(initialMcp.values.recordingSeconds);
+    if (initialMcp.values.recordingFps !== undefined) setRecordingFps(initialMcp.values.recordingFps);
+  }, [initialMcp]);
   const settingsRef = useRef(settings);
 
   useEffect(() => {
@@ -155,6 +167,107 @@ export default function AmbientPatternStudio() {
   const updateSetting = useCallback((key, value) => {
     setSettings((current) => ({ ...current, [key]: value }));
   }, []);
+
+  const liveRef=useRef({});
+  liveRef.current={settings,isPlaying,isRecording,recordingSeconds,recordingFps,captureGuide};
+  const actionsRef=useRef({});
+  // Recorder callbacks below are registered after their definitions; tools use current callbacks.
+  useEffect(()=>{
+    const controller=new AbortController();
+    const keys={
+      pattern:{type:"string",enum:PATTERN_PRESETS.map(p=>p.value)},
+      palette:{type:"string",enum:PALETTE_PRESETS.map(p=>p.value)},
+      speed:{type:"number",minimum:1,maximum:6},
+      loopSeconds:{type:"number",minimum:15,maximum:180},
+      symmetry:{type:"number",minimum:3,maximum:24},
+      complexity:{type:"number",minimum:0,maximum:1},
+      intensity:{type:"number",minimum:0.1,maximum:2},
+      bloom:{type:"number",minimum:0,maximum:3},
+      depth:{type:"number",minimum:0,maximum:2},
+      drift:{type:"number",minimum:0,maximum:1.5},
+      rotation:{type:"number",minimum:-2,maximum:2},
+      backgroundGlow:{type:"number",minimum:0,maximum:2},
+      particles:{type:"number",minimum:0,maximum:260},
+      recordingSeconds:{type:"number",minimum:15,maximum:600},
+      recordingFps:{type:"number",enum:[30,60]},
+    };
+    const empty={type:"object",properties:{},additionalProperties:false};
+    const tools=[
+      {name:"esbiko_ambient_get_state",description:"Read pattern, palette, all visual settings, timeline and recording status.",
+       annotations:{readOnlyHint:true},inputSchema:empty,
+       execute:createSafeToolExecutor("ambient_get_state",async()=>({
+         simulationId:"creative.patterns.ambient-pattern-studio",
+         ...liveRef.current,elapsedSeconds:elapsedRef.current,
+       }))},
+      {name:"esbiko_ambient_configure",description:"Configure the same visual and recording settings controlled by the Ambient Pattern Studio interface.",
+       inputSchema:{type:"object",properties:keys,additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_configure",async(input)=>{
+         if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Expected ambient settings object");
+         for(const [key,value] of Object.entries(input)){
+           const rule=keys[key];
+           if(!rule||typeof value!==rule.type||(rule.enum&&!rule.enum.includes(value))||
+             (rule.type==="number"&&(!Number.isFinite(value)|| (rule.minimum!==undefined&&value<rule.minimum)||
+                (rule.maximum!==undefined&&value>rule.maximum))))
+             throw Error("Invalid Ambient Studio parameter: "+key);
+         }
+         if(liveRef.current.isRecording)throw Error("Stop recording before changing recording configuration");
+         const {recordingSeconds,recordingFps,...visual}=input;
+         if(recordingSeconds!==undefined)actionsRef.current.setRecordingSeconds(recordingSeconds);
+         if(recordingFps!==undefined)actionsRef.current.setRecordingFps(recordingFps);
+         if(Object.keys(visual).length)actionsRef.current.setSettings(previous=>({...previous,...visual}));
+         liveRef.current={...liveRef.current,settings:{...liveRef.current.settings,...visual},
+           ...(recordingSeconds!==undefined?{recordingSeconds}:{}),
+           ...(recordingFps!==undefined?{recordingFps}:{})};
+         return {accepted:input};
+       })},
+      {name:"esbiko_ambient_set_playback",description:"Play or pause the ambient canvas animation.",
+       inputSchema:{type:"object",properties:{playing:{type:"boolean"}},required:["playing"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_set_playback",async({playing})=>{
+         if(typeof playing!=="boolean")throw Error("playing must be boolean");
+         actionsRef.current.setIsPlaying(playing);liveRef.current={...liveRef.current,isPlaying:playing};
+         return {playing};
+       })},
+      {name:"esbiko_ambient_reset",description:"Reset the animation timeline (keeps current visual settings).",
+       inputSchema:empty,execute:createSafeToolExecutor("ambient_reset",async()=>{
+         actionsRef.current.resetTime();return {elapsedSeconds:0};
+       })},
+      {name:"esbiko_ambient_randomize",description:"Generate a new random pattern and palette using the same UI randomizer.",
+       inputSchema:empty,execute:createSafeToolExecutor("ambient_randomize",async()=>{
+         actionsRef.current.randomize();return {randomized:true};
+       })},
+      {name:"esbiko_ambient_video_status",description:"Read actual recording status and the last saved WebM segment for both video aspect ratios.",
+       inputSchema:empty,annotations:{readOnlyHint:true},
+       execute:createSafeToolExecutor("ambient_video_status",async()=>({
+         recording: Boolean(landscapeRecorderRef.current?.isRecording?.()||shortsRecorderRef.current?.isRecording?.()),
+         landscape:landscapeRecorderRef.current?.getLastRecording?.()||null,
+         shorts:shortsRecorderRef.current?.getLastRecording?.()||null,
+       }))},
+      {name:"esbiko_ambient_video_download",description:"Download the previously completed landscape or shorts WebM clip using the browser.",
+       inputSchema:{type:"object",properties:{mode:{type:"string",enum:["landscape","shorts"]}},
+         required:["mode"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_video_download",async({mode})=>{
+         if(!["landscape","shorts"].includes(mode))throw Error("Invalid video mode");
+         const recorder=mode==="shorts"?shortsRecorderRef.current:landscapeRecorderRef.current;
+         const info=recorder?.downloadLastRecording?.();
+         if(!info)throw Error("No completed recording available for "+mode);
+         return {mode,...info};
+       })},
+      {name:"esbiko_ambient_record",description:"Start or stop WebM recording of landscape or shorts canvas. Requires browser MediaRecorder support; download handled by shared recorder.",
+       inputSchema:{type:"object",properties:{command:{type:"string",enum:["start","stop"]},
+         mode:{type:"string",enum:["landscape","shorts"]}},required:["command"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_record",async({command,mode="landscape"})=>{
+         if(!["start","stop"].includes(command)||!["landscape","shorts"].includes(mode))
+           throw Error("Invalid recording operation");
+         if(command==="stop"){actionsRef.current.stopRecording();return {requestedStop:true};}
+         const started=actionsRef.current.startRecording(mode);
+         if(!started)throw Error("Could not start recording; check browser MediaRecorder permissions and recorder availability");
+         return {started:true,mode};
+       })},
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch(error=>{if(!controller.signal.aborted)console.warn("Ambient WebMCP",error)});
+    return ()=>controller.abort();
+  },[]);
 
   const clearRecordingTimer = useCallback(() => {
     if (recordingTimeoutRef.current) {
@@ -171,14 +284,14 @@ export default function AmbientPatternStudio() {
 
   const startRecording = useCallback(
     (mode) => {
-      if (isRecording) return;
+      if (isRecording) return false;
 
       setCaptureGuide(mode);
       const recorder =
         mode === "shorts" ? shortsRecorderRef.current : landscapeRecorderRef.current;
       const started = recorder?.startRecording?.();
 
-      if (!started) return;
+      if (!started) return false;
 
       const durationMs = Math.max(0, recordingSeconds) * 1000;
       if (durationMs > 0) {
@@ -188,6 +301,7 @@ export default function AmbientPatternStudio() {
           recordingTimeoutRef.current = null;
         }, durationMs);
       }
+      return true;
     },
     [clearRecordingTimer, isRecording, recordingSeconds],
   );
@@ -252,8 +366,15 @@ export default function AmbientPatternStudio() {
   useEffect(() => {
     const draw = (now) => {
       const canvas = canvasRef.current;
-
       if (!canvas) return;
+      // Full-resolution canvas recording stays at the requested FPS. In normal
+      // preview mode, avoid redrawing 2M pixels at 60fps on phones and MCP iframes.
+      const targetFps = isRecording ? recordingFps : (isPlaying ? 16 : 4);
+      if (lastRenderRef.current && now - lastRenderRef.current < 1000 / targetFps) {
+        rafRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      lastRenderRef.current = now;
 
       const ctx = canvas.getContext("2d", { alpha: false });
       const rawDt = (now - (lastRef.current || now)) / 1000;
@@ -274,7 +395,7 @@ export default function AmbientPatternStudio() {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [isPlaying]);
+  }, [isPlaying, isRecording, recordingFps]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -314,11 +435,13 @@ export default function AmbientPatternStudio() {
     };
   }, []);
 
+  actionsRef.current={setSettings,setIsPlaying,setRecordingSeconds,setRecordingFps,
+    resetTime,randomize,startRecording,stopRecording};
   useEffect(() => () => clearRecordingTimer(), [clearRecordingTimer]);
 
   return (
-    <div className="flex h-full w-full overflow-hidden bg-black text-white">
-      <div ref={containerRef} className="relative flex-1 bg-black">
+    <div className="flex flex-col xl:flex-row h-full w-full min-w-0 overflow-y-auto xl:overflow-hidden bg-black text-white">
+      <div ref={containerRef} data-esbiko-ambient-stage className="relative w-full shrink-0 h-[min(58dvh,560px)] min-h-[260px] xl:h-full xl:min-h-0 xl:flex-1 xl:shrink bg-black">
         <canvas
           id="ambient-pattern-recording-canvas"
           ref={canvasRef}
@@ -361,7 +484,7 @@ export default function AmbientPatternStudio() {
         />
       </div>
 
-      <aside className="h-full w-[390px] shrink-0 overflow-y-auto border-l border-white/10 bg-slate-950/88 p-4 shadow-[-24px_0_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+      <aside data-esbiko-ambient-controls className="w-full xl:w-[390px] shrink-0 xl:h-full overflow-y-auto border-l border-white/10 bg-slate-950/88 p-4 shadow-[-24px_0_80px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
         <div className="mb-4 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.18)]">
             <Sparkles size={23} />
