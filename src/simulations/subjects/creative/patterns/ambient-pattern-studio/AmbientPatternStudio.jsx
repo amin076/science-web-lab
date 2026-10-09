@@ -18,6 +18,10 @@
     const {recordingSeconds,recordingFps,...patternSettings}=initialMcp.values;
     return patternSettings;
   });
+  useEffect(() => {
+    if (initialMcp.values.recordingSeconds !== undefined) setRecordingSeconds(initialMcp.values.recordingSeconds);
+    if (initialMcp.values.recordingFps !== undefined) setRecordingFps(initialMcp.values.recordingFps);
+  }, [initialMcp]);
   const settingsRef = useRef(settings);
 
   useEffect(() => {
