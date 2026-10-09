@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 
 import SurfaceWavesControlPanel from "./SurfaceWavesDoubleSlitControlPanel";
 
@@ -25,20 +27,104 @@ export default function SurfaceWavesDoubleSlit() {
   const lastRef = useRef(0);
   const stateRef = useRef(null);
 
+  const initialMcp = useMemo(() => readEmbeddedMcpParameters(
+    "physics.waves.surface-waves-double-slit", {
+      sourceMode: "continuous", amplitude: 1.5, frequency: 1.5, waveSpeed: 12,
+      damping: 0.015, barrierEnabled: true, barrierX01: 0.5,
+      barrierThickness: 3, slitGap: 30, slitWidth: 8,
+    }), []);
   const [isSimulating, setIsSimulating] = useState(true);
+  const [sourceMode, setSourceMode] = useState(initialMcp.values.sourceMode);
+  const [amplitude, setAmplitude] = useState(initialMcp.values.amplitude);
+  const [frequency, setFrequency] = useState(initialMcp.values.frequency);
+  const [waveSpeed, setWaveSpeed] = useState(initialMcp.values.waveSpeed);
+  const [damping, setDamping] = useState(initialMcp.values.damping);
+  const [barrierEnabled, setBarrierEnabled] = useState(initialMcp.values.barrierEnabled);
+  const [barrierX01, setBarrierX01] = useState(initialMcp.values.barrierX01);
+  const [barrierThickness, setBarrierThickness] = useState(initialMcp.values.barrierThickness);
+  const [slitGap, setSlitGap] = useState(initialMcp.values.slitGap);
+  const [slitWidth, setSlitWidth] = useState(initialMcp.values.slitWidth);
 
-  // --- State for Controls ---
-  const [sourceMode, setSourceMode] = useState("continuous");
-  const [amplitude, setAmplitude] = useState(1.5);
-  const [frequency, setFrequency] = useState(1.5);
-  const [waveSpeed, setWaveSpeed] = useState(12.0);
-  const [damping, setDamping] = useState(0.015);
+  const agentLiveRef = useRef({});
+  agentLiveRef.current = { running: isSimulating, sourceMode, amplitude, frequency, waveSpeed,
+    damping, barrierEnabled, barrierX01, barrierThickness, slitGap, slitWidth };
+  const agentSettersRef = useRef({});
+  agentSettersRef.current = { sourceMode: setSourceMode, amplitude: setAmplitude,
+    frequency: setFrequency, waveSpeed: setWaveSpeed, damping: setDamping,
+    barrierEnabled: setBarrierEnabled, barrierX01: setBarrierX01,
+    barrierThickness: setBarrierThickness, slitGap: setSlitGap, slitWidth: setSlitWidth };
 
-  const [barrierEnabled, setBarrierEnabled] = useState(true);
-  const [barrierX01, setBarrierX01] = useState(0.5);
-  const [barrierThickness, setBarrierThickness] = useState(3);
-  const [slitGap, setSlitGap] = useState(30);
-  const [slitWidth, setSlitWidth] = useState(8);
+  useEffect(() => {
+    const controller = new AbortController();
+    const rules = {
+      sourceMode: { type: "string", enum: ["continuous", "click"] },
+      amplitude: { type: "number", minimum: 0.1, maximum: 3 },
+      frequency: { type: "number", minimum: 0.2, maximum: 5 },
+      waveSpeed: { type: "number", minimum: 1, maximum: 20 },
+      damping: { type: "number", minimum: 0, maximum: 0.1 },
+      barrierEnabled: { type: "boolean" },
+      barrierX01: { type: "number", minimum: 0.1, maximum: 0.9 },
+      barrierThickness: { type: "number", minimum: 1, maximum: 10 },
+      slitGap: { type: "number", minimum: 10, maximum: 100 },
+      slitWidth: { type: "number", minimum: 2, maximum: 40 },
+    };
+    const empty = { type: "object", properties: {}, additionalProperties: false };
+    const tools = [
+      {
+        name: "esbiko_ripple_get_state",
+        description: "Read actual live ripple tank wave, source, damping and slit settings.",
+        inputSchema: empty,
+        annotations: { readOnlyHint: true },
+        execute: createSafeToolExecutor("ripple_get_state", async () => ({
+          simulationId: "physics.waves.surface-waves-double-slit", ...agentLiveRef.current,
+        })),
+      },
+      {
+        name: "esbiko_ripple_configure",
+        description: "Set ripple tank wave source and double-slit controls using the same state as the UI.",
+        inputSchema: { type: "object", properties: rules, additionalProperties: false },
+        execute: createSafeToolExecutor("ripple_configure", async (values) => {
+          if (!values || typeof values !== "object" || Array.isArray(values)) throw new Error("Expected ripple tank configuration object.");
+          for (const [key, value] of Object.entries(values)) {
+            const rule = rules[key];
+            if (!rule || typeof value !== rule.type || (rule.enum && !rule.enum.includes(value)) ||
+                (rule.type === "number" && (!Number.isFinite(value) || value < rule.minimum || value > rule.maximum))) {
+              throw new Error("Invalid ripple parameter: " + key);
+            }
+          }
+          for (const [key,value] of Object.entries(values)) agentSettersRef.current[key](value);
+          agentLiveRef.current = { ...agentLiveRef.current, ...values };
+          return { accepted: values };
+        }),
+      },
+      {
+        name: "esbiko_ripple_set_playback",
+        description: "Run or pause wave propagation.",
+        inputSchema: { type: "object", properties: { running: { type: "boolean" } },
+          required: ["running"], additionalProperties: false },
+        execute: createSafeToolExecutor("ripple_set_playback", async ({ running }) => {
+          if (typeof running !== "boolean") throw new Error("running must be boolean");
+          setIsSimulating(running);
+          agentLiveRef.current = { ...agentLiveRef.current, running };
+          return { running };
+        }),
+      },
+      {
+        name: "esbiko_ripple_reset",
+        description: "Clear the wave surface and resume the existing settings.",
+        inputSchema: empty,
+        execute: createSafeToolExecutor("ripple_reset", async () => {
+          if (stateRef.current) clearWave(stateRef.current);
+          setIsSimulating(true);
+          agentLiveRef.current = { ...agentLiveRef.current, running: true };
+          return { reset: true, running: true };
+        }),
+      },
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch((error)=>{if(!controller.signal.aborted)console.warn("Ripple WebMCP:",error);});
+    return () => controller.abort();
+  }, []);
 
   const getPhysicsParams = useCallback(
     () => ({

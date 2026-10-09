@@ -2,6 +2,14 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.waves.surface-waves-double-slit",
+    name: "Ripple Tank",
+    topic: "Wave interference, pulses, damping and double slit",
+    description: "Read and configure live wave source, double-slit settings and playback.",
+    route: "/experiments/physics.waves.surface-waves-double-slit/run",
+    capabilities: ["state-read", "configure", "playback", "reset"],
+  }),
+  Object.freeze({
     id: "astronomy.kepler-lab",
     name: "Kepler's Laws Lab",
     topic: "Orbital mechanics and Kepler's laws",
