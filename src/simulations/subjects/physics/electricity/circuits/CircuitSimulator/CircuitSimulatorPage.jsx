@@ -16,6 +16,22 @@ import { useCircuitRenderer } from "./hooks/useCircuitRenderer";
 export default function CircuitSimulatorPage() {
   const [state, dispatch] = useCircuitReducer();
   const canvasRef = useRef(null);
+  const initialMcpRef=useRef(null);
+  if(!initialMcpRef.current)initialMcpRef.current=readEmbeddedMcpParameters("physics.electricity.circuits",{});
+  const initialAppliedRef=useRef(false);
+  useEffect(()=>{
+    if(initialAppliedRef.current)return;
+    initialAppliedRef.current=true;
+    const initial=initialMcpRef.current;
+    if(!initial.providedKeys.includes("componentType"))return;
+    const rect=canvasRef.current?.getBoundingClientRect();
+    const width=rect?.width||800,height=rect?.height||600;
+    const type=initial.values.componentType;
+    const x=Math.max(0,Math.min(width,initial.values.x??width/2));
+    const y=Math.max(0,Math.min(height,initial.values.y??height/2));
+    dispatch({type:"ADD_COMPONENT",compType:type,x,y});
+  },[dispatch]);
+
 
   // Scope samples (Voltage/Current vs time) for the selected component.
   const [scopeSamples, setScopeSamples] = useState([]);
