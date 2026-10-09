@@ -8,6 +8,7 @@ const ids = [...registryText.matchAll(/^\s*"([^"]+)":\s*lazyWithRetry\(/gm)].map
 assert.equal(new Set(ids).size, ids.length, "Duplicate simulation IDs in registry.");
 assert.equal(ids.length, 32, "Update this audit when the number of registered simulations changes.");
 
+const quarantinedIds = new Set(["physics.mechanics.gearbox-differential-3d"]);
 const enabled = new Map(WEBMCP_ENABLED_SIMULATIONS.map((simulation) => [simulation.id, simulation]));
 const unexpectedManifests = Object.keys(simulationAgentManifest).filter((id) => !ids.includes(id));
 assert.deepEqual(unexpectedManifests, [], "Adapter manifest has IDs absent from the simulation registry.");
@@ -20,6 +21,7 @@ const report = ids.map((id) => {
   const declaredAdapted = Boolean(profile?.adapterVersion && hasParameterSchema && hasStateSchema && actions.includes("configure") && actions.includes("readState"));
   return {
     simulationId: id,
+    mcpQuarantined: quarantinedIds.has(id),
     integrationLevel: declaredAdapted ? "adapted-contract-declared" : "universal",
     adapterVersion: profile?.adapterVersion ?? null,
     hasAgentParameterContract: hasParameterSchema,
@@ -57,5 +59,7 @@ console.log("SIMULATION READINESS INVENTORY", JSON.stringify({
   browserWebMcpDiscovered: report.filter((r) => r.browserWebMcpDiscovered).length,
 }));
 if (process.argv.includes("--require-all-adapted")) {
-  assert.deepEqual(missingAdapterIds, [], "Not all registered simulations declare a meaningful advanced MCP adapter.");
+  assert.deepEqual(missingAdapterIds.filter(id=>!quarantinedIds.has(id)), [], "Non-quarantined simulations must declare advanced MCP adapters.");
+  assert.deepEqual(missingAdapterIds.filter(id=>quarantinedIds.has(id)), [...quarantinedIds], "Quarantined simulations must not declare active adapters.");
+  for(const id of quarantinedIds) assert(!enabled.has(id), "Quarantined simulation exposed in WebMCP discovery: "+id);
 }
