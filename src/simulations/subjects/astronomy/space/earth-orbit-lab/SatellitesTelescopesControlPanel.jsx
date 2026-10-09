@@ -82,7 +82,8 @@ export default function SatellitesTelescopesControlPanel({
     border: "1px solid rgba(255,255,255,0.1)",
     boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
     color: "white",
-    height: "100%",
+    height: { xs: "auto", md: "100%" },
+    minHeight: 0,
     display: "flex",
     flexDirection: "column",
     transition: "background 0.3s ease",
@@ -185,8 +186,9 @@ export default function SatellitesTelescopesControlPanel({
 
       <Box
         sx={{
-          flex: 1,
-          overflowY: "auto",
+          flex: { xs: "none", md: 1 },
+          minHeight: 0,
+          overflowY: { xs: "visible", md: "auto" },
           pr: 0.5,
           "&::-webkit-scrollbar": { width: 4 },
           "&::-webkit-scrollbar-thumb": {
