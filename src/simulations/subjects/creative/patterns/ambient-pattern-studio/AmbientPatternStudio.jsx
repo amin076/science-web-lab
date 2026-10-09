@@ -1,3 +1,138 @@
+// src/simulations/subjects/creative/patterns/ambient-pattern-studio/AmbientPatternStudio.jsx
+import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
+import {
+  Download,
+  FolderOpen,
+  Frame,
+  Monitor,
+  Pause,
+  Play,
+  RefreshCcw,
+  Shuffle,
+  Smartphone,
+  Sparkles,
+  Video,
+} from "lucide-react";
+import VideoRecorderControls from "@/components/shared/video/VideoRecorderControls.jsx";
+import {
+  PALETTE_PRESETS,
+  PATTERN_PRESETS,
+  renderAmbientPattern,
+} from "./patternRenderer";
+
+const CANVAS_W = 1920;
+const CANVAS_H = 1080;
+const MAX_FRAME_DELTA_SECONDS = 1 / 60;
+
+const CAPTURE_GUIDES = {
+  landscape: {
+    label: "16:9 YouTube",
+    crop: { x: 0, y: 0, width: 1, height: 1 },
+  },
+  shorts: {
+    label: "9:16 Shorts",
+    crop: { x: 0.33125, y: 0, width: 0.3375, height: 1 },
+  },
+};
+
+const Slider = ({ label, value, min, max, step, onChange, unit = "" }) => (
+  <label className="block">
+    <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-white/55">
+      <span>{label}</span>
+      <span className="text-cyan-200">
+        {Number(value).toFixed(step < 0.1 ? 2 : 1)}
+        {unit}
+      </span>
+    </div>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(event) => onChange(parseFloat(event.target.value))}
+      className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-cyan-300 transition-colors hover:bg-white/20"
+    />
+  </label>
+);
+
+const SelectField = ({ label, value, options, onChange }) => (
+  <label className="block">
+    <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-white/55">
+      {label}
+    </span>
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="w-full rounded-lg border border-white/10 bg-black/45 px-3 py-2 text-sm font-semibold text-white outline-none transition-colors hover:border-cyan-300/40 focus:border-cyan-300/70"
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value} className="bg-slate-950">
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+);
+
+function CaptureGuide({ mode, bounds, isRecording }) {
+  const guide = CAPTURE_GUIDES[mode];
+
+  if (!guide || !bounds) return null;
+
+  const style = {
+    left: bounds.left + guide.crop.x * bounds.width,
+    top: bounds.top + guide.crop.y * bounds.height,
+    width: guide.crop.width * bounds.width,
+    height: guide.crop.height * bounds.height,
+  };
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-10">
+      <div
+        style={style}
+        className="absolute border border-cyan-200/80 shadow-[0_0_24px_rgba(34,211,238,0.28),inset_0_0_24px_rgba(34,211,238,0.08)]"
+      >
+        <div className="absolute left-4 top-3 rounded bg-black/55 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-cyan-100 backdrop-blur-md">
+          {isRecording ? "Recording" : "Capture Area"} {guide.label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Panel({ title, icon, children }) {
+  return (
+    <section className="rounded-xl border border-white/10 bg-white/[0.055] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+      <div className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-cyan-100/85">
+        {React.createElement(icon, { size: 14 })}
+        {title}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+export default function AmbientPatternStudio() {
+  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const rafRef = useRef(null);
+  const lastRef = useRef(0);
+  const elapsedRef = useRef(0);
+  const landscapeRecorderRef = useRef(null);
+  const shortsRecorderRef = useRef(null);
+  const recordingTimeoutRef = useRef(null);
+
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [captureGuide, setCaptureGuide] = useState("landscape");
+  const [canvasBounds, setCanvasBounds] = useState(null);
+  const [recordingSeconds, setRecordingSeconds] = useState(60);
+  const [recordingFps, setRecordingFps] = useState(30);
+  const [recordingDirectory, setRecordingDirectory] = useState(null);
+  const [recordingDirectoryName, setRecordingDirectoryName] = useState("");
   const initialMcp = useMemo(
     () => readEmbeddedMcpParameters("creative.patterns.ambient-pattern-studio", {
     pattern: "kaleidoscope",
