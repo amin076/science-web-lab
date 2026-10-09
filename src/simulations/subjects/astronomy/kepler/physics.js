@@ -5,6 +5,7 @@ export class KeplerEngine {
     this.t = 0;
     this.state = { x: 0, y: 0, vx: 0, vy: 0 };
     this.trail = [];
+    this.orbitCurve = [];
     this.sweeps = [];
     this.sweepTimer = 0;
     this.lastSweepPos = null;
@@ -38,7 +39,25 @@ export class KeplerEngine {
     const GM = PHYSICS.G * PHYSICS.STAR_MASS;
     const specificEnergy = v2 / 2 - GM / r;
 
-    this.orbitParams.energy = specificEnergy;
+    this.orbitParams = { energy: specificEnergy, a: null, period: 0 };
+    // Draw the full analytic conic independently of the limited history trail.
+    // The central body's location (0,0) is a focus of this ellipse.
+    const h = r * vy;
+    const eccentricityX = vy * h / GM - 1;
+    const eccentricityY = -vx * h / GM;
+    const eccentricity = Math.hypot(eccentricityX, eccentricityY);
+    const semiLatusRectum = h * h / GM;
+    if (specificEnergy < 0 && semiLatusRectum > 1e-6 && eccentricity < 1) {
+      const omega = Math.atan2(eccentricityY, eccentricityX);
+      this.orbitCurve = Array.from({ length: 361 }, (_, i) => {
+        const trueAnomaly = i * Math.PI / 180;
+        const radius = semiLatusRectum / (1 + eccentricity * Math.cos(trueAnomaly));
+        return {
+          x: radius * Math.cos(trueAnomaly + omega),
+          y: radius * Math.sin(trueAnomaly + omega),
+        };
+      });
+    }
 
     if (specificEnergy >= 0) {
       this.status = "ESCAPE";
