@@ -428,17 +428,16 @@ const MotionSimulator = () => {
       }}
     >
       <Box
-        sx={{ display: "flex", flexDirection: "row", containerType: "inline-size", height: "min(92dvh, 960px)", minHeight: 600, p: 1, gap: 2, alignItems: "stretch", "@container (max-width: 900px)": { flexDirection: "column", height: "auto", minHeight: 0, alignItems: "stretch" } }}
+        sx={{ display: "flex", flexDirection: initialMcp.embeddedMcpApp ? "column" : { xs: "column", lg: "row" }, height: initialMcp.embeddedMcpApp ? "auto" : { xs: "auto", lg: "min(92dvh, 960px)" }, minHeight: 0, p: 1, gap: 2, alignItems: "stretch" }}
       >
         {/* CANVAS AREA - Sharp Corners */}
         <Box
           ref={containerRef}
           sx={{
-            flex: { lg: 1 },
+            flex: initialMcp.embeddedMcpApp ? "0 0 auto" : { xs: "none", lg: 1 },
             minWidth: 0,
             width: "100%",
-            height: "100%",
-            "@container (max-width: 900px)": { height: "clamp(340px, 62dvh, 640px)", flex: "none" },
+            height: initialMcp.embeddedMcpApp ? "clamp(300px, 52dvh, 560px)" : { xs: "clamp(340px, 62dvh, 640px)", lg: "100%" },
             position: "relative",
             borderRadius: 3,
             overflow: "hidden",
@@ -509,8 +508,9 @@ const MotionSimulator = () => {
         </Box>
 
         {/* SIDEBAR PANEL */}
-        <Box sx={{ width: 350, maxWidth: "100%", height: "100%", minWidth: 0, flexShrink: 0, "@container (max-width: 900px)": { width: "100%", height: "auto" } }}>
+        <Box sx={{ width: initialMcp.embeddedMcpApp ? "100%" : { xs: "100%", lg: 350 }, maxWidth: "100%", height: initialMcp.embeddedMcpApp ? "auto" : { xs: "auto", lg: "100%" }, minWidth: 0, flexShrink: 0, display: "block" }}>
           <ControlPanel
+            stacked={initialMcp.embeddedMcpApp}
             // Control Props
             isSimulating={isSimulating}
             onToggleSim={() => setIsSimulating(!isSimulating)}
