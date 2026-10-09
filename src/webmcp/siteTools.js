@@ -2,6 +2,20 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.thermodynamics.gas", name: "Ideal Gas Law Lab",
+    topic: "Thermodynamics, pressure, volume, and temperature",
+    description: "Read and change valid real ideal-gas state and locked thermodynamic variable.",
+    route: "/experiments/physics.thermodynamics.gas/run",
+    capabilities: ["state-read","configure","reset"],
+  }),
+  Object.freeze({
+    id: "physics.acoustics.spatial-audio", name: "Spatial Audio Lab",
+    topic: "Sound panning, distance, Web Audio",
+    description: "Move the live audio source, change gain, read and control real playback (user audio permission may be required).",
+    route: "/experiments/physics.acoustics.spatial-audio/run",
+    capabilities: ["state-read","configure","playback","reset"],
+  }),
+  Object.freeze({
     id: "physics.waves.surface-waves-double-slit",
     name: "Ripple Tank",
     topic: "Wave interference, pulses, damping and double slit",
