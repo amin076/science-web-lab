@@ -35,14 +35,16 @@ const PanelContainer = React.forwardRef(({ children }, ref) => (
     ref={ref}
     elevation={0}
     sx={{
-      height: { xs: "auto", lg: "100%" },
+      height: "100%",
+      "@container (max-width: 900px)": { height: "auto" },
       borderRadius: 3,
       background: "#0f172a",
       borderLeft: "1px solid rgba(255,255,255,0.1)",
       color: "white",
       display: "flex",
       flexDirection: "column",
-      overflow: { xs: "visible", lg: "hidden" },
+      overflow: "hidden",
+      "@container (max-width: 900px)": { overflow: "visible" },
       boxShadow: "0 18px 45px rgba(0,0,0,.2)",
     }}
   >
@@ -55,7 +57,8 @@ const ScrollArea = ({ children }) => (
     sx={{
       flex: 1,
       minHeight: 0,
-      overflowY: { xs: "visible", lg: "auto" },
+      overflowY: "auto",
+      "@container (max-width: 900px)": { overflowY: "visible" },
       p: 2,
       "&::-webkit-scrollbar": { width: "6px" },
       "&::-webkit-scrollbar-track": { background: "transparent" },
