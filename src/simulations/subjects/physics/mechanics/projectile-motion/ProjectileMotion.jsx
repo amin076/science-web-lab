@@ -26,8 +26,8 @@ const INITIAL_OBJECTS = [
     type: "ball",
     x: 0,
     y: 20,
-    vx: 15,
-    vy: 15,
+    vx: 20,
+    vy: 20,
     ax: 0,
     ay: 0,
     radius: 0.6,
@@ -41,9 +41,9 @@ const INITIAL_OBJECTS = [
   {
     id: "car",
     type: "car",
-    x: -15,
+    x: 0,
     y: 0,
-    vx: 10,
+    vx: 20,
     vy: 0,
     ax: 3,
     ay: 0,
@@ -57,9 +57,9 @@ const INITIAL_OBJECTS = [
   {
     id: "plane",
     type: "plane",
-    x: -50,
+    x: 0,
     y: 60,
-    vx: 30,
+    vx: 20,
     vy: 0,
     ax: 0,
     ay: 0,
@@ -73,9 +73,9 @@ const INITIAL_OBJECTS = [
   {
     id: "parcel",
     type: "parcel",
-    x: -50,
+    x: 0,
     y: 60,
-    vx: 30,
+    vx: 20,
     vy: 0,
     radius: 0.8,
     width: 1.6,
@@ -102,8 +102,8 @@ const MotionSimulator = () => {
         selectedObject: "ball",
         x: 0,
         y: 20,
-        vx: 15,
-        vy: 15,
+        vx: 20,
+        vy: 20,
       },
     );
   }
@@ -156,6 +156,7 @@ const MotionSimulator = () => {
   const [history, setHistory] = useState([]);
   const [objects, setObjects] = useState(() => {
     const provided = new Set(initialMcp.providedKeys);
+    const configuredPlane = INITIAL_OBJECTS.find((object) => object.id === "plane");
     return INITIAL_OBJECTS.map((object) => {
       const isSelected = object.id === initialMcp.values.selectedObject;
       if (!isSelected) return {...object, active: false};
@@ -165,6 +166,13 @@ const MotionSimulator = () => {
         if (provided.has(key)) next[key] = initialMcp.values[key];
       }
       return next;
+    }).map((object, _, configuredObjects) => {
+      // MCP changes to either partner must not desynchronise the attached pair.
+      if (object.id !== "parcel" && object.id !== "plane") return object;
+      const chosen = configuredObjects.find((item) => item.id === initialMcp.values.selectedObject);
+      const pairX = chosen && (chosen.id === "plane" || chosen.id === "parcel") ? chosen.x : configuredPlane.x;
+      const pairVx = chosen && (chosen.id === "plane" || chosen.id === "parcel") ? chosen.vx : configuredPlane.vx;
+      return { ...object, x: pairX, vx: pairVx };
     });
   });
 
@@ -382,23 +390,29 @@ const MotionSimulator = () => {
   };
 
   const handleDropParcel = () => {
-    setObjects((prev) =>
-      prev.map((o) => {
+    setObjects((prev) => {
+      const plane = prev.find((o) => o.id === "plane");
+      return prev.map((o) => {
         if (o.id === "parcel" && o.attached) {
-          return { ...o, attached: false };
+          return { ...o, x: plane?.x ?? o.x, vx: plane?.vx ?? o.vx, y: (plane?.y ?? o.y) - 2, vy: 0, attached: false };
         }
         return o;
-      })
-    );
+      });
+    });
     if (!isSimulating) setIsSimulating(true);
   };
 
   const updateObjectProperty = (prop, val) => {
-    setObjects((p) =>
-      p.map((o) =>
-        o.id === selectedObject ? { ...o, [prop]: parseFloat(val) } : o
-      )
-    );
+    const value = Number(val);
+    setObjects((prev) => {
+      const isLinkedSetting = (prop === "x" || prop === "vx") && (selectedObject === "plane" || selectedObject === "parcel");
+      const parcelAttached = prev.some((o) => o.id === "parcel" && o.attached);
+      return prev.map((o) => {
+        if (o.id === selectedObject) return { ...o, [prop]: value };
+        if (isLinkedSetting && parcelAttached && (o.id === "plane" || o.id === "parcel")) return { ...o, [prop]: value };
+        return o;
+      });
+    });
   };
 
   const currentObject = useMemo(
