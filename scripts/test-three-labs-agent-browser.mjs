@@ -132,7 +132,7 @@ try {
       assert.equal(boot.data.components[0].type,"resistor");
       assert.equal(boot.data.components[0].x,120);
    }
-   await page.screenshot({path:"artifacts/three-agent-ready/"+lab.tag+"-"+width+".png",fullPage:true});
+   await page.screenshot({path:"artifacts/three-agent-ready/"+lab.tag+"-"+width+".png",fullPage:lab.tag!=="ambient",timeout:45000,animations:"disabled"});
    assert.deepEqual(errors,[],"Browser JS errors "+lab.id+" "+errors.join("\n"));
    console.log("THREE LABS AGENT RESPONSIVE PASS",lab.id,width);
    await page.close();
