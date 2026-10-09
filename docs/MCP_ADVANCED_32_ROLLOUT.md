@@ -2,7 +2,7 @@
 
 **Starting baseline (before PRs #140, #142, #143):** 17 of 32 have a declared adapter with parameter and state schemas; the following 15 are not yet adapted. This is a declaration-level milestone **only**. It must not be confused with end-to-end ChatGPT control (Phase 2).
 
-Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readiness/all-simulations.json`, including precise missing IDs. Run `node scripts/audit-all-simulation-readiness.mjs --require-all-adapted` for a hard gate: it must fail until all 32 have meaningful contracts.
+Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readiness/all-simulations.json`, including precise missing IDs. Run `node scripts/audit-all-simulation-readiness.mjs --require-all-adapted` for a hard gate: it must fail if any non-quarantined simulation loses an adapter, or a quarantined simulation regains discovery unexpectedly.
 
 ## 15 remaining adapter implementations
 
@@ -12,7 +12,7 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `physics.electricity.coulomb-law-3d` | Coulomb's Law 3D | [x] | [x] | [x] |
 | `physics.electricity.circuits` | Electric Circuits Lab | [x] | [x] | [x] |
 | `evolution-of-life` | Evolution of Life | [x] | [x] | [x] |
-| `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [x] | [x] | [x] |
+| `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | QUARANTINED | — | — |
 | `physics.thermodynamics.gas` | Ideal Gas Law | [x] | [x] | [x] |
 | `astronomy.kepler-lab` | Kepler's Laws | [x] | [x] | [x] |
 | `physics.challenges.moon-lander` | Moon Lander | [x] | [x] | [x] |
@@ -26,7 +26,7 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 
 ## Current result (October 9, 2026)
 
-**32/32** manifest contracts now exist, **0/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits, and Ambient Pattern Studio contracts have browser-tested live agent operations of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145, #148, #153 and #155. Ambient WebM recording support is wired but recording success/download still need dedicated acceptance.
+**31/32** manifest contracts now exist; **one** is deliberately quarantined and removed from MCP. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits, and Ambient Pattern Studio contracts have browser-tested live agent operations of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145, #148, #153 and #155. Ambient WebM recording support is wired but recording success/download still need dedicated acceptance.
 
 ## Non-negotiable acceptance for each checkbox
 
@@ -44,3 +44,7 @@ Keep the existing general MCP tools and their input contracts backwards compatib
 ## Final six October 9 release
 
 PR #155 adds the final six adapter contracts, real browser control tools, and targeted mobile/bug fixes. The 24-case 4-viewport browser regression and general MCP contract test passed. Server-side publication and live catalog confirmation are separate signoffs. Do not conflate this initial adapter milestone with end-to-end ability to control all features of every simulation through the hosted ChatGPT tool surface or with mobile real-device/manual QA.
+
+## Manual review hold: Gearbox & Differential 3D
+
+The Gearbox UI was reported broken during live review. Its advanced contract, WebMCP browser tools and server discovery/open are suspended. **Do not re-enable until the simulation's actual UI is repaired and retested.** Evolution of Life iframe scroll is fixed separately in PR #157.
