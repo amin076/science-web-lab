@@ -141,12 +141,12 @@ for (const [id, version, keys] of [
 }
 const finalSix=[
   ["evolution-of-life","evolution-timeline.v1"],
-  ["physics.mechanics.gearbox-differential-3d","gearbox.v1"],
   ["physics.challenges.moon-lander","moon-lander.v1"],
   ["physics.optics.lens-mirror-3d","optics3d.v1"],
   ["earth-science.geology.plate-tectonics","geology3d.v1"],
   ["astronomy.space.satellites-telescopes","satellites.v1"],
 ];
+assert.equal(getSimulationAgentProfile("physics.mechanics.gearbox-differential-3d").integrationLevel,"universal");
 for(const [id,version] of finalSix){
   const p=getSimulationAgentProfile(id);
   assert.equal(p.integrationLevel,"adapted");
