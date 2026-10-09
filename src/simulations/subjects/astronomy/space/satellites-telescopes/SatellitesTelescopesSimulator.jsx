@@ -1,4 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import {
   Box,
   Button,
@@ -123,19 +125,15 @@ export default function SatellitesTelescopesSimulator() {
   const [earthImg, setEarthImg] = useState(null);
   const [moonImg, setMoonImg] = useState(null);
 
-  const [settings, setSettings] = useState({
-    timeScale: 200,
-    dt: 1,
-    showTrails: true,
-    showOrbits: true,
-    showVectors: false,
-    showLOS: true,
-    showStars: true,
-    mode: VIEW_MODES.EDUCATIONAL,
-  });
+  const defaults=useMemo(()=>({
+    timeScale:200,dt:1,showTrails:true,showOrbits:true,showVectors:false,
+    showLOS:true,showStars:true,mode:VIEW_MODES.EDUCATIONAL,
+  }),[]);
+  const initial=useMemo(()=>readEmbeddedMcpParameters("astronomy.space.satellites-telescopes",{...defaults,zoom:0.08}).values,[defaults]);
+  const [settings, setSettings] = useState(()=>{const {zoom,...rest}=initial;return rest;});
 
   const sim = useRef({ t: 0, objects: [] });
-  const viewRef = useRef({ x: 0, y: 0, k: 0.08 });
+  const viewRef = useRef({ x: 0, y: 0, k: initial.zoom });
 
   const dragRef = useRef({
     active: false,
@@ -476,7 +474,8 @@ export default function SatellitesTelescopesSimulator() {
       lastRef.current = now;
       if (running) {
         accRef.current += dtReal * settings.timeScale;
-        while (accRef.current >= settings.dt) {
+        let steps=0;
+        while (accRef.current >= settings.dt && steps++ < 80) {
           accRef.current -= settings.dt;
           sim.current.t += settings.dt;
           sim.current.objects.forEach((o) => {
@@ -491,6 +490,7 @@ export default function SatellitesTelescopesSimulator() {
             o.state = ns;
           });
         }
+        if(steps >= 80) accRef.current=0;
         setUiTime(sim.current.t);
       }
       render();
@@ -500,6 +500,63 @@ export default function SatellitesTelescopesSimulator() {
     return () => cancelAnimationFrame(rafRef.current);
   }, [running, settings, stageW, stageH, earthImg, moonImg, selectedObjId]);
 
+
+  const liveRef=useRef({});
+  liveRef.current={running,settings,selectedObjId,uiTime,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k};
+  const functionsRef=useRef({});
+  functionsRef.current={setRunning,setSettings,setSelectedObjId,reset,addPreset,removeObject,toggleVisible};
+  useEffect(()=>{
+    const controller=new AbortController(),empty={type:"object",properties:{},additionalProperties:false};
+    const fields={
+      timeScale:{type:"number",minimum:0,maximum:2000},
+      dt:{type:"number",minimum:0.1,maximum:60},
+      showTrails:{type:"boolean"},showOrbits:{type:"boolean"},showVectors:{type:"boolean"},
+      showLOS:{type:"boolean"},showStars:{type:"boolean"},
+      mode:{type:"string",enum:[VIEW_MODES.EDUCATIONAL,VIEW_MODES.REALISTIC]},
+      zoom:{type:"number",minimum:0.0005,maximum:20},
+    };
+    const snapshot=()=>({simulationId:"astronomy.space.satellites-telescopes",state:{
+      ...liveRef.current,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k,time:sim.current.t,
+    }});
+    const tools=[
+      {name:"esbiko_satellites_get_state",description:"Read orbital time, objects, current positions, visibility, selection and display configuration.",inputSchema:empty,annotations:{readOnlyHint:true},execute:createSafeToolExecutor("satellites_get_state",async()=>snapshot())},
+      {name:"esbiko_satellites_configure",description:"Change orbit simulation time scale, integrator step, trail/orbit/vectors visibility, scale mode and zoom.",inputSchema:{type:"object",properties:fields,additionalProperties:false},execute:createSafeToolExecutor("satellites_configure",async(input)=>{
+        if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Expected satellite settings");
+        for(const [key,value] of Object.entries(input)){const rule=fields[key];if(!rule||typeof value!==rule.type||(rule.enum&&!rule.enum.includes(value))||(rule.type==="number"&&(!Number.isFinite(value)||value<rule.minimum||value>rule.maximum)))throw Error("Invalid satellite option: "+key);}
+        const {zoom,...next}=input;
+        if(zoom!==undefined)viewRef.current.k=zoom;
+        if(Object.keys(next).length)functionsRef.current.setSettings(old=>({...old,...next}));
+        return {accepted:input};
+      })},
+      {name:"esbiko_satellites_add_preset",description:"Add an actual ISS, Hubble, JWST, LEO, MEO or GEO orbital object.",inputSchema:{type:"object",properties:{preset:{type:"string",enum:Object.keys(SATELLITE_CONFIGS)}},required:["preset"],additionalProperties:false},execute:createSafeToolExecutor("satellites_add_preset",async({preset})=>{
+        if(!(preset in SATELLITE_CONFIGS))throw Error("Unknown satellite preset");
+        functionsRef.current.addPreset(preset);
+        return {preset,objects:sim.current.objects.length};
+      })},
+      {name:"esbiko_satellites_select",description:"Select an orbital object (or Earth) by real ID.",inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},execute:createSafeToolExecutor("satellites_select",async({id})=>{
+        if(id!=="EARTH"&&!sim.current.objects.some(o=>o.id===id))throw Error("Unknown object");
+        functionsRef.current.setSelectedObjId(id);return {selectedId:id};
+      })},
+      {name:"esbiko_satellites_set_visibility",description:"Show or hide any satellite object; Moon always remains.",inputSchema:{type:"object",properties:{id:{type:"string"},visible:{type:"boolean"}},required:["id","visible"],additionalProperties:false},execute:createSafeToolExecutor("satellites_set_visibility",async({id,visible})=>{
+        const obj=sim.current.objects.find(o=>o.id===id);
+        if(!obj||obj.type==="MOON"||typeof visible!=="boolean")throw Error("Invalid object visibility");
+        if(!!obj.hidden===visible)functionsRef.current.toggleVisible(id);
+        return {id,visible};
+      })},
+      {name:"esbiko_satellites_remove",description:"Remove an existing satellite (Moon cannot be removed).",inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},execute:createSafeToolExecutor("satellites_remove",async({id})=>{
+        if(!sim.current.objects.some(o=>o.id===id&&o.type!=="MOON"))throw Error("Unknown removable object");
+        functionsRef.current.removeObject(id);return {removed:id};
+      })},
+      {name:"esbiko_satellites_set_playback",description:"Start or pause satellite physics.",inputSchema:{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},execute:createSafeToolExecutor("satellites_set_playback",async({running})=>{
+        if(typeof running!=="boolean")throw Error("running must be boolean");
+        functionsRef.current.setRunning(running);return {running};
+      })},
+      {name:"esbiko_satellites_reset",description:"Reinitialize Earth/Moon/ISS, orbit time and zoom.",inputSchema:empty,execute:createSafeToolExecutor("satellites_reset",async()=>{functionsRef.current.reset();return {reset:true};})},
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch(error=>{if(!controller.signal.aborted)console.warn("Satellite MCP",error);});
+    return ()=>controller.abort();
+  },[]);
   const recenterView = () => {
     setSelectedObjId(null);
     viewRef.current = { x: 0, y: 0, k: 0.08 };
@@ -630,13 +687,15 @@ export default function SatellitesTelescopesSimulator() {
         gap: { xs: 0, md: 2 },
         p: { xs: 0, md: 2 },
         bgcolor: { xs: "#000", md: "transparent" },
-        overflow: "hidden",
+        overflowY: isMobile ? "auto" : "hidden",
+        minWidth:0,
       }}
     >
       <Box
         sx={{
           flex: { xs: "none", md: 1 },
-          height: { xs: "55%", md: "auto" },
+          height: { xs: "min(58dvh, 540px)", md: "auto" },
+          minHeight: {xs:290,md:0},
           display: "flex",
           flexDirection: "column",
           gap: 2,
@@ -645,6 +704,7 @@ export default function SatellitesTelescopesSimulator() {
       >
         <Box
           ref={stageRef}
+          data-esbiko-satellites-stage
           sx={{
             flex: 1,
             position: "relative",
@@ -704,6 +764,7 @@ export default function SatellitesTelescopesSimulator() {
           width: { xs: "100%", md: 340 },
           flex: { xs: 1, md: "none" },
           height: { xs: "auto", md: "100%" },
+          minHeight:{xs:320,md:0},
           overflowY: "auto", // Allow scrolling
           bgcolor: { xs: "#121212", md: "transparent" },
         }}
@@ -742,7 +803,7 @@ export default function SatellitesTelescopesSimulator() {
           </Box>
         )}
 
-        <SatellitesTelescopesControlPanel
+        <div data-esbiko-satellites-controls><SatellitesTelescopesControlPanel
           settings={settings}
           setSettings={setSettings}
           onAddPreset={addPreset}
@@ -752,7 +813,7 @@ export default function SatellitesTelescopesSimulator() {
           uiTime={uiTime}
           selectedId={selectedObjId}
           onSelect={setSelectedObjId}
-        />
+        /></div>
       </Box>
     </Box>
   );
