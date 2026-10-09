@@ -149,14 +149,22 @@ const KeplerSimulator = () => {
   }, [isRunning, animate]);
 
   return (
-    <div className="h-[calc(100dvh-100px)] w-full overflow-hidden bg-slate-950">
+    <div className="kepler-workspace w-full bg-slate-950">
       {/* Unified rounded container */}
-      <div className="h-full w-full flex flex-col xl:flex-row min-h-0 gap-0 px-4 pb-4">
+      <div className="kepler-layout w-full flex flex-col xl:flex-row gap-4 px-3 md:px-4 pb-4">
         {/* ===== LEFT: CANVAS ===== */}
-        <div className="flex-1 min-h-0">
-          <div className="h-full w-full rounded-xl border border-slate-800 bg-slate-900 overflow-hidden relative">
+        <div className="kepler-stage flex-1 min-w-0">
+          <div className="kepler-stage-frame w-full rounded-xl border border-slate-800 bg-slate-900 overflow-hidden relative">
             <KeplerCanvas physicsRef={physicsRef} renderTrigger={isRunning} />
 
+            <div className="kepler-hud" aria-label="Orbital model information">
+              <strong>Scaled two-body model</strong>
+              <span>Central body: fixed star · M = {PHYSICS.STAR_MASS} model mass units</span>
+              <span>Orbiter: test particle · negligible mass</span>
+              <span>GM = {PHYSICS.G * PHYSICS.STAR_MASS} scaled units · not Sun–Earth scale</span>
+              <span>Distance: {telemetry.r.toFixed(0)} model units · Speed: {telemetry.v.toFixed(1)} units/time</span>
+              <span>Orbit: {status === "ESCAPE" ? "unbound trajectory" : status === "CRASHED" ? "collision" : "bound (unless collision)"}</span>
+            </div>
             {/* Canvas Overlay Title */}
             <div className="absolute top-6 left-6 pointer-events-none opacity-60">
               <h1 className="text-3xl font-black text-white tracking-widest">
@@ -170,8 +178,8 @@ const KeplerSimulator = () => {
         </div>
 
         {/* ===== RIGHT: CONTROL PANEL ===== */}
-        <div className="w-full xl:w-[420px] min-h-0 xl:ml-4 mt-4 xl:mt-0">
-          <div className="h-full rounded-xl border border-slate-800 bg-slate-900 overflow-hidden">
+        <div className="kepler-controls w-full xl:w-[420px] min-w-0">
+          <div className="kepler-controls-frame rounded-xl border border-slate-800 bg-slate-900 overflow-hidden">
             <KeplerControlPanel
               isRunning={isRunning}
               setIsRunning={setIsRunning}
