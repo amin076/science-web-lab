@@ -410,9 +410,15 @@ const MotionSimulator = () => {
     <Box
       sx={{
         width: "100%",
-        minHeight: "100dvh",
+        height: "100dvh",
+        maxHeight: "100dvh",
+        minHeight: 0,
         bgcolor: "#0f1115",
         overflowX: "hidden",
+        overflowY: "auto",
+        overscrollBehaviorY: "contain",
+        WebkitOverflowScrolling: "touch",
+        touchAction: "pan-y",
         "&::-webkit-scrollbar": { width: "10px" },
         "&::-webkit-scrollbar-track": { background: "#0f1115" },
         "&::-webkit-scrollbar-thumb": {
@@ -422,7 +428,7 @@ const MotionSimulator = () => {
       }}
     >
       <Box
-        sx={{ display: "flex", flexDirection: "row", containerType: "inline-size", height: "min(92dvh, 960px)", minHeight: 600, p: 1, gap: 2, alignItems: "stretch", "@container (max-width: 900px)": { flexDirection: "column", height: "auto", minHeight: 0 } }}
+        sx={{ display: "flex", flexDirection: "row", containerType: "inline-size", height: "min(92dvh, 960px)", minHeight: 600, p: 1, gap: 2, alignItems: "stretch", "@container (max-width: 900px)": { flexDirection: "column", height: "auto", minHeight: 0, alignItems: "stretch" } }}
       >
         {/* CANVAS AREA - Sharp Corners */}
         <Box
