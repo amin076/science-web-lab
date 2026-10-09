@@ -61,7 +61,7 @@ try{
         await page.waitForTimeout(80);
         const out=(await call("get_state")).data.state.outputs;
         assert(Math.abs(out.gearboxOutRPM-700)<0.001);
-        assert(out.rightWheelRPM>out.leftWheelRPM);
+        assert(Math.abs(out.rightWheelRPM)>Math.abs(out.leftWheelRPM));
         assert.equal((await call("configure",{gearRatio:0})).ok,false);
         assert.equal((await call("set_playback",{running:true})).ok,true);
         assert.equal((await call("reset")).ok,true);
