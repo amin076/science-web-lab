@@ -37,7 +37,7 @@ export default function CircuitCanvas({
   };
 
   return (
-    <div className="flex-1 relative cursor-crosshair bg-[#1a1a2e] overflow-hidden">
+    <div className="w-full h-full min-w-0 relative cursor-crosshair bg-[#1a1a2e] overflow-hidden">
       <canvas
         ref={canvasRef}
         className="block w-full h-full touch-none"
