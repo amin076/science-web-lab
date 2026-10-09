@@ -1,106 +1,185 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import Sketch from "react-p5";
 import { motion } from "framer-motion";
 import { Headphones, Move, Play, Pause, Volume2, Info } from "lucide-react";
 
 const SpatialAudioLab = () => {
-  // --- State ---
+  const initialMcp = useMemo(() => readEmbeddedMcpParameters(
+    "physics.acoustics.spatial-audio", { volume:0.5, x:2, z:-2 },
+  ), []);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.5);
-  // Source Position (X, Z) - Initialized slightly off-center so it's visible
-  const [pos, setPos] = useState({ x: 2, z: -2 });
-
-  // --- Refs ---
+  const [audioError, setAudioError] = useState("");
+  const [volume, setVolume] = useState(initialMcp.values.volume);
+  const [pos, setPos] = useState({ x:initialMcp.values.x, z:initialMcp.values.z });
   const audioCtxRef = useRef(null);
   const oscillatorRef = useRef(null);
   const pannerRef = useRef(null);
   const gainRef = useRef(null);
   const isDraggingRef = useRef(false);
-  const containerRef = useRef(null); // Ref for the div wrapper
+  const containerRef = useRef(null);
+  const p5Ref = useRef(null);
+  const playingRef = useRef(false);
+  const currentRef = useRef({});
+  currentRef.current = { volume, ...pos };
 
-  // --- Audio Logic ---
+  const stopAudio = () => {
+    try { oscillatorRef.current?.stop(); } catch { /* oscillator may already have stopped */ }
+    oscillatorRef.current?.disconnect();
+    gainRef.current?.disconnect();
+    pannerRef.current?.disconnect();
+    oscillatorRef.current = null;
+    gainRef.current = null;
+    pannerRef.current = null;
+    playingRef.current = false;
+    setIsPlaying(false);
+  };
   const initAudio = () => {
-    if (!audioCtxRef.current) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      audioCtxRef.current = new AudioContext();
-
-      const listener = audioCtxRef.current.listener;
-      // Setup Listener (User's Head)
-      if (listener.positionX) {
-        listener.positionX.value = 0;
-        listener.positionY.value = 0;
-        listener.positionZ.value = 0;
-        listener.forwardX.value = 0;
-        listener.forwardY.value = 0;
-        listener.forwardZ.value = -1;
-        listener.upX.value = 0;
-        listener.upY.value = 1;
-        listener.upZ.value = 0;
-      } else {
-        listener.setPosition(0, 0, 0);
-        listener.setOrientation(0, 0, -1, 0, 1, 0);
-      }
-    }
-  };
-
-  const toggleSound = () => {
-    initAudio();
-    const ctx = audioCtxRef.current;
-
-    if (isPlaying) {
-      oscillatorRef.current?.stop();
-      oscillatorRef.current?.disconnect();
-      setIsPlaying(false);
+    if (audioCtxRef.current) return audioCtxRef.current;
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) throw Error("Web Audio is not available in this browser.");
+    const ctx = new AudioContextConstructor();
+    audioCtxRef.current = ctx;
+    const listener=ctx.listener;
+    if (listener.positionX) {
+      listener.positionX.value=0;listener.positionY.value=0;listener.positionZ.value=0;
+      listener.forwardX.value=0;listener.forwardY.value=0;listener.forwardZ.value=-1;
+      listener.upX.value=0;listener.upY.value=1;listener.upZ.value=0;
     } else {
-      if (ctx.state === "suspended") ctx.resume();
-
-      const osc = ctx.createOscillator();
-      const panner = ctx.createPanner();
-      const gain = ctx.createGain();
-
-      osc.type = "sawtooth";
-      osc.frequency.value = 220;
-
-      panner.panningModel = "HRTF";
-      panner.distanceModel = "inverse";
-      panner.refDistance = 1;
-      panner.maxDistance = 10000;
-      panner.rolloffFactor = 1;
-      panner.coneInnerAngle = 360;
-
-      panner.positionX.value = pos.x;
-      panner.positionY.value = 0;
-      panner.positionZ.value = pos.z;
-
-      gain.gain.value = volume;
-
-      osc.connect(gain);
-      gain.connect(panner);
-      panner.connect(ctx.destination);
-
-      osc.start();
-
-      oscillatorRef.current = osc;
-      pannerRef.current = panner;
-      gainRef.current = gain;
-      setIsPlaying(true);
+      listener.setPosition(0,0,0);
+      listener.setOrientation(0,0,-1,0,1,0);
     }
+    return ctx;
   };
-
-  useEffect(() => {
-    if (isPlaying && pannerRef.current) {
-      const panner = pannerRef.current;
-      const ctx = audioCtxRef.current;
-      panner.positionX.setTargetAtTime(pos.x, ctx.currentTime, 0.1);
-      panner.positionZ.setTargetAtTime(pos.z, ctx.currentTime, 0.1);
-      if (gainRef.current) {
-        gainRef.current.gain.setTargetAtTime(volume, ctx.currentTime, 0.1);
-      }
+  const setAudioPlaying = async (playing) => {
+    if (typeof playing !== "boolean") throw Error("playing must be a boolean");
+    if (!playing) {
+      stopAudio();
+      return { playing:false, audioContextState:audioCtxRef.current?.state ?? "not-created" };
     }
-  }, [pos, volume, isPlaying]);
-
+    if (playingRef.current) return { playing:true, audioContextState:audioCtxRef.current?.state };
+    const ctx=initAudio();
+    if (ctx.state === "suspended") await ctx.resume();
+    if (ctx.state !== "running") {
+      throw Error("Audio was blocked by the browser. Press Start to grant audio playback.");
+    }
+    const osc=ctx.createOscillator();
+    const panner=ctx.createPanner();
+    const gain=ctx.createGain();
+    osc.type="sawtooth";
+    osc.frequency.value=220;
+    panner.panningModel="HRTF";
+    panner.distanceModel="inverse";
+    panner.refDistance=1;
+    panner.maxDistance=10000;
+    panner.rolloffFactor=1;
+    panner.coneInnerAngle=360;
+    const current=currentRef.current;
+    panner.positionX.value=current.x;
+    panner.positionY.value=0;
+    panner.positionZ.value=current.z;
+    gain.gain.value=current.volume;
+    osc.connect(gain);gain.connect(panner);panner.connect(ctx.destination);
+    osc.start();
+    oscillatorRef.current=osc;pannerRef.current=panner;gainRef.current=gain;
+    playingRef.current=true;
+    setIsPlaying(true);
+    setAudioError("");
+    return {playing:true,audioContextState:ctx.state};
+  };
+  const audioActionsRef = useRef({});
+  audioActionsRef.current = {setAudioPlaying,stopAudio,setVolume,setPos};
+  const toggleSound = () => {
+    audioActionsRef.current.setAudioPlaying(!playingRef.current)
+      .catch(error=>setAudioError(error.message));
+  };
   useEffect(() => {
-    return () => audioCtxRef.current?.close();
+    if (!playingRef.current || !audioCtxRef.current || !pannerRef.current) return;
+    const ctx=audioCtxRef.current;
+    pannerRef.current.positionX.setTargetAtTime(pos.x,ctx.currentTime,0.1);
+    pannerRef.current.positionZ.setTargetAtTime(pos.z,ctx.currentTime,0.1);
+    gainRef.current?.gain.setTargetAtTime(volume,ctx.currentTime,0.1);
+  }, [pos,volume,isPlaying]);
+  useEffect(() => {
+    const controller=new AbortController();
+    const empty={type:"object",properties:{},additionalProperties:false};
+    const properties={
+      volume:{type:"number",minimum:0,maximum:1},
+      x:{type:"number",minimum:-10,maximum:10},
+      z:{type:"number",minimum:-8,maximum:8},
+    };
+    const tools=[
+      {
+        name:"esbiko_spatial_audio_get_state",
+        description:"Read actual spatial audio speaker position, gain, audio context status and playback state.",
+        inputSchema:empty,
+        annotations:{readOnlyHint:true},
+        execute:createSafeToolExecutor("spatial_audio_get_state",async()=>({
+          simulationId:"physics.acoustics.spatial-audio",
+          ...currentRef.current,playing:playingRef.current,
+          audioContextState:audioCtxRef.current?.state ?? "not-created",
+        })),
+      },
+      {
+        name:"esbiko_spatial_audio_configure",
+        description:"Change real speaker X/Z position and audio gain; the canvas and audio panner update together.",
+        inputSchema:{type:"object",properties,additionalProperties:false},
+        execute:createSafeToolExecutor("spatial_audio_configure",async(input)=>{
+          if (!input || typeof input!=="object" || Array.isArray(input)) throw Error("Expected spatial audio settings");
+          for(const [key,value] of Object.entries(input)) {
+            const rule=properties[key];
+            if (!rule || typeof value!=="number" || !Number.isFinite(value) ||
+                value<rule.minimum || value>rule.maximum) throw Error("Invalid spatial audio setting: "+key);
+          }
+          if(input.volume!==undefined)audioActionsRef.current.setVolume(input.volume);
+          if(input.x!==undefined||input.z!==undefined){
+            audioActionsRef.current.setPos(previous=>({...previous,
+              ...(input.x!==undefined?{x:input.x}:{}),...(input.z!==undefined?{z:input.z}:{})}));
+          }
+          currentRef.current={...currentRef.current,...input};
+          return {accepted:input};
+        }),
+      },
+      {
+        name:"esbiko_spatial_audio_set_playback",
+        description:"Start or stop actual Web Audio oscillator; browser audio permission may require an explicit user gesture.",
+        inputSchema:{type:"object",properties:{playing:{type:"boolean"}},required:["playing"],additionalProperties:false},
+        execute:createSafeToolExecutor("spatial_audio_set_playback",async({playing})=>
+          audioActionsRef.current.setAudioPlaying(playing)),
+      },
+      {
+        name:"esbiko_spatial_audio_reset",
+        description:"Stop audio and restore initial gain and speaker position.",
+        inputSchema:empty,
+        execute:createSafeToolExecutor("spatial_audio_reset",async()=>{
+          audioActionsRef.current.stopAudio();
+          audioActionsRef.current.setVolume(initialMcp.values.volume);
+          audioActionsRef.current.setPos({x:initialMcp.values.x,z:initialMcp.values.z});
+          currentRef.current={...initialMcp.values};
+          return {playing:false,...currentRef.current};
+        }),
+      },
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch(error=>{if(!controller.signal.aborted)console.warn("Spatial Audio WebMCP:",error);});
+    return ()=>controller.abort();
+  }, [initialMcp]);
+  useEffect(() => {
+    const element=containerRef.current;
+    if(!element || typeof ResizeObserver==="undefined")return;
+    const resize=new ResizeObserver(()=>{
+      if(p5Ref.current && element.clientWidth>0 && element.clientHeight>0){
+        p5Ref.current.resizeCanvas(element.clientWidth,element.clientHeight);
+      }
+    });
+    resize.observe(element);
+    return ()=>resize.disconnect();
+  }, []);
+  useEffect(() => () => {
+    try{oscillatorRef.current?.stop()}catch{/* audio was stopped */}
+    oscillatorRef.current?.disconnect();
+    audioCtxRef.current?.close();
   }, []);
 
   // --- P5 Visualization ---
@@ -109,6 +188,7 @@ const SpatialAudioLab = () => {
     const w = canvasParentRef.clientWidth || 800;
     const h = canvasParentRef.clientHeight || 500;
     p5.createCanvas(w, h).parent(canvasParentRef);
+    p5Ref.current=p5;
     p5.textFont("monospace");
   };
 
@@ -160,7 +240,7 @@ const SpatialAudioLab = () => {
     p5.text("YOU (LISTENER)", offsetX, offsetY + 30);
 
     // 3. Coordinate Math
-    const scale = 50; // 50px = 1 meter
+    const scale = Math.min(50, Math.max(12, (p5.width-70)/20), Math.max(12, (p5.height-70)/16));
     const sourceX = offsetX + pos.x * scale;
     const sourceY = offsetY + pos.z * scale;
 
@@ -227,7 +307,7 @@ const SpatialAudioLab = () => {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto bg-slate-950 text-slate-200 font-sans p-4 md:p-8 pb-32">
+    <div className="w-full h-full min-w-0 overflow-y-auto bg-slate-950 text-slate-200 font-sans p-2 sm:p-4 pb-12">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-center border-b border-slate-800 pb-6 gap-4">
@@ -261,10 +341,10 @@ const SpatialAudioLab = () => {
         </div>
 
         {/* Main Interface */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[600px]">
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 xl:gap-5">
           {/* Left: Interactive Room Map */}
-          <div className="lg:col-span-3 relative bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl h-full flex flex-col">
-            <div className="absolute top-4 left-4 z-10 bg-black/60 backdrop-blur px-4 py-2 rounded-full border border-white/10 flex items-center gap-3">
+          <div className="xl:col-span-3 relative min-w-0 bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl h-[min(58dvh,560px)] min-h-[290px] xl:h-[580px] flex flex-col">
+            <div className="absolute top-2 left-2 z-10 bg-black/60 px-2 py-1 rounded-lg border border-white/10 flex items-center gap-2 pointer-events-none">
               <Move size={16} className="text-slate-300" />
               <span className="text-xs font-bold text-slate-200">
                 DRAG THE DOT LABELED "SPEAKER"
@@ -273,14 +353,15 @@ const SpatialAudioLab = () => {
 
             {/* Added ref and explicit style to ensure it has size */}
             <div
-              className="flex-grow relative w-full h-full min-h-[400px]"
+              className="flex-grow relative w-full min-w-0 min-h-0"
               ref={containerRef}
             >
               <Sketch setup={setup} draw={draw} windowResized={windowResized} />
             </div>
 
-            {/* Bottom Controls Overlay */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-slate-900/90 backdrop-blur border border-slate-600 p-2 pl-6 rounded-full shadow-xl">
+          </div>
+          <section data-esbiko-spatial-controls className="xl:col-span-3 min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-600 p-3 rounded-xl shadow-lg">
               <div className="flex items-center gap-2 w-32 mr-2">
                 <Volume2 size={16} className="text-slate-400" />
                 <input
@@ -309,10 +390,12 @@ const SpatialAudioLab = () => {
                 {isPlaying ? "Stop" : "Start"}
               </button>
             </div>
-          </div>
+
+            {audioError && <p role="alert" className="mt-2 text-sm text-rose-300">{audioError}</p>}
+          </section>
 
           {/* Right: Info Panel */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="xl:col-start-4 xl:row-start-1 xl:row-span-2 min-w-0 space-y-4">
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
