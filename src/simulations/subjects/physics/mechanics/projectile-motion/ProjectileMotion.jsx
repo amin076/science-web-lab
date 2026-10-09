@@ -422,7 +422,7 @@ const MotionSimulator = () => {
       }}
     >
       <Box
-        sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, height: { xs: "auto", lg: "min(92dvh, 960px)" }, minHeight: { lg: 600 }, p: { xs: 1, sm: 2 }, gap: 2, alignItems: "stretch" }}
+        sx={{ display: "flex", flexDirection: "row", containerType: "inline-size", height: "min(92dvh, 960px)", minHeight: 600, p: 1, gap: 2, alignItems: "stretch", "@container (max-width: 900px)": { flexDirection: "column", height: "auto", minHeight: 0 } }}
       >
         {/* CANVAS AREA - Sharp Corners */}
         <Box
@@ -431,7 +431,8 @@ const MotionSimulator = () => {
             flex: { lg: 1 },
             minWidth: 0,
             width: "100%",
-            height: { xs: "clamp(340px, 62dvh, 640px)", lg: "100%" },
+            height: "100%",
+            "@container (max-width: 900px)": { height: "clamp(340px, 62dvh, 640px)", flex: "none" },
             position: "relative",
             borderRadius: 3,
             overflow: "hidden",
@@ -502,7 +503,7 @@ const MotionSimulator = () => {
         </Box>
 
         {/* SIDEBAR PANEL */}
-        <Box sx={{ width: { xs: "100%", lg: 350 }, maxWidth: "100%", height: { xs: "auto", lg: "100%" }, minWidth: 0, flexShrink: 0 }}>
+        <Box sx={{ width: 350, maxWidth: "100%", height: "100%", minWidth: 0, flexShrink: 0, "@container (max-width: 900px)": { width: "100%", height: "auto" } }}>
           <ControlPanel
             // Control Props
             isSimulating={isSimulating}
