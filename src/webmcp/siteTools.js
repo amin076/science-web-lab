@@ -1,6 +1,9 @@
 import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
+  Object.freeze({id:"physics.optics.lens-mirror-2d",name:"Optics Bench (2D)",topic:"Lenses, mirrors, geometrical optics",description:"Read/configure real lens type, focal length, object distance, height and imagery.",route:"/experiments/physics.optics.lens-mirror-2d/run",capabilities:["state-read","configure","reset"]}),
+  Object.freeze({id:"physics.electricity.circuits",name:"Electric Circuits Lab",topic:"Electric network design and analysis",description:"Add, edit, connect, remove components and control circuit solver.",route:"/experiments/physics.electricity.circuits/run",capabilities:["state-read","component-create","component-update","wire-create","component-delete","playback","reset"]}),
+  Object.freeze({id:"creative.patterns.ambient-pattern-studio",name:"Ambient Pattern Studio",topic:"Generative patterns and canvas recording",description:"Read, configure and animate patterns, randomize and start/stop WebM video capture.",route:"/experiments/creative.patterns.ambient-pattern-studio/run",capabilities:["state-read","configure","playback","reset","randomize","video-recording","video-status","video-download"]}),
   Object.freeze({
     id: "physics.thermodynamics.gas", name: "Ideal Gas Law Lab",
     topic: "Thermodynamics, pressure, volume, and temperature",
