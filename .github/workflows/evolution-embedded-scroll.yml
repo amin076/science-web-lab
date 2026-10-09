@@ -28,6 +28,8 @@ jobs:
       - run: npm ci
       - run: node scripts/audit-all-simulation-readiness.mjs --require-all-adapted
       - run: node scripts/test-simulation-agent-contract.mjs
+      - run: npm run platform:catalog
+      - run: npm ci --prefix functions
       - run: node scripts/test-mcp-runtime.mjs
       - run: |
           npm install --no-save playwright@1.56.1
