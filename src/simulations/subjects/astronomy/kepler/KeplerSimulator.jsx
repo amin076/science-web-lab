@@ -1,4 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import "./styles.css";
 import KeplerCanvas from "./KeplerCanvas";
 import KeplerControlPanel from "./KeplerControlPanel";
@@ -7,12 +9,10 @@ import { PHYSICS } from "./constants";
 
 const KeplerSimulator = () => {
   const [isRunning, setIsRunning] = useState(false);
-  const [params, setParams] = useState({
-    launchDistance: 240,
-    launchVelocity: 55,
-    launchAngle: -90,
-    showSweeps: true,
-  });
+  const initialMcp = useMemo(() => readEmbeddedMcpParameters("astronomy.kepler-lab", {
+    launchDistance: 240, launchVelocity: 55, launchAngle: -90, showSweeps: true,
+  }), []);
+  const [params, setParams] = useState(initialMcp.values);
 
   const [telemetry, setTelemetry] = useState({ v: 0, r: 0, t: 0 });
   const [status, setStatus] = useState("READY");
@@ -40,6 +40,78 @@ const KeplerSimulator = () => {
 
   useEffect(() => {
     handleReset(params);
+  }, []);
+
+  const liveRef = useRef({});
+  liveRef.current = { isRunning, params, telemetry, status };
+  const actionsRef = useRef({});
+  actionsRef.current = { setIsRunning, setParams, handleReset };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const rules = {
+      launchDistance: { type: "number", minimum: 100, maximum: 1000 },
+      launchVelocity: { type: "number", minimum: 10, maximum: 120 },
+      launchAngle: { type: "number", minimum: -180, maximum: 180 },
+      showSweeps: { type: "boolean" },
+    };
+    const empty = { type: "object", properties: {}, additionalProperties: false };
+    const tools = [
+      {
+        name: "esbiko_kepler_get_state",
+        description: "Read the actual Kepler orbital engine controls, telemetry and status.",
+        inputSchema: empty,
+        annotations: { readOnlyHint: true },
+        execute: createSafeToolExecutor("kepler_get_state", async () => ({
+          simulationId: "astronomy.kepler-lab",
+          running: liveRef.current.isRunning, params: liveRef.current.params,
+          telemetry: liveRef.current.telemetry, status: liveRef.current.status,
+        })),
+      },
+      {
+        name: "esbiko_kepler_configure",
+        description: "Change the actual Kepler launch distance, velocity, angle, or orbital sweep visibility.",
+        inputSchema: { type: "object", properties: rules, additionalProperties: false },
+        execute: createSafeToolExecutor("kepler_configure", async (values) => {
+          if (!values || typeof values !== "object" || Array.isArray(values)) throw new Error("Expected Kepler settings object.");
+          for (const [key, value] of Object.entries(values)) {
+            const rule = rules[key];
+            if (!rule || typeof value !== rule.type ||
+                (rule.type === "number" && (!Number.isFinite(value) || value < rule.minimum || value > rule.maximum))) {
+              throw new Error("Invalid Kepler setting: " + key);
+            }
+          }
+          const next = { ...liveRef.current.params, ...values };
+          actionsRef.current.setParams(next);
+          actionsRef.current.handleReset(next);
+          return { accepted: values, params: next };
+        }),
+      },
+      {
+        name: "esbiko_kepler_set_playback",
+        description: "Start or pause the orbital simulation; a crashed object must be reset first.",
+        inputSchema: { type: "object", properties: { running: { type: "boolean" } },
+          required: ["running"], additionalProperties: false },
+        execute: createSafeToolExecutor("kepler_set_playback", async ({ running }) => {
+          if (typeof running !== "boolean") throw new Error("running must be boolean");
+          if (running && liveRef.current.status === "CRASHED") throw new Error("Reset before restarting a crashed orbit.");
+          actionsRef.current.setIsRunning(running);
+          return { running };
+        }),
+      },
+      {
+        name: "esbiko_kepler_reset",
+        description: "Reset orbital state with the current configured launch conditions.",
+        inputSchema: empty,
+        execute: createSafeToolExecutor("kepler_reset", async () => {
+          actionsRef.current.handleReset(liveRef.current.params);
+          return { reset: true, running: false };
+        }),
+      },
+    ];
+    registerWebMcpTools({ modelContext: getDocumentModelContext(), tools, signal: controller.signal })
+      .catch((error) => { if (!controller.signal.aborted) console.warn("Kepler WebMCP:", error); });
+    return () => controller.abort();
   }, []);
 
   const animate = useCallback(() => {
