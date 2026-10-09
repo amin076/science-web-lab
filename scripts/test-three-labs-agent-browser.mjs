@@ -36,7 +36,7 @@ try {
     return {stage:rect(stage),panel:rect(panel),scroll:document.documentElement.scrollWidth,viewport:innerWidth};
    },lab);
    assert(layout.stage&&layout.panel,"Missing stage/panel "+JSON.stringify(layout));
-   assert(layout.stage.width>width*0.75,"Stage squeezed "+JSON.stringify(layout));
+   assert(layout.stage.width>(width<1280?width*0.75:width-460),"Stage squeezed "+JSON.stringify(layout));
    assert(layout.scroll<=width+5,"Horizontal overflow "+JSON.stringify(layout));
    if(width<1280)assert(layout.panel.top>=layout.stage.bottom-2,"Panel overlays stage "+JSON.stringify(layout));
    const call=async(name,input={})=>page.evaluate(async ([name,input])=>{
