@@ -24,7 +24,7 @@ try {
    });
    const url=base+"/experiments/"+lab.id+"/run?embed=mcp-app"+
      (lab.tag==="optics"?"&mcp.objDistance=300&mcp.objHeight=40":
-      lab.tag==="ambient"?"&mcp.speed=3&mcp.pattern=aurora":"");
+      lab.tag==="ambient"?"&mcp.speed=3&mcp.pattern=aurora":lab.tag==="circuit"&&width===600?"&mcp.componentType=resistor&mcp.x=120&mcp.y=80":"");
    await page.goto(url,{waitUntil:"domcontentloaded",timeout:60000});
    await page.locator(lab.stage).waitFor({state:"visible",timeout:30000});
    await page.waitForFunction(tool=>Object.keys(window.__labTools||{}).some(x=>x.startsWith(tool)),lab.tool,{timeout:30000});
@@ -79,9 +79,18 @@ try {
       await page.waitForTimeout(60);
       const updated=await call("get_state");
       assert.equal(updated.data.components.find(c=>c.id===b.data.id).props.voltage,12);
-      assert.equal((await call("connect",{fromId:g.data.id,toId:b.data.id,fromTerminal:"left",toTerminal:"right"})).ok,true);
+      const edge=await call("connect",{fromId:g.data.id,toId:b.data.id,fromTerminal:"left",toTerminal:"right"});
+      assert.equal(edge.ok,true,JSON.stringify(edge));
       await page.waitForTimeout(60);
       assert.equal((await call("get_state")).data.connections.length,1);
+      assert.equal((await call("select",{id:b.data.id})).ok,true);
+      assert.equal((await call("rotate",{id:b.data.id})).ok,true);
+      assert.equal((await call("open_lab",{lab:"resistor"})).ok,true);
+      assert.equal((await call("close_lab")).ok,true);
+      assert.equal((await call("delete_connection",{id:edge.data.id})).ok,true);
+      await page.waitForTimeout(80);
+      assert.equal((await call("get_state")).data.connections.length,0);
+      assert.equal((await call("connect",{fromId:g.data.id,toId:b.data.id,fromTerminal:"left",toTerminal:"right"})).ok,true);
       assert.equal((await call("set_playback",{running:true})).ok,true);
       await page.waitForTimeout(120);
       assert.equal((await call("get_state")).data.isSimulating,true);
@@ -110,7 +119,18 @@ try {
       assert.equal((await call("reset")).ok,true);
       assert.equal((await call("randomize")).ok,true);
       assert.equal((await call("record",{command:"invalid"})).ok,false);
+      const video=await call("video_status");
+      assert.equal(video.ok,true,JSON.stringify(video));
+      assert.equal(video.data.recording,false);
+      assert.equal((await call("video_download",{mode:"landscape"})).ok,false);
     }
+   }
+   if(lab.tag==="circuit" && width===600){
+      const boot=await call("get_state");
+      assert.equal(boot.ok,true,JSON.stringify(boot));
+      assert.equal(boot.data.components.length,1);
+      assert.equal(boot.data.components[0].type,"resistor");
+      assert.equal(boot.data.components[0].x,120);
    }
    await page.screenshot({path:"artifacts/three-agent-ready/"+lab.tag+"-"+width+".png",fullPage:true});
    assert.deepEqual(errors,[],"Browser JS errors "+lab.id+" "+errors.join("\n"));
