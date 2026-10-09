@@ -76,7 +76,7 @@ export default function CircuitSimulatorPage() {
          if(y!==undefined && (!Number.isFinite(y)||y<0||y>height))throw Error("Invalid y coordinate");
          const id=generateId();
          const comp={id,type:componentType,x:x??width/2,y:y??height/2,rotation:0,props:{...DEFAULT_VALUES[componentType]}};
-         dispatch({type:"ADD_COMPONENT",compType,x:comp.x,y:comp.y,id});
+         dispatch({type:"ADD_COMPONENT",compType:componentType,x:comp.x,y:comp.y,id});
          return {id,componentType,x:comp.x,y:comp.y};
        })},
       {name:"esbiko_circuit_update_component",description:"Modify existing circuit element position, angle, or supported component property.",
