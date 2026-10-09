@@ -86,7 +86,7 @@ const DopplerControls = ({
   };
 
   return (
-    <aside className="w-96 h-full bg-slate-950/80 border-l border-white/10 backdrop-blur-md flex flex-col shadow-2xl z-50">
+    <aside className="w-full h-auto shrink-0 min-w-0 bg-slate-950/80 border-t xl:border-t-0 xl:border-l border-white/10 backdrop-blur-md flex flex-col shadow-2xl relative z-10 xl:w-96 xl:h-full xl:min-h-0">
       <div className="p-6 border-b border-white/10 bg-slate-900/50">
         <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-1">
           <Activity className="text-blue-500" /> Doppler Lab
@@ -195,7 +195,7 @@ const DopplerControls = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+      <div className="flex-none overflow-visible p-4 sm:p-6 space-y-8 xl:min-h-0 xl:flex-1 xl:overflow-y-auto custom-scrollbar">
         {hideAgentGuide && embeddedVideoRequest && (
           <section
             aria-label="MCP Video Studio"
