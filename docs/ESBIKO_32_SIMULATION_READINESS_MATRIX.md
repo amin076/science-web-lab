@@ -11,9 +11,9 @@ Snapshot: 2026-10-09. Source: live production `list_science_simulations`, `src/w
 
 ## Snapshot counts
 
-- MCP discoverable **32/32** (17 `adapted`, 15 `universal`).
-- Site WebMCP registry explicitly enables **6/32**, a **different** surface from server MCP discovery.
-- Strict **full remote control proven 0/32**; **2/32** have direct browser WebMCP core-action and WebM recording tests (pendulum, spring) but no proof of every feature through hosted ChatGPT.
+- MCP discoverable **32/32** (18 `adapted`, 14 `universal`).
+- Site WebMCP registry explicitly enables **7/32**, a **different** surface from server MCP discovery.
+- Strict **full remote control proven 0/32**; **3/32** have direct browser WebMCP core-action tests (pendulum, spring and microscope; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
 - Explicit responsive browser regression evidence for **7/32** (provisional); 25 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
 - Targeted architecture/UX bug fix changes for **4/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
 
@@ -54,7 +54,7 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 29 | Ripple Tank | Y | U | — | — | — | — | — | — |
 | 30 | Satellites & Tracking | Y | U | — | — | — | — | — | — |
 | 31 | Spatial Audio Lab | Y | U | — | — | — | — | — | — |
-| 32 | Virtual Microscope | Y | U | — | — | — | — | — | — |
+| 32 | Virtual Microscope | Y | A | Y | Y | — | — | — | — |
 
 ## Exit checklist per simulation
 
@@ -67,6 +67,10 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 - [ ] 4-size screenshot/layout assertions pass in embedded and standalone modes
 - [ ] Touch and at least one real mobile-device/manual review passes
 - [ ] Production deployment and ChatGPT end-to-end retested
+
+## October 9 progress
+
+PR #140 implemented the Virtual Microscope advanced MCP adapter with real focus, zoom and light state/configuration/reset tools and a passing dedicated browser test. Advanced declarations: **18/32**; unadapted: **14/32**. Core browser-tool test coverage now includes **3/32**, but end-to-end hosted ChatGPT full-feature validation remains open. Site WebMCP discovery: **7/32**.
 
 ## Evidence index
 
