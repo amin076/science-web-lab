@@ -2,6 +2,14 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.optics.microscope",
+    name: "Virtual Microscope",
+    topic: "Plant cell microscopy, focus, magnification and illumination",
+    description: "Read and configure the same live focus, zoom and light knobs as the microscope UI; reset to initial settings.",
+    route: "/experiments/physics.optics.microscope/run",
+    capabilities: ["state-read", "configure", "reset"],
+  }),
+  Object.freeze({
     id: "physics.mechanics.simple-pendulum",
     name: "Pendulum Lab",
     topic: "Oscillations, harmonic motion, and energy",

@@ -81,6 +81,13 @@ const orbitLab = getSimulationAgentProfile("astronomy.space.earth-orbit-lab");
 assert.equal(orbitLab.integrationLevel, "adapted");
 assert.equal(orbitLab.adapterVersion, "earth-orbit-lab-adapter.v1");
 
+const microscope = getSimulationAgentProfile("physics.optics.microscope");
+assert.equal(microscope.integrationLevel, "adapted");
+assert.equal(microscope.adapterVersion, "microscope-adapter.v1");
+assert.deepEqual(microscope.actions, ["open", "configure", "readState", "reset"]);
+assert.deepEqual(Object.keys(microscope.parameterSchema.properties), ["focus", "zoom", "light"]);
+assert.equal(microscope.video, false);
+
 const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);

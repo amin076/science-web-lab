@@ -1,4 +1,32 @@
 export const simulationAgentManifest = Object.freeze({
+  "physics.optics.microscope": Object.freeze({
+    adapterVersion: "microscope-adapter.v1",
+    actions: ["open", "configure", "readState", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        focus: { type: "number", minimum: 0, maximum: 1 },
+        zoom: { type: "number", minimum: 1, maximum: 10 },
+        light: { type: "number", minimum: 0.2, maximum: 2 },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["simulationId", "focus", "zoom", "light"],
+      properties: {
+        simulationId: { const: "physics.optics.microscope" },
+        focus: { type: "number" },
+        zoom: { type: "number" },
+        light: { type: "number" },
+      },
+    },
+  }),
+
+
   "physics.acoustics.doppler": Object.freeze({
     adapterVersion: "doppler-adapter.v1",
     actions: [
