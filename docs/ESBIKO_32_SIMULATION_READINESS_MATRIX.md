@@ -11,11 +11,11 @@ Snapshot: 2026-10-09. Source: live production `list_science_simulations`, `src/w
 
 ## Snapshot counts
 
-- MCP discoverable **32/32** (21 `adapted`, 11 `universal`).
-- Site WebMCP registry explicitly enables **10/32**, a **different** surface from server MCP discovery.
-- Strict **full remote control proven 0/32**; **6/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, and Ripple Tank; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
-- Explicit responsive browser regression evidence for **7/32** (provisional); 25 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
-- Targeted architecture/UX bug fix changes for **4/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
+- MCP discoverable **32/32** (23 `adapted`, 9 `universal`).
+- Site WebMCP registry explicitly enables **12/32**, a **different** surface from server MCP discovery.
+- Strict **full remote control proven 0/32**; **8/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas and Spatial Audio; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
+- Explicit responsive browser regression evidence for **9/32** (provisional); 23 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
+- Targeted architecture/UX bug fix changes for **6/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
 
 ## Detailed tracker
 
@@ -45,7 +45,7 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 20 | Electric Circuits Lab | Y | U | — | — | — | — | — | — |
 | 21 | Evolution of Life | Y | U | — | — | — | — | — | — |
 | 22 | Gearbox & Differential (3D) | Y | U | — | — | — | — | — | — |
-| 23 | Ideal Gas Law Simulation | Y | U | — | — | — | — | — | — |
+| 23 | Ideal Gas Law Simulation | Y | A | Y | Y | Y | Y | — | — |
 | 24 | Kepler's Laws Lab | Y | A | Y | Y | — | — | — | — |
 | 25 | Moon Lander Challenge | Y | U | — | — | — | — | — | — |
 | 26 | Optics Bench (2D) | Y | U | — | — | — | — | — | — |
@@ -53,7 +53,7 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 28 | Plate Tectonics (3D) | Y | U | — | — | — | — | — | — |
 | 29 | Ripple Tank | Y | A | Y | Y | — | — | — | — |
 | 30 | Satellites & Tracking | Y | U | — | — | — | — | — | — |
-| 31 | Spatial Audio Lab | Y | U | — | — | — | — | — | — |
+| 31 | Spatial Audio Lab | Y | A | Y | Y | Y | Y | — | — |
 | 32 | Virtual Microscope | Y | A | Y | Y | — | — | — | — |
 
 ## Exit checklist per simulation
@@ -70,11 +70,13 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 
 ## October 9 progress
 
-PR #140 implemented the Virtual Microscope advanced MCP adapter with real focus, zoom and light state/configuration/reset tools and a passing dedicated browser test. Advanced declarations: **21/32**; unadapted: **11/32**. Core browser-tool test coverage now includes **6/32**, but end-to-end hosted ChatGPT full-feature validation remains open. Site WebMCP discovery: **10/32**.
+PR #140 implemented the Virtual Microscope advanced MCP adapter with real focus, zoom and light state/configuration/reset tools and a passing dedicated browser test. Advanced declarations: **23/32**; unadapted: **9/32**. Core browser-tool test coverage now includes **8/32**, but end-to-end hosted ChatGPT full-feature validation remains open. Site WebMCP discovery: **12/32**.
 
 PRs #142 and #143 added functional 3D Coulomb and Kepler adapters and passed their dedicated browser tests. These are additional adapter contracts and *not* a claim that every UI feature across the product has been fully validated inside hosted ChatGPT.
 
 PR #145 additionally integrates the Ripple Tank and passes its browser test. Full remote ChatGPT-wide acceptance remains unverified.
+
+PR #148 added Ideal Gas and Spatial Audio advanced adapters, responsive canvas-first layouts, input and audio lifecycle checks, and four-viewport browser regressions (360/600/900/1440 px) for both. Pending: real-device manual and hosted ChatGPT end-to-end validation. Spatial Audio browser activation may require user gesture in normal browser security contexts.
 
 ## Evidence index
 

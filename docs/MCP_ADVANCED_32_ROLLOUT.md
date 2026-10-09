@@ -13,7 +13,7 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `physics.electricity.circuits` | Electric Circuits Lab | [ ] | [ ] | [ ] |
 | `evolution-of-life` | Evolution of Life | [ ] | [ ] | [ ] |
 | `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [ ] | [ ] | [ ] |
-| `physics.thermodynamics.gas` | Ideal Gas Law | [ ] | [ ] | [ ] |
+| `physics.thermodynamics.gas` | Ideal Gas Law | [x] | [x] | [x] |
 | `astronomy.kepler-lab` | Kepler's Laws | [x] | [x] | [x] |
 | `physics.challenges.moon-lander` | Moon Lander | [ ] | [ ] | [ ] |
 | `physics.optics.lens-mirror-2d` | Optics Bench 2D | [ ] | [ ] | [ ] |
@@ -21,12 +21,12 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `earth-science.geology.plate-tectonics` | Plate Tectonics | [ ] | [ ] | [ ] |
 | `physics.waves.surface-waves-double-slit` | Ripple Tank | [x] | [x] | [x] |
 | `astronomy.space.satellites-telescopes` | Satellites & Tracking | [ ] | [ ] | [ ] |
-| `physics.acoustics.spatial-audio` | Spatial Audio | [ ] | [ ] | [ ] |
+| `physics.acoustics.spatial-audio` | Spatial Audio | [x] | [x] | [x] |
 | `physics.optics.microscope` | Virtual Microscope | [x] | [x] | [x] |
 
 ## Current result (October 9, 2026)
 
-**21/32** manifest contracts now exist, **11/32** remain. The new microscope, Coulomb 3D, Kepler and Ripple Tank contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143 and #145.
+**23/32** manifest contracts now exist, **9/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas and Spatial Audio contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145 and #148.
 
 ## Non-negotiable acceptance for each checkbox
 
