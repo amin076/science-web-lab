@@ -361,6 +361,20 @@ const SpatialAudioLab = () => {
 
           </div>
           <section data-esbiko-spatial-controls className="xl:col-span-3 min-w-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 rounded-xl border border-slate-700 bg-slate-900 p-3">
+              <label className="flex flex-col gap-2 text-xs text-slate-200">
+                Speaker X: {pos.x.toFixed(1)} m
+                <input aria-label="Speaker X" type="range" min="-10" max="10" step="0.1"
+                  value={pos.x} onChange={(event) => setPos((previous) => ({...previous,x:Number(event.target.value)}))}
+                  className="w-full accent-cyan-400" />
+              </label>
+              <label className="flex flex-col gap-2 text-xs text-slate-200">
+                Speaker Z: {pos.z.toFixed(1)} m
+                <input aria-label="Speaker Z" type="range" min="-8" max="8" step="0.1"
+                  value={pos.z} onChange={(event) => setPos((previous) => ({...previous,z:Number(event.target.value)}))}
+                  className="w-full accent-cyan-400" />
+              </label>
+            </div>
             <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-600 p-3 rounded-xl shadow-lg">
               <div className="flex items-center gap-2 w-32 mr-2">
                 <Volume2 size={16} className="text-slate-400" />
