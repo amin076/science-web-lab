@@ -19,14 +19,14 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `physics.optics.lens-mirror-2d` | Optics Bench 2D | [ ] | [ ] | [ ] |
 | `physics.optics.lens-mirror-3d` | Optics Bench 3D | [ ] | [ ] | [ ] |
 | `earth-science.geology.plate-tectonics` | Plate Tectonics | [ ] | [ ] | [ ] |
-| `physics.waves.surface-waves-double-slit` | Ripple Tank | [ ] | [ ] | [ ] |
+| `physics.waves.surface-waves-double-slit` | Ripple Tank | [x] | [x] | [x] |
 | `astronomy.space.satellites-telescopes` | Satellites & Tracking | [ ] | [ ] | [ ] |
 | `physics.acoustics.spatial-audio` | Spatial Audio | [ ] | [ ] | [ ] |
 | `physics.optics.microscope` | Virtual Microscope | [x] | [x] | [x] |
 
 ## Current result (October 9, 2026)
 
-**20/32** manifest contracts now exist, **12/32** remain. The new microscope, Coulomb 3D and Kepler contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142 and #143.
+**21/32** manifest contracts now exist, **11/32** remain. The new microscope, Coulomb 3D, Kepler and Ripple Tank contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143 and #145.
 
 ## Non-negotiable acceptance for each checkbox
 
