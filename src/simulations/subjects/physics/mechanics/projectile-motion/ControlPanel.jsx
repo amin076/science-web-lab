@@ -35,14 +35,15 @@ const PanelContainer = React.forwardRef(({ children }, ref) => (
     ref={ref}
     elevation={0}
     sx={{
-      height: "100%",
-      borderRadius: 0, // Sharp corners
+      height: { xs: "auto", lg: "100%" },
+      borderRadius: 3,
       background: "#0f172a",
       borderLeft: "1px solid rgba(255,255,255,0.1)",
       color: "white",
       display: "flex",
       flexDirection: "column",
-      overflow: "hidden",
+      overflow: { xs: "visible", lg: "hidden" },
+      boxShadow: "0 18px 45px rgba(0,0,0,.2)",
     }}
   >
     {children}
@@ -53,7 +54,8 @@ const ScrollArea = ({ children }) => (
   <Box
     sx={{
       flex: 1,
-      overflowY: "auto",
+      minHeight: 0,
+      overflowY: { xs: "visible", lg: "auto" },
       p: 2,
       "&::-webkit-scrollbar": { width: "6px" },
       "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -198,9 +200,9 @@ const ControlPanel = ({
 }) => {
   const handleVectorChange = (event, newFormats) => {
     setVectorMode({
-      x: newFormats.includes("x"),
-      y: newFormats.includes("y"),
-      v: newFormats.includes("v"),
+      x: (newFormats || []).includes("x"),
+      y: (newFormats || []).includes("y"),
+      v: (newFormats || []).includes("v"),
     });
   };
 
@@ -416,7 +418,7 @@ const ControlPanel = ({
           >
             ACTIVE OBJECT
           </Typography>
-          <Stack direction="row" spacing={1}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 1, "@media (min-width: 500px)": { gridTemplateColumns: "repeat(4, minmax(0, 1fr))" } }}>
             {objects.map((obj) => (
               <Button
                 key={obj.id}
@@ -444,7 +446,7 @@ const ControlPanel = ({
                 {obj.id}
               </Button>
             ))}
-          </Stack>
+          </Box>
         </Box>
 
         {/* 4. INITIAL STATE */}
