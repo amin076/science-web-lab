@@ -1,6 +1,6 @@
 # Phase 1 — Advanced MCP adapters for all 32 simulations
 
-**Starting baseline:** 17 of 32 have a declared adapter with parameter and state schemas; the following 15 are not yet adapted. This is a declaration-level milestone **only**. It must not be confused with end-to-end ChatGPT control (Phase 2).
+**Starting baseline (before PRs #140, #142, #143):** 17 of 32 have a declared adapter with parameter and state schemas; the following 15 are not yet adapted. This is a declaration-level milestone **only**. It must not be confused with end-to-end ChatGPT control (Phase 2).
 
 Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readiness/all-simulations.json`, including precise missing IDs. Run `node scripts/audit-all-simulation-readiness.mjs --require-all-adapted` for a hard gate: it must fail until all 32 have meaningful contracts.
 
@@ -9,12 +9,12 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | ID | Simulation | Advanced contract | State readback | Functional test |
 |---|---|---|---|---|
 | `creative.patterns.ambient-pattern-studio` | Ambient Pattern Studio | [ ] | [ ] | [ ] |
-| `physics.electricity.coulomb-law-3d` | Coulomb's Law 3D | [ ] | [ ] | [ ] |
+| `physics.electricity.coulomb-law-3d` | Coulomb's Law 3D | [x] | [x] | [x] |
 | `physics.electricity.circuits` | Electric Circuits Lab | [ ] | [ ] | [ ] |
 | `evolution-of-life` | Evolution of Life | [ ] | [ ] | [ ] |
 | `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [ ] | [ ] | [ ] |
 | `physics.thermodynamics.gas` | Ideal Gas Law | [ ] | [ ] | [ ] |
-| `astronomy.kepler-lab` | Kepler's Laws | [ ] | [ ] | [ ] |
+| `astronomy.kepler-lab` | Kepler's Laws | [x] | [x] | [x] |
 | `physics.challenges.moon-lander` | Moon Lander | [ ] | [ ] | [ ] |
 | `physics.optics.lens-mirror-2d` | Optics Bench 2D | [ ] | [ ] | [ ] |
 | `physics.optics.lens-mirror-3d` | Optics Bench 3D | [ ] | [ ] | [ ] |
@@ -22,7 +22,11 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `physics.waves.surface-waves-double-slit` | Ripple Tank | [ ] | [ ] | [ ] |
 | `astronomy.space.satellites-telescopes` | Satellites & Tracking | [ ] | [ ] | [ ] |
 | `physics.acoustics.spatial-audio` | Spatial Audio | [ ] | [ ] | [ ] |
-| `physics.optics.microscope` | Virtual Microscope | [ ] | [ ] | [ ] |
+| `physics.optics.microscope` | Virtual Microscope | [x] | [x] | [x] |
+
+## Current result (October 9, 2026)
+
+**20/32** manifest contracts now exist, **12/32** remain. The new microscope, Coulomb 3D and Kepler contracts all have dedicated browser tests of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142 and #143.
 
 ## Non-negotiable acceptance for each checkbox
 
