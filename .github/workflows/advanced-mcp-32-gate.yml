@@ -1,0 +1,34 @@
+name: Advanced MCP 32 Simulation Gate
+on:
+  pull_request:
+    paths:
+      - "src/platform/agent/**"
+      - "src/simulations/registry/**"
+      - "src/webmcp/siteTools.js"
+      - "scripts/audit-all-simulation-readiness.mjs"
+      - ".github/workflows/advanced-mcp-32-gate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/platform/agent/**"
+      - "src/simulations/registry/**"
+      - "src/webmcp/siteTools.js"
+      - "scripts/audit-all-simulation-readiness.mjs"
+      - ".github/workflows/advanced-mcp-32-gate.yml"
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: node scripts/audit-all-simulation-readiness.mjs --require-all-adapted
+      - run: node scripts/test-simulation-agent-contract.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 32-simulation-readiness
+          path: artifacts/readiness/all-simulations.json
