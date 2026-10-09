@@ -37,15 +37,16 @@ export const drawEnvironment = (ctx, view, width, height) => {
 
   // 1. PRO SKY GRADIENT
   const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
-  skyGrad.addColorStop(0, "#2980b9"); // Nice solid blue
-  skyGrad.addColorStop(1, "#6dd5fa"); // Light atmospheric blue
+  skyGrad.addColorStop(0, "#0c2545");
+  skyGrad.addColorStop(0.55, "#347da7");
+  skyGrad.addColorStop(1, "#b7e7e6");
   ctx.fillStyle = skyGrad;
   ctx.fillRect(0, 0, width, height);
 
   // 2. SUN (Crisper, less bloom)
-  ctx.fillStyle = "#FDB813";
-  ctx.shadowColor = "rgba(253, 184, 19, 0.4)";
-  ctx.shadowBlur = 20;
+  ctx.fillStyle = "#ffe7a0";
+  ctx.shadowColor = "rgba(255, 230, 168, 0.65)";
+  ctx.shadowBlur = 48;
   ctx.beginPath();
   ctx.arc(width - 80, 80, 35, 0, Math.PI * 2);
   ctx.fill();
@@ -67,8 +68,8 @@ export const drawEnvironment = (ctx, view, width, height) => {
       // Random-ish variation based on index
       const hVar = Math.sin(mx) * 50; 
       
-      drawMountain(ctx, sx, baseY, 500, 150 + hVar, "rgba(20, 30, 60, 0.2)"); // Distant dark blue
-      drawMountain(ctx, sx + 250, baseY, 300, 100 - hVar, "rgba(20, 30, 60, 0.15)");
+      drawMountain(ctx, sx, baseY, 500, 150 + hVar, "rgba(24, 67, 95, 0.35)"); // Distant dark blue
+      drawMountain(ctx, sx + 250, baseY, 300, 100 - hVar, "rgba(16, 57, 82, 0.25)");
   }
 
   // 4. CLOUDS
@@ -99,7 +100,7 @@ export const drawEnvironment = (ctx, view, width, height) => {
     ctx.rect(0, groundY, width, roadHeight);
     ctx.clip();
 
-    const gridSize = 10 * view.scale; // 10 meters
+    const gridSize = Math.max(1, 10 * view.scale); // 10 meters
     const majorGrid = 50 * view.scale; // 50 meters
     const offsetX = view.x % gridSize;
 
@@ -346,11 +347,11 @@ export const drawModernHUD = (ctx, obj, view, canvasHeight, gravity) => {
   const PE = obj.mass * gravity * Math.max(0, obj.y);
 
   // HUD Box Geometry
-  const width = 180;
+  const width = Math.min(180, Math.max(132, ctx.canvas.width - 24));
   const height = 140;
   const offsetDistance = 60; // Distance from object
-  const startX = pos.x + offsetDistance;
-  const startY = pos.y - 100;
+  const startX = Math.max(8, Math.min(ctx.canvas.width - width - 8, pos.x + offsetDistance));
+  const startY = Math.max(8, Math.min(ctx.canvas.height - height - 8, pos.y - 100));
 
   // 1. Draw Connector Line (Crisp)
   ctx.strokeStyle = "rgba(255,255,255,0.9)";
@@ -366,12 +367,12 @@ export const drawModernHUD = (ctx, obj, view, canvasHeight, gravity) => {
   ctx.stroke();
 
   // 2. HUD Background (Solid Dark Slate)
-  ctx.fillStyle = "rgba(15, 23, 42, 0.95)"; // Very opaque dark blue/slate
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.2)"; // Thin border
+  ctx.fillStyle = "rgba(9, 29, 48, 0.48)"; // Translucent HUD keeps motion visible
+  ctx.strokeStyle = "rgba(190, 242, 255, 0.48)"; // Subtle glass outline
   ctx.lineWidth = 1;
   
   ctx.beginPath();
-  ctx.roundRect(startX, startY, width, height, 6);
+  ctx.roundRect(startX, startY, width, height, 12);
   ctx.fill();
   ctx.stroke();
 
@@ -438,7 +439,7 @@ export const drawModernHUD = (ctx, obj, view, canvasHeight, gravity) => {
       ctx.fillRect(barX, rowY - 6, barW, barH);
       
       // Fill
-      const fillW = Math.min(barW, (val / max) * barW);
+      const fillW = Math.max(0, Math.min(barW, (val / max) * barW));
       ctx.fillStyle = color;
       ctx.fillRect(barX, rowY - 6, fillW, barH);
       
