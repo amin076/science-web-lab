@@ -22,7 +22,7 @@ const CIRCULAR_AGENT_PROPERTIES = Object.freeze({
 
 export default function CircularMotionSimulation() {
   const [dims, setDims] = useState({ w: 800, h: 600 });
-  const containerRef = useRef(null);
+  const canvasAreaRef = useRef(null);
   const initialMcpRef = useRef(null);
 
   if (!initialMcpRef.current) {
@@ -67,12 +67,12 @@ export default function CircularMotionSimulation() {
 
   // Resize Observer
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!canvasAreaRef.current) return;
     const ro = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
       setDims((prev) => prev.w === width && prev.h === height ? prev : { w: width, h: height });
     });
-    ro.observe(containerRef.current);
+    ro.observe(canvasAreaRef.current);
     return () => ro.disconnect();
   }, []);
 
@@ -192,7 +192,6 @@ export default function CircularMotionSimulation() {
       }
     >
       <div
-        ref={containerRef}
         className="w-full h-full relative overflow-hidden bg-[#050510] flex flex-col"
       >
         {initialMcp.embeddedMcpApp && (
@@ -201,7 +200,7 @@ export default function CircularMotionSimulation() {
           </div>
         )}
         <div className="relative z-10 shrink-0 p-2"><SimulationHUD live={uiState} /></div>
-        <div className="min-h-0 flex-1 relative">
+        <div ref={canvasAreaRef} className="min-h-0 flex-1 relative">
         <SimulationCanvas
           width={dims.w}
           height={dims.h}
