@@ -47,7 +47,7 @@ function calculateGasChange(current, key, value) {
     else next.temperature = value * volume / (n * R);
   }
   if (next.pressure < MIN_PRESSURE || next.pressure > MAX_SAFE_PRESSURE ||
-      next.temperature < 100 || next.temperature > MAX_SAFE_TEMP ||
+      next.temperature < 100 || next.temperature > Math.min(MAX_SAFE_TEMP,1000) ||
       next.volume < 5 || next.volume > MAX_VOLUME) {
     throw Error("Gas change exceeds permitted pressure, volume or temperature.");
   }
@@ -158,6 +158,7 @@ export default function IdealGasLab() {
       </div>
 
       <div className="w-full min-w-0 xl:overflow-y-auto bg-slate-900 rounded-xl border border-slate-800 flex flex-col gap-3">
+        {warning && <p role="alert" className="px-3 pt-2 text-sm text-rose-300">{warning}</p>}
         <ControlPanel
           volume={volume}
           temperature={temperature}
@@ -210,7 +211,6 @@ export default function IdealGasLab() {
             alertMsg="MELTDOWN RISK"
           />
         </div>
-        <ExperimentHUD lockedParam={lockedParam} />
       </div>
       </div>
     </div>
