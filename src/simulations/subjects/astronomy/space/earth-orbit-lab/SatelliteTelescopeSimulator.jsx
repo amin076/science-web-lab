@@ -621,9 +621,11 @@ export default function SatelliteTelescopeSimulator() {
   return (
     <Box
       sx={{
-        height: { xs: "auto", md: "100%" },
-        minHeight: { xs: "100dvh", md: "100%" },
+        height: "100%",
+        minHeight: 0,
         overflowY: { xs: "auto", md: "hidden" },
+        overscrollBehaviorY: "contain",
+        WebkitOverflowScrolling: "touch",
         overflowX: "hidden",
 
         display: "flex",
@@ -937,14 +939,15 @@ export default function SatelliteTelescopeSimulator() {
       <Box
         sx={{
           width: { xs: "100%", md: 320 },
+          borderRadius: { xs: 2, md: 0 },
 
           height: { xs: "auto", md: "calc(100% - 40px)" },
-          minHeight: { xs: 360, md: 0 },
+          minHeight: { xs: 0, md: 0 },
           maxHeight: { xs: "none", md: "calc(100% - 40px)" },
 
           flexShrink: 0,
 
-          overflow: "hidden",
+          overflow: { xs: "visible", md: "hidden" },
 
           bgcolor: { xs: "#0b0c15", md: "transparent" },
 
@@ -959,7 +962,7 @@ export default function SatelliteTelescopeSimulator() {
       >
         <Box
           sx={{
-            height: "100%",
+            height: { xs: "auto", md: "100%" },
             pointerEvents: "auto",
           }}
         >
