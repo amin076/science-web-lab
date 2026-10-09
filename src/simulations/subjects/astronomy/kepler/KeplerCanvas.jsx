@@ -132,6 +132,18 @@ const KeplerCanvas = ({ physicsRef, renderTrigger }) => {
         });
       }
 
+      // Keep the complete mathematical orbit visible even after multiple revolutions.
+      if (engine.orbitCurve?.length > 1) {
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.8)";
+        ctx.lineWidth = 1.8 / scale;
+        ctx.beginPath();
+        engine.orbitCurve.forEach((point, index) => {
+          if (index === 0) ctx.moveTo(point.x, point.y);
+          else ctx.lineTo(point.x, point.y);
+        });
+        ctx.stroke();
+      }
+
       // 5. Draw Trail
       if (engine.trail.length > 1) {
         ctx.strokeStyle = COLORS.trail;
