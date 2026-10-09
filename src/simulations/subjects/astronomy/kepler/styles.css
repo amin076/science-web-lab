@@ -26,7 +26,7 @@
 .kepler-stage { min-height: 340px; }
 .kepler-stage-frame { height: 100%; min-height: 340px; }
 .kepler-controls-frame { height: 100%; min-height: 400px; }
-.kepler-hud { position: absolute; z-index: 5; top: 88px; left: 16px; max-width: min(360px, calc(100% - 32px)); display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 1px solid rgba(125,211,252,.26); border-radius: 12px; color: #e2e8f0; background: rgba(2,6,23,.66); backdrop-filter: blur(10px); pointer-events: none; font-size: 11px; line-height: 1.45; }
+.kepler-hud { position: absolute; z-index: 5; top: 88px; left: 16px; max-width: min(360px, calc(100% - 32px)); padding-right: 34px; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border: 0; border-radius: 12px; color: #e2e8f0; background: transparent; backdrop-filter: none; pointer-events: none; font-size: 11px; line-height: 1.45; }
 .kepler-hud strong { font-size: 13px; color: #7dd3fc; }
 @media (min-width: 1280px) {
  .kepler-workspace { overflow: hidden; }
@@ -43,3 +43,9 @@
  .kepler-stage { height: 450px; }
  .kepler-hud { top: 72px; left: 10px; padding: 9px 11px; font-size: 10px; }
 }
+
+.kepler-hud-close { position:absolute; top: 0; right: 0; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(148,163,184,.45); color: #f1f5f9; background: transparent; font-size: 22px; line-height: 1; pointer-events: auto; cursor: pointer; }
+.kepler-hud-close:hover, .kepler-hud-close:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+.kepler-hud-show { position:absolute; z-index:5; top:88px; left:16px; border:1px solid rgba(125,211,252,.6); background:transparent; color:#e0f2fe; border-radius:8px; font-size:12px; font-weight:700; padding:8px 12px; cursor:pointer; }
+.kepler-hud-show:focus-visible { outline:2px solid #7dd3fc; outline-offset:2px; }
+@media(max-width:480px) { .kepler-hud-show { top:72px; left:10px; } }
