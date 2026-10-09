@@ -7,6 +7,7 @@ const KeplerCanvas = ({ physicsRef, renderTrigger }) => {
   // Viewport State (Zoom/Pan) stored in ref to avoid re-renders
   const viewRef = useRef({
     scale: 1,
+    autoFit: true,
     x: 0,
     y: 0,
     isDragging: false,
@@ -23,10 +24,12 @@ const KeplerCanvas = ({ physicsRef, renderTrigger }) => {
       e.preventDefault();
       const zoomSensitivity = 0.001;
       const newScale = viewRef.current.scale - e.deltaY * zoomSensitivity;
-      viewRef.current.scale = Math.max(0.1, Math.min(newScale, 5)); // Clamp zoom
+      viewRef.current.scale = Math.max(0.1, Math.min(newScale, 5));
+      viewRef.current.autoFit = false; // Clamp zoom
     };
 
     const handleMouseDown = (e) => {
+      viewRef.current.autoFit = false;
       viewRef.current.isDragging = true;
       viewRef.current.lastX = e.clientX;
       viewRef.current.lastY = e.clientY;
@@ -79,6 +82,17 @@ const KeplerCanvas = ({ physicsRef, renderTrigger }) => {
         canvas.height = rect.height * dpr;
       }
 
+      const engine = physicsRef.current;
+      if (viewRef.current.autoFit && rect.width > 0 && rect.height > 0) {
+        const points = engine.orbitCurve?.length ? engine.orbitCurve : [engine.state];
+        const xs = points.map(p => p.x).concat(0);
+        const ys = points.map(p => p.y).concat(0);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        viewRef.current.scale = Math.min(1.6, Math.max(60, rect.width - 45) / Math.max(60, maxX - minX), Math.max(60, rect.height - 45) / Math.max(60, maxY - minY));
+        viewRef.current.x = -((minX + maxX) / 2) * viewRef.current.scale;
+        viewRef.current.y = -((minY + maxY) / 2) * viewRef.current.scale;
+      }
       const { scale, x: panX, y: panY } = viewRef.current;
 
       ctx.resetTransform();
@@ -113,7 +127,6 @@ const KeplerCanvas = ({ physicsRef, renderTrigger }) => {
       ctx.stroke();
 
       // Get Physics State
-      const engine = physicsRef.current;
       const { x, y, vx, vy } = engine.state;
 
       // 4. Draw Sweeps
