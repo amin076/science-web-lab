@@ -168,7 +168,7 @@ const KeplerControlPanel = ({
               <div className="flex justify-between text-xs mb-1.5 font-mono text-slate-400">
                 <span>Start Distance</span>
                 <span className="text-indigo-300">
-                  {params.launchDistance} px
+                  {params.launchDistance} model units
                 </span>
               </div>
               <input
@@ -185,7 +185,7 @@ const KeplerControlPanel = ({
             <div>
               <div className="flex justify-between text-xs mb-1.5 font-mono text-slate-400">
                 <span>Launch Velocity</span>
-                <span className="text-sky-300">{params.launchVelocity}</span>
+                <span className="text-sky-300">{params.launchVelocity} units/time</span>
               </div>
               <input
                 type="range"
@@ -197,7 +197,7 @@ const KeplerControlPanel = ({
                 className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500"
               />
               <div className="text-[10px] text-slate-500 mt-1 text-right">
-                Circular Orbit requires ~{idealV}
+                Circular speed ~{idealV} model units/time
               </div>
             </div>
 
@@ -223,7 +223,7 @@ const KeplerControlPanel = ({
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-slate-800/60 p-3 rounded-lg border border-slate-700">
             <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
-              Velocity
+              Velocity (units/time)
             </div>
             <div className="text-xl font-mono text-sky-400">
               {telemetry.v.toFixed(1)}
@@ -231,7 +231,7 @@ const KeplerControlPanel = ({
           </div>
           <div className="bg-slate-800/60 p-3 rounded-lg border border-slate-700">
             <div className="text-[10px] text-slate-500 uppercase tracking-widest mb-1">
-              Distance
+              Distance (model units)
             </div>
             <div className="text-xl font-mono text-orange-400">
               {telemetry.r.toFixed(0)}
