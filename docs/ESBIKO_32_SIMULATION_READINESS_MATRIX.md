@@ -11,11 +11,11 @@ Snapshot: 2026-10-09. Source: live production `list_science_simulations`, `src/w
 
 ## Snapshot counts
 
-- MCP discoverable **32/32** (26 `adapted`, 6 `universal`).
-- Site WebMCP registry explicitly enables **15/32**, a **different** surface from server MCP discovery.
-- Strict **full remote control proven 0/32**; **11/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits and Ambient Pattern Studio; pendulum/spring have recording tests; Ambient recording start/stop needs separate production acceptance) but no proof of every feature through hosted ChatGPT.
-- Explicit responsive browser regression evidence for **12/32** (provisional); 20 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
-- Targeted architecture/UX bug fix changes for **9/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
+- MCP discoverable **32/32** (32 `adapted`, 0 `universal`).
+- Site WebMCP registry explicitly enables **21/32**, a **different** surface from server MCP discovery.
+- Strict **full remote control proven 0/32**; **17/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits and Ambient Pattern Studio, Evolution of Life, Gearbox & Differential, Moon Lander, Optics Bench 3D, Plate Tectonics, Satellites & Tracking; pendulum/spring have recording tests; Ambient recording start/stop needs separate production acceptance) but no proof of every feature through hosted ChatGPT.
+- Explicit responsive browser regression evidence for **18/32** (provisional); 14 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
+- Targeted architecture/UX bug fix changes for **15/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
 
 ## Detailed tracker
 
@@ -43,16 +43,16 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 18 | Ambient Pattern Studio | Y | A | Y | Y | Y | Y | — | — |
 | 19 | Coulomb's Law (3D) | Y | A | Y | Y | — | — | — | — |
 | 20 | Electric Circuits Lab | Y | A | Y | Y | Y | Y | — | — |
-| 21 | Evolution of Life | Y | U | — | — | — | — | — | — |
-| 22 | Gearbox & Differential (3D) | Y | U | — | — | — | — | — | — |
+| 21 | Evolution of Life | Y | A | Y | Y | Y | Y | — | — |
+| 22 | Gearbox & Differential (3D) | Y | A | Y | Y | Y | Y | — | — |
 | 23 | Ideal Gas Law Simulation | Y | A | Y | Y | Y | Y | — | — |
 | 24 | Kepler's Laws Lab | Y | A | Y | Y | — | — | — | — |
-| 25 | Moon Lander Challenge | Y | U | — | — | — | — | — | — |
+| 25 | Moon Lander Challenge | Y | A | Y | Y | Y | Y | — | — |
 | 26 | Optics Bench (2D) | Y | A | Y | Y | Y | Y | — | — |
-| 27 | Optics Bench (3D) | Y | U | — | — | — | — | — | — |
-| 28 | Plate Tectonics (3D) | Y | U | — | — | — | — | — | — |
+| 27 | Optics Bench (3D) | Y | A | Y | Y | Y | Y | — | — |
+| 28 | Plate Tectonics (3D) | Y | A | Y | Y | Y | Y | — | — |
 | 29 | Ripple Tank | Y | A | Y | Y | — | — | — | — |
-| 30 | Satellites & Tracking | Y | U | — | — | — | — | — | — |
+| 30 | Satellites & Tracking | Y | A | Y | Y | Y | Y | — | — |
 | 31 | Spatial Audio Lab | Y | A | Y | Y | Y | Y | — | — |
 | 32 | Virtual Microscope | Y | A | Y | Y | — | — | — | — |
 
@@ -79,6 +79,10 @@ PR #145 additionally integrates the Ripple Tank and passes its browser test. Ful
 PR #148 added Ideal Gas and Spatial Audio advanced adapters, responsive canvas-first layouts, input and audio lifecycle checks, and four-viewport browser regressions (360/600/900/1440 px) for both. Pending: real-device manual and hosted ChatGPT end-to-end validation. Spatial Audio browser activation may require user gesture in normal browser security contexts.
 
 PR #153 implements Optics Bench 2D, Electric Circuits Lab, and Ambient Pattern Studio advanced adapters, mobile canvas-first layouts, and tests at 360/600/900/1440 px. Ambient high-resolution recording start/stop and real-device review remain independent acceptance checks; do not infer full hosted ChatGPT tool control from the WebMCP browser test. Supporting browser run: #37892420737 and final expanded run noted in PR #153.
+
+## Final six implementation (PR #155)
+
+Evolution, Gearbox, Moon Lander, Optics 3D, Plate Tectonics and Satellites now declare advanced parameter/state schemas, and source browser tools operate underlying UI/engine state. Dedicated 4-viewport browser workflow passed **24/24** scenarios at 360, 600, 900 and 1440 px: https://github.com/amin076/science-web-lab/actions/runs/37896589460. This is **adapter contract and automated browser acceptance**, not a blanket certification of scientific correctness, hosted ChatGPT end-to-end remote control, every feature of older adapted simulations, or physical mobile devices. Satellite integrator step budget was capped to avoid UI freezes, and mobile stage/controls layouts were improved where needed.
 
 ## Evidence index
 

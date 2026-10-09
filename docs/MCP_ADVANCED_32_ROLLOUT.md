@@ -11,22 +11,22 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 | `creative.patterns.ambient-pattern-studio` | Ambient Pattern Studio | [x] | [x] | [x] |
 | `physics.electricity.coulomb-law-3d` | Coulomb's Law 3D | [x] | [x] | [x] |
 | `physics.electricity.circuits` | Electric Circuits Lab | [x] | [x] | [x] |
-| `evolution-of-life` | Evolution of Life | [ ] | [ ] | [ ] |
-| `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [ ] | [ ] | [ ] |
+| `evolution-of-life` | Evolution of Life | [x] | [x] | [x] |
+| `physics.mechanics.gearbox-differential-3d` | Gearbox & Differential 3D | [x] | [x] | [x] |
 | `physics.thermodynamics.gas` | Ideal Gas Law | [x] | [x] | [x] |
 | `astronomy.kepler-lab` | Kepler's Laws | [x] | [x] | [x] |
-| `physics.challenges.moon-lander` | Moon Lander | [ ] | [ ] | [ ] |
+| `physics.challenges.moon-lander` | Moon Lander | [x] | [x] | [x] |
 | `physics.optics.lens-mirror-2d` | Optics Bench 2D | [x] | [x] | [x] |
-| `physics.optics.lens-mirror-3d` | Optics Bench 3D | [ ] | [ ] | [ ] |
-| `earth-science.geology.plate-tectonics` | Plate Tectonics | [ ] | [ ] | [ ] |
+| `physics.optics.lens-mirror-3d` | Optics Bench 3D | [x] | [x] | [x] |
+| `earth-science.geology.plate-tectonics` | Plate Tectonics | [x] | [x] | [x] |
 | `physics.waves.surface-waves-double-slit` | Ripple Tank | [x] | [x] | [x] |
-| `astronomy.space.satellites-telescopes` | Satellites & Tracking | [ ] | [ ] | [ ] |
+| `astronomy.space.satellites-telescopes` | Satellites & Tracking | [x] | [x] | [x] |
 | `physics.acoustics.spatial-audio` | Spatial Audio | [x] | [x] | [x] |
 | `physics.optics.microscope` | Virtual Microscope | [x] | [x] | [x] |
 
 ## Current result (October 9, 2026)
 
-**26/32** manifest contracts now exist, **6/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits, and Ambient Pattern Studio contracts have browser-tested live agent operations of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145, #148 and #153. Ambient WebM recording support is wired but recording success/download still need dedicated acceptance.
+**32/32** manifest contracts now exist, **0/32** remain. The new microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits, and Ambient Pattern Studio contracts have browser-tested live agent operations of actual agent tools. This does not constitute final ChatGPT-wide acceptance of every feature. See PRs #140, #142, #143, #145, #148, #153 and #155. Ambient WebM recording support is wired but recording success/download still need dedicated acceptance.
 
 ## Non-negotiable acceptance for each checkbox
 
@@ -40,3 +40,7 @@ Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readin
 Keep the existing general MCP tools and their input contracts backwards compatible while app review is pending. WebMCP site-specific discovery is separate from remote server MCP discovery.
 
 **Do not treat the baseline 17 as fully controlled:** they are declared only, and still require full Phase 2 feature-by-feature verification.
+
+## Final six October 9 release
+
+PR #155 adds the final six adapter contracts, real browser control tools, and targeted mobile/bug fixes. The 24-case 4-viewport browser regression and general MCP contract test passed. Server-side publication and live catalog confirmation are separate signoffs. Do not conflate this initial adapter milestone with end-to-end ability to control all features of every simulation through the hosted ChatGPT tool surface or with mobile real-device/manual QA.
