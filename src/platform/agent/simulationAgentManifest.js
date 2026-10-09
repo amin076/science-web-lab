@@ -1,4 +1,33 @@
 export const simulationAgentManifest = Object.freeze({
+  "astronomy.kepler-lab": Object.freeze({
+    adapterVersion: "kepler-lab-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        launchDistance: { type: "number", minimum: 100, maximum: 1000 },
+        launchVelocity: { type: "number", minimum: 10, maximum: 120 },
+        launchAngle: { type: "number", minimum: -180, maximum: 180 },
+        showSweeps: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["simulationId", "running", "params", "telemetry", "status"],
+      properties: {
+        simulationId: { const: "astronomy.kepler-lab" },
+        running: { type: "boolean" },
+        params: { type: "object" },
+        telemetry: { type: "object" },
+        status: { type: "string" },
+      },
+    },
+  }),
+
   "physics.electricity.coulomb-law-3d": Object.freeze({
     adapterVersion: "coulomb-law-3d-adapter.v1",
     actions: ["open", "configure", "readState", "play", "pause", "reset"],
