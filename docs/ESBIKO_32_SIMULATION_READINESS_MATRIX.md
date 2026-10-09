@@ -11,11 +11,11 @@ Snapshot: 2026-10-09. Source: live production `list_science_simulations`, `src/w
 
 ## Snapshot counts
 
-- MCP discoverable **32/32** (23 `adapted`, 9 `universal`).
-- Site WebMCP registry explicitly enables **12/32**, a **different** surface from server MCP discovery.
-- Strict **full remote control proven 0/32**; **8/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas and Spatial Audio; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
-- Explicit responsive browser regression evidence for **9/32** (provisional); 23 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
-- Targeted architecture/UX bug fix changes for **6/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
+- MCP discoverable **32/32** (26 `adapted`, 6 `universal`).
+- Site WebMCP registry explicitly enables **15/32**, a **different** surface from server MCP discovery.
+- Strict **full remote control proven 0/32**; **11/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D, Kepler, Ripple Tank, Ideal Gas, Spatial Audio, Optics 2D, Electric Circuits and Ambient Pattern Studio; pendulum/spring have recording tests; Ambient recording start/stop needs separate production acceptance) but no proof of every feature through hosted ChatGPT.
+- Explicit responsive browser regression evidence for **12/32** (provisional); 20 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
+- Targeted architecture/UX bug fix changes for **9/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
 
 ## Detailed tracker
 
@@ -40,15 +40,15 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 15 | Spring-Mass Oscillator | Y | A | Y | Y | Y | Y | — | — |
 | 16 | Two-Body Gravity | Y | A | — | — | — | — | — | — |
 | 17 | Uniform Circular Motion | Y | A | — | — | — | Y | — | — |
-| 18 | Ambient Pattern Studio | Y | U | — | — | — | — | — | — |
+| 18 | Ambient Pattern Studio | Y | A | Y | Y | Y | Y | — | — |
 | 19 | Coulomb's Law (3D) | Y | A | Y | Y | — | — | — | — |
-| 20 | Electric Circuits Lab | Y | U | — | — | — | — | — | — |
+| 20 | Electric Circuits Lab | Y | A | Y | Y | Y | Y | — | — |
 | 21 | Evolution of Life | Y | U | — | — | — | — | — | — |
 | 22 | Gearbox & Differential (3D) | Y | U | — | — | — | — | — | — |
 | 23 | Ideal Gas Law Simulation | Y | A | Y | Y | Y | Y | — | — |
 | 24 | Kepler's Laws Lab | Y | A | Y | Y | — | — | — | — |
 | 25 | Moon Lander Challenge | Y | U | — | — | — | — | — | — |
-| 26 | Optics Bench (2D) | Y | U | — | — | — | — | — | — |
+| 26 | Optics Bench (2D) | Y | A | Y | Y | Y | Y | — | — |
 | 27 | Optics Bench (3D) | Y | U | — | — | — | — | — | — |
 | 28 | Plate Tectonics (3D) | Y | U | — | — | — | — | — | — |
 | 29 | Ripple Tank | Y | A | Y | Y | — | — | — | — |
@@ -77,6 +77,8 @@ PRs #142 and #143 added functional 3D Coulomb and Kepler adapters and passed the
 PR #145 additionally integrates the Ripple Tank and passes its browser test. Full remote ChatGPT-wide acceptance remains unverified.
 
 PR #148 added Ideal Gas and Spatial Audio advanced adapters, responsive canvas-first layouts, input and audio lifecycle checks, and four-viewport browser regressions (360/600/900/1440 px) for both. Pending: real-device manual and hosted ChatGPT end-to-end validation. Spatial Audio browser activation may require user gesture in normal browser security contexts.
+
+PR #153 implements Optics Bench 2D, Electric Circuits Lab, and Ambient Pattern Studio advanced adapters, mobile canvas-first layouts, and tests at 360/600/900/1440 px. Ambient high-resolution recording start/stop and real-device review remain independent acceptance checks; do not infer full hosted ChatGPT tool control from the WebMCP browser test. Supporting browser run: #37892420737 and final expanded run noted in PR #153.
 
 ## Evidence index
 
