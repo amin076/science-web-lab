@@ -106,6 +106,15 @@ for (const key of ["launchDistance","launchVelocity","launchAngle","showSweeps"]
 assert.deepEqual(kepler.actions, ["open", "configure", "readState", "play", "pause", "reset"]);
 assert.equal(kepler.video, false);
 
+const ripple = getSimulationAgentProfile("physics.waves.surface-waves-double-slit");
+assert.equal(ripple.integrationLevel, "adapted");
+assert.equal(ripple.adapterVersion, "ripple-tank-adapter.v1");
+for (const key of ["sourceMode","amplitude","frequency","waveSpeed","damping",
+  "barrierEnabled","barrierX01","barrierThickness","slitGap","slitWidth"]) {
+  assert(ripple.parameterSchema.properties[key], "Missing ripple setting: "+key);
+}
+assert.deepEqual(ripple.actions, ["open", "configure", "readState", "play", "pause", "reset"]);
+
 const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
