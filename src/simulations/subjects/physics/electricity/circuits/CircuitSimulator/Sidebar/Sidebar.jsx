@@ -24,7 +24,7 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="w-[260px] bg-[#16213e] text-white p-3 flex flex-col gap-4 border-r border-[#0f3460] h-full min-h-0 overflow-y-auto">
+    <aside className="w-full xl:w-[260px] bg-[#16213e] text-white p-3 flex flex-col gap-4 border-r border-[#0f3460] xl:h-full min-h-0 overflow-y-auto">
       {/* Components */}
       <div className="bg-[#0f3460] rounded-lg p-3 shrink-0">
         <h3 className="text-sm font-bold tracking-wide text-cyan-300 mb-3">
