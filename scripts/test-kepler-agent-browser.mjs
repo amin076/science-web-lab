@@ -38,6 +38,27 @@ try {
   const reset=await call("esbiko_kepler_get_state");
   assert.equal(reset.data.running,false);
   assert.equal(reset.data.params.launchDistance,400);
+  // Verify the actual orbit canvas survives embedded responsive layouts.
+  for (const width of [360, 600, 900, 1440]) {
+    await page.setViewportSize({width,height:680});
+    const stage=page.locator(".kepler-stage-frame");
+    const canvas=stage.locator("canvas");
+    await canvas.waitFor({state:"visible"});
+    const dims=await canvas.evaluate(el=>({width:el.getBoundingClientRect().width,height:el.getBoundingClientRect().height,pixelsWide:el.width,pixelsHigh:el.height}));
+    assert(dims.width>=250 && dims.height>=250 && dims.pixelsWide>0 && dims.pixelsHigh>0,
+      "Kepler canvas collapsed at "+width+": "+JSON.stringify(dims));
+    assert(await page.locator(".kepler-hud").isVisible(),"Missing model identity HUD at "+width);
+    assert(await page.locator(".kepler-controls").isVisible(),"Missing controls at "+width);
+    if(width<1280) {
+      const order=await page.locator(".kepler-layout").evaluate(el=>{
+        const stage=el.querySelector(".kepler-stage").getBoundingClientRect();
+        const controls=el.querySelector(".kepler-controls").getBoundingClientRect();
+        return {stageBottom:stage.bottom,controlsTop:controls.top};
+      });
+      assert(order.controlsTop>=order.stageBottom-1,"Kepler mobile panel overlaps canvas: "+JSON.stringify(order));
+    }
+    console.log("KEPLER RESPONSIVE CANVAS PASS",width,dims.width,dims.height);
+  }
   assert.deepEqual(errors,[]);
   console.log("KEPLER ADVANCED MCP PASS");
 }finally{await browser.close();}
