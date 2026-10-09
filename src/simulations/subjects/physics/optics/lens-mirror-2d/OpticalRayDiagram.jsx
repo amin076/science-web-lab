@@ -127,7 +127,7 @@ export default function OpticalRayDiagram({
       width="100%"
       height="100%"
       viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
     >
       <SvgDefs />
       <Background width={VIEW_WIDTH} height={VIEW_HEIGHT} />
