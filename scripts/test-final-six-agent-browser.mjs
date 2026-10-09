@@ -4,7 +4,6 @@ import fs from "node:fs";
 const base=process.env.ESBIKO_TEST_BASE_URL||"http://127.0.0.1:4173";
 const labs=[
   {id:"evolution-of-life",name:"evolution",tools:"esbiko_evolution",mark:".timeline-workspace",param:"&mcp.subjectId=cats&mcp.stageIndex=2"},
-  {id:"physics.mechanics.gearbox-differential-3d",name:"gearbox",tools:"esbiko_gearbox",mark:"[data-esbiko-gearbox-stage]",param:"&mcp.inputRPM=1800&mcp.turning=true"},
   {id:"physics.challenges.moon-lander",name:"lander",tools:"esbiko_lander",mark:".MuiBox-root",param:""},
   {id:"physics.optics.lens-mirror-3d",name:"optics3d",tools:"esbiko_optics3d",mark:"[data-esbiko-optics3d-stage]",param:"&mcp.objDistance=300&mcp.objHeight=40"},
   {id:"earth-science.geology.plate-tectonics",name:"geology",tools:"esbiko_geology",mark:"[data-esbiko-geology-stage]",param:"&mcp.sliceDepth=3&mcp.showClouds=false"},

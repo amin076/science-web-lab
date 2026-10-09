@@ -1,0 +1,43 @@
+name: Evolution Scroll and Gearbox Quarantine
+on:
+  pull_request:
+    paths:
+      - "src/components/timeline/timelineWorkspace.css"
+      - "src/platform/agent/**"
+      - "src/webmcp/siteTools.js"
+      - "functions/mcp/simulationRegistry.mjs"
+      - "scripts/test-evolution-embedded-scroll.mjs"
+      - ".github/workflows/evolution-embedded-scroll.yml"
+  workflow_dispatch:
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: node scripts/audit-all-simulation-readiness.mjs --require-all-adapted
+      - run: node scripts/test-simulation-agent-contract.mjs
+      - run: npm run platform:catalog
+      - run: npm ci --prefix functions
+      - run: node scripts/test-mcp-runtime.mjs
+      - run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - run: npm run build
+      - run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/esbiko-preview.log 2>&1 &
+          for i in {1..30}; do if curl -fsS http://127.0.0.1:4173/ >/dev/null; then exit 0; fi; sleep 1; done
+          cat /tmp/esbiko-preview.log
+          exit 1
+      - run: node scripts/test-evolution-embedded-scroll.mjs

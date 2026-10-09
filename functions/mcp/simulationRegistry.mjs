@@ -7,6 +7,8 @@ const platformCatalog = require("../api/data/platformCatalog.generated.json");
 const agentManifest = require("./data/simulationAgentManifest.generated.json");
 
 const BASE_URL = "https://www.esbiko.com";
+// Temporarily excluded from MCP until its layout and scientific controls are repaired.
+const MCP_QUARANTINED_IDS = new Set(["physics.mechanics.gearbox-differential-3d"]);
 
 function normalizeRoute(simulation) {
   return simulation.route || `/experiments/${simulation.id}/run`;
@@ -106,7 +108,7 @@ export function validateSimulationParameters(id, parameters = null) {
 
 export function getSimulationProfile(id) {
   const simulation = platformCatalog.find((item) => item.id === id);
-  if (!simulation) return null;
+  if (!simulation || MCP_QUARANTINED_IDS.has(id)) return null;
 
   const manifest = agentManifest[id] || null;
   const route = normalizeRoute(simulation);
@@ -134,6 +136,7 @@ export function getSimulationProfile(id) {
 
 export function listSimulationProfiles() {
   return platformCatalog
+    .filter((simulation) => !MCP_QUARANTINED_IDS.has(simulation.id))
     .map((simulation) => getSimulationProfile(simulation.id))
     .filter(Boolean);
 }
@@ -148,5 +151,5 @@ export function requireSimulationProfile(id) {
 }
 
 export const SIMULATION_IDS = Object.freeze(
-  platformCatalog.map((simulation) => simulation.id),
+  platformCatalog.filter((simulation) => !MCP_QUARANTINED_IDS.has(simulation.id)).map((simulation) => simulation.id),
 );
