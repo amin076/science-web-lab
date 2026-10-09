@@ -1,4 +1,63 @@
 export const simulationAgentManifest = Object.freeze({
+  "physics.thermodynamics.gas": Object.freeze({
+    adapterVersion: "ideal-gas.v1",
+    actions: ["open","configure","readState","reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: { type: "object", properties: {
+  "lockedParam": {
+    "type": "string",
+    "enum": [
+      "T",
+      "P",
+      "V"
+    ]
+  },
+  "volume": {
+    "type": "number",
+    "minimum": 5,
+    "maximum": 85
+  },
+  "temperature": {
+    "type": "number",
+    "minimum": 100,
+    "maximum": 1000
+  },
+  "pressure": {
+    "type": "number",
+    "minimum": 1,
+    "maximum": 20
+  }
+}, additionalProperties: false },
+    stateSchema: { type: "object", properties: {"volume":{"type":"number"},"temperature":{"type":"number"},"pressure":{"type":"number"},"lockedParam":{"type":"string"},"warning":{"type":"string"}} },
+  }),
+  "physics.acoustics.spatial-audio": Object.freeze({
+    adapterVersion: "spatial-audio.v1",
+    actions: ["open","configure","readState","play","pause","reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: { type: "object", properties: {
+  "volume": {
+    "type": "number",
+    "minimum": 0,
+    "maximum": 1
+  },
+  "x": {
+    "type": "number",
+    "minimum": -10,
+    "maximum": 10
+  },
+  "z": {
+    "type": "number",
+    "minimum": -8,
+    "maximum": 8
+  }
+}, additionalProperties: false },
+    stateSchema: { type: "object", properties: {"volume":{"type":"number"},"x":{"type":"number"},"z":{"type":"number"},"playing":{"type":"boolean"},"audioContextState":{"type":"string"}} },
+  }),
+
   "physics.waves.surface-waves-double-slit": Object.freeze({
     adapterVersion: "ripple-tank-adapter.v1",
     actions: ["open", "configure", "readState", "play", "pause", "reset"],

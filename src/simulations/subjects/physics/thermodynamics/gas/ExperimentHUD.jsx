@@ -33,7 +33,7 @@ export default function ExperimentHUD({ lockedParam }) {
   return (
     <div
       className={`
-      absolute bottom-8 left-8 z-10 w-80 rounded-2xl border backdrop-blur-md shadow-2xl overflow-hidden
+      relative w-full min-w-0 rounded-2xl border backdrop-blur-md shadow-2xl overflow-hidden
       bg-gradient-to-br ${info.bg} ${info.border}
     `}
     >

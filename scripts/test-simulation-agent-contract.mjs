@@ -115,7 +115,21 @@ for (const key of ["sourceMode","amplitude","frequency","waveSpeed","damping",
 }
 assert.deepEqual(ripple.actions, ["open", "configure", "readState", "play", "pause", "reset"]);
 
-const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
+for (const [id, version, keys, actions] of [
+  ["physics.thermodynamics.gas", "ideal-gas.v1",
+    ["lockedParam","volume","temperature","pressure"], ["open","configure","readState","reset"]],
+  ["physics.acoustics.spatial-audio", "spatial-audio.v1",
+    ["volume","x","z"], ["open","configure","readState","play","pause","reset"]],
+]) {
+  const profile=getSimulationAgentProfile(id);
+  assert.equal(profile.integrationLevel,"adapted");
+  assert.equal(profile.adapterVersion,version);
+  assert.deepEqual(Object.keys(profile.parameterSchema.properties),keys);
+  assert.deepEqual(profile.actions,actions);
+  assert.equal(profile.video,false);
+}
+
+const universal = getSimulationAgentProfile("physics.electricity.circuits");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
 assert.deepEqual(universal.actions, ["open"]);
