@@ -147,7 +147,7 @@ export default function IdealGasLab() {
   return (
     <div className="w-full h-full min-w-0 overflow-y-auto xl:overflow-hidden bg-slate-950 text-white font-sans p-2 sm:p-3">
       <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(300px,370px)] gap-3 xl:h-full xl:min-h-0">
-      <div className="w-full min-w-0 h-[min(58dvh,550px)] min-h-[300px] xl:h-full xl:min-h-0 relative overflow-hidden rounded-xl border border-slate-700">
+      <div data-esbiko-gas-stage className="w-full min-w-0 h-[min(58dvh,550px)] min-h-[300px] xl:h-full xl:min-h-0 relative overflow-hidden rounded-xl border border-slate-700">
         <IdealGasScene3D
           volume={volume}
           temperature={temperature}
@@ -157,7 +157,7 @@ export default function IdealGasLab() {
 
       </div>
 
-      <div className="w-full min-w-0 xl:overflow-y-auto bg-slate-900 rounded-xl border border-slate-800 flex flex-col gap-3">
+      <div data-esbiko-gas-controls className="w-full min-w-0 xl:overflow-y-auto bg-slate-900 rounded-xl border border-slate-800 flex flex-col gap-3">
         {warning && <p role="alert" className="px-3 pt-2 text-sm text-rose-300">{warning}</p>}
         <ControlPanel
           volume={volume}
