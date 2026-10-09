@@ -97,6 +97,15 @@ for (const key of ["q1","q2","x1","y1","z1","x2","y2","z2","showField","showFlux
 }
 assert.equal(coulomb3d.video, false);
 
+const kepler = getSimulationAgentProfile("astronomy.kepler-lab");
+assert.equal(kepler.integrationLevel, "adapted");
+assert.equal(kepler.adapterVersion, "kepler-lab-adapter.v1");
+for (const key of ["launchDistance","launchVelocity","launchAngle","showSweeps"]) {
+  assert(kepler.parameterSchema.properties[key], "Kepler setting missing: " + key);
+}
+assert.deepEqual(kepler.actions, ["open", "configure", "readState", "play", "pause", "reset"]);
+assert.equal(kepler.video, false);
+
 const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
