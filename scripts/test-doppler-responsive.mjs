@@ -38,7 +38,7 @@ try {
         return root.scrollTop;
       });
       assert(scrolled > 100, "Scrolling is locked at " + width);
-      await page.getByText("2D SOUND SOURCES", { exact: false }).first().scrollIntoViewIfNeeded();
+      await page.getByText(/2D Sound Sources/i).first().scrollIntoViewIfNeeded();
     } else {
       assert(positions.controls.x >= positions.stage.right - 2,
         "Desktop controls must remain beside stage: " + JSON.stringify(positions));
