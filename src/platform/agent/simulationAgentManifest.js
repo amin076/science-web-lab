@@ -19,7 +19,7 @@ export const simulationAgentManifest = Object.freeze({
   }),
   "creative.patterns.ambient-pattern-studio": Object.freeze({
     adapterVersion: "ambient-pattern.v1",
-    actions: ["open","configure","readState","play","pause","reset","recordVideo"],
+    actions: ["open","configure","readState","play","pause","reset","record"],
     tools: ["open_science_simulation"],
     video: true,
     exportable: true,
