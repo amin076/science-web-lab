@@ -12,24 +12,27 @@ export const calculatePhysicsStep = (objects, dt, gravity, airResistance) => {
   // Find the plane to sync the parcel if attached
   const plane = objects.find((o) => o.id === "plane");
 
-  const nextObjects = objects.map((obj) => {
+  const nextObjects = [];
+  objects.forEach((obj) => {
     // CLONE OBJECT
     const newObj = { ...obj };
 
     // --- 1. HANDLE PARCEL ATTACHMENT ---
     if (newObj.id === "parcel" && newObj.attached && plane) {
       // Sync strictly with plane
-      newObj.x = plane.x;
-      newObj.y = plane.y - 2;
-      newObj.vx = plane.vx;
+      const planeStep = nextObjects.find((o) => o.id === "plane") ?? plane;
+      newObj.x = planeStep.x;
+      newObj.y = planeStep.y - 2;
+      newObj.vx = planeStep.vx;
       newObj.vy = 0;
       newObj.ax = plane.ax;
       newObj.stopped = plane.stopped;
-      return newObj;
+      nextObjects.push(newObj);
+      return;
     }
 
     // --- 2. STANDARD PHYSICS ---
-    if (newObj.stopped) return newObj;
+    if (newObj.stopped) { nextObjects.push(newObj); return; }
 
     let fx = 0;
     let fy = 0;
@@ -98,7 +101,7 @@ export const calculatePhysicsStep = (objects, dt, gravity, airResistance) => {
       limitReached = true; // Stop simulation on wall hit
     }
 
-    return newObj;
+    nextObjects.push(newObj);
   });
 
   // --- 4. TRAIL GENERATION ---
