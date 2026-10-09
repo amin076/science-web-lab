@@ -13,7 +13,7 @@ const drawCloud = (ctx, x, y, scale) => {
   ctx.save();
   ctx.translate(x, y);
   ctx.scale(scale, scale);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+  ctx.fillStyle = "rgba(245, 252, 255, 0.78)";
   ctx.beginPath();
   ctx.arc(-20, 0, 20, 0, Math.PI * 2);
   ctx.arc(20, 0, 25, 0, Math.PI * 2);
@@ -37,10 +37,17 @@ export const drawEnvironment = (ctx, view, width, height) => {
 
   // 1. PRO SKY GRADIENT
   const skyGrad = ctx.createLinearGradient(0, 0, 0, height);
-  skyGrad.addColorStop(0, "#0c2545");
-  skyGrad.addColorStop(0.55, "#347da7");
-  skyGrad.addColorStop(1, "#b7e7e6");
+  skyGrad.addColorStop(0, "#112d50");
+  skyGrad.addColorStop(0.55, "#3886a9");
+  skyGrad.addColorStop(1, "#c6e7df");
   ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, width, height);
+
+  // Light atmospheric haze behind the landscape, without covering flight trajectories.
+  const horizonGlow = ctx.createRadialGradient(width * 0.76, height * 0.45, 10, width * 0.76, height * 0.45, Math.max(width, height) * 0.7);
+  horizonGlow.addColorStop(0, "rgba(255, 221, 165, 0.17)");
+  horizonGlow.addColorStop(1, "rgba(255, 221, 165, 0)");
+  ctx.fillStyle = horizonGlow;
   ctx.fillRect(0, 0, width, height);
 
   // 2. SUN (Crisper, less bloom)
@@ -72,10 +79,15 @@ export const drawEnvironment = (ctx, view, width, height) => {
       drawMountain(ctx, sx + 250, baseY, 300, 100 - hVar, "rgba(16, 57, 82, 0.25)");
   }
 
-  // 4. CLOUDS
+  // Clouds remain inside the sky even on narrow phone-size canvases.
   const cloudOffset = view.x * 0.2;
-  drawCloud(ctx, (150 + cloudOffset) % (width + 400) - 200, 100, 1.2);
-  drawCloud(ctx, (700 + cloudOffset) % (width + 500) - 200, 160, 0.9);
+  const wrap = (n, length) => ((n % length) + length) % length;
+  drawCloud(ctx, wrap(150 + cloudOffset, width + 280) - 140, Math.min(115, height * 0.2), 0.85);
+  drawCloud(ctx, wrap(700 + cloudOffset, width + 340) - 170, Math.min(165, height * 0.3), 0.65);
+
+  // Fine atmospheric layers make the distant scene less flat.
+  ctx.fillStyle = "rgba(213, 241, 236, 0.08)";
+  ctx.fillRect(0, Math.max(0, groundY - 70), width, 70);
 
   // 5. GROUND & ROAD
   if (groundY < height) {
@@ -234,6 +246,21 @@ const drawPlaneElements = (ctx, obj, scale) => {
   ctx.lineTo(0, -h*0.1);
   ctx.fill();
   
+  // Nose cone and engine highlight create a more recognizable aircraft silhouette.
+  ctx.fillStyle = "#f8fafc";
+  ctx.beginPath();
+  ctx.moveTo(w * 0.35, -h * 0.3);
+  ctx.lineTo(w * 0.57, -h * 0.2);
+  ctx.lineTo(w * 0.35, -h * 0.11);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = "rgba(15,23,42,.55)";
+  ctx.lineWidth = Math.max(1, h * 0.025);
+  ctx.beginPath();
+  ctx.moveTo(-w * 0.28, -h * 0.2);
+  ctx.lineTo(w * 0.32, -h * 0.2);
+  ctx.stroke();
+
   // Cockpit
   ctx.fillStyle = "#74b9ff";
   ctx.beginPath();
