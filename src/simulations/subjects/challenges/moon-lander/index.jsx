@@ -1,3 +1,6 @@
+import { useEffect, useRef } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { Flame, Play, Target } from "lucide-react";
 import MoonLanderControls from "./components/MoonLanderControls";
@@ -153,13 +156,58 @@ function TrainingBriefing({ onStart }) {
 
 export default function MoonLanderChallenge() {
   const runtime = useMoonLanderRuntime();
+  const liveRef=useRef(runtime);
+  liveRef.current=runtime;
+  const initialApplied=useRef(false);
+  useEffect(()=>{
+    if(initialApplied.current)return;
+    initialApplied.current=true;
+    const initial=readEmbeddedMcpParameters("physics.challenges.moon-lander",{}).values;
+    for(const [key,value] of Object.entries(initial)){
+      if(["mainThrust","rotateLeft","rotateRight"].includes(key))liveRef.current.setControlActive(key,value);
+    }
+  },[]);
+  useEffect(()=>{
+    const controller=new AbortController();
+    const empty={type:"object",properties:{},additionalProperties:false};
+    const rules={mainThrust:{type:"boolean"},rotateLeft:{type:"boolean"},rotateRight:{type:"boolean"}};
+    const snapshot=()=>({simulationId:"physics.challenges.moon-lander",state:{
+      physics:liveRef.current.state,controls:liveRef.current.input,
+      paused:liveRef.current.isPaused,ready:liveRef.current.isReady,finished:liveRef.current.isFinished,
+    }});
+    const tools=[
+      {name:"esbiko_lander_get_state",description:"Read lunar lander position, velocity, fuel, score and active controls.",inputSchema:empty,annotations:{readOnlyHint:true},execute:createSafeToolExecutor("lander_get_state",async()=>snapshot())},
+      {name:"esbiko_lander_configure",description:"Actuate actual thrust and left or right rotation; release by sending false.",inputSchema:{type:"object",properties:rules,additionalProperties:false},execute:createSafeToolExecutor("lander_configure",async(input)=>{
+        if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Expected lander controls");
+        for(const [key,value] of Object.entries(input)){
+          if(!(key in rules)||typeof value!=="boolean")throw Error("Invalid lander control: "+key);
+        }
+        if(liveRef.current.isFinished)throw Error("Mission ended; reset first");
+        for(const [key,value] of Object.entries(input))liveRef.current.setControlActive(key,value);
+        return {accepted:input};
+      })},
+      {name:"esbiko_lander_set_playback",description:"Start or pause lunar mission physics.",inputSchema:{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},execute:createSafeToolExecutor("lander_set_playback",async({running})=>{
+        if(typeof running!=="boolean")throw Error("running must be boolean");
+        if(running&&liveRef.current.isFinished)throw Error("Mission ended; reset first");
+        if(running)liveRef.current.resume();else liveRef.current.pause();
+        return {running};
+      })},
+      {name:"esbiko_lander_reset",description:"Reset lander position, fuel, controls and physics.",inputSchema:empty,execute:createSafeToolExecutor("lander_reset",async()=>{liveRef.current.reset();return {reset:true};})},
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
+      .catch(error=>{if(!controller.signal.aborted)console.warn("Lander MCP",error);});
+    return ()=>controller.abort();
+  },[]);
+
 
   return (
     <Box
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: "100dvh",
+        minHeight: "min(100dvh, 760px)",
+        height:"100%",
+        minWidth:0,
         overflow: "hidden",
         backgroundColor: "#071126",
         touchAction: "none",

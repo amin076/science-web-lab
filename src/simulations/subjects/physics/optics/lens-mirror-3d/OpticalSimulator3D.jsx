@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Environment, Grid, Text } from "@react-three/drei";
 import * as THREE from "three";
@@ -121,14 +123,36 @@ function FocalMarker({ x, label }) {
 }
 
 export default function OpticalSimulator3D() {
-  // Shared State
-  const [lensType, setLensType] = useState("convex-lens");
-  const [objDistance, setObjDistance] = useState(250);
-  const [focalLength, setFocalLength] = useState(120);
-  const [objHeight, setObjHeight] = useState(60);
-  const [objType, setObjType] = useState("tree");
-  const [objSide, setObjSide] = useState("left");
-
+  const defaults=useMemo(()=>({lensType:"convex-lens",objDistance:250,focalLength:120,objHeight:60,objType:"tree",objSide:"left"}),[]);
+  const hydrated=useMemo(()=>readEmbeddedMcpParameters("physics.optics.lens-mirror-3d",defaults).values,[defaults]);
+  const [controls,setControls]=useState(hydrated);
+  const stateRef=useRef(controls);
+  stateRef.current=controls;
+  const {lensType,objDistance,focalLength,objHeight,objType,objSide}=controls;
+  const setField=(key)=>(value)=>setControls(previous=>({...previous,[key]:value}));
+  const rules={
+    lensType:{type:"string",enum:["convex-lens","concave-lens","concave-mirror","convex-mirror"]},
+    objDistance:{type:"number",minimum:50,maximum:450},focalLength:{type:"number",minimum:50,maximum:300},
+    objHeight:{type:"number",minimum:20,maximum:63},objType:{type:"string",enum:["tree","arrow"]},
+    objSide:{type:"string",enum:["left","right"]},
+  };
+  useEffect(()=>{
+    const controller=new AbortController(),empty={type:"object",properties:{},additionalProperties:false};
+    const getState=()=>({simulationId:"physics.optics.lens-mirror-3d",state:{
+      ...stateRef.current,results:calculateOpticalElement(stateRef.current.lensType,stateRef.current.focalLength,
+      stateRef.current.objDistance,stateRef.current.objHeight)}});
+    const tools=[
+      {name:"esbiko_optics3d_get_state",description:"Read current optical element geometry, image location, magnification and all UI controls.",inputSchema:empty,annotations:{readOnlyHint:true},execute:createSafeToolExecutor("optics3d_get_state",async()=>getState())},
+      {name:"esbiko_optics3d_configure",description:"Control the actual 3D lens/mirror type, object size/distance/side and focal length.",inputSchema:{type:"object",properties:rules,additionalProperties:false},execute:createSafeToolExecutor("optics3d_configure",async(values)=>{
+         if(!values||typeof values!=="object"||Array.isArray(values))throw Error("Expected optical settings");
+         for(const [key,value] of Object.entries(values)){const rule=rules[key];if(!rule||typeof value!==rule.type||(rule.enum&&!rule.enum.includes(value))||(rule.type==="number"&&(!Number.isFinite(value)||value<rule.minimum||value>rule.maximum)))throw Error("Invalid optics control: "+key);}
+         stateRef.current={...stateRef.current,...values};setControls(stateRef.current);return getState();
+       })},
+      {name:"esbiko_optics3d_reset",description:"Reset all six optical controls including object style.",inputSchema:empty,execute:createSafeToolExecutor("optics3d_reset",async()=>{stateRef.current={...defaults};setControls(stateRef.current);return getState();})},
+    ];
+    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal}).catch(error=>{if(!controller.signal.aborted)console.warn("Optics3D MCP",error);});
+    return ()=>controller.abort();
+  },[defaults]);
   // Physics Calc
   const results = useMemo(
     () =>
@@ -152,7 +176,7 @@ export default function OpticalSimulator3D() {
   const fX = focalLength * SCALE;
 
   return (
-    <div className="relative w-full h-full bg-[#050510] overflow-hidden font-sans">
+    <div className="relative w-full h-full min-w-0 overflow-y-auto xl:overflow-hidden bg-[#050510] font-sans p-2 sm:p-3">
       {/* 1. Custom Scrollbar Styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -161,8 +185,9 @@ export default function OpticalSimulator3D() {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
       `}</style>
 
-      {/* 2. 3D Canvas (Full Screen Background) */}
-      <div className="absolute inset-0 z-0">
+      <div className="flex flex-col xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(300px,370px)] gap-3 xl:h-full min-w-0">
+      {/* 2. 3D Canvas */}
+      <div data-esbiko-optics3d-stage className="w-full min-w-0 h-[min(58dvh,530px)] min-h-[280px] xl:h-full xl:min-h-0 relative overflow-hidden rounded-xl border border-white/10">
         <Canvas camera={{ position: [0, 2, 12], fov: 45 }} shadows>
           <color attach="background" args={["#080b14"]} />
           <OrbitControls makeDefault maxPolarAngle={Math.PI / 1.8} />
@@ -248,8 +273,8 @@ export default function OpticalSimulator3D() {
       </div>
 
       {/* 3. Floating HUD Panel (Glassmorphism) */}
-      <div className="absolute top-4 left-4 z-10 w-[350px] flex flex-col max-h-[calc(100vh-32px)] pointer-events-none">
-        <div className="bg-slate-950/70 border border-white/10 rounded-2xl shadow-2xl flex flex-col h-full overflow-hidden pointer-events-auto backdrop-blur-md">
+      <div data-esbiko-optics3d-controls className="w-full min-w-0 flex flex-col xl:overflow-y-auto">
+        <div className="bg-slate-950 border border-white/10 rounded-2xl shadow-xl flex flex-col min-w-0">
           {/* Header */}
           <div className="px-5 py-4 border-b border-white/5 bg-gradient-to-r from-white/5 to-transparent shrink-0">
             <h1 className="text-lg font-extrabold text-white tracking-tight flex items-center gap-3 drop-shadow-md">
@@ -261,27 +286,21 @@ export default function OpticalSimulator3D() {
           </div>
 
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto min-h-0 p-5 pr-2 custom-scrollbar">
+          <div className="p-3 sm:p-4 min-w-0 custom-scrollbar">
             <OpticalControls
               lensType={lensType}
-              setLensType={setLensType}
+              setLensType={setField("lensType")}
               objDistance={objDistance}
-              setObjDistance={setObjDistance}
+              setObjDistance={setField("objDistance")}
               focalLength={focalLength}
-              setFocalLength={setFocalLength}
+              setFocalLength={setField("focalLength")}
               objHeight={objHeight}
-              setObjHeight={setObjHeight}
+              setObjHeight={setField("objHeight")}
               objType={objType}
-              setObjType={setObjType}
+              setObjType={setField("objType")}
               objSide={objSide}
-              setObjSide={setObjSide}
-              onReset={() => {
-                setLensType("convex-lens");
-                setObjDistance(250);
-                setFocalLength(120);
-                setObjHeight(60);
-                setObjSide("left");
-              }}
+              setObjSide={setField("objSide")}
+              onReset={() => setControls({...defaults})}
             />
 
             {/* Results Analysis */}
@@ -296,8 +315,9 @@ export default function OpticalSimulator3D() {
       </div>
 
       {/* 4. Canvas Hint */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white/50 text-[10px] uppercase tracking-widest px-4 py-2 rounded-full border border-white/5 pointer-events-none">
+      <div className="hidden xl:block absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm text-white/50 text-[10px] uppercase tracking-widest px-4 py-2 rounded-full border border-white/5 pointer-events-none">
         Drag to Rotate • Scroll to Zoom
+      </div>
       </div>
     </div>
   );
