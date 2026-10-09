@@ -19,9 +19,10 @@ export const calculatePhysicsStep = (objects, dt, gravity, airResistance) => {
     // --- 1. HANDLE PARCEL ATTACHMENT ---
     if (newObj.id === "parcel" && newObj.attached && plane) {
       // Sync strictly with plane
-      newObj.x = plane.x;
-      newObj.y = plane.y - 2;
-      newObj.vx = plane.vx;
+      const planeStep = objects.find((o) => o.id === "plane");
+      newObj.x = planeStep.x;
+      newObj.y = planeStep.y - 2;
+      newObj.vx = planeStep.vx;
       newObj.vy = 0;
       newObj.ax = plane.ax;
       newObj.stopped = plane.stopped;
