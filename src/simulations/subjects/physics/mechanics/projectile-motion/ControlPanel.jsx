@@ -30,21 +30,19 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 
 // --- STYLED COMPONENTS ---
 
-const PanelContainer = React.forwardRef(({ children }, ref) => (
+const PanelContainer = React.forwardRef(({ children, stacked }, ref) => (
   <Paper
     ref={ref}
     elevation={0}
     sx={{
-      height: "100%",
-      "@container (max-width: 900px)": { height: "auto" },
+      height: stacked ? "auto" : { xs: "auto", lg: "100%" },
       borderRadius: 3,
       background: "#0f172a",
       borderLeft: "1px solid rgba(255,255,255,0.1)",
       color: "white",
       display: "flex",
       flexDirection: "column",
-      overflow: "hidden",
-      "@container (max-width: 900px)": { overflow: "visible" },
+      overflow: stacked ? "visible" : { xs: "visible", lg: "hidden" },
       boxShadow: "0 18px 45px rgba(0,0,0,.2)",
     }}
   >
@@ -52,13 +50,12 @@ const PanelContainer = React.forwardRef(({ children }, ref) => (
   </Paper>
 ));
 
-const ScrollArea = ({ children }) => (
+const ScrollArea = ({ children, stacked }) => (
   <Box
     sx={{
       flex: 1,
       minHeight: 0,
-      overflowY: "auto",
-      "@container (max-width: 900px)": { overflowY: "visible" },
+      overflowY: stacked ? "visible" : { xs: "visible", lg: "auto" },
       p: 2,
       "&::-webkit-scrollbar": { width: "6px" },
       "&::-webkit-scrollbar-track": { background: "transparent" },
@@ -179,6 +176,7 @@ const PropSlider = ({
 );
 
 const ControlPanel = ({
+  stacked = false,
   // Simulation Control Props
   isSimulating,
   onToggleSim,
@@ -215,7 +213,7 @@ const ControlPanel = ({
   if (vectorMode.v) activeVectors.push("v");
 
   return (
-    <PanelContainer>
+    <PanelContainer stacked={stacked}>
       {/* 1. MAIN SIMULATION CONTROLS */}
       <Box
         sx={{
@@ -319,7 +317,7 @@ const ControlPanel = ({
         </Stack>
       </Box>
 
-      <ScrollArea>
+      <ScrollArea stacked={stacked}>
         {/* 2. VISUALIZATION CONTROLS */}
         <CustomAccordion
           defaultExpanded
