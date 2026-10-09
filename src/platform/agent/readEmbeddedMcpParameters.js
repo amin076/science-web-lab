@@ -7,9 +7,9 @@ function parseBoolean(raw) {
 }
 
 function parseValue(raw, rule) {
-  if (rule?.type === "number") {
+  if (rule?.type === "number" || rule?.type === "integer") {
     const value = Number(raw);
-    if (!Number.isFinite(value)) return undefined;
+    if (!Number.isFinite(value) || (rule?.type === "integer" && !Number.isInteger(value))) return undefined;
 
     const min =
       typeof rule.minimum === "number" ? rule.minimum : Number.NEGATIVE_INFINITY;
