@@ -136,6 +136,36 @@ export default function CircuitSimulatorPage() {
        inputSchema:empty,execute:createSafeToolExecutor("circuit_reset",async()=>{
          actionRef.current.reset();return {reset:true};
        })},
+      {name:"esbiko_circuit_select",description:"Select or clear a real circuit component in the properties editor.",
+       inputSchema:{type:"object",properties:{id:{type:["string","null"]}},required:["id"],additionalProperties:false},
+       execute:createSafeToolExecutor("circuit_select",async({id})=>{
+         if(id!==null)readValidComponent(id);
+         dispatch({type:"SELECT",id});return {selectedId:id};
+       })},
+      {name:"esbiko_circuit_rotate",description:"Rotate an existing circuit component by 90 degrees.",
+       inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},
+       execute:createSafeToolExecutor("circuit_rotate",async({id})=>{
+         const comp=readValidComponent(id);dispatch({type:"ROTATE_COMPONENT",id});
+         return {id,rotation:(comp.rotation+90)%360};
+       })},
+      {name:"esbiko_circuit_delete_connection",description:"Remove a real wire by its current connection ID.",
+       inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},
+       execute:createSafeToolExecutor("circuit_delete_connection",async({id})=>{
+         if(!latestRef.current.connections.some(c=>c.id===id))throw Error("Unknown wire ID");
+         dispatch({type:"DELETE_CONNECTION",id});return {deleted:id};
+       })},
+      {name:"esbiko_circuit_open_lab",description:"Open an existing capacitor, resistor, inductor or LED design panel.",
+       inputSchema:{type:"object",properties:{lab:{type:"string",enum:["capacitor","resistor","inductor","led"]}},
+         required:["lab"],additionalProperties:false},
+       execute:createSafeToolExecutor("circuit_open_lab",async({lab})=>{
+         if(!["capacitor","resistor","inductor","led"].includes(lab))throw Error("Unknown design lab");
+         dispatch({type:"OPEN_LAB",lab});return {lab};
+       })},
+      {name:"esbiko_circuit_close_lab",description:"Close the circuit component design panel.",
+       inputSchema:empty,
+       execute:createSafeToolExecutor("circuit_close_lab",async()=>{
+         dispatch({type:"CLOSE_LAB"});return {closed:true};
+       })},
       {name:"esbiko_circuit_clear",description:"Delete all components and connections.",
        inputSchema:empty,execute:createSafeToolExecutor("circuit_clear",async()=>{
          dispatch({type:"CLEAR_ALL"});return {cleared:true};
