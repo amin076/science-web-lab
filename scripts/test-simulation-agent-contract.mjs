@@ -88,6 +88,15 @@ assert.deepEqual(microscope.actions, ["open", "configure", "readState", "reset"]
 assert.deepEqual(Object.keys(microscope.parameterSchema.properties), ["focus", "zoom", "light"]);
 assert.equal(microscope.video, false);
 
+const coulomb3d = getSimulationAgentProfile("physics.electricity.coulomb-law-3d");
+assert.equal(coulomb3d.integrationLevel, "adapted");
+assert.equal(coulomb3d.adapterVersion, "coulomb-law-3d-adapter.v1");
+assert.deepEqual(coulomb3d.actions, ["open", "configure", "readState", "play", "pause", "reset"]);
+for (const key of ["q1","q2","x1","y1","z1","x2","y2","z2","showField","showFlux"]) {
+  assert(coulomb3d.parameterSchema.properties[key], "Missing Coulomb 3D parameter "+key);
+}
+assert.equal(coulomb3d.video, false);
+
 const universal = getSimulationAgentProfile("physics.thermodynamics.gas");
 assert.equal(universal.integrationLevel, "universal");
 assert.equal(universal.adapterVersion, null);
