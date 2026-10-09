@@ -234,6 +234,23 @@ export default function AmbientPatternStudio() {
        inputSchema:empty,execute:createSafeToolExecutor("ambient_randomize",async()=>{
          actionsRef.current.randomize();return {randomized:true};
        })},
+      {name:"esbiko_ambient_video_status",description:"Read actual recording status and the last saved WebM segment for both video aspect ratios.",
+       inputSchema:empty,annotations:{readOnlyHint:true},
+       execute:createSafeToolExecutor("ambient_video_status",async()=>({
+         recording: Boolean(landscapeRecorderRef.current?.isRecording?.()||shortsRecorderRef.current?.isRecording?.()),
+         landscape:landscapeRecorderRef.current?.getLastRecording?.()||null,
+         shorts:shortsRecorderRef.current?.getLastRecording?.()||null,
+       }))},
+      {name:"esbiko_ambient_video_download",description:"Download the previously completed landscape or shorts WebM clip using the browser.",
+       inputSchema:{type:"object",properties:{mode:{type:"string",enum:["landscape","shorts"]}},
+         required:["mode"],additionalProperties:false},
+       execute:createSafeToolExecutor("ambient_video_download",async({mode})=>{
+         if(!["landscape","shorts"].includes(mode))throw Error("Invalid video mode");
+         const recorder=mode==="shorts"?shortsRecorderRef.current:landscapeRecorderRef.current;
+         const info=recorder?.downloadLastRecording?.();
+         if(!info)throw Error("No completed recording available for "+mode);
+         return {mode,...info};
+       })},
       {name:"esbiko_ambient_record",description:"Start or stop WebM recording of landscape or shorts canvas. Requires browser MediaRecorder support; download handled by shared recorder.",
        inputSchema:{type:"object",properties:{command:{type:"string",enum:["start","stop"]},
          mode:{type:"string",enum:["landscape","shorts"]}},required:["command"],additionalProperties:false},
