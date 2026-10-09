@@ -21,11 +21,11 @@ try {
       const s = stage.getBoundingClientRect(), c = controls.getBoundingClientRect();
       return { stage: { x: s.x, y: s.y, width: s.width, height: s.height, bottom: s.bottom, right: s.right },
         controls: { x: c.x, y: c.y, width: c.width, top: c.top },
-        rootOverflow: getComputedStyle(root).overflowY,
+        rootOverflow: getComputedStyle(root).overflowY, rootWidth: root.clientWidth,
         scrollHeight: root.scrollHeight, clientHeight: root.clientHeight };
     });
     if (width < 1280) {
-      assert(positions.stage.width >= width - 4,
+      assert(positions.stage.width >= positions.rootWidth - 2,
         "Stage must fill mobile width: " + JSON.stringify({ width, positions }));
       assert(positions.controls.top >= positions.stage.bottom - 2,
         "Mobile controls must be below stage: " + JSON.stringify({ width, positions }));
