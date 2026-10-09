@@ -3,7 +3,7 @@ import { chromium } from "playwright";
 
 const browser = await chromium.launch({ headless: true, args: ["--use-gl=swiftshader","--enable-webgl","--ignore-gpu-blocklist"] });
 try {
-  for (const width of [360, 600, 900]) {
+  for (const width of [360, 600, 760]) {
     const page = await browser.newPage({ viewport: { width, height: 650 } });
     await page.goto((process.env.ESBIKO_TEST_BASE_URL || "http://127.0.0.1:4173") +
       "/experiments/astronomy.space.earth-orbit-lab/run?embed=mcp-app", { waitUntil: "domcontentloaded", timeout: 60000 });
