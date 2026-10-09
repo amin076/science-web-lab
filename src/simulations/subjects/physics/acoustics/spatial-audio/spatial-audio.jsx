@@ -343,7 +343,7 @@ const SpatialAudioLab = () => {
         {/* Main Interface */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-3 xl:gap-5">
           {/* Left: Interactive Room Map */}
-          <div className="xl:col-span-3 relative min-w-0 bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl h-[min(58dvh,560px)] min-h-[290px] xl:h-[580px] flex flex-col">
+          <div data-esbiko-spatial-stage className="xl:col-span-3 relative min-w-0 bg-slate-900 rounded-2xl border border-slate-700 overflow-hidden shadow-2xl h-[min(58dvh,560px)] min-h-[290px] xl:h-[580px] flex flex-col">
             <div className="absolute top-2 left-2 z-10 bg-black/60 px-2 py-1 rounded-lg border border-white/10 flex items-center gap-2 pointer-events-none">
               <Move size={16} className="text-slate-300" />
               <span className="text-xs font-bold text-slate-200">
