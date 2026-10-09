@@ -9,7 +9,7 @@ export default function ControlPanel({
   onUpdate,
 }) {
   return (
-    <div className="flex flex-col h-1/2 relative">
+    <div className="flex flex-col min-w-0 relative">
       <style>{`
         .modern-scrollbar::-webkit-scrollbar { width: 6px; }
         .modern-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -23,7 +23,7 @@ export default function ControlPanel({
         </h2>
       </div>
 
-      <div className="p-6 space-y-8 overflow-y-auto modern-scrollbar flex-1">
+      <div className="p-3 sm:p-4 space-y-5 min-w-0">
         {/* Lock Selection */}
         <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700">
           <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
