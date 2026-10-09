@@ -11,9 +11,9 @@ Snapshot: 2026-10-09. Source: live production `list_science_simulations`, `src/w
 
 ## Snapshot counts
 
-- MCP discoverable **32/32** (18 `adapted`, 14 `universal`).
-- Site WebMCP registry explicitly enables **7/32**, a **different** surface from server MCP discovery.
-- Strict **full remote control proven 0/32**; **3/32** have direct browser WebMCP core-action tests (pendulum, spring and microscope; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
+- MCP discoverable **32/32** (20 `adapted`, 12 `universal`).
+- Site WebMCP registry explicitly enables **9/32**, a **different** surface from server MCP discovery.
+- Strict **full remote control proven 0/32**; **5/32** have direct browser WebMCP core-action tests (pendulum, spring, microscope, Coulomb 3D and Kepler; only pendulum/spring include recording) but no proof of every feature through hosted ChatGPT.
 - Explicit responsive browser regression evidence for **7/32** (provisional); 25 require equivalent proof. Fixes to collision and circular motion lack dedicated responsive viewport tests.
 - Targeted architecture/UX bug fix changes for **4/32** in the recent cycle. **0/32** has an evidence-backed complete science/architecture/bugs signoff in this matrix.
 
@@ -41,12 +41,12 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 | 16 | Two-Body Gravity | Y | A | — | — | — | — | — | — |
 | 17 | Uniform Circular Motion | Y | A | — | — | — | Y | — | — |
 | 18 | Ambient Pattern Studio | Y | U | — | — | — | — | — | — |
-| 19 | Coulomb's Law (3D) | Y | U | — | — | — | — | — | — |
+| 19 | Coulomb's Law (3D) | Y | A | Y | Y | — | — | — | — |
 | 20 | Electric Circuits Lab | Y | U | — | — | — | — | — | — |
 | 21 | Evolution of Life | Y | U | — | — | — | — | — | — |
 | 22 | Gearbox & Differential (3D) | Y | U | — | — | — | — | — | — |
 | 23 | Ideal Gas Law Simulation | Y | U | — | — | — | — | — | — |
-| 24 | Kepler's Laws Lab | Y | U | — | — | — | — | — | — |
+| 24 | Kepler's Laws Lab | Y | A | Y | Y | — | — | — | — |
 | 25 | Moon Lander Challenge | Y | U | — | — | — | — | — | — |
 | 26 | Optics Bench (2D) | Y | U | — | — | — | — | — | — |
 | 27 | Optics Bench (3D) | Y | U | — | — | — | — | — | — |
@@ -70,7 +70,9 @@ Legend: Discovery Y=yes; Adapter A=adapted contract/U=universal; Site = listed o
 
 ## October 9 progress
 
-PR #140 implemented the Virtual Microscope advanced MCP adapter with real focus, zoom and light state/configuration/reset tools and a passing dedicated browser test. Advanced declarations: **18/32**; unadapted: **14/32**. Core browser-tool test coverage now includes **3/32**, but end-to-end hosted ChatGPT full-feature validation remains open. Site WebMCP discovery: **7/32**.
+PR #140 implemented the Virtual Microscope advanced MCP adapter with real focus, zoom and light state/configuration/reset tools and a passing dedicated browser test. Advanced declarations: **20/32**; unadapted: **12/32**. Core browser-tool test coverage now includes **5/32**, but end-to-end hosted ChatGPT full-feature validation remains open. Site WebMCP discovery: **9/32**.
+
+PRs #142 and #143 added functional 3D Coulomb and Kepler adapters and passed their dedicated browser tests. These are additional adapter contracts and *not* a claim that every UI feature across the product has been fully validated inside hosted ChatGPT.
 
 ## Evidence index
 
