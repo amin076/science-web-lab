@@ -139,10 +139,21 @@ for (const [id, version, keys] of [
   assert.equal(profile.adapterVersion,version);
   for(const key of keys)assert(profile.parameterSchema.properties[key],id+" missing "+key);
 }
-const universal = getSimulationAgentProfile("physics.optics.lens-mirror-3d");
-assert.equal(universal.integrationLevel, "universal");
-assert.equal(universal.adapterVersion, null);
-assert.deepEqual(universal.actions, ["open"]);
+const finalSix=[
+  ["evolution-of-life","evolution-timeline.v1"],
+  ["physics.mechanics.gearbox-differential-3d","gearbox.v1"],
+  ["physics.challenges.moon-lander","moon-lander.v1"],
+  ["physics.optics.lens-mirror-3d","optics3d.v1"],
+  ["earth-science.geology.plate-tectonics","geology3d.v1"],
+  ["astronomy.space.satellites-telescopes","satellites.v1"],
+];
+for(const [id,version] of finalSix){
+  const p=getSimulationAgentProfile(id);
+  assert.equal(p.integrationLevel,"adapted");
+  assert.equal(p.adapterVersion,version);
+  assert(p.actions.includes("readState"));
+  assert(p.actions.includes("configure"));
+}
 
 assert.throws(
   () =>
