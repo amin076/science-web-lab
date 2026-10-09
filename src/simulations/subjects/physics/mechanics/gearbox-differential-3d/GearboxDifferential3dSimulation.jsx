@@ -107,6 +107,7 @@ export default function GearboxDifferential3dSimulation() {
       title="Gearbox & Differential (3D)"
       subtitle="Speed ratio • Torque • Direction"
       topOffset="5px"
+      mobileStack
       panelTop={
         <div className="w-full">
           <div className="grid grid-cols-2 gap-2">
