@@ -1,5 +1,3 @@
-import { readEmbeddedMcpParameters } from "@/platform/agent";
-import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import React, { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import SimulationShell from "@/system/SimulationShell";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -10,7 +8,7 @@ import Controls from "./Controls";
 import HUD from "./HUD";
 import Charts from "./Charts";
 
-import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG, CONTROL_SCHEMA } from "./schema";
+import { DEFAULT_PARAMS, DEFAULT_CHART_CONFIG } from "./schema";
 import { clamp, MAX_DT, pushCapped, formatNumber } from "./constants";
 
 /**
@@ -31,9 +29,8 @@ export default function GearboxDifferential3dSimulation() {
   const [running, setRunning] = useState(false);
   const runningRef = useRef(false);
 
-  const initial=useMemo(()=>readEmbeddedMcpParameters("physics.mechanics.gearbox-differential-3d",DEFAULT_PARAMS).values,[]);
-  const [params, setParams] = useState(initial);
-  const paramsRef = useRef(initial);
+  const [params, setParams] = useState(DEFAULT_PARAMS);
+  const paramsRef = useRef(DEFAULT_PARAMS);
 
   const chartCfg = useMemo(() => DEFAULT_CHART_CONFIG, []);
   const samplesRef = useRef([]);
@@ -62,8 +59,7 @@ export default function GearboxDifferential3dSimulation() {
     samplesRef.current = [];
     setChartData([]);
 
-    paramsRef.current={...DEFAULT_PARAMS};
-    setParams(paramsRef.current);
+    setParams(DEFAULT_PARAMS);
 
     setHud({ t: 0, note: "Reset done." });
   }, []);
@@ -71,43 +67,14 @@ export default function GearboxDifferential3dSimulation() {
   const onStartStop = useCallback(() => setRunning((s) => !s), []);
 
   const setParam = useCallback((key, value) => {
-    paramsRef.current={...paramsRef.current,[key]:value};
-    setParams(paramsRef.current);
+    setParams((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const live=useRef({});
-  live.current={running,params,time:tRef.current,hud,chartSamples:chartData.length,outputs:computeOutputs(params)};
-  const actionsRef=useRef({});
-  actionsRef.current={setParam,onReset,setRunning};
-  useEffect(()=>{
-    const controller=new AbortController();
-    const fields=Object.fromEntries(CONTROL_SCHEMA.map(c=>[c.key,c.type==="toggle"?{type:"boolean"}:{type:"number",minimum:c.min,maximum:c.max}]));
-    const empty={type:"object",properties:{},additionalProperties:false};
-    const tools=[
-      {name:"esbiko_gearbox_get_state",description:"Read current gearbox gear ratios, wheel speeds, direction and playback.",inputSchema:empty,annotations:{readOnlyHint:true},execute:createSafeToolExecutor("gearbox_get_state",async()=>({simulationId:"physics.mechanics.gearbox-differential-3d",state:live.current}))},
-      {name:"esbiko_gearbox_configure",description:"Set any real drivetrain slider or toggle, including differential lock, turning and reverse.",inputSchema:{type:"object",properties:fields,additionalProperties:false},execute:createSafeToolExecutor("gearbox_configure",async(input)=>{
-         if(!input||typeof input!=="object"||Array.isArray(input))throw Error("Expected gearbox controls");
-         for(const [key,value] of Object.entries(input)){
-           const schema=fields[key];
-           if(!schema||typeof value!==schema.type||(schema.type==="number"&&(!Number.isFinite(value)||value<schema.minimum||value>schema.maximum)))throw Error("Invalid gearbox control: "+key);
-         }
-         for(const [key,value] of Object.entries(input))actionsRef.current.setParam(key,value);
-         return {accepted:input};
-       })},
-      {name:"esbiko_gearbox_set_playback",description:"Start or pause drivetrain animation.",inputSchema:{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},execute:createSafeToolExecutor("gearbox_set_playback",async({running})=>{
-         if(typeof running!=="boolean")throw Error("running must be boolean");actionsRef.current.setRunning(running);runningRef.current=running;return {running};
-       })},
-      {name:"esbiko_gearbox_reset",description:"Restore default parameters and clear chart history.",inputSchema:empty,execute:createSafeToolExecutor("gearbox_reset",async()=>{actionsRef.current.onReset();return {reset:true};})},
-    ];
-    registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal}).catch(error=>{if(!controller.signal.aborted)console.warn("Gearbox MCP",error);});
-    return ()=>controller.abort();
-  },[]);
   return (
     <SimulationShell
       title="Gearbox & Differential (3D)"
       subtitle="Speed ratio • Torque • Direction"
       topOffset="5px"
-      mobileStack
       panelTop={
         <div className="w-full">
           <div className="grid grid-cols-2 gap-2">
@@ -147,7 +114,7 @@ export default function GearboxDifferential3dSimulation() {
         </div>
       }
     >
-      <div data-esbiko-gearbox-stage className="w-full h-full min-w-0 min-h-[260px]">
+      <div className="w-full h-full">
         <Canvas
           className="w-full h-full"
           dpr={[1, 2]}
