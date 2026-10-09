@@ -2,6 +2,14 @@ import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
   Object.freeze({
+    id: "physics.electricity.coulomb-law-3d",
+    name: "Coulomb's Law (3D)",
+    topic: "Electric charges and three-dimensional field/flux visualization",
+    description: "Agent tools read and configure live charges, 3D positions, field controls and playback.",
+    route: "/experiments/physics.electricity.coulomb-law-3d/run",
+    capabilities: ["state-read", "configure", "playback", "reset"],
+  }),
+  Object.freeze({
     id: "physics.optics.microscope",
     name: "Virtual Microscope",
     topic: "Plant cell microscopy, focus, magnification and illumination",

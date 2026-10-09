@@ -1,4 +1,44 @@
 export const simulationAgentManifest = Object.freeze({
+  "physics.electricity.coulomb-law-3d": Object.freeze({
+    adapterVersion: "coulomb-law-3d-adapter.v1",
+    actions: ["open", "configure", "readState", "play", "pause", "reset"],
+    tools: ["open_science_simulation"],
+    video: false,
+    exportable: false,
+    parameterSchema: {
+      type: "object",
+      properties: {
+        q1: { type: "number", minimum: -10, maximum: 10 },
+        q2: { type: "number", minimum: -10, maximum: 10 },
+        x1: { type: "number", minimum: -8, maximum: 8 },
+        y1: { type: "number", minimum: -5, maximum: 5 },
+        z1: { type: "number", minimum: -8, maximum: 8 },
+        x2: { type: "number", minimum: -8, maximum: 8 },
+        y2: { type: "number", minimum: -5, maximum: 5 },
+        z2: { type: "number", minimum: -8, maximum: 8 },
+        showField: { type: "boolean" },
+        showFlux: { type: "boolean" },
+      },
+      additionalProperties: false,
+    },
+    stateSchema: {
+      type: "object",
+      required: ["running", "q1", "q2", "pos1", "pos2", "k", "showField", "showFlux", "distance", "force"],
+      properties: {
+        running: { type: "boolean" },
+        q1: { type: "number" },
+        q2: { type: "number" },
+        pos1: { type: "object" },
+        pos2: { type: "object" },
+        k: { type: "number" },
+        showField: { type: "boolean" },
+        showFlux: { type: "boolean" },
+        distance: { type: "number" },
+        force: { type: "object" },
+      },
+    },
+  }),
+
   "physics.optics.microscope": Object.freeze({
     adapterVersion: "microscope-adapter.v1",
     actions: ["open", "configure", "readState", "reset"],

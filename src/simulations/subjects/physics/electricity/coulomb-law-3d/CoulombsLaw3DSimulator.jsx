@@ -1,5 +1,7 @@
 // src/components/features/electricity/CoulombsLaw3DSimulator.jsx
-import React, { useRef, useLayoutEffect, useMemo, useState } from "react";
+import React, { useRef, useLayoutEffect, useMemo, useState, useEffect } from "react";
+import { readEmbeddedMcpParameters } from "@/platform/agent";
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
 import ThreeDCanvas from "@/components/shared/ThreeDCanvas";
 import {
   Sphere,
@@ -273,6 +275,106 @@ const CoulombsLaw3DSimulator = () => {
     showFlux,
     setShowFlux,
   } = useElectromagnetism();
+
+  const initialMcp = useMemo(
+    () => readEmbeddedMcpParameters("physics.electricity.coulomb-law-3d", {}),
+    [],
+  );
+  const liveRef = useRef({});
+  liveRef.current = { q1, q2, pos1, pos2, k, force, distance, isSimulating, showField, showFlux };
+  const operationsRef = useRef({});
+  operationsRef.current = {
+    setQ1, setQ2, updatePos1, updatePos2, setK, setShowField, setShowFlux,
+    startSimulation, pauseSimulation, resetSimulation,
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const schema = {
+      q1: { type: "number", minimum: -10, maximum: 10 },
+      q2: { type: "number", minimum: -10, maximum: 10 },
+      x1: { type: "number", minimum: -8, maximum: 8 },
+      y1: { type: "number", minimum: -5, maximum: 5 },
+      z1: { type: "number", minimum: -8, maximum: 8 },
+      x2: { type: "number", minimum: -8, maximum: 8 },
+      y2: { type: "number", minimum: -5, maximum: 5 },
+      z2: { type: "number", minimum: -8, maximum: 8 },
+      showField: { type: "boolean" },
+      showFlux: { type: "boolean" },
+    };
+    const configure = (values) => {
+      if (!values || typeof values !== "object" || Array.isArray(values)) {
+        throw new Error("Expected Coulomb 3D configuration object.");
+      }
+      for (const [key, value] of Object.entries(values)) {
+        const rule = schema[key];
+        if (!rule || typeof value !== rule.type ||
+            (rule.type === "number" && (!Number.isFinite(value) || value < rule.minimum || value > rule.maximum))) {
+          throw new Error("Invalid Coulomb 3D parameter: " + key);
+        }
+      }
+      if (liveRef.current.isSimulating && Object.keys(values).some((key) => !["showField","showFlux"].includes(key))) {
+        throw new Error("Pause the simulation before changing charges or positions.");
+      }
+      const setters = operationsRef.current;
+      for (const [key, value] of Object.entries(values)) {
+        if (key === "q1") setters.setQ1(value);
+        else if (key === "q2") setters.setQ2(value);
+        else if (key === "showField") setters.setShowField(value);
+        else if (key === "showFlux") setters.setShowFlux(value);
+        else if (key.length === 2 && key[1] === "1") setters.updatePos1(key[0], value);
+        else if (key.length === 2 && key[1] === "2") setters.updatePos2(key[0], value);
+      }
+      return { accepted: values };
+    };
+    // Initial MCP values are applied to the same hook as manual input.
+    if (Object.keys(initialMcp.values).length) configure(initialMcp.values);
+    const empty = { type: "object", properties: {}, additionalProperties: false };
+    const tools = [
+      {
+        name: "esbiko_coulomb3d_get_state",
+        description: "Read live 3D charge positions, Coulomb force and visualization settings.",
+        inputSchema: empty,
+        annotations: { readOnlyHint: true },
+        execute: createSafeToolExecutor("coulomb3d_get_state", async () => {
+          const s = liveRef.current;
+          return { simulationId: "physics.electricity.coulomb-law-3d", running: s.isSimulating,
+            q1: s.q1, q2: s.q2, pos1: s.pos1, pos2: s.pos2, k: s.k,
+            showField: s.showField, showFlux: s.showFlux, force: s.force, distance: s.distance };
+        }),
+      },
+      {
+        name: "esbiko_coulomb3d_configure",
+        description: "Configure the real 3D electric charges, positions, vector field and flux controls.",
+        inputSchema: { type: "object", properties: schema, additionalProperties: false },
+        execute: createSafeToolExecutor("coulomb3d_configure", async (values) => configure(values)),
+      },
+      {
+        name: "esbiko_coulomb3d_set_playback",
+        description: "Start or pause the 3D electric interaction.",
+        inputSchema: { type: "object", properties: { running: { type: "boolean" } },
+          required: ["running"], additionalProperties: false },
+        execute: createSafeToolExecutor("coulomb3d_set_playback", async ({ running }) => {
+          if (typeof running !== "boolean") throw new Error("running must be boolean");
+          if (running) operationsRef.current.startSimulation();
+          else operationsRef.current.pauseSimulation();
+          return { running };
+        }),
+      },
+      {
+        name: "esbiko_coulomb3d_reset",
+        description: "Pause and reset particle positions and velocities.",
+        inputSchema: empty,
+        execute: createSafeToolExecutor("coulomb3d_reset", async () => {
+          operationsRef.current.resetSimulation();
+          return { reset: true, running: false };
+        }),
+      },
+    ];
+    registerWebMcpTools({ modelContext: getDocumentModelContext(), tools, signal: controller.signal })
+      .catch((error) => { if (!controller.signal.aborted) console.warn("Coulomb3D WebMCP:", error); });
+    return () => controller.abort();
+  }, [initialMcp]);
 
   const sphere1Color = q1 >= 0 ? "#ff4444" : "#4444ff";
   const sphere2Color = q2 >= 0 ? "#ff4444" : "#4444ff";
