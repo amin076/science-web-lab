@@ -513,7 +513,7 @@ const DopplerSimulator = () => {
   });
 
   return (
-    <div className="fixed inset-0 bg-slate-950 font-sans text-slate-200 overflow-hidden flex">
+    <div className="h-full min-h-0 w-full bg-slate-950 font-sans text-slate-200 overflow-y-auto overflow-x-hidden overscroll-y-contain flex flex-col xl:flex-row xl:overflow-hidden">
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -521,6 +521,7 @@ const DopplerSimulator = () => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.28); }
       `}</style>
 
+      <div data-testid="doppler-stage" className="relative flex w-full shrink-0 flex-col overflow-hidden h-[clamp(340px,58dvh,650px)] xl:h-full xl:min-h-0 xl:min-w-0 xl:flex-1">
       <DopplerCanvas
         mode={mode}
         observer={observer}
@@ -534,6 +535,7 @@ const DopplerSimulator = () => {
         getAudioStream={() => recordingDestinationRef.current?.stream || null}
         onRecorderStatusChange={director.handleRecorderStatus}
       />
+      </div>
 
       <DopplerControls
         mode={mode}
