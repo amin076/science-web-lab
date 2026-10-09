@@ -59,6 +59,15 @@ try {
     }
     console.log("KEPLER RESPONSIVE CANVAS PASS",width,dims.width,dims.height);
   }
+  const hud = page.locator(".kepler-hud");
+  assert(await hud.isVisible(),"HUD should be initially visible");
+  const hudBg = await hud.evaluate(el => getComputedStyle(el).backgroundColor);
+  assert(["rgba(0, 0, 0, 0)", "transparent"].includes(hudBg),"HUD background must be fully transparent: "+hudBg);
+  await page.getByRole("button",{name:"Hide orbital information HUD"}).click();
+  assert.equal(await hud.count(),0,"HUD should close");
+  await page.getByRole("button",{name:"Show orbital information HUD"}).click();
+  assert(await hud.isVisible(),"HUD should reopen");
+  console.log("KEPLER HUD DISMISS/RESTORE PASS");
   assert.deepEqual(errors,[]);
   console.log("KEPLER ADVANCED MCP PASS");
 }finally{await browser.close();}
