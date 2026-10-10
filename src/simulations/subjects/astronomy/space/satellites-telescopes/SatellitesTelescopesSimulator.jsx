@@ -48,6 +48,7 @@ import {
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
 import { educationalPosition } from "./educationalScale.js";
+import { drawSunContext, drawSunlightDirection } from "./sunContext.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -335,6 +336,8 @@ export default function SatellitesTelescopesSimulator() {
         ctx.restore();
       }
 
+      drawSunlightDirection(ctx, cx, cy, earthPx, stageW, stageH);
+
       drawEarthTextured(
         ctx,
         cx,
@@ -343,6 +346,8 @@ export default function SatellitesTelescopesSimulator() {
         sim.current.t * EARTH.omegaRadS,
         earthImg,
       );
+
+      drawSunContext(ctx, stageW, stageH, settings.mode);
 
       const site = groundTelescopeECI(sim.current.t, 0);
       const sitePx = {
