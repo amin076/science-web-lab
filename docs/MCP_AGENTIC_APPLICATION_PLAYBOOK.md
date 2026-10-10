@@ -766,3 +766,8 @@ On large screens the canvas and right rail share one workspace. On narrow screen
 The inventory gate now distinguishes 32 catalog entries, 31 advanced contracts and a deliberately quarantined gearbox. Discovery, configuration, numerical readback, host rendering and media export need independent acceptance evidence. Never infer complete ChatGPT support from adapter counts.
 
 The next engine extraction should start with unit conversions, vectors and integrators used by two real simulations. Establish conservation and analytic-reference tests before migrating additional models. The shell owns presentation and interactions; domain modules own science. [Reference source and acceptance](simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) and [connection/development guide](ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md) provide the working implementation map.
+
+
+## Shared scientific foundation and independent API — research update (2026-10-10)
+
+The next platform layer is a shared math/numerics foundation, specialized scientific modules and a common runtime contract. API and MCP should wrap the same validated operations. See [comprehensive audit and phased plan](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md): confirmed optical duplication, compatible gravity laws with different units/integrators, browser/backend Doppler overlap, and domain-specific circuit/gas models. The independent GET API currently supplies discovery; HTTP live sessions, commands and headless jobs remain proposals. The accepted 2D/3D v0.1 references establish presentation patterns, not scientific/API completeness.

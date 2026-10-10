@@ -1097,3 +1097,8 @@ When a future engine implementation begins, an engine should be accepted only if
 ---
 
 End of Document
+
+
+## October 10, 2026 — shared scientific foundation research
+
+See [shared scientific engine research](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md) for audited duplication, domain boundaries, external solver comparison, scientific acceptance gates and phased migration. Browser agent controls now exist; the GET-only independent Platform API still provides discovery rather than live HTTP runtime control. The proposed shared kernel/runtime has not been implemented.

@@ -383,3 +383,10 @@ Status: Implemented, built, committed, and pushed on `feature/mobile-platform-re
 * Continue the site-wide mobile responsiveness audit.
 * Improve Login and Register behaviour for narrow screens and mobile keyboards.
 * Reduce large JavaScript bundle chunks and refresh Browserslist data.
+
+
+## Shared scientific engine research — 2026-10-10
+
+Completed representative scientific-source audit and primary-source comparison of Rapier, Matter.js, p5.js and math.js. [Report](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md) recommends optics-first extraction, unit-aware gravity primitives and a headless runtime/SDK before independent HTTP sessions. No universal engine or new runtime endpoints shipped in this research phase. Existing Platform API tests passed.
+
+Live verification on 2026-10-10: the public `/api/v1/health` request returned 404 despite local source route normalization. Runtime deployment/path alignment needs investigation; passing local tests does not establish deployed API availability.

@@ -31,3 +31,8 @@ The Plop `three` main template now contains this editable reference with shared 
 Checks: `node scripts/test-standard-2d.mjs`, `node scripts/test-standard-3d.mjs`, `npm run test:webmcp`, `npm run test:simulation-agent`, `npm run sim:check`, `npm run build`. Model checks verify inclined-orbit invariants, closed paths, bounded timestep, camera distance and generated JSX/imports. Production build validates the real component imports. Final acceptance additionally requires signed-in admin desktop/narrow review, transparent HUD hide/show and pointer pass-through, scene rotation/zoom/pan, graph/playback/step/reset, live agent configure/readback and actual recording/ready/download in both formats. Code tests do not claim these final browser checks have passed.
 
 The next science-engine pilot remains pure math/unit/integrator extraction with analytic/conservation tests. This release standardizes UI/runtime/agent/media composition; it does not ship a universal gravity engine.
+
+
+## Independent API requirement and scientific model boundary
+
+The accepted v0.1 responsive reference uses a kinematic demo, not a general gravity solver. The standard also requires a transport-independent model/runtime API in its next implementation phase. HTTP discovery exists; live HTTP control is not implemented. See [shared scientific foundation and API plan](../ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md). Rendering, browser video and numerical jobs are separate capabilities.

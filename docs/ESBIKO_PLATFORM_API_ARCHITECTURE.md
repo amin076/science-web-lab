@@ -1227,3 +1227,10 @@ The current implementation is intentionally read-only. It does not provide arbit
 - `node scripts/test-platform-api.mjs` passed.
 - The complete production Vite build passed.
 - The release branch was pushed to GitHub.
+
+
+## October 10, 2026 — independent runtime API audit
+
+The inspected `platformApi` handler is GET-only under `/api/v1`: health, platform info, simulation list/detail and capabilities. Live HTTP sessions/state/commands/jobs are proposed, not implemented. Browser WebMCP is separate. [Research and target runtime API contract](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md#independent-api-implemented-versus-required) defines the SDK/session ownership boundary required by both UI standards.
+
+Live verification on 2026-10-10: the public `/api/v1/health` request returned 404 despite local source route normalization. Runtime deployment/path alignment needs investigation; passing local tests does not establish deployed API availability.

@@ -44,3 +44,8 @@ The reference now uses the satellite-style unified dark control rail, flat secti
 ## Transparent HUD extension
 
 The shared `SimulationTransparentHUD` is now present in the 2D reference and Plop scaffold. It has no background or blur, supports Hide/Show, and accepts pointer input only on its toggle. `hudVisible` is configurable through the same browser-agent schema. See the [3D guide](ESBIKO_3D_REFERENCE_IMPLEMENTATION.md) for shared behavior and media scope.
+
+
+## Independent API requirement and scientific model boundary
+
+The v0.1 UI reference is not a universal scientific engine. An independent versioned programmatic model/runtime contract is a target requirement alongside UI, recording and MCP. Current HTTP routes provide discovery, not live session control. See [research and phased API plan](../ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md). Do not claim reference acceptance proves remote execution support.
