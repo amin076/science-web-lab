@@ -482,3 +482,8 @@ This makes AI usable and prevents “random edits everywhere”.
 ---
 
 End of document.
+
+
+## Three-stage simulation publication standard — 2026-10-10
+
+[Publication standard](simulation-standard/ESBIKO_SIMULATION_PUBLICATION_STANDARD.md) now connects the accepted UI standard, declared scientific engine and manifest-based public catalog/runtime registration. Simple Projectile is public under Physics / Mechanics at `/experiments/physics.mechanics.simple-projectile/run`, with the admin preview retained. New manifests drive metadata and lazy runtime from one source; Plop registration no longer writes the obsolete experiments file. Inventory: 33 registered, 32 declared advanced contracts, Gearbox quarantined. External feature verification remains separate.

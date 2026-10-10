@@ -776,3 +776,8 @@ The next platform layer is a shared math/numerics foundation, specialized scient
 ## Esbiko Physics v0.1 implemented — 2026-10-10
 
 [Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.
+
+
+## Three-stage simulation publication standard — 2026-10-10
+
+[Publication standard](simulation-standard/ESBIKO_SIMULATION_PUBLICATION_STANDARD.md) now connects the accepted UI standard, declared scientific engine and manifest-based public catalog/runtime registration. Simple Projectile is public under Physics / Mechanics at `/experiments/physics.mechanics.simple-projectile/run`, with the admin preview retained. New manifests drive metadata and lazy runtime from one source; Plop registration no longer writes the obsolete experiments file. Inventory: 33 registered, 32 declared advanced contracts, Gearbox quarantined. External feature verification remains separate.

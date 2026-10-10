@@ -405,3 +405,8 @@ Implemented private admin preview at `/admin/examples/simple-projectile`, using 
 ## Esbiko Physics v0.2 / projectile drag update — 2026-10-10
 
 Added shared quadratic/linear drag, sphere area, general velocity-dependent RK4 and projectile propagation/measurement laws. Private Simple Projectile now offers optional spherical drag, independently toggleable velocity/component arrows, upper transparent HUD and a visited-only trail. Mounted browser SDK `window.esbikoSimpleProjectile` and pure Node model API work independently of MCP; no new HTTP session endpoint or public ChatGPT catalog entry. See [current pilot specification](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md).
+
+
+## Three-stage simulation publication standard — 2026-10-10
+
+[Publication standard](simulation-standard/ESBIKO_SIMULATION_PUBLICATION_STANDARD.md) now connects the accepted UI standard, declared scientific engine and manifest-based public catalog/runtime registration. Simple Projectile is public under Physics / Mechanics at `/experiments/physics.mechanics.simple-projectile/run`, with the admin preview retained. New manifests drive metadata and lazy runtime from one source; Plop registration no longer writes the obsolete experiments file. Inventory: 33 registered, 32 declared advanced contracts, Gearbox quarantined. External feature verification remains separate.

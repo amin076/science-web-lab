@@ -1,3 +1,4 @@
+import { standardSimulationDefinitions } from "../../simulations/definitions/generated.js";
 // src/data/experiments/insex.js
 import { physicsExperiments } from "./physics";
 import { astronomyExperiments } from "./astronomy";
@@ -7,6 +8,7 @@ import { biologyExperiments } from "./biology";
 
 // 1) Flat list (single source for UI)
 export const experimentsData = [
+  ...standardSimulationDefinitions.map(({metadata}) => metadata),
   ...physicsExperiments,
   ...astronomyExperiments,
   ...earthScienceExperiments,

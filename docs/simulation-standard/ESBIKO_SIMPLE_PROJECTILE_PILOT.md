@@ -1,6 +1,6 @@
-# Simple Projectile — private 2D scientific pilot
+# Simple Projectile — standard 2D scientific simulation
 
-Updated 2026-10-10. Admin preview: `/admin/examples/simple-projectile`. Requires the existing Firebase admin claims. Excluded from public simulation registry, experimentsData and MCP discovery.
+Updated 2026-10-10. Public ID: `physics.mechanics.simple-projectile`. Public detail/run routes are generated from the colocated manifest under Physics / Mechanics. Admin preview `/admin/examples/simple-projectile` remains protected. Public runtime and preview share one implementation. See [publication standard](ESBIKO_SIMULATION_PUBLICATION_STANDARD.md).
 
 ## Presentation
 
@@ -28,7 +28,7 @@ No drag: constant-acceleration propagation. With drag: RK4 with substeps no larg
 
 ## Independent API and MCP
 
-An ordinary browser SDK is mounted while the admin page is open:
+An ordinary browser SDK is mounted while the simulation page is open:
 
 ```js
 const api = window.esbikoSimpleProjectile;
@@ -48,7 +48,7 @@ api.downloadVideo();
 
 SDK property `version` is `simple-projectile-api.v1`. Snapshots are copied; configuration rejects unknown/nonfinite/out-of-range inputs. The SDK is removed on unmount. It operates the same live actions/state as UI and WebMCP, without requiring MCP. It is a same-origin mounted-browser API, not a new public HTTP session endpoint. Other headless JS/Node software can import `sampleProjectile`, `advanceProjectile`, `projectileParameters` and engine modules directly; pure computation requires no admin UI/browser.
 
-WebMCP includes live get_state/configure/set_playback/reset and recording tools; the new drag/vector/HUD controls are in the same validated schema. Manual operation remains available when document.modelContext is absent. No public ChatGPT plugin catalog entry was added; the private page's browser tools require access to that page. Existing server HTTP session and plugin-publication gaps are not solved by this browser SDK.
+WebMCP includes live get_state/configure/set_playback/reset and recording tools; the new drag/vector/HUD controls are in the same validated schema. Manual operation remains available when document.modelContext is absent. Public browser discovery and the declared server agent profile now include this simulation. ChatGPT end-to-end acceptance is a separate check. Existing server HTTP session and plugin-publication gaps are not solved by this browser SDK.
 
 Recording reuses landscape/portrait silent WebM canvas capture. DOM HUD/controls/chart are not captured. Media policy/support and user-gesture restrictions apply; successful build does not establish actual video or authenticated ChatGPT acceptance.
 

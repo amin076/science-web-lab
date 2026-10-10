@@ -2,7 +2,10 @@
 // Central registry for all simulations in the Science Web Lab, using lazy loading for performance optimization.
 import lazyWithRetry from "@/components/system/lazyWithRetry";
 
+import { standardSimulationDefinitions } from "../definitions/generated.js";
+
 export const simulationRegistry = {
+  ...Object.fromEntries(standardSimulationDefinitions.map(({metadata,load}) => [metadata.id,lazyWithRetry(load)])),
   "creative.patterns.ambient-pattern-studio": lazyWithRetry(
     () =>
       import("@/simulations/subjects/creative/patterns/ambient-pattern-studio"),

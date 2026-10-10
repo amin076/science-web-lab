@@ -445,53 +445,20 @@ module.exports = function (plop) {
         );
       }
 
-      // Register in simulation registry
-      actions.push({
-        type: "modify",
-        path: "src/simulations/registry/index.js",
-        transform: (content) => {
-          const keyStr = `"${data.registryKey}"`;
-          if (content.includes(keyStr)) return content;
-
-          const importPath = `@/simulations/subjects/${data.relativePath}`;
-          const line =
-            `  "${data.registryKey}": lazyWithRetry(() =>\n` +
-            `    import("${importPath}")\n` +
-            `  ),\n`;
-
-          const replaced = content.replace(/};\s*$/m, `${line}};\n`);
-          if (replaced === content) return content + "\n" + line;
-          return replaced;
-        },
-      });
-
-      // Add to experiments (use marker if present)
-      actions.push({
-        type: "modify",
-        path: "src/data/experiments.js",
-        transform: (content) => {
-          if (content.includes(`id: "${data.registryKey}"`)) return content;
-
-          const block =
-            `  {\n` +
-            `    id: "${data.registryKey}",\n` +
-            `    subject: "${data.subject}",\n` +
-            `    name: "${data.title}",\n` +
-            `    desc: "${data.desc}",\n` +
-            `    Icon: ${data.iconName},\n` +
-            `    gradient: "${data.gradient}",\n` +
-            `    demo: true,\n` +
-            `  },\n`;
-
-          const marker = "// PLOP:INSERT:EXPERIMENTS";
-          if (content.includes(marker)) {
-            return content.replace(marker, `${marker}\n${block}`);
-          }
-
-          const replaced = content.replace(/\];\s*$/m, `${block}];\n`);
-          if (replaced === content) return content + "\n" + block;
-          return replaced;
-        },
+      // A single colocated manifest drives catalog placement and lazy runtime registration.
+      actions.push(() => {
+        const [domain,topic] = data.registryKey.split('.');
+        const manifest = { schemaVersion:'esbiko-simulation-registration.v1',
+          id:data.registryKey,domain,topic,name:data.title,desc:data.desc,
+          engine:data.engine,uiStandard:({canvas2d:'2d-v0.1',three:'3d-v0.1',timeline:'timeline-v0.1',p5:'custom'})[data.engine],
+          scientificEngine:'none',entry:'index.jsx',visibility:'public',gradient:data.gradient,demo:true };
+        const target = path.join(process.cwd(),simDirRel,'simulation.json');
+        const registration = require('./scripts/generate-simulation-registrations.cjs');
+        registration.validate(manifest,target);
+        if(fs.existsSync(target)) throw new Error('Registration manifest already exists: '+target);
+        fs.writeFileSync(target,JSON.stringify(manifest,null,2)+'\n');
+        try { registration.generate(process.cwd()); } catch(error) { fs.unlinkSync(target); throw error; }
+        return 'Registered UI, experiment detail/run and domain/topic catalog from simulation.json';
       });
 
       // Finally: write ai-pack.md (after files exist)
