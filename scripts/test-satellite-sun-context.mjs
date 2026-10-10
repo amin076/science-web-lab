@@ -28,6 +28,10 @@ for (const mode of ["EDUCATIONAL", "REALISTIC"]) {
   const sun = sunDisplayGeometry(mode);
   assert(sun.x < 0 && sun.radius > 0);
   if (mode === "REALISTIC") assert.equal(-sun.x, SOLAR_DISTANCE_KM);
+  else {
+    assert(sun.radius >= EARTH_RADIUS_KM * 10, "Sun must dwarf Earth");
+    assert(-sun.x - sun.radius > 34000 * 10, "Sun must be far beyond Moon orbit");
+  }
   for (const [width, height] of [[360,290], [800,500]]) {
     const zoom = Math.min(width * 0.65, height * 0.65) * EARTH_RADIUS_KM /
       ((Math.abs(sun.x) + sun.radius * 3.4) * Math.min(width,height) * 0.28 * 5);
@@ -42,7 +46,7 @@ for (const mode of ["EDUCATIONAL", "REALISTIC"]) {
       return (...args)=>rendered.push([key,...args]);
     },set(){return true;}});
     drawSun(canvas,sunX,height/2,sun.radius*kmToPx);
-    assert(rendered.some(c=>c[0] === "arc"));
+    assert(rendered.filter(c=>c[0] === "arc").length === 2, "Separate corona and solid solar disc");
     assert(rendered.some(c=>c[0] === "fillText" && c[1] === "Sun"));
   }
 }

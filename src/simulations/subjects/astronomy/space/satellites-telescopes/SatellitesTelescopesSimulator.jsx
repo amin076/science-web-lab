@@ -176,7 +176,7 @@ export default function SatellitesTelescopesSimulator() {
       },
     ];
     setObjectsList([...sim.current.objects]);
-    setSelectedObjId("ISS-unique");
+    setSelectedObjId("SUN");
 
     if (!starsRef.current) {
       const spread = RENDER.STARS_AREA * 50;
@@ -221,7 +221,7 @@ export default function SatellitesTelescopesSimulator() {
     });
     accRef.current = 0;
     lastRef.current = performance.now();
-    viewRef.current = { x: 0, y: 0, k: 0.03 };
+    selectObject("SUN");
     setUiTime(0);
     setObjectsList([...sim.current.objects]);
     requestAnimationFrame(() => setRunning(true));
@@ -272,9 +272,13 @@ export default function SatellitesTelescopesSimulator() {
     setSelectedObjId(id);
   };
 
+  // A scale switch must reveal the Sun even when previously tracking a satellite.
+  const previousModeRef = useRef(settings.mode);
   useEffect(() => {
-    if (selectedObjId === "SUN") selectObject("SUN");
-  }, [settings.mode, stageW, stageH]);
+    const modeChanged = previousModeRef.current !== settings.mode;
+    previousModeRef.current = settings.mode;
+    if (modeChanged || selectedObjId === "SUN") selectObject("SUN");
+  }, [settings.mode, stageW, stageH, selectedObjId]);
 
   const removeObject = (id) => {
     if (id === "MOON") return;
@@ -300,8 +304,13 @@ export default function SatellitesTelescopesSimulator() {
     const ctx = canvas.getContext("2d");
 
     const render = () => {
-      canvas.width = stageW;
-      canvas.height = stageH;
+      const dpr = window.devicePixelRatio || 1;
+      const pixelW = Math.round(stageW * dpr), pixelH = Math.round(stageH * dpr);
+      if (canvas.width !== pixelW || canvas.height !== pixelH) {
+        canvas.width = pixelW;
+        canvas.height = pixelH;
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
       const { x: panX, y: panY, k: zoom } = viewRef.current;
       const earthScale = RENDER.EARTH_SCALE || 0.28;
@@ -368,6 +377,15 @@ export default function SatellitesTelescopesSimulator() {
         earthImg,
       );
       drawEarthSunlitHemisphere(ctx, cx, cy, earthPx);
+      if (earthPx < 3) {
+        // Visibility marker only: the physical Earth radius remains unchanged.
+        ctx.fillStyle = "#60a5fa";
+        ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Earth · marker", cx, cy - 12);
+        ctx.textAlign = "start";
+      }
 
 
       const site = groundTelescopeECI(sim.current.t, 0);
@@ -581,10 +599,7 @@ export default function SatellitesTelescopesSimulator() {
       .catch(error=>{if(!controller.signal.aborted)console.warn("Satellite MCP",error);});
     return ()=>controller.abort();
   },[]);
-  const recenterView = () => {
-    setSelectedObjId(null);
-    viewRef.current = { x: 0, y: 0, k: 0.03 };
-  };
+  const recenterView = () => selectObject("SUN");
   const handleZoomIn = () => {
     viewRef.current.k = Math.min(20, viewRef.current.k * 1.2);
   };
@@ -804,6 +819,9 @@ export default function SatellitesTelescopesSimulator() {
               <Box aria-label="Moon" sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: "#cbd5e1", flexShrink: 0 }}/>
             </Box>
             <Box sx={{ fontSize: 10, color: "#f8fafc" }}>Earth–Sun: 149.6 million km</Box>
+            {settings.mode === VIEW_MODES.REALISTIC && <Box sx={{ fontSize: 9, color: "#cbd5e1" }}>
+              Main scene: real distances; tiny bodies use visibility markers.
+            </Box>}
             <Box sx={{ fontSize: 10, color: "#cbd5e1" }}>Moon: 384,400 km from Earth</Box>
             <Box sx={{ fontSize: 9, color: "#fbbf24", mt: 0.4 }}>
               {settings.mode === VIEW_MODES.EDUCATIONAL ? "Education" : "Realistic"} · diagram not to scale

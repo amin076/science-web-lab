@@ -74,7 +74,7 @@ export function drawSunContext(ctx, width, height, mode, moonTheta = 0) {
 
 export function sunDisplayGeometry(mode) {
   return mode === "EDUCATIONAL"
-    ? { x: -60000, y: 0, radius: 10000 }
+    ? { x: -500000, y: 0, radius: 63710 }
     : { x: -SOLAR_DISTANCE_KM, y: 0, radius: SUN_RADIUS_KM };
 }
 
@@ -82,12 +82,22 @@ export function drawSun(ctx, x, y, radius) {
   const r = Math.max(6, radius);
   ctx.save();
   const glow = ctx.createRadialGradient(x, y, r * 0.3, x, y, r * 1.7);
-  glow.addColorStop(0, "#fff7ad");
-  glow.addColorStop(0.55, "#fbbf24");
-  glow.addColorStop(0.7, "rgba(234,88,12,0.45)");
+  glow.addColorStop(0, "rgba(251,191,36,0.22)");
+  glow.addColorStop(0.55, "rgba(251,191,36,0.18)");
+  glow.addColorStop(0.7, "rgba(234,88,12,0.10)");
   glow.addColorStop(1, "rgba(234,88,12,0)");
   ctx.fillStyle = glow;
   ctx.beginPath(); ctx.arc(x, y, r * 1.7, 0, Math.PI * 2); ctx.fill();
+  // Opaque surface with a sharp limb, drawn independently of the corona.
+  const surface = ctx.createRadialGradient(x-r*0.3, y-r*0.3, 0, x, y, r);
+  surface.addColorStop(0, "#fff7ad");
+  surface.addColorStop(0.65, "#fbbf24");
+  surface.addColorStop(1, "#f59e0b");
+  ctx.fillStyle = surface;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = "#fcd34d";
+  ctx.lineWidth = 1;
+  ctx.stroke();
   ctx.fillStyle = "#fde68a";
   ctx.font = "bold 13px sans-serif";
   ctx.textAlign = "center";
