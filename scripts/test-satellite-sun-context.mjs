@@ -16,7 +16,7 @@ for(const mode of ["EDUCATIONAL","REALISTIC"]) {
   drawSunContext(ctx,360,650,mode);
   assert(calls.some(c=>c[0]==="fillText" && c[1].includes(mode==="EDUCATIONAL"?"Education":"Realistic")));
   assert(calls.some(c=>c[0]==="fillText" && c[1].includes("149.6 million km")));
-  assert(calls.some(c=>c[0]==="fillText" && c[1].includes("not to scale")));
+  assert(calls.some(c=>c[0]==="fillText" && c[1].toLowerCase().includes("not to scale")));
 }
 drawSunlightDirection(ctx,180,220,35,360,650);
 console.log("SUN 2D CONTEXT TEST PASS");
