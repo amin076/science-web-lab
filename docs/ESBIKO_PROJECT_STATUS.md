@@ -390,3 +390,8 @@ Status: Implemented, built, committed, and pushed on `feature/mobile-platform-re
 Completed representative scientific-source audit and primary-source comparison of Rapier, Matter.js, p5.js and math.js. [Report](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md) recommends optics-first extraction, unit-aware gravity primitives and a headless runtime/SDK before independent HTTP sessions. No universal engine or new runtime endpoints shipped in this research phase. Existing Platform API tests passed.
 
 Live verification on 2026-10-10: the public `/api/v1/health` request returned 404 despite local source route normalization. Runtime deployment/path alignment needs investigation; passing local tests does not establish deployed API availability.
+
+
+## Esbiko Physics v0.1 implemented — 2026-10-10
+
+[Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.

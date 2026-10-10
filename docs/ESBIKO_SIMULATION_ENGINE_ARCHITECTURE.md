@@ -1102,3 +1102,8 @@ End of Document
 ## October 10, 2026 — shared scientific foundation research
 
 See [shared scientific engine research](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md) for audited duplication, domain boundaries, external solver comparison, scientific acceptance gates and phased migration. Browser agent controls now exist; the GET-only independent Platform API still provides discovery rather than live HTTP runtime control. The proposed shared kernel/runtime has not been implemented.
+
+
+## Esbiko Physics v0.1 implemented — 2026-10-10
+
+[Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.

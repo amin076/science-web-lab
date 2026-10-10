@@ -158,3 +158,8 @@ No timings, universal accuracy tolerance or cost savings are claimed before pilo
 ## Relationship to existing architecture documents
 
 This report extends `ESBIKO_SIMULATION_ENGINE_ARCHITECTURE.md`, `ESBIKO_SIMULATION_ADAPTER_ARCHITECTURE.md`, `ESBIKO_SIMULATION_SESSION_ARCHITECTURE.md`, and `ESBIKO_PLATFORM_API_ARCHITECTURE.md`. Older statements saying all agent control is absent are historical: browser agent controls now exist, while independent HTTP live-session control remains unimplemented in the inspected handler. The runtime architecture remains a target design, not proof of implementation.
+
+
+## Esbiko Physics v0.1 implemented — 2026-10-10
+
+[Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.

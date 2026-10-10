@@ -771,3 +771,8 @@ The next engine extraction should start with unit conversions, vectors and integ
 ## Shared scientific foundation and independent API — research update (2026-10-10)
 
 The next platform layer is a shared math/numerics foundation, specialized scientific modules and a common runtime contract. API and MCP should wrap the same validated operations. See [comprehensive audit and phased plan](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md): confirmed optical duplication, compatible gravity laws with different units/integrators, browser/backend Doppler overlap, and domain-specific circuit/gas models. The independent GET API currently supplies discovery; HTTP live sessions, commands and headless jobs remain proposals. The accepted 2D/3D v0.1 references establish presentation patterns, not scientific/API completeness.
+
+
+## Esbiko Physics v0.1 implemented — 2026-10-10
+
+[Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.
