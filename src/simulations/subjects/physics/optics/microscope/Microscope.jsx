@@ -1,381 +1,87 @@
-import React, { useState, useRef, useMemo, useEffect, createContext, useContext } from "react";
-import { readEmbeddedMcpParameters } from "@/platform/agent";
-import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from "@/webmcp/registerWebMcpTools.js";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { RoundedBox, Sphere } from "@react-three/drei";
-import { motion } from "framer-motion";
-import * as THREE from "three";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Box, MenuItem, Select, Slider, Stack, Typography, Button, Chip } from '@mui/material';
+import { readEmbeddedMcpParameters } from '@/platform/agent';
+import { createSafeToolExecutor, registerWebMcpTools, getDocumentModelContext } from '@/webmcp/registerWebMcpTools.js';
+import MicroscopeSpecimens, { SPECIMENS, microscopeFieldWidthUm } from './MicroscopeSpecimens';
 
-/* =========================================
-   1. MICROSCOPE CONTEXT
-   ========================================= */
-const MicroscopeContext = createContext(null);
-
-/* =========================================
-   2. BIOLOGICAL SIMULATION (Plant Cells)
-   ========================================= */
-
-// A single Chloroplast (the green energy organelle)
-const Chloroplast = ({ parentSize, offset }) => {
-  const ref = useRef();
-  
-  useFrame((state) => {
-    const t = state.clock.getElapsedTime();
-    // Simulate Cytoplasmic Streaming (Cyclosis)
-    // Chloroplasts travel in a loop around the cell edge
-    const speed = 0.5;
-    const pathRadiusX = parentSize[0] / 2 - 0.2;
-    const pathRadiusY = parentSize[1] / 2 - 0.2;
-    
-    // Move in an ellipse
-    ref.current.position.x = Math.cos(t * speed + offset) * pathRadiusX;
-    ref.current.position.y = Math.sin(t * speed + offset) * pathRadiusY;
-  });
-
-  return (
-    <mesh ref={ref} position={[0, 0, 0]}>
-      <sphereGeometry args={[0.08, 8, 8]} />
-      <meshStandardMaterial color="#4ade80" roughness={0.8} />
-    </mesh>
-  );
-};
-
-// A Single Plant Cell
-const PlantCell = ({ position }) => {
-  const { focus } = useContext(MicroscopeContext);
-  const wallRef = useRef();
-  const interiorRef = useRef();
-  
-  // Cell Dimensions (Elodea cells are rectangular)
-  const width = 1.8;
-  const height = 1.2;
-  const depth = 0.5;
-
-  // Generate 12-15 Chloroplasts per cell
-  const chloroplasts = useMemo(() => {
-    return Array.from({ length: 14 }).map((_, i) => ({
-      offset: i * (Math.PI * 2 / 14) // Distribute evenly along the path
-    }));
-  }, []);
-
-  useFrame(() => {
-    /* --- MANUAL FOCUS LOGIC --- */
-    // Map Knob (0..1) to Z-Depth (-1..1)
-    const focusPlaneZ = (focus * 3) - 1.5;
-    const myZ = position[2];
-
-    // 1. CELL WALL VISIBILITY
-    // The wall is visible when focus is slightly above the center (surface view)
-    const distToWall = Math.abs((myZ + 0.2) - focusPlaneZ);
-    const wallOpacity = Math.max(0.05, 1 - (distToWall * 1.5));
-    
-    // 2. INTERIOR VISIBILITY (Chloroplasts)
-    // The interior is visible when focus is exactly at Z center
-    const distToInterior = Math.abs(myZ - focusPlaneZ);
-    const interiorOpacity = Math.max(0, 1 - (distToInterior * 2));
-
-    if (wallRef.current) {
-       wallRef.current.opacity = THREE.MathUtils.lerp(wallRef.current.opacity, wallOpacity, 0.1);
-       // Blur effect: scale down lines when out of focus
-       wallRef.current.transparent = true;
+const ID = 'physics.optics.microscope';
+const DEFAULT = { focus: 0.5, zoom: 1, light: 1, specimen: 'leaf' };
+const limits = { focus: [0, 1], zoom: [1, 10], light: [0.2, 2] };
+const validate = (patch) => {
+  if (!patch || typeof patch !== 'object' || Array.isArray(patch)) throw Error('Expected microscope settings object');
+  for (const [key, value] of Object.entries(patch)) {
+    if (key === 'specimen') {
+      if (!Object.prototype.hasOwnProperty.call(SPECIMENS, value)) throw Error('Invalid specimen');
+    } else if (!limits[key] || typeof value !== 'number' || !Number.isFinite(value) || value < limits[key][0] || value > limits[key][1]) {
+      throw Error('Invalid microscope parameter: ' + key);
     }
-    
-    if (interiorRef.current) {
-        // Hide organelles if out of focus
-        interiorRef.current.visible = interiorOpacity > 0.1;
-    }
-  });
-
-  return (
-    <group position={position}>
-      {/* CELL WALL (The Grid Structure) */}
-      <mesh ref={wallRef}>
-        <boxGeometry args={[width - 0.1, height - 0.1, depth]} />
-        {/* Semi-transparent rigid cell wall */}
-        <meshPhysicalMaterial 
-          color="#14532d" // Dark Green
-          wireframe={false}
-          transmission={0.2}
-          thickness={1}
-          roughness={0.1}
-          clearcoat={1}
-          transparent
-          opacity={0.3}
-        />
-        {/* Wireframe overlay for sharp cell definitions */}
-        <lineSegments>
-            <edgesGeometry args={[new THREE.BoxGeometry(width-0.1, height-0.1, depth)]} />
-            <lineBasicMaterial color="#4ade80" transparent opacity={0.3} />
-        </lineSegments>
-      </mesh>
-
-      {/* CELL INTERIOR (Cytoplasm & Chloroplasts) */}
-      <group ref={interiorRef}>
-         {chloroplasts.map((c, i) => (
-           <Chloroplast key={i} parentSize={[width, height]} offset={c.offset} />
-         ))}
-      </group>
-    </group>
-  );
+  }
 };
-
-// The Leaf Tissue (Grid of Cells)
-const LeafSample = () => {
-  const cells = useMemo(() => {
-    const grid = [];
-    // Create a 5x5 grid of cells
-    for (let x = -2; x <= 2; x++) {
-      for (let y = -2; y <= 2; y++) {
-        grid.push({
-          position: [
-            x * 1.8, 
-            y * 1.2, 
-            (Math.random() * 0.2) // Slight Z variation (real leaves aren't perfectly flat)
-          ]
-        });
-      }
-    }
-    return grid;
-  }, []);
-
-  return (
-    <group>
-      {/* Backlight / Glass Slide */}
-      <mesh position={[0, 0, -2]}>
-        <planeGeometry args={[20, 20]} />
-        <meshBasicMaterial color="#dcfce7" transparent opacity={0.1} />
-      </mesh>
-      
-      {cells.map((cell, i) => (
-        <PlantCell key={i} position={cell.position} />
-      ))}
-    </group>
-  );
-};
-
-/* =========================================
-   3. SCENE SETUP
-   ========================================= */
-const MicroscopeScene = () => {
-  const { zoom, light } = useContext(MicroscopeContext);
-  const { camera } = useThree();
-
-  useFrame(() => {
-    // Zoom Logic
-    const targetZ = 8 - (zoom * 0.6); 
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.1);
-  });
-
-  return (
-    <>
-      {/* Light mimics a microscope backlight */}
-      <ambientLight intensity={0.4 * light} />
-      <directionalLight position={[0, 0, 10]} intensity={1.5 * light} color="#fff" />
-      <pointLight position={[0, 10, 5]} intensity={0.5} />
-
-      <LeafSample />
-      
-      {/* Green fog to simulate looking through tissue */}
-      <fog attach="fog" args={['#000', 5, 18]} />
-    </>
-  );
-};
-
-/* =========================================
-   4. UI COMPONENTS (Knob)
-   ========================================= */
-const Knob = ({ label, value, min, max, onChange }) => {
-  const angle = ((value - min) / (max - min)) * 270 - 135;
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '0 15px' }}>
-      <div 
-        style={{ 
-          width: '70px', height: '70px', borderRadius: '50%', 
-          background: 'linear-gradient(145deg, #2a2a2a, #1a1a1a)',
-          boxShadow: '5px 5px 10px #0b0b0b, -5px -5px 10px #353535',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'ns-resize'
-        }}
-      >
-        <motion.div
-          style={{
-            width: '100%', height: '100%', borderRadius: '50%',
-            border: '4px solid #444', position: 'relative', rotate: angle 
-          }}
-          drag="y"
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0}
-          dragMomentum={false}
-          onDrag={(event, info) => {
-            const delta = -info.delta.y * 0.005 * (max - min);
-            onChange(Math.min(max, Math.max(min, value + delta)));
-          }}
-        >
-          <div style={{ 
-            position: 'absolute', top: '10%', left: '50%', 
-            width: '4px', height: '15px', background: '#4ade80', // Green indicator
-            transform: 'translateX(-50%)', borderRadius: '2px'
-          }} />
-        </motion.div>
-      </div>
-      <span style={{ color: '#aaa', marginTop: '10px', fontSize: '12px', fontFamily: 'monospace' }}>
-        {label.toUpperCase()}
-      </span>
-    </div>
-  );
-};
-
-/* =========================================
-   5. MAIN COMPONENT
-   ========================================= */
 export default function MicroscopeSimulation() {
-  const initialMcp = useMemo(
-    () => readEmbeddedMcpParameters("physics.optics.microscope", { focus: 0.5, zoom: 1, light: 1 }),
-    [],
-  );
-  const [focus, setFocus] = useState(initialMcp.values.focus);
-  const [zoom, setZoom] = useState(initialMcp.values.zoom);
-  const [light, setLight] = useState(initialMcp.values.light);
-  // Both agent tools and the visible knobs operate on the same React state.
-  const currentRef = useRef({ focus, zoom, light });
-  currentRef.current = { focus, zoom, light };
-  const settersRef = useRef({ focus: setFocus, zoom: setZoom, light: setLight });
-  const defaults = useRef(initialMcp.values);
-
+  const embedded = useMemo(() => readEmbeddedMcpParameters(ID, DEFAULT), []);
+  const initial = useMemo(() => {
+    const safe = { ...DEFAULT };
+    for (const [key, value] of Object.entries(embedded.values || {})) {
+      try { validate({ [key]: value }); safe[key] = value; } catch { /* ignore stale embedded settings */ }
+    }
+    return safe;
+  }, [embedded]);
+  const [settings, setSettings] = useState(initial);
+  const stateRef = useRef(initial);
+  const configure = (patch) => {
+    validate(patch);
+    const next = { ...stateRef.current, ...patch };
+    stateRef.current = next;
+    setSettings(next);
+    return { simulationId: ID, ...next, magnification: Math.round(next.zoom * 100), fieldWidthUm: microscopeFieldWidthUm(next.zoom * 100) };
+  };
+  const api = useRef(null);
+  api.current = { configure, getState: () => ({ simulationId: ID, ...stateRef.current, magnification: Math.round(stateRef.current.zoom * 100), fieldWidthUm: microscopeFieldWidthUm(stateRef.current.zoom * 100) }), reset: () => configure(DEFAULT) };
   useEffect(() => {
     const controller = new AbortController();
-    const empty = { type: "object", properties: {}, additionalProperties: false };
+    const empty = { type: 'object', properties: {}, additionalProperties: false };
     const props = {
-      focus: { type: "number", minimum: 0, maximum: 1 },
-      zoom: { type: "number", minimum: 1, maximum: 10 },
-      light: { type: "number", minimum: 0.2, maximum: 2 },
+      focus: { type: 'number', minimum: 0, maximum: 1 },
+      zoom: { type: 'number', minimum: 1, maximum: 10 },
+      light: { type: 'number', minimum: 0.2, maximum: 2 },
+      specimen: { type: 'string', enum: Object.keys(SPECIMENS) },
     };
     const tools = [
-      {
-        name: "esbiko_microscope_get_state",
-        description: "Read actual live focus, zoom and illumination settings from the virtual microscope.",
-        inputSchema: empty,
-        annotations: { readOnlyHint: true },
-        execute: createSafeToolExecutor("microscope_get_state", async () => ({
-          simulationId: "physics.optics.microscope", ...currentRef.current,
-        })),
-      },
-      {
-        name: "esbiko_microscope_configure",
-        description: "Change the microscope's actual focus (0-1), zoom (1-10), and light (0.2-2) knobs.",
-        inputSchema: { type: "object", properties: props, additionalProperties: false },
-        execute: createSafeToolExecutor("microscope_configure", async (values) => {
-          if (!values || typeof values !== "object" || Array.isArray(values)) {
-            throw new Error("Expected microscope settings object.");
-          }
-          for (const [key, value] of Object.entries(values)) {
-            const rule = props[key];
-            if (!rule || typeof value !== "number" || !Number.isFinite(value) ||
-                value < rule.minimum || value > rule.maximum) {
-              throw new Error("Invalid microscope parameter: " + key);
-            }
-          }
-          for (const [key, value] of Object.entries(values)) {
-            settersRef.current[key](value);
-          }
-          currentRef.current = { ...currentRef.current, ...values };
-          return { simulationId: "physics.optics.microscope", ...currentRef.current };
-        }),
-      },
-      {
-        name: "esbiko_microscope_reset",
-        description: "Reset microscope focus, zoom and light to initial values.",
-        inputSchema: empty,
-        execute: createSafeToolExecutor("microscope_reset", async () => {
-          for (const [key, value] of Object.entries(defaults.current)) {
-            settersRef.current[key](value);
-          }
-          currentRef.current = { ...defaults.current };
-          return { simulationId: "physics.optics.microscope", ...currentRef.current };
-        }),
-      },
+      { name: 'esbiko_microscope_get_state', description: 'Read live virtual microscope sample, focus, magnification and illumination.', inputSchema: empty, annotations: { readOnlyHint: true }, execute: createSafeToolExecutor('microscope_get_state', async () => api.current.getState()) },
+      { name: 'esbiko_microscope_configure', description: 'Choose a biological specimen and adjust microscope focus, zoom or illumination.', inputSchema: { type: 'object', properties: props, additionalProperties: false }, execute: createSafeToolExecutor('microscope_configure', async values => api.current.configure(values)) },
+      { name: 'esbiko_microscope_reset', description: 'Restore default virtual microscope specimen and optical controls.', inputSchema: empty, execute: createSafeToolExecutor('microscope_reset', async () => api.current.reset()) },
     ];
-    registerWebMcpTools({
-      modelContext: getDocumentModelContext(),
-      tools,
-      signal: controller.signal,
-    }).catch((error) => {
-      if (!controller.signal.aborted) console.warn("Microscope WebMCP:", error);
+    registerWebMcpTools({ modelContext: getDocumentModelContext(), tools, signal: controller.signal }).catch(err => {
+      if (!controller.signal.aborted) console.warn('Microscope WebMCP:', err);
     });
     return () => controller.abort();
   }, []);
-
-
-  return (
-    <MicroscopeContext.Provider value={{ focus, zoom, light }}>
-      <div style={{ 
-        width: '100%', height: '100%', background: '#020617', // Very dark blue/black
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        position: 'relative', overflow: 'hidden'
-      }}>
-        
-        {/* Title */}
-        <div style={{ position: 'absolute', top: 20, left: 30, color: 'white', fontFamily: 'sans-serif' }}>
-          <h2 style={{ margin: 0, fontWeight: 300, fontSize: '1.5rem', color: '#64748b' }}>BIOLOGY LAB</h2>
-          <h1 style={{ margin: 0, fontWeight: 700, fontSize: '2rem', letterSpacing: '1px', color: '#4ade80' }}>ELODEA LEAF</h1>
-        </div>
-
-        {/* Eyepiece */}
-        <div style={{
-          width: 'min(500px, 80vw)', height: 'min(500px, 80vw)',
-          borderRadius: '50%',
-          border: '20px solid #1a1a1a',
-          boxShadow: '0 0 50px rgba(0,0,0,0.9), inset 0 0 60px rgba(0,0,0,0.9)',
-          overflow: 'hidden',
-          position: 'relative',
-          background: '#051e11', // Deep green-black background
-          marginBottom: '20px'
-        }}>
-          <Canvas camera={{ position: [0, 0, 10], fov: 45 }}>
-            <MicroscopeScene />
-          </Canvas>
-
-          {/* Scale Overlay */}
-          <div style={{
-            position: 'absolute', bottom: '20%', right: '20%', 
-            color: 'white', fontSize: '12px', fontFamily: 'monospace', opacity: 0.7,
-            pointerEvents: 'none'
-          }}>
-            <div style={{ width: '100px', height: '2px', background: 'white', marginBottom: '5px' }}></div>
-            <div>50 µm</div>
-          </div>
-          
-          {/* Subtle Dust/Noise Texture (CSS) */}
-          <div style={{
-              position: 'absolute', top:0, left:0, width:'100%', height:'100%',
-              backgroundImage: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iNTAwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuNjUiIG51bU9jdGF2ZXM9IjMiIHN0aXRjaFRpbGVzPSJzdGl0Y2giLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWx0ZXI9InVybCgjbm9pc2UpIiBvcGFjaXR5PSIwLjA1Ii8+PC9zdmc+")',
-              pointerEvents: 'none', opacity: 0.3
-          }} />
-        </div>
-
-        {/* Info Box */}
-        <div style={{ 
-          display: 'flex', gap: '30px', marginBottom: '30px', 
-          color: '#4ade80', fontFamily: 'monospace', fontSize: '14px',
-          background: 'rgba(20, 83, 45, 0.3)', padding: '10px 20px', borderRadius: '8px', border: '1px solid #14532d'
-        }}>
-          <div>DEPTH: Z={(focus * 10 - 5).toFixed(1)} µm</div>
-          <div>MAGNIFICATION: {Math.round(zoom * 100)}x</div>
-        </div>
-
-        {/* Controls */}
-        <div style={{ 
-          display: 'flex', background: '#1a1a1a', padding: '20px 40px', 
-          borderRadius: '20px', borderTop: '2px solid #333',
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
-        }}>
-          <Knob label="Focus" value={focus} min={0} max={1} onChange={setFocus} />
-          <Knob label="Zoom" value={zoom} min={1} max={10} onChange={setZoom} />
-          <Knob label="Light" value={light} min={0.2} max={2} onChange={setLight} />
-        </div>
-
-      </div>
-    </MicroscopeContext.Provider>
-  );
+  const magnification = Math.round(settings.zoom * 100);
+  const adjust = (key, value) => configure({ [key]: value });
+  return <Box sx={{ width: '100%', minHeight: '100%', overflowY: 'auto', bgcolor: '#020617', color: '#e2e8f0', p: { xs: 1.5, md: 3 }, boxSizing: 'border-box' }}>
+    <Stack spacing={2} sx={{ maxWidth: 1050, mx: 'auto' }}>
+      <Typography variant="h5" sx={{ color: '#4ade80', fontWeight: 700 }}>Virtual Microscope</Typography>
+      <Typography sx={{ fontSize: 13, color: '#94a3b8' }}>Explore specimens at a calibrated field scale. Illustrative biology, not captured microscopy images.</Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.8fr) minmax(240px, 1fr)' }, gap: 2, alignItems: 'start' }}>
+        <MicroscopeSpecimens specimen={settings.specimen} magnification={magnification} focus={settings.focus} light={settings.light} />
+        <Stack spacing={2} sx={{ bgcolor: '#101c30', p: 2, borderRadius: 2, minWidth: 0 }}>
+          <Typography variant="subtitle1">Specimen & optics</Typography>
+          <Select size="small" value={settings.specimen} onChange={event => adjust('specimen', event.target.value)} aria-label="Biological specimen" sx={{ color: 'white', '& .MuiSvgIcon-root': { color: 'white' } }}>
+            {Object.entries(SPECIMENS).map(([key, data]) => <MenuItem key={key} value={key}>{data.name}</MenuItem>)}
+          </Select>
+          <Chip label={`${magnification}× · field width ≈ ${microscopeFieldWidthUm(magnification).toFixed(0)} µm`} sx={{ color: '#cffafe' }} />
+          {[
+            ['zoom', 'Magnification', `${magnification}×`, 0.1],
+            ['focus', 'Focus', settings.focus.toFixed(2), 0.01],
+            ['light', 'Illumination', settings.light.toFixed(2), 0.05],
+          ].map(([key, title, reading, step]) => <Box key={key}>
+            <Typography sx={{ fontSize: 13 }}>{title}: {reading}</Typography>
+            <Slider value={settings[key]} min={limits[key][0]} max={limits[key][1]} step={step} onChange={(_, val) => adjust(key, val)} aria-label={title} />
+          </Box>)}
+          <Button variant="outlined" onClick={() => api.current.reset()}>Reset microscope</Button>
+          <Typography sx={{ fontSize: 11, color: '#94a3b8' }}>The scale bar changes with magnification. Focus controls schematic blur. Optical resolving power is limited even at high magnification.</Typography>
+        </Stack>
+      </Box>
+    </Stack>
+  </Box>;
 }
