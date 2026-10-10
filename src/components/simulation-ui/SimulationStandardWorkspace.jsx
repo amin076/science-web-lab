@@ -23,6 +23,7 @@ export default function SimulationStandardWorkspace({
   recordingControls,
   recordingMode = false,
   hideChromeInRecording = true,
+  unifiedPanel = false,
   viewportLabel = "Simulation viewport",
   sx = {},
 }) {
@@ -42,7 +43,7 @@ export default function SimulationStandardWorkspace({
         isolation: "isolate",
         color: "#f8fafc",
         background:
-          "linear-gradient(145deg, #020617 0%, #07111f 48%, #030712 100%)",
+          "#080811",
         pt: "env(safe-area-inset-top, 0px)",
         pr: "env(safe-area-inset-right, 0px)",
         pb: "env(safe-area-inset-bottom, 0px)",
@@ -73,7 +74,7 @@ export default function SimulationStandardWorkspace({
           sx={{
             height: "100%",
             minHeight: 0,
-            borderRadius: { xs: 2, md: 2.5 },
+            borderRadius: { xs: "16px", md: "24px" },
             background:
               "linear-gradient(180deg, rgba(15,23,42,0.42), rgba(2,6,23,0.72))",
           }}
@@ -214,7 +215,7 @@ export default function SimulationStandardWorkspace({
                   inset: { xs: 8, md: 14 },
                   zIndex: 16,
                   border: "1px dashed rgba(248,250,252,0.42)",
-                  borderRadius: 2,
+                  borderRadius: "16px",
                   pointerEvents: "none",
                 }}
               />
@@ -230,9 +231,29 @@ export default function SimulationStandardWorkspace({
               minHeight: 0,
               overflow: "auto",
               overscrollBehavior: "contain",
+              ...(unifiedPanel && {
+                border: "1px solid rgba(255,255,255,0.10)",
+                borderRadius: { xs: "16px", md: "24px" },
+                background: "#05050c",
+                px: { xs: 1, md: 1.5 },
+                py: 1.5,
+                scrollbarWidth: "thin",
+                "& [data-simulation-panel]": {
+                  borderRadius: "0px", border: 0,
+                  borderBottom: "1px solid rgba(255,255,255,0.10)",
+                  background: "transparent", boxShadow: "none",
+                  backdropFilter: "none",
+                  "&::before": { display: "none" },
+                },
+                "& [data-simulation-panel] button": { borderRadius: "10px", boxShadow: "none" },
+              }),
             }}
           >
-            <Stack spacing={1.2} sx={{ minHeight: 0 }}>
+            {unifiedPanel && <Box sx={{ px: 1.5, pb: 2, mb: 1, borderBottom: "1px solid rgba(255,255,255,0.12)" }}>
+              <Typography component="h3" sx={{ fontSize: 22, fontWeight: 800 }}>Control Center</Typography>
+              <Typography sx={{ mt: 0.5, fontSize: 12, color: "#94a3b8" }}>Playback, camera & measurements</Typography>
+            </Box>}
+            <Stack spacing={unifiedPanel ? 1 : 1.2} sx={{ minHeight: 0 }}>
               {recordingControls && (
                 <SimulationPanel title="Capture" domain={domain} compact>
                   {recordingControls}

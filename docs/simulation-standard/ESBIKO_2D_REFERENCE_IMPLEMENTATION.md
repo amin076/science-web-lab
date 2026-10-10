@@ -36,3 +36,7 @@ Acceptance: build, model/coordinate/parameter tests, Plop template compilation, 
 ## Shared science engine — next phase
 
 Do not put orbital, acoustic and optical science into the UI shell. Define an adapter boundary: `initialize(parameters)`, `step(state, dt)`, `measure(state)`, `reset(parameters)`, `serialize(state)`, with explicit units, model version and assumptions. First extract pure vector operations, unit conversions, bounded histories and tested integrators. Pilot the same integrator on two mechanics simulations, compare conservation/error budgets against analytic fixtures, then migrate other domains incrementally. Use model-specific modules where equations differ. Preserve permanent IDs and current browser/server coordinate conventions. This release establishes the reference boundary; it does not claim a unified physics engine has shipped.
+
+## Visual correction — October 10 review
+
+The reference now uses the satellite-style unified dark control rail, flat sections with dividers, quieter grid and compact rectangular buttons. Radius tokens use explicit CSS pixel strings: MUI sx multiplies numeric borderRadius values by theme.shape.borderRadius, which previously produced elliptical/clipped panels. Keep physical design-token lengths explicitly unit-qualified. The generated scaffold also uses absolute shared-component aliases so a new simulation folder resolves its imports correctly.

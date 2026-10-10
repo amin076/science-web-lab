@@ -16,7 +16,7 @@ export default function SimulationPanel({
   ...props
 }) {
   return (
-    <SimulationSurface domain={domain} sx={{ width: "100%", ...sx }} {...props}>
+    <SimulationSurface data-simulation-panel="true" domain={domain} sx={{ width: "100%", ...sx }} {...props}>
       {(title || subtitle || icon || actions) && (
         <Stack
           direction="row"

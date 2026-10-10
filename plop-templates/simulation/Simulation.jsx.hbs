@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Chip, Slider, Stack, Switch, FormControlLabel, Typography } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import SimulationStandardWorkspace from './SimulationStandardWorkspace';
-import SimulationCanvas2DViewport from './SimulationCanvas2DViewport';
-import SimulationPanel from './SimulationPanel';
-import SimulationButton from './SimulationButton';
+import SimulationStandardWorkspace from '@/components/simulation-ui/SimulationStandardWorkspace';
+import SimulationCanvas2DViewport from '@/components/simulation-ui/SimulationCanvas2DViewport';
+import SimulationPanel from '@/components/simulation-ui/SimulationPanel';
+import SimulationButton from '@/components/simulation-ui/SimulationButton';
 import AgentCanvasRecorder from '@/components/shared/video/AgentCanvasRecorder';
 import { useAgentSimulationTools } from '@/webmcp/useAgentSimulationTools';
 import { advanceStandard2d, sampleStandard2d, defaultStandard2dParameters, standard2dParameters } from '@/components/simulation-ui/standard2dModel';
@@ -56,10 +56,10 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
   const draw = useCallback((ctx, view) => {
     const { width: w, height: h } = view;
     const p = live.current.params; const scale = Math.min(w, h) * 0.25 * p.zoom;
-    ctx.fillStyle = '#071321'; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#030308'; ctx.fillRect(0, 0, w, h);
     ctx.save(); ctx.translate(w / 2 + p.panX * scale, h / 2 - p.panY * scale);
     if (p.grid) {
-      ctx.strokeStyle = '#19354b'; ctx.lineWidth = 1;
+      ctx.strokeStyle = '#121b2a'; ctx.lineWidth = 1;
       for (let i = -20; i <= 20; i++) {
         ctx.beginPath(); ctx.moveTo(i * scale / 2, -h * 4); ctx.lineTo(i * scale / 2, h * 4); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(-w * 4, i * scale / 2); ctx.lineTo(w * 4, i * scale / 2); ctx.stroke();
@@ -76,12 +76,12 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
     if (!running) viewport.current?.resize();
   }, [params, snapshot, running]);
   const controls = <Stack spacing={1.2}>
-    <SimulationPanel title="Playback" compact><Stack direction="row" spacing={1} sx={ { p: 1.5 }}>
+    <SimulationPanel title="Playback" compact><Stack direction="row" spacing={1} sx={ { py: 0.5 }}>
       <SimulationButton onClick={() => playback({ running: !live.current.running })}>{running ? 'Pause' : 'Run'}</SimulationButton>
-      <SimulationButton onClick={reset}>Reset</SimulationButton>
-      <SimulationButton disabled={running} onClick={() => { step(0.05); setSnapshot({ ...live.current.state }); viewport.current?.resize(); }}>Step</SimulationButton>
+      <SimulationButton simulationVariant="subtle" onClick={reset}>Reset</SimulationButton>
+      <SimulationButton simulationVariant="subtle" disabled={running} onClick={() => { step(0.05); setSnapshot({ ...live.current.state }); viewport.current?.resize(); }}>Step</SimulationButton>
     </Stack></SimulationPanel>
-    <SimulationPanel title="Controls & camera" compact><Stack spacing={1} sx={ { p: 2 }}>
+    <SimulationPanel title="Controls & camera" compact><Stack spacing={1} sx={ { py: 0.5 }}>
       <Typography>Speed · {params.speed.toFixed(1)}×</Typography><Slider aria-label="Simulation speed" min={0.1} max={4} step={0.1} value={params.speed} onChange={(_, v) => configure({ speed: v })} />
       <Typography>Camera zoom · {params.zoom.toFixed(1)}×</Typography><Slider aria-label="Camera zoom" min={0.5} max={3} step={0.1} value={params.zoom} onChange={(_, v) => configure({ zoom: v })} />
       <Typography>Camera horizontal position</Typography><Slider aria-label="Camera horizontal position" min={-10} max={10} step={0.1} value={params.panX} onChange={(_, v) => configure({ panX: v })} />
@@ -95,7 +95,7 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
     <SimulationPanel title="Agent connection" compact><Box sx={ { p: 2 }}><Chip size="small" label={'WebMCP: ' + status} /><Typography sx={ { mt: 1, fontSize: 12 }}>UI and agent use the same state. Unsupported browsers keep all manual controls. Register and verify this simulation adapter before claiming remote MCP support.</Typography></Box></SimulationPanel>
     <SimulationPanel title="Video capture" compact><AgentCanvasRecorder ref={video} canvasSelector={'#' + canvasId} filePrefix="esbiko-standard-2d" /></SimulationPanel>
   </Stack>;
-  return <SimulationStandardWorkspace title={title} subtitle="Development scaffold · replace reference model before publication" controls={controls}
+  return <SimulationStandardWorkspace unifiedPanel title={title} subtitle="Development scaffold · replace reference model before publication" controls={controls}
     viewport={<SimulationCanvas2DViewport ref={viewport} canvasId={canvasId} running={running} draw={draw} step={step}
       onPointerDown={(point, event) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { point, params: { ...live.current.params } }; }}
       onPointerMove={(point) => { if (!drag.current) return; const d = drag.current; const scale = Math.min(point.width, point.height) * 0.25 * d.params.zoom;

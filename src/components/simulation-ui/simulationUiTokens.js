@@ -1,10 +1,10 @@
 export const simulationUiTokens = {
   radius: {
-    small: 10,
-    control: 14,
-    panel: 20,
-    modal: 26,
-    pill: 999,
+    small: "10px",
+    control: "10px",
+    panel: "20px",
+    modal: "26px",
+    pill: "999px",
   },
   control: {
     minTouchSize: 44,
