@@ -23,11 +23,24 @@ export function drawSunlightDirection(ctx, earthX, earthY, earthRadiusPx, width,
   ctx.restore();
 }
 
-export function drawSunContext(ctx, width, height, mode) {
+export function drawEarthSunlitHemisphere(ctx, x, y, radius) {
+  if (radius < 2) return;
+  ctx.save();
+  // Sun is shown to screen-left. The right-facing half is in night.
+  ctx.beginPath();
+  ctx.arc(x, y, radius, -Math.PI / 2, Math.PI / 2);
+  ctx.lineTo(x, y - radius);
+  ctx.closePath();
+  ctx.fillStyle = "rgba(0, 5, 19, 0.58)";
+  ctx.fill();
+  ctx.restore();
+}
+
+export function drawSunContext(ctx, width, height, mode, moonTheta = 0) {
   if (width < 180 || height < 180) return;
   const educational = mode === "EDUCATIONAL";
   const w = Math.min(240, width - 20);
-  const h = 104;
+  const h = 140;
   const x = 10, y = height - h - 12;
   ctx.save();
   ctx.fillStyle = "rgba(2, 6, 23, 0.83)";
@@ -36,17 +49,26 @@ export function drawSunContext(ctx, width, height, mode) {
   ctx.beginPath(); ctx.roundRect(x,y,w,h,10); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "#f8fafc"; ctx.font = "bold 11px sans-serif";
   ctx.fillText(educational ? "Sun–Earth context · Education" : "Sun–Earth context · Realistic", x+10,y+16);
-  const sunX = x+23, earthX = x+w-25, rowY = y+43;
+  const sunX = x+24, earthX = x+w-51, rowY = y+56;
   ctx.strokeStyle = "#fbbf24"; ctx.setLineDash([4,4]);
   ctx.beginPath(); ctx.moveTo(sunX+12,rowY); ctx.lineTo(earthX-6,rowY); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle = "#f59e0b"; ctx.beginPath(); ctx.arc(sunX,rowY,12,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = "#60a5fa"; ctx.beginPath(); ctx.arc(earthX,rowY,5,0,Math.PI*2); ctx.fill();
+  // Moon's direction follows the simulation state, not an invented fixed phase.
+  // Orbital radii and object sizes are intentionally exaggerated here.
+  const orbitR = 18;
+  ctx.strokeStyle = "rgba(148,163,184,0.65)";
+  ctx.beginPath(); ctx.arc(earthX,rowY,orbitR,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle = "#60a5fa"; ctx.beginPath(); ctx.arc(earthX,rowY,6,0,Math.PI*2); ctx.fill();
+  const mx = earthX + Math.cos(moonTheta)*orbitR;
+  const my = rowY + Math.sin(moonTheta)*orbitR;
+  ctx.fillStyle = "#ddd6fe"; ctx.beginPath(); ctx.arc(mx,my,3.5,0,Math.PI*2); ctx.fill();
   ctx.font = "10px sans-serif"; ctx.fillStyle = "#fde68a";
-  ctx.fillText("Sun",sunX-10,rowY+23);
-  ctx.fillStyle = "#bfdbfe"; ctx.fillText("Earth",earthX-15,rowY+23);
+  ctx.fillText("Sun",sunX-10,rowY+25);
+  ctx.fillStyle = "#bfdbfe"; ctx.fillText("Earth",earthX-15,rowY+34);
   ctx.textAlign = "center"; ctx.fillStyle = "#e2e8f0";
-  ctx.fillText("1 AU ≈ 149.6 million km", x+w/2,y+79);
+  ctx.fillText("Sun – Earth: 1 AU ≈ 149.6 million km", x+w/2,y+103);
   ctx.fillStyle = "#94a3b8"; ctx.font = "9px sans-serif";
-  ctx.fillText(educational ? "Not to scale · relative direction illustrative" : "Actual distance stated · diagram not to scale",x+w/2,y+94);
+  ctx.fillText("Moon: 384,400 km from Earth (mean)", x+w/2,y+119);
+  ctx.fillText("Illustrative sizes / spacing · not to scale",x+w/2,y+133);
   ctx.restore();
 }
