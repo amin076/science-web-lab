@@ -1,5 +1,12 @@
 # ESBIKO ROADMAP
 
+## October 10, 2026 — 2D standard and agent infrastructure
+
+The implemented admin reference is available at `/admin/standards/2d` (Firebase admin claims required), outside the public simulation catalog. It reuses the shared workspace, DPR-aware canvas, camera controls, bounded measurements/chart history, live WebMCP actions and landscape/portrait browser video recording. Mobile uses canvas-first vertical flow; desktop uses a right rail. The Plop Canvas 2D main template now follows this composition. Existing simulations are not automatically migrated.
+
+Read [2D implementation and acceptance](simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) and [MCP/ChatGPT development guide](ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md). Inventory: 32 registered, 31 declared advanced contracts, Gearbox quarantined; full ChatGPT/media acceptance remains feature-specific. Shared math/physics is the next design/pilot phase, not a shipped universal engine.
+
+
 Version: 1.0
 
 Status: Active

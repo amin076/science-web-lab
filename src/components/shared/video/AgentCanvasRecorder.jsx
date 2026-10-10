@@ -47,6 +47,11 @@ const AgentCanvasRecorder = forwardRef(function AgentCanvasRecorder({
     getVideoStatus: () => ({ ...liveRef.current, audioIncluded: false }),
     downloadVideo,
   }));
+  const humanAction = (action) => {
+    try { action(); } catch (error) {
+      update({ status: "failed", mode: null, error: { code: "VIDEO_ACTION_FAILED", message: error.message } });
+    }
+  };
   const recordingReady = (mode) => ({ blob, fileName }) => {
     update({
       status: "ready", mode: null, lastReadyMode: mode,
@@ -66,13 +71,13 @@ const AgentCanvasRecorder = forwardRef(function AgentCanvasRecorder({
         outputMode="shorts" showButton={false} fps={30} videoBitsPerSecond={4000000}
         fileName={filePrefix + "-shorts.webm"} onRecordingReady={recordingReady("shorts")}
         onRecordingError={recordingError} />
-      <button type="button" onClick={() => startVideo("landscape")} disabled={snapshot.status === "recording" || snapshot.status === "processing"}
+      <button type="button" onClick={() => humanAction(() => startVideo("landscape"))} disabled={snapshot.status === "recording" || snapshot.status === "processing"}
         className="rounded-lg border border-cyan-500/40 bg-cyan-900/40 px-3 py-2 disabled:opacity-40">Record 16:9</button>
-      <button type="button" onClick={() => startVideo("shorts")} disabled={snapshot.status === "recording" || snapshot.status === "processing"}
+      <button type="button" onClick={() => humanAction(() => startVideo("shorts"))} disabled={snapshot.status === "recording" || snapshot.status === "processing"}
         className="rounded-lg border border-cyan-500/40 bg-cyan-900/40 px-3 py-2 disabled:opacity-40">Record 9:16</button>
-      <button type="button" onClick={stopVideo} disabled={snapshot.status !== "recording"}
+      <button type="button" onClick={() => humanAction(stopVideo)} disabled={snapshot.status !== "recording"}
         className="rounded-lg border border-red-500/40 px-3 py-2 disabled:opacity-40">Stop</button>
-      <button type="button" onClick={downloadVideo} disabled={!snapshot.lastReadyMode}
+      <button type="button" onClick={() => humanAction(downloadVideo)} disabled={!snapshot.lastReadyMode}
         className="rounded-lg border border-white/30 px-3 py-2 disabled:opacity-40">Download</button>
       <span role="status" aria-live="polite">{snapshot.error?.message || "Video: " + snapshot.status}</span>
     </div>

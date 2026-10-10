@@ -1,5 +1,12 @@
 # Phase 1 — Advanced MCP adapters for all 32 simulations
 
+## October 10, 2026 — 2D standard and agent infrastructure
+
+The implemented admin reference is available at `/admin/standards/2d` (Firebase admin claims required), outside the public simulation catalog. It reuses the shared workspace, DPR-aware canvas, camera controls, bounded measurements/chart history, live WebMCP actions and landscape/portrait browser video recording. Mobile uses canvas-first vertical flow; desktop uses a right rail. The Plop Canvas 2D main template now follows this composition. Existing simulations are not automatically migrated.
+
+Read [2D implementation and acceptance](simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) and [MCP/ChatGPT development guide](ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md). Inventory: 32 registered, 31 declared advanced contracts, Gearbox quarantined; full ChatGPT/media acceptance remains feature-specific. Shared math/physics is the next design/pilot phase, not a shipped universal engine.
+
+
 **Starting baseline (before PRs #140, #142, #143):** 17 of 32 have a declared adapter with parameter and state schemas; the following 15 are not yet adapted. This is a declaration-level milestone **only**. It must not be confused with end-to-end ChatGPT control (Phase 2).
 
 Run `node scripts/audit-all-simulation-readiness.mjs` to write `artifacts/readiness/all-simulations.json`, including precise missing IDs. Run `node scripts/audit-all-simulation-readiness.mjs --require-all-adapted` for a hard gate: it must fail if any non-quarantined simulation loses an adapter, or a quarantined simulation regains discovery unexpectedly.

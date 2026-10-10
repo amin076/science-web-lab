@@ -47,6 +47,7 @@ const SimulationCanvas2DViewport = forwardRef(function SimulationCanvas2DViewpor
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    onPointerCancel,
     quality = "balanced",
     maxDevicePixelRatio = 2,
     maxDt = 1 / 20,
@@ -225,6 +226,7 @@ const SimulationCanvas2DViewport = forwardRef(function SimulationCanvas2DViewpor
         onPointerDown={(event) => handlePointer(onPointerDown, event)}
         onPointerMove={(event) => handlePointer(onPointerMove, event)}
         onPointerUp={(event) => handlePointer(onPointerUp, event)}
+        onPointerCancel={(event) => handlePointer(onPointerCancel, event)}
         style={{
           position: "absolute",
           inset: 0,

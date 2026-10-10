@@ -7,10 +7,10 @@ import SimulationPanel from './SimulationPanel';
 import SimulationButton from './SimulationButton';
 import AgentCanvasRecorder from '@/components/shared/video/AgentCanvasRecorder';
 import { useAgentSimulationTools } from '@/webmcp/useAgentSimulationTools';
-import { advanceStandard2d, sampleStandard2d, defaultStandard2dParameters, standard2dParameters } from '@/components/simulation-ui/standard2dModel';
+import { advanceStandard2d, sampleStandard2d, defaultStandard2dParameters, standard2dParameters } from './standard2dModel';
 
 // A reference adapter, deliberately outside the scientific simulation catalog.
-export default function {{componentName}}({ title = '{{title}}', simulationId = '{{registryKey}}' }) {
+export default function Simulation2DReference({ title = '2D Simulation Standard', simulationId = 'admin.standard.2d' }) {
   const [running, setRunning] = useState(false);
   const [params, setParams] = useState({ ...defaultStandard2dParameters });
   const [snapshot, setSnapshot] = useState(sampleStandard2d(0));
@@ -40,7 +40,7 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
     configure({ ...defaultStandard2dParameters });
     return { ...live.current.state, running: false };
   }, [configure, playback]);
-  const status = useAgentSimulationTools({ simulationId, prefix: '{{componentName}}', properties: standard2dParameters,
+  const status = useAgentSimulationTools({ simulationId, prefix: 'standard2d', properties: standard2dParameters,
     actions: { getState: () => ({ ...live.current.state, running: live.current.running, parameters: live.current.params, model: 'reference unit-circle; not a scientific experiment' }),
       configure, setPlayback: playback, reset,
       startVideo: (input) => video.current.startVideo(input), stopVideo: () => video.current.stopVideo(),
@@ -76,12 +76,12 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
     if (!running) viewport.current?.resize();
   }, [params, snapshot, running]);
   const controls = <Stack spacing={1.2}>
-    <SimulationPanel title="Playback" compact><Stack direction="row" spacing={1} sx={ { p: 1.5 }}>
+    <SimulationPanel title="Playback" compact><Stack direction="row" spacing={1} sx={{ p: 1.5 }}>
       <SimulationButton onClick={() => playback({ running: !live.current.running })}>{running ? 'Pause' : 'Run'}</SimulationButton>
       <SimulationButton onClick={reset}>Reset</SimulationButton>
       <SimulationButton disabled={running} onClick={() => { step(0.05); setSnapshot({ ...live.current.state }); viewport.current?.resize(); }}>Step</SimulationButton>
     </Stack></SimulationPanel>
-    <SimulationPanel title="Controls & camera" compact><Stack spacing={1} sx={ { p: 2 }}>
+    <SimulationPanel title="Controls & camera" compact><Stack spacing={1} sx={{ p: 2 }}>
       <Typography>Speed · {params.speed.toFixed(1)}×</Typography><Slider aria-label="Simulation speed" min={0.1} max={4} step={0.1} value={params.speed} onChange={(_, v) => configure({ speed: v })} />
       <Typography>Camera zoom · {params.zoom.toFixed(1)}×</Typography><Slider aria-label="Camera zoom" min={0.5} max={3} step={0.1} value={params.zoom} onChange={(_, v) => configure({ zoom: v })} />
       <Typography>Camera horizontal position</Typography><Slider aria-label="Camera horizontal position" min={-10} max={10} step={0.1} value={params.panX} onChange={(_, v) => configure({ panX: v })} />
@@ -89,13 +89,13 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
       <SimulationButton onClick={() => configure({ zoom: 1, panX: 0, panY: 0 })}>Fit camera</SimulationButton>
       <FormControlLabel control={<Switch checked={params.grid} onChange={(_, grid) => configure({ grid })} />} label="Coordinate grid" />
     </Stack></SimulationPanel>
-    <SimulationPanel title="Measurements" compact><Box sx={ { p: 2 }}><Typography>t = {snapshot.time.toFixed(2)} s · x = {snapshot.x.toFixed(2)} m</Typography>
-      <Box sx={ { height: 160 }}><ResponsiveContainer width="100%" height="100%"><LineChart data={samples}><XAxis dataKey="time" tick={ { fill: '#94a3b8', fontSize: 10 }} /><YAxis domain={[-1, 1]} width={30} tick={ { fill: '#94a3b8', fontSize: 10 }} /><Tooltip /><Line dataKey="x" stroke="#22d3ee" dot={false} isAnimationActive={false} /></LineChart></ResponsiveContainer></Box>
+    <SimulationPanel title="Measurements" compact><Box sx={{ p: 2 }}><Typography>t = {snapshot.time.toFixed(2)} s · x = {snapshot.x.toFixed(2)} m</Typography>
+      <Box sx={{ height: 160 }}><ResponsiveContainer width="100%" height="100%"><LineChart data={samples}><XAxis dataKey="time" tick={{ fill: '#94a3b8', fontSize: 10 }} /><YAxis domain={[-1, 1]} width={30} tick={{ fill: '#94a3b8', fontSize: 10 }} /><Tooltip /><Line dataKey="x" stroke="#22d3ee" dot={false} isAnimationActive={false} /></LineChart></ResponsiveContainer></Box>
     </Box></SimulationPanel>
-    <SimulationPanel title="Agent connection" compact><Box sx={ { p: 2 }}><Chip size="small" label={'WebMCP: ' + status} /><Typography sx={ { mt: 1, fontSize: 12 }}>UI and agent use the same state. Unsupported browsers keep all manual controls. Register and verify this simulation adapter before claiming remote MCP support.</Typography></Box></SimulationPanel>
+    <SimulationPanel title="Agent connection" compact><Box sx={{ p: 2 }}><Chip size="small" label={'WebMCP: ' + status} /><Typography sx={{ mt: 1, fontSize: 12 }}>UI and agent use the same state. Unsupported browsers keep all manual controls. This private reference is not a public MCP catalog entry.</Typography></Box></SimulationPanel>
     <SimulationPanel title="Video capture" compact><AgentCanvasRecorder ref={video} canvasSelector={'#' + canvasId} filePrefix="esbiko-standard-2d" /></SimulationPanel>
   </Stack>;
-  return <SimulationStandardWorkspace title={title} subtitle="Development scaffold · replace reference model before publication" controls={controls}
+  return <SimulationStandardWorkspace title={title} subtitle="Admin reference · reusable canvas, controls, camera, measurements and agent adapter" controls={controls}
     viewport={<SimulationCanvas2DViewport ref={viewport} canvasId={canvasId} running={running} draw={draw} step={step}
       onPointerDown={(point, event) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { point, params: { ...live.current.params } }; }}
       onPointerMove={(point) => { if (!drag.current) return; const d = drag.current; const scale = Math.min(point.width, point.height) * 0.25 * d.params.zoom;

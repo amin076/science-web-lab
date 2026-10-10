@@ -38,7 +38,7 @@ export default function SimulationStandardWorkspace({
         width: "100%",
         height: "100dvh",
         minHeight: 0,
-        overflow: "hidden",
+        overflow: "auto",
         isolation: "isolate",
         color: "#f8fafc",
         background:
@@ -52,17 +52,17 @@ export default function SimulationStandardWorkspace({
     >
       <Box
         sx={{
-          height: "100%",
-          minHeight: 0,
+          height: { xs: "auto", lg: "100%" },
+          minHeight: "100%",
           display: "grid",
           gap: { xs: 1, md: 1.5 },
           p: { xs: 1, md: 1.5 },
           gridTemplateColumns: {
             xs: "minmax(0, 1fr)",
-            lg: controls || info ? "minmax(0, 1fr) minmax(320px, 380px)" : "minmax(0, 1fr)",
+            lg: !chromeHidden && (controls || info || recordingControls) ? "minmax(0, 1fr) minmax(320px, 380px)" : "minmax(0, 1fr)",
           },
           gridTemplateRows: {
-            xs: chromeHidden || !controls ? "minmax(0, 1fr)" : "minmax(0, 1fr) minmax(176px, 36dvh)",
+            xs: chromeHidden || !controls ? "minmax(320px, 100dvh)" : "minmax(320px, 56dvh) auto",
             lg: "minmax(0, 1fr)",
           },
         }}

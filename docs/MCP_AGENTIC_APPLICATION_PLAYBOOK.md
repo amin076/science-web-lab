@@ -1,5 +1,12 @@
 # MCP / AI-Controlled Application Engineering Playbook
 
+## October 10, 2026 — 2D standard and agent infrastructure
+
+The implemented admin reference is available at `/admin/standards/2d` (Firebase admin claims required), outside the public simulation catalog. It reuses the shared workspace, DPR-aware canvas, camera controls, bounded measurements/chart history, live WebMCP actions and landscape/portrait browser video recording. Mobile uses canvas-first vertical flow; desktop uses a right rail. The Plop Canvas 2D main template now follows this composition. Existing simulations are not automatically migrated.
+
+Read [2D implementation and acceptance](simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) and [MCP/ChatGPT development guide](ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md). Inventory: 32 registered, 31 declared advanced contracts, Gearbox quarantined; full ChatGPT/media acceptance remains feature-specific. Shared math/physics is the next design/pilot phase, not a shipped universal engine.
+
+
 ## Purpose
 
 This document captures the reusable engineering knowledge learned while turning Esbiko from a normal web application into an application that ChatGPT can discover, configure, open, and control through MCP.
@@ -742,3 +749,15 @@ The next major engineering goals are:
 The long-term target is:
 
 > A simulation built according to the Esbiko standard should be ChatGPT/MCP-ready by construction, not retrofitted later.
+
+## 21. A reusable simulation standard without duplicating science
+
+The October 10 reference consolidates the 2D UI and browser-agent path. The earlier scaffold generated its own shell, resize handler and animation loop. The updated main scaffold composes the shared workspace and viewport, and exposes the same UI actions through the existing agent hook. This prevents UI controls and agent configuration from drifting into separate state stores.
+
+The admin review page is `/admin/standards/2d`; it has no catalog ID, no public MCP discovery entry and no separate server endpoint. Custom claims gate its mounting. The reference motion only demonstrates the contract; scientific implementations must supply their own pure model, units, numerical validation and measured state.
+
+On large screens the canvas and right rail share one workspace. On narrow screens the canvas remains first, followed by playback, camera/model controls, measured graphs and capture. Keep browser recordings independent from DOM panels and preserve actual recorder states: idle, recording, processing, ready or failed. Media streams and timers must stop when the view unmounts. A missing browser capability is reported as unsupported, not as successful recording.
+
+The inventory gate now distinguishes 32 catalog entries, 31 advanced contracts and a deliberately quarantined gearbox. Discovery, configuration, numerical readback, host rendering and media export need independent acceptance evidence. Never infer complete ChatGPT support from adapter counts.
+
+The next engine extraction should start with unit conversions, vectors and integrators used by two real simulations. Establish conservation and analytic-reference tests before migrating additional models. The shell owns presentation and interactions; domain modules own science. [Reference source and acceptance](simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) and [connection/development guide](ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md) provide the working implementation map.

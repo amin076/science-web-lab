@@ -1,7 +1,7 @@
 # Esbiko 2D Rendering Standard
 
-Status: Draft
-Version: 0.1
+Status: Reference implementation available; legacy migration ongoing
+Version: 0.2
 Standard identifier: esbiko-2d-rendering.v1
 
 ## 1. Purpose
@@ -362,3 +362,7 @@ A conformant implementation MUST provide:
 - performance bounds
 - accessibility alternative for essential Canvas-only information
 - automated tests
+
+## Reference implementation
+
+See [the implemented standard](ESBIKO_2D_REFERENCE_IMPLEMENTATION.md) for the admin review route, reusable components, updated Plop template, agent/video contract and acceptance requirements.

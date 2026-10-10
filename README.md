@@ -942,3 +942,7 @@ Special acknowledgement to the communities supporting:
 ---
 
 **Esbiko — explore science by interacting with it.**
+
+## 2D standard and MCP development (October 2026)
+
+Admin reference: https://www.esbiko.com/admin/standards/2d . See [2D standard](docs/simulation-standard/ESBIKO_2D_REFERENCE_IMPLEMENTATION.md), [MCP/ChatGPT guide](docs/ESBIKO_MCP_CHATGPT_DEVELOPMENT_GUIDE.md) and the updated [engineering playbook](docs/MCP_AGENTIC_APPLICATION_PLAYBOOK.md). Existing catalog simulations are migrated incrementally.

@@ -2,6 +2,7 @@
 import React, {
   forwardRef,
   useImperativeHandle,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -141,6 +142,21 @@ const VideoRecorderControls = forwardRef(function VideoRecorderControls(
   const stopRequestedRef = useRef(false);
   const outputCanvasRef = useRef(null);
   const [recording, setRecording] = useState(false);
+
+  useEffect(() => () => {
+    const recorder = recorderRef.current;
+    if (recorder) {
+      recorder.onstop = null;
+      recorder.ondataavailable = null;
+      recorder.onerror = null;
+      if (recorder.state !== "inactive") recorder.stop();
+    }
+    if (frameTimerRef.current) window.clearInterval(frameTimerRef.current);
+    if (segmentTimerRef.current) window.clearTimeout(segmentTimerRef.current);
+    streamRef.current?.getTracks?.().forEach((track) => track.stop());
+    recorderRef.current = null;
+    streamRef.current = null;
+  }, []);
 
   const preset = PRESETS[outputMode] || PRESETS.shorts;
 

@@ -20,6 +20,7 @@ const DRAWER_WIDTH = 260;
 
 const menuItems = [
   { label: "Dashboard", path: "/admin" },
+  { label: "2D Standard", path: "/admin/standards/2d" },
   { label: "Users", path: "/admin/users" },
   { label: "Messages", path: "/admin/messages" },
 ];
