@@ -10,6 +10,8 @@ on:
       - "functions/index.js"
       - "functions/api/**"
       - "src/platform/agent/**"
+      - "src/simulations/subjects/**/simulation.json"
+      - "src/simulations/definitions/generated.js"
       - "scripts/generate-platform-catalog.cjs"
       - "firebase.json"
       - ".github/workflows/deploy-mcp-poc.yml"
@@ -51,7 +53,7 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
 
-      - name: Deploy MCP function only
+      - name: Deploy MCP and Platform API functions
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: npx firebase-tools@latest deploy --only functions:mcp --project sience-web-app --non-interactive
+        run: npx firebase-tools@latest deploy --only functions:mcp,functions:platformApi --project sience-web-app --non-interactive

@@ -64,3 +64,7 @@ Desktop: canvas plus right control rail. Narrow layouts: canvas, playback, instr
 
 - OpenStax, University Physics Volume 3, §2.8 (compound microscope and telescope; relaxed-eye vs near-point magnification): https://openstax.org/books/university-physics-volume-3/pages/2-8-microscopes-and-telescopes
 - NASA/GSFC, Telescopes (Newtonian primary, flat secondary and eyepiece): https://pwg.gsfc.nasa.gov/stargaze/Stelescope.htm
+
+## Deployment consistency
+
+The existing backend workflow now deploys both `mcp` and `platformApi` with the same regenerated catalog, and triggers on publication manifests/generated definitions. This fixes stale HTTP discovery when a new simulation is published. The independent read-only metadata endpoint is `/api/v1/simulations/physics.optics.microscope-telescope`; browser state control remains the page SDK/WebMCP contract described above.
