@@ -10,6 +10,7 @@ on:
       - "scripts/generate-platform-catalog.cjs"
       - "scripts/test-mcp-runtime.mjs"
       - "scripts/test-simulation-agent-contract.mjs"
+      - "scripts/test-satellite-education-scale.mjs"
       - "firebase.json"
       - "scripts/test-mcp-doppler.cjs"
       - "docs/ESBIKO_CHATGPT_MCP.md"
@@ -63,6 +64,9 @@ jobs:
 
       - name: Test WebMCP
         run: npm run test:webmcp
+
+      - name: Validate educational orbit ordering
+        run: node scripts/test-satellite-education-scale.mjs
 
       - name: Build Esbiko
         run: npm run build
