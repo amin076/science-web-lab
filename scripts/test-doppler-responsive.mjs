@@ -14,6 +14,8 @@ try {
     const controls = page.locator("aside").filter({ hasText: "Doppler Lab" }).first();
     await stage.waitFor({ state: "visible" });
     await controls.waitFor({ state: "visible" });
+    assert.equal(await page.getByText("AI Agent", { exact: true }).count(), 0, "Hackathon agent banner should not render");
+    assert.equal(await page.getByText("Judge test prompt", { exact: true }).count(), 0, "Judge demo should not render");
     const positions = await page.evaluate(() => {
       const stage = document.querySelector('[data-testid="doppler-stage"]');
       const controls = Array.from(document.querySelectorAll("aside")).find(el => el.textContent.includes("Doppler Lab"));
