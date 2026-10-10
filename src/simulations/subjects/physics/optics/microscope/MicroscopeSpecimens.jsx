@@ -16,8 +16,10 @@ export function microscopeFieldWidthUm(magnification) {
 }
 function renderSpecimen(ctx, width, height, specimen, magnification, focus, light) {
   const dpr = Math.min(2, window.devicePixelRatio || 1);
-  ctx.canvas.width = Math.round(width * dpr);
-  ctx.canvas.height = Math.round(height * dpr);
+  const pixelW = Math.round(width * dpr);
+  const pixelH = Math.round(height * dpr);
+  if (ctx.canvas.width !== pixelW) ctx.canvas.width = pixelW;
+  if (ctx.canvas.height !== pixelH) ctx.canvas.height = pixelH;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = '#071b20'; ctx.fillRect(0, 0, width, height);
   const field = microscopeFieldWidthUm(magnification);
@@ -52,8 +54,8 @@ function renderSpecimen(ctx, width, height, specimen, magnification, focus, ligh
     // Deterministic coordinates in micrometres keep features in place as zoom changes.
     const length = specimen === 'yeast' ? 6 : 2.5;
     const spacing = specimen === 'yeast' ? 17 : 9;
-    const colCount = Math.min(90, Math.ceil(field / spacing) + 2);
-    const rowCount = Math.min(90, Math.ceil((height / pxPerUm) / spacing) + 2);
+    const colCount = Math.min(45, Math.ceil(field / (2 * spacing)) + 2);
+    const rowCount = Math.min(45, Math.ceil((height / pxPerUm) / (2 * spacing)) + 2);
     for (let i = -colCount; i <= colCount; i++) for (let j = -rowCount; j <= rowCount; j++) {
       const hash = Math.sin(i * 97.1 + j * 31.7) * 43758.5453;
       const part = hash - Math.floor(hash);
@@ -92,13 +94,22 @@ export default function MicroscopeSpecimens({ specimen = 'leaf', magnification =
   useEffect(() => {
     const element = canvas.current;
     if (!element) return undefined;
-    const redraw = () => {
-      const w = Math.max(250, Math.round(element.getBoundingClientRect().width));
-      renderSpecimen(element.getContext('2d'), w, Math.round(w * 0.65), specimen, magnification, focus, light);
+    let lastWidth = 0;
+    let raf = 0;
+    const redraw = (force = false) => {
+      const w = Math.max(1, Math.round(element.getBoundingClientRect().width));
+      if (!force && w === lastWidth) return;
+      lastWidth = w;
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        if (w > 0 && element.isConnected) renderSpecimen(element.getContext('2d'), Math.min(w, 1400), Math.round(Math.min(w, 1400) * 0.65), specimen, magnification, focus, light);
+      });
     };
-    redraw();
-    const observer = new ResizeObserver(redraw); observer.observe(element);
-    return () => observer.disconnect();
+    redraw(true);
+    const observer = new ResizeObserver(() => redraw());
+    observer.observe(element.parentElement);
+    return () => { observer.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [specimen, magnification, focus, light]);
   return <Stack spacing={1.2} sx={{ py: 1 }}>
     <Typography sx={{ color: '#94a3b8', fontSize: 11 }}>Educational specimen viewer · schematic, not specimen photography or an electron microscope.</Typography>
