@@ -395,3 +395,8 @@ Live verification on 2026-10-10: the public `/api/v1/health` request returned 40
 ## Esbiko Physics v0.1 implemented — 2026-10-10
 
 [Engine implementation and local API](ESBIKO_PHYSICS_ENGINE.md) now provides pure JavaScript vectors, Newton/Hooke mechanics, uniform/central gravity, velocity Verlet, fixed-step particle lifecycle, orbital helpers and shared optics used by existing 2D/3D simulations. This supersedes the research-phase statement that no shared kernel exists. Remote HTTP runtime, simultaneous N-body execution and other domain modules remain future work. No bulk simulation migration.
+
+
+## Simple Projectile scientific pilot — 2026-10-10
+
+Implemented private admin preview at `/admin/examples/simple-projectile`, using Esbiko Physics and the accepted 2D workspace. [Pilot details](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md). Public catalog remains unchanged.

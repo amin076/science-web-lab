@@ -59,3 +59,8 @@ Repository production build and targeted ESLint are part of the integration chec
 First stabilize this API and reuse shared laws in a gravity pilot behind existing unit/representation adapters. Next add a simultaneous multi-body model, general RK4 for velocity-dependent forces, parameter/schema dispatcher and SDK/worker contract. Electricity, acoustics/waves and thermodynamics are planned domain modules, not empty folders advertised as implemented. Optional contact solvers follow measured pilots.
 
 Read [research and API gap](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md). The independent deployed discovery API's previously observed 404 is a separate infrastructure issue and is not fixed by this kernel.
+
+
+## Simple Projectile scientific pilot — 2026-10-10
+
+Implemented private admin preview at `/admin/examples/simple-projectile`, using Esbiko Physics and the accepted 2D workspace. [Pilot details](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md). Public catalog remains unchanged.
