@@ -12,7 +12,7 @@ import { readEmbeddedMcpParameters } from '@/platform/agent/readEmbeddedMcpParam
 import { instrumentId, instrumentParameters, defaultInstrumentParameters, configureInstrument, sampleInstrument, focusInstrument, focusCurve } from './instrumentModel';
 import { drawInstrument } from './drawInstrument';
 
-const mm = value => value === null ? '—' : `${(value * 1000).toFixed(2)} mm`;
+const mm = value => value === null ? '—' : `${(Math.abs(value) < 0.000005 ? 0 : value * 1000).toFixed(2)} mm`;
 export default function MicroscopeTelescope() {
   const initial = useMemo(() => {
     const embedded = readEmbeddedMcpParameters(instrumentId, defaultInstrumentParameters);
@@ -93,7 +93,7 @@ export default function MicroscopeTelescope() {
     <SimulationPanel title="Video capture" compact><AgentCanvasRecorder ref={recorder} canvasSelector="#optical-instruments-canvas" filePrefix="esbiko-optical-instruments" /><Typography sx={{ fontSize: 11, color: '#94a3b8', py: 1 }}>Canvas-only silent WebM. Portrait capture crops the center; use camera controls to frame the subject.</Typography></SimulationPanel>
     <SimulationPanel title="API & agent connection" compact><Box sx={{ py: 1 }}><Chip size="small" label={`WebMCP: ${status}`} /><Typography sx={{ mt: 1, fontSize: 11, color: '#94a3b8' }}>The local JavaScript API and WebMCP share these controls. ChatGPT MCP opens this same lab with validated parameters.</Typography></Box></SimulationPanel>
   </Stack>;
-  return <SimulationStandardWorkspace domain="physics" unifiedPanel title="Microscope & Telescope Lab" subtitle="Compound optics · Esbiko Physics · 2D ray laboratory" controls={controls} hudPlacement="top-right" hudPointerEvents="none"
+  return <SimulationStandardWorkspace sx={{ '& h2': { pl: 5 } }} domain="physics" unifiedPanel title="Microscope & Telescope Lab" subtitle="Compound optics · Esbiko Physics · 2D ray laboratory" controls={controls} hudPlacement="top-right" hudPointerEvents="none"
     hud={<SimulationTransparentHUD visible={params.hudVisible} onVisibleChange={hudVisible => configure({ hudVisible })} title="Optical readings" rows={[{ label: 'Focus error', value: mm(snapshot.focusError) }, { label: 'Magnification', value: snapshot.angularMagnification === null ? 'Refocus' : `${snapshot.angularMagnification.toFixed(1)}×` }]} />}
     viewport={<SimulationCanvas2DViewport ref={viewport} canvasId="optical-instruments-canvas" draw={draw} step={step} running={running}
       onPointerDown={(point, event) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { point, params: { ...live.current.params } }; }}

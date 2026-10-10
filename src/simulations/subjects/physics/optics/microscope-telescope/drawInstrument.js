@@ -33,6 +33,12 @@ export function drawInstrument(ctx, { width: w, height: h }, p, s, time) {
   if (s.intermediateImageDistance !== null && s.intermediateImageDistance > 0 && s.intermediateImageDistance * 1000 < extent) {
     const imageX = X(s.intermediateImageDistance * 1000);
     ctx.setLineDash([3, 4]); line([[imageX, oy - h * 0.12], [imageX, oy + h * 0.12]], '#86efac60'); ctx.setLineDash([]);
+    if (micro && s.intermediateImageHeight !== null) {
+      const tip = Y(s.intermediateImageHeight * 1000);
+      line([[imageX, oy], [imageX, tip]], '#86efac', 2);
+      const direction = tip > oy ? -1 : 1;
+      line([[imageX - 4, tip + direction * 7], [imageX, tip], [imageX + 4, tip + direction * 7]], '#86efac', 2);
+    }
     label('Intermediate image', Math.max(8, Math.min(w - 130, imageX - 50)), oy + h * 0.18 + 15, '#86efac', 10);
   }
   if (p.showRays) s.rays.forEach((r, i) => {
