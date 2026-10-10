@@ -18,6 +18,10 @@ on:
       - ".github/workflows/mcp-poc.yml"
   workflow_dispatch:
 
+concurrency:
+  group: mcp-pr-check-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   verify-mcp:
     runs-on: ubuntu-latest
