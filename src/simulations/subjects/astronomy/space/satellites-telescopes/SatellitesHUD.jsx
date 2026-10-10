@@ -27,7 +27,13 @@ export default function SatellitesHUD({ selectedObjId, objectsList, uiTime }) {
   let dynamicData = {};
   let objectRef = null;
 
-  if (selectedObjId === "EARTH") {
+  if (selectedObjId === "SUN") {
+    staticData = {
+      title: "Sun",
+      description: "The star illuminating Earth. Its direction is fixed for this illustration; satellite dynamics remain Earth-centred.",
+      stats: [{label: "Radius", value: "696,340 km"}, {label: "Earth distance", value: "1 AU · 149.6 million km"}],
+    };
+  } else if (selectedObjId === "EARTH") {
     staticData = OBJECT_INFO.EARTH;
   } else {
     objectRef = objectsList.find((o) => o.id === selectedObjId);
@@ -149,7 +155,7 @@ export default function SatellitesHUD({ selectedObjId, objectsList, uiTime }) {
           )}
 
           {/* LIVE TELEMETRY */}
-          {selectedObjId !== "EARTH" && (
+          {objectRef && (
             <>
               <Divider sx={{ my: 1, borderColor: "rgba(255,255,255,0.3)" }} />
               

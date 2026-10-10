@@ -48,7 +48,7 @@ import {
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
 import { educationalPosition } from "./educationalScale.js";
-import { drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
+import { drawSun, sunDisplayGeometry, drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -122,7 +122,7 @@ export default function SatellitesTelescopesSimulator() {
     timeScale:200,dt:1,showTrails:true,showOrbits:true,showVectors:false,
     showLOS:true,showStars:true,mode:VIEW_MODES.EDUCATIONAL,
   }),[]);
-  const initial=useMemo(()=>readEmbeddedMcpParameters("astronomy.space.satellites-telescopes",{...defaults,zoom:0.08}).values,[defaults]);
+  const initial=useMemo(()=>readEmbeddedMcpParameters("astronomy.space.satellites-telescopes",{...defaults,zoom:0.03}).values,[defaults]);
   const [settings, setSettings] = useState(()=>{const {zoom,...rest}=initial;return rest;});
 
   const sim = useRef({ t: 0, objects: [] });
@@ -196,7 +196,7 @@ export default function SatellitesTelescopesSimulator() {
       e.preventDefault();
       const delta = -Math.sign(e.deltaY) * 0.1;
       viewRef.current.k = Math.max(
-        0.0005,
+        0.000001,
         Math.min(20, viewRef.current.k * (1 + delta)),
       );
     };
@@ -221,7 +221,7 @@ export default function SatellitesTelescopesSimulator() {
     });
     accRef.current = 0;
     lastRef.current = performance.now();
-    viewRef.current = { x: 0, y: 0, k: 0.08 };
+    viewRef.current = { x: 0, y: 0, k: 0.03 };
     setUiTime(0);
     setObjectsList([...sim.current.objects]);
     requestAnimationFrame(() => setRunning(true));
@@ -260,6 +260,21 @@ export default function SatellitesTelescopesSimulator() {
     setObjectsList([...sim.current.objects]);
     setSelectedObjId(newObj.id);
   };
+
+  const selectObject = (id) => {
+    if (id === "SUN") {
+      const sun = sunDisplayGeometry(settings.mode);
+      const scale = RENDER.EARTH_SCALE || 0.28;
+      // Fit Sun and Earth with margins, in both display modes.
+      viewRef.current.k = Math.min(stageW * 0.65, stageH * 0.65) * EARTH.radiusKm /
+        ((Math.abs(sun.x) + sun.radius * 3.4) * Math.min(stageW, stageH) * scale * 5);
+    }
+    setSelectedObjId(id);
+  };
+
+  useEffect(() => {
+    if (selectedObjId === "SUN") selectObject("SUN");
+  }, [settings.mode, stageW, stageH]);
 
   const removeObject = (id) => {
     if (id === "MOON") return;
@@ -302,7 +317,11 @@ export default function SatellitesTelescopesSimulator() {
         moon.theta = ms.theta;
       }
 
-      if (selectedObjId && selectedObjId !== "EARTH") {
+      if (selectedObjId === "SUN") {
+        const sun = sunDisplayGeometry(settings.mode);
+        viewRef.current.x = -sun.x * kmToPx * 0.5;
+        viewRef.current.y = 0;
+      } else if (selectedObjId && selectedObjId !== "EARTH") {
         const target = sim.current.objects.find((o) => o.id === selectedObjId);
         if (target) {
           const visualTargetPos = getVisualPosition(target, settings.mode);
@@ -336,6 +355,8 @@ export default function SatellitesTelescopesSimulator() {
         ctx.restore();
       }
 
+      const sun = sunDisplayGeometry(settings.mode);
+      drawSun(ctx, cx + sun.x * kmToPx, cy, sun.radius * kmToPx);
       drawSunlightDirection(ctx, cx, cy, earthPx, stageW, stageH);
 
       drawEarthTextured(
@@ -445,7 +466,11 @@ export default function SatellitesTelescopesSimulator() {
         let px = { x: cx, y: cy };
         let radius = earthPx + 10;
 
-        if (selectedObjId !== "EARTH") {
+        if (selectedObjId === "SUN") {
+          const sun = sunDisplayGeometry(settings.mode);
+          px = { x: cx + sun.x * kmToPx, y: cy };
+          radius = Math.max(6, sun.radius * kmToPx) * 1.7 + 8;
+        } else if (selectedObjId !== "EARTH") {
           const obj = sim.current.objects.find((o) => o.id === selectedObjId);
           if (obj) {
             const pos = getVisualPosition(obj, settings.mode);
@@ -503,7 +528,7 @@ export default function SatellitesTelescopesSimulator() {
   const liveRef=useRef({});
   liveRef.current={running,settings,selectedObjId,uiTime,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k};
   const functionsRef=useRef({});
-  functionsRef.current={setRunning,setSettings,setSelectedObjId,reset,addPreset,removeObject,toggleVisible};
+  functionsRef.current={setRunning,setSettings,setSelectedObjId:selectObject,reset,addPreset,removeObject,toggleVisible};
   useEffect(()=>{
     const controller=new AbortController(),empty={type:"object",properties:{},additionalProperties:false};
     const fields={
@@ -512,7 +537,7 @@ export default function SatellitesTelescopesSimulator() {
       showTrails:{type:"boolean"},showOrbits:{type:"boolean"},showVectors:{type:"boolean"},
       showLOS:{type:"boolean"},showStars:{type:"boolean"},
       mode:{type:"string",enum:[VIEW_MODES.EDUCATIONAL,VIEW_MODES.REALISTIC]},
-      zoom:{type:"number",minimum:0.0005,maximum:20},
+      zoom:{type:"number",minimum:0.000001,maximum:20},
     };
     const snapshot=()=>({simulationId:"astronomy.space.satellites-telescopes",state:{
       ...liveRef.current,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k,time:sim.current.t,
@@ -532,8 +557,8 @@ export default function SatellitesTelescopesSimulator() {
         functionsRef.current.addPreset(preset);
         return {preset,objects:sim.current.objects.length};
       })},
-      {name:"esbiko_satellites_select",description:"Select an orbital object (or Earth) by real ID.",inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},execute:createSafeToolExecutor("satellites_select",async({id})=>{
-        if(id!=="EARTH"&&!sim.current.objects.some(o=>o.id===id))throw Error("Unknown object");
+      {name:"esbiko_satellites_select",description:"Select Sun, Earth or an orbital object by ID; Sun selection frames Sun and Earth.",inputSchema:{type:"object",properties:{id:{type:"string"}},required:["id"],additionalProperties:false},execute:createSafeToolExecutor("satellites_select",async({id})=>{
+        if(id!=="SUN"&&id!=="EARTH"&&!sim.current.objects.some(o=>o.id===id))throw Error("Unknown object");
         functionsRef.current.setSelectedObjId(id);return {selectedId:id};
       })},
       {name:"esbiko_satellites_set_visibility",description:"Show or hide any satellite object; Moon always remains.",inputSchema:{type:"object",properties:{id:{type:"string"},visible:{type:"boolean"}},required:["id","visible"],additionalProperties:false},execute:createSafeToolExecutor("satellites_set_visibility",async({id,visible})=>{
@@ -558,13 +583,13 @@ export default function SatellitesTelescopesSimulator() {
   },[]);
   const recenterView = () => {
     setSelectedObjId(null);
-    viewRef.current = { x: 0, y: 0, k: 0.08 };
+    viewRef.current = { x: 0, y: 0, k: 0.03 };
   };
   const handleZoomIn = () => {
     viewRef.current.k = Math.min(20, viewRef.current.k * 1.2);
   };
   const handleZoomOut = () => {
-    viewRef.current.k = Math.max(0.0005, viewRef.current.k / 1.2);
+    viewRef.current.k = Math.max(0.000001, viewRef.current.k / 1.2);
   };
 
   const checkHit = (mx, my) => {
@@ -580,6 +605,11 @@ export default function SatellitesTelescopesSimulator() {
     }
 
     const kmToPx = earthPx / EARTH.radiusKm;
+    const sun = sunDisplayGeometry(settings.mode);
+    if (Math.hypot(mx - (cx + sun.x * kmToPx), my - cy) < Math.max(12, sun.radius * kmToPx)) {
+      selectObject("SUN");
+      return true;
+    }
     for (let o of sim.current.objects) {
       if (o.hidden) continue;
       const pos = getVisualPosition(o, settings.mode);
@@ -668,7 +698,7 @@ export default function SatellitesTelescopesSimulator() {
       const dist = getTouchDist(e.touches[0], e.touches[1]);
       const scaleFactor = dist / dragRef.current.startDist;
       const newK = dragRef.current.startK * scaleFactor;
-      viewRef.current.k = Math.max(0.0005, Math.min(20, newK));
+      viewRef.current.k = Math.max(0.000001, Math.min(20, newK));
     }
   };
 
@@ -841,7 +871,7 @@ export default function SatellitesTelescopesSimulator() {
           onToggleVisible={toggleVisible}
           uiTime={uiTime}
           selectedId={selectedObjId}
-          onSelect={setSelectedObjId}
+          onSelect={selectObject}
         /></div>
       </Box>
     </Box>

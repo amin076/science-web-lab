@@ -163,6 +163,14 @@ export default function SatellitesTelescopesControlPanel({
         Orbiting Objects ({objectsList.length})
       </Typography>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mb: 2 }}>
+        <Button onClick={() => onSelect("SUN")} variant={selectedId === "SUN" ? "contained" : "outlined"}
+          color="warning" aria-label="Track Sun" sx={{ justifyContent: "flex-start", p: 1.5 }}>
+          ☀ Sun (Star) · View Sun &amp; Earth
+        </Button>
+        <Typography variant="caption" sx={{ opacity: 0.7 }}>
+          Sun–Earth: 149.6 million km. Educational sizes and distances are compressed.
+          Solar direction is illustrative.
+        </Typography>
         {/* EARTH ENTRY */}
         <Paper
           elevation={0}

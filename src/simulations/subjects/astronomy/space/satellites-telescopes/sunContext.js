@@ -1,6 +1,5 @@
-// A small, explicitly annotated heliocentric reference diagram.
-// Keep the main Earth-centred simulation unchanged: the Sun is ~1 AU away
-// and cannot share a usable linear viewport with LEO/GEO satellites.
+// Fixed illustrative solar direction in the Earth-centred view.
+// Educational spacing is compressed; realistic mode uses kilometres.
 export const SOLAR_DISTANCE_KM = 149597870.7;
 export const SUN_RADIUS_KM = 696340;
 export const EARTH_RADIUS_KM = 6371;
@@ -70,5 +69,28 @@ export function drawSunContext(ctx, width, height, mode, moonTheta = 0) {
   ctx.fillStyle = "#94a3b8"; ctx.font = "9px sans-serif";
   ctx.fillText("Moon: 384,400 km from Earth (mean)", x+w/2,y+119);
   ctx.fillText("Illustrative sizes / spacing · not to scale",x+w/2,y+133);
+  ctx.restore();
+}
+
+export function sunDisplayGeometry(mode) {
+  return mode === "EDUCATIONAL"
+    ? { x: -60000, y: 0, radius: 10000 }
+    : { x: -SOLAR_DISTANCE_KM, y: 0, radius: SUN_RADIUS_KM };
+}
+
+export function drawSun(ctx, x, y, radius) {
+  const r = Math.max(6, radius);
+  ctx.save();
+  const glow = ctx.createRadialGradient(x, y, r * 0.3, x, y, r * 1.7);
+  glow.addColorStop(0, "#fff7ad");
+  glow.addColorStop(0.55, "#fbbf24");
+  glow.addColorStop(0.7, "rgba(234,88,12,0.45)");
+  glow.addColorStop(1, "rgba(234,88,12,0)");
+  ctx.fillStyle = glow;
+  ctx.beginPath(); ctx.arc(x, y, r * 1.7, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = "#fde68a";
+  ctx.font = "bold 13px sans-serif";
+  ctx.textAlign = "center";
+  ctx.fillText("Sun", x, y - r * 1.7 - 8);
   ctx.restore();
 }
