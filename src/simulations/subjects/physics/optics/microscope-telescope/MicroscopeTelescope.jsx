@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceL
 import SimulationStandardWorkspace from '@/components/simulation-ui/SimulationStandardWorkspace';
 import SimulationCanvas2DViewport from '@/components/simulation-ui/SimulationCanvas2DViewport';
 import InstrumentHUD from './InstrumentHUD';
+import SpecimenExplorer from './SpecimenExplorer';
 import SimulationPanel from '@/components/simulation-ui/SimulationPanel';
 import SimulationButton from '@/components/simulation-ui/SimulationButton';
 import AgentCanvasRecorder from '@/components/shared/video/AgentCanvasRecorder';
@@ -63,6 +64,7 @@ export default function MicroscopeTelescope() {
         <ToggleButton value="microscope">Microscope</ToggleButton><ToggleButton value="refractor">Refractor</ToggleButton><ToggleButton value="reflector">Reflector</ToggleButton>
       </ToggleButtonGroup>
     </Stack></SimulationPanel>
+    {micro && <SimulationPanel title="Explore biological specimens" compact><SpecimenExplorer /></SimulationPanel>}
     <SimulationPanel title="Optical system" compact><Stack spacing={0.5} sx={{ py: 1 }}>
       {numeric('objectiveFocal', micro ? 'Objective focal length · mm' : 'Primary focal length · mm', micro ? 5 : 100, micro ? 20 : 800, 0.5)}
       {numeric('eyepieceFocal', 'Eyepiece focal length · mm', 5, 80, 0.5)}
