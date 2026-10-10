@@ -95,6 +95,11 @@ try{
         break;
       }
       case "satellites":{
+        const sun = page.locator("[data-esbiko-sun-context]");
+        await sun.waitFor({state:"visible"});
+        const sunBox = await sun.boundingBox();
+        assert(sunBox && sunBox.width > 150 && sunBox.x >= 0 && sunBox.x + sunBox.width <= width + 2, "Sun must be visible inside viewport");
+        assert.match(await sun.innerText(), /Earth.Sun: 149.6 million km/);
         assert.equal(state.data.state.settings.timeScale,120);
         const added=await call("add_preset",{preset:"HUBBLE"});
         assert.equal(added.ok,true,JSON.stringify(added));
