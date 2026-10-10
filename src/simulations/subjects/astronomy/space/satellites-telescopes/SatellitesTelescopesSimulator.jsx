@@ -47,6 +47,7 @@ import {
   drawJWST,
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
+import { educationalPosition } from "./educationalScale.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -70,21 +71,12 @@ const getTouchDist = (t1, t2) => {
   return Math.hypot(dx, dy);
 };
 
-const EDUCATIONAL_ORBIT_RADIUS_KM = {
-  MOON: 32000,
-  JWST: 60000,
-};
-
 function getVisualPosition(object, mode) {
-  if (mode !== VIEW_MODES.EDUCATIONAL) return object.state.pos;
-
-  if (object.type === "MOON" || object.type === "JWST") {
-    const visualRadiusKm = EDUCATIONAL_ORBIT_RADIUS_KM[object.type];
-    return vec.mul(vec.norm(object.state.pos), visualRadiusKm);
-  }
-
-  return object.state.pos;
+  return mode === VIEW_MODES.EDUCATIONAL
+    ? educationalPosition(object.state.pos)
+    : object.state.pos;
 }
+
 function drawVisibleOrbitPath(ctx, cx, cy, radiusPx, type) {
   ctx.save();
 
@@ -394,8 +386,10 @@ export default function SatellitesTelescopesSimulator() {
           ctx.lineWidth = 1;
           ctx.beginPath();
           o.trail.forEach((p, i) => {
-            const tx = cx + p.x * kmToPx;
-            const ty = cy + p.y * kmToPx;
+            const trailPos = settings.mode === VIEW_MODES.EDUCATIONAL
+              ? educationalPosition(p) : p;
+            const tx = cx + trailPos.x * kmToPx;
+            const ty = cy + trailPos.y * kmToPx;
             i === 0 ? ctx.moveTo(tx, ty) : ctx.lineTo(tx, ty);
           });
           ctx.stroke();
