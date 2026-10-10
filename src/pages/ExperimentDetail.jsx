@@ -1,4 +1,5 @@
 // src/pages/ExperimentDetail.jsx
+import { ESBIKO_PHYSICS_VERSION } from '@/esbiko-physics';
 import DownloadRoundedIcon from "@mui/icons-material/DownloadRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
@@ -108,7 +109,7 @@ export default function ExperimentDetail() {
       "twitter:description",
       pageDescription,
     );
-    const safeSubject = experiment.subject || "science";
+    const safeSubject = experiment.subject || experiment.domain || "science";
     const schemaId = "experiment-detail-schema";
 
     const existingSchema = document.getElementById(schemaId);
@@ -194,11 +195,11 @@ export default function ExperimentDetail() {
     teacherGuide,
     Icon,
     gradient = DEFAULT_GRADIENT,
-    subject = "science",
+    subject,
   } = experiment;
 
   const safeGradient = gradient || DEFAULT_GRADIENT;
-  const safeSubject = subject || "science";
+  const safeSubject = subject || experiment.domain || "science";
 
   // 🛠️ HELPER: Smartly render Image URL or MUI Component
   const renderIcon = (size = 60, isBackground = false) => {
@@ -442,7 +443,7 @@ export default function ExperimentDetail() {
               alignItems="center"
             >
               <Chip
-                label="Physics Engine: v2.0"
+                label={experiment.scientificEngine === "esbiko-physics" ? `Esbiko Physics ${ESBIKO_PHYSICS_VERSION}` : "Interactive model"}
                 variant="outlined"
                 sx={{
                   color: "rgba(255,255,255,0.5)",
@@ -451,7 +452,7 @@ export default function ExperimentDetail() {
                 size="small"
               />
               <Chip
-                label="3D Render"
+                label={({ canvas2d: "2D Canvas", "2d": "2D Canvas", "3d": "3D Render", three: "3D Render", timeline: "Timeline" })[experiment.engine] || "Interactive simulation"}
                 variant="outlined"
                 sx={{
                   color: "rgba(255,255,255,0.5)",
