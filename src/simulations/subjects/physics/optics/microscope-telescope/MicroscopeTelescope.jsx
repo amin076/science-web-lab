@@ -3,7 +3,7 @@ import { Box, Chip, Stack, Typography, Slider, FormControlLabel, Switch, ToggleB
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import SimulationStandardWorkspace from '@/components/simulation-ui/SimulationStandardWorkspace';
 import SimulationCanvas2DViewport from '@/components/simulation-ui/SimulationCanvas2DViewport';
-import SimulationTransparentHUD from '@/components/simulation-ui/SimulationTransparentHUD';
+import InstrumentHUD from './InstrumentHUD';
 import SimulationPanel from '@/components/simulation-ui/SimulationPanel';
 import SimulationButton from '@/components/simulation-ui/SimulationButton';
 import AgentCanvasRecorder from '@/components/shared/video/AgentCanvasRecorder';
@@ -94,7 +94,7 @@ export default function MicroscopeTelescope() {
     <SimulationPanel title="API & agent connection" compact><Box sx={{ py: 1 }}><Chip size="small" label={`WebMCP: ${status}`} /><Typography sx={{ mt: 1, fontSize: 11, color: '#94a3b8' }}>The local JavaScript API and WebMCP share these controls. ChatGPT MCP opens this same lab with validated parameters.</Typography></Box></SimulationPanel>
   </Stack>;
   return <SimulationStandardWorkspace sx={{ '& h2': { pl: 5 } }} domain="physics" unifiedPanel title="Microscope & Telescope Lab" subtitle="Compound optics · Esbiko Physics · 2D ray laboratory" controls={controls} hudPlacement="top-right" hudPointerEvents="none"
-    hud={<SimulationTransparentHUD visible={params.hudVisible} onVisibleChange={hudVisible => configure({ hudVisible })} title="Optical readings" rows={[{ label: 'Focus error', value: mm(snapshot.focusError) }, { label: 'Magnification', value: snapshot.angularMagnification === null ? 'Refocus' : `${snapshot.angularMagnification.toFixed(1)}×` }]} />}
+    hud={<InstrumentHUD params={params} optics={snapshot} onVisibleChange={hudVisible => configure({ hudVisible })} />}
     viewport={<SimulationCanvas2DViewport ref={viewport} canvasId="optical-instruments-canvas" draw={draw} step={step} running={running}
       onPointerDown={(point, event) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { point, params: { ...live.current.params } }; }}
       onPointerMove={point => { if (!drag.current) return; const d = drag.current; configure({ panX: Math.max(-1, Math.min(1, d.params.panX + (point.x-d.point.x)/point.width)), panY: Math.max(-1, Math.min(1, d.params.panY + (point.y-d.point.y)/point.height)) }); }}

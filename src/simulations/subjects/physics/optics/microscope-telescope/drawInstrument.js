@@ -1,5 +1,7 @@
+import { drawNewtonian } from './drawNewtonian';
 const colors = ['#a78bfa', '#60a5fa', '#22d3ee', '#fbbf24', '#fb7185'];
 export function drawInstrument(ctx, { width: w, height: h }, p, s, time) {
+  if (p.mode === 'reflector') return drawNewtonian(ctx, { width: w, height: h }, p, s, time);
   ctx.fillStyle = '#030711'; ctx.fillRect(0, 0, w, h);
   const micro = p.mode === 'microscope';
   const small = w < 620;
@@ -15,12 +17,12 @@ export function drawInstrument(ctx, { width: w, height: h }, p, s, time) {
   const X = mm => ox + mm * sx; const Y = mm => oy - mm * sy;
   ctx.save();
   ctx.setLineDash([4, 6]); line([[0, oy], [w, oy]], '#294156', 1); ctx.setLineDash([]);
-  const lens = (x, title, color, mirror = false) => {
+  const lens = (x, title, color) => {
     ctx.strokeStyle = color; ctx.fillStyle = color + '18'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.ellipse(x, oy, mirror ? 5 : 8, h * 0.17, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(x, oy, 8, h * 0.17, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
     label(title, Math.max(10, Math.min(w - 100, x - 24)), oy - h * 0.17 - 12, color, small ? 10 : 12);
   };
-  lens(X(0), p.mode === 'reflector' ? 'Primary mirror*' : 'Objective', '#67e8f9', p.mode === 'reflector');
+  lens(X(0), 'Objective', '#67e8f9');
   lens(X(p.separation), 'Eyepiece', '#c4b5fd');
   for (const [x, title] of [[p.objectiveFocal, 'F objective'], [p.separation - p.eyepieceFocal, 'F eyepiece']]) {
     ctx.fillStyle = '#cbd5e1'; ctx.beginPath(); ctx.arc(X(x), oy, 3, 0, 2 * Math.PI); ctx.fill();
@@ -66,15 +68,4 @@ export function drawInstrument(ctx, { width: w, height: h }, p, s, time) {
   ctx.restore(); ctx.strokeStyle = '#526886'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(cx, cy, radius, 0, 2*Math.PI); ctx.stroke();
   label('Illustrative view', cx-radius-15, cy+radius+17, '#c0ccdf', 10);
   if (!small) label('Blur / size schematic', cx-radius-22, cy+radius+31, '#64748b', 10);
-  if (p.mode === 'reflector') {
-    // Physical Newtonian arrangement (schematic inset), not the unfolded ray chart.
-    const y = h - 94, x = 25, end = Math.min(240, w * 0.49);
-    line([[x,y-22],[end,y-22],[end,y+22],[x,y+22]], '#354a62');
-    line([[end-6,y-19],[end,y],[end-6,y+19]], '#67e8f9', 3);
-    line([[x+10,y-15],[end-6,y-15],[x+55,y],[x+55,y-44]], '#fbbf24');
-    line([[x+46,y+9],[x+64,y-9]], '#c4b5fd', 3);
-    line([[x+43,y-34],[x+67,y-34]], '#c4b5fd', 3);
-    label('Newtonian: primary → flat → eyepiece', x, y+39, '#b5c4d8', small ? 8 : 10);
-    label('* Main bench unfolds the reflected path', 16, 88, '#9badc6', small ? 9 : 11);
-  }
 }

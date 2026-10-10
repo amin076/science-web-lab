@@ -10,9 +10,9 @@ This combined 2D lab uses the shared simulation workspace, Esbiko Physics 0.3 co
 
 - Compound microscope: positive thin objective and eyepiece; finite object distance. The objective creates a real intermediate image when the object is beyond its focal point.
 - Keplerian refractor: distant source, positive objective and eyepiece.
-- Newtonian reflector: concave primary, flat diagonal secondary, positive eyepiece. The main quantitative chart unfolds the reflected optical path. A separate schematic shows the actual return-and-sideways arrangement. The flat mirror adds no power. Secondary placement, obstruction, pupil clipping and mechanical design are not optimized by this model.
+- Newtonian reflector: concave primary, flat diagonal secondary, positive eyepiece. The main canvas now shows the folded return-and-sideways path, with a single open concave primary surface, opaque hatched backing, a flat secondary and one eyepiece lens. The numerical engine still uses an unfolded paraxial coordinate system. The primary silhouette has a schematic parabolic profile; this is not exact surface ray tracing. The flat mirror adds no power. Secondary placement, obstruction, pupil clipping and mechanical design are not optimized by this model.
 
-All engine distances are metres. UI/API configuration distances are explicitly millimetres, field angle is degrees, and state optics are SI. Ray slopes are paraxial radians. The chart labels its expanded vertical scale; lens/mirror silhouettes and the circular view are schematic, not manufacturing drawings.
+All engine distances are metres. UI/API configuration distances are explicitly millimetres, field angle is degrees, and state optics are SI. Ray slopes are paraxial radians. The straight lens bench labels its expanded vertical scale; lens/mirror silhouettes and the circular view are schematic, not manufacturing drawings.
 
 ## Physics contract
 
@@ -68,3 +68,7 @@ Desktop: canvas plus right control rail. Narrow layouts: canvas, playback, instr
 ## Deployment consistency
 
 The existing backend workflow now deploys both `mcp` and `platformApi` with the same regenerated catalog, and triggers on publication manifests/generated definitions. This fixes stale HTTP discovery when a new simulation is published. The independent read-only metadata endpoint is `/api/v1/simulations/physics.optics.microscope-telescope`; browser state control remains the page SDK/WebMCP contract described above.
+
+## Optical guide and reflector rendering revision
+
+The transparent HUD includes a mode-specific light-path summary, live target path and an accessible expandable guide covering elements, focusing, magnification, suggested experiments and model limits. The guide scrolls within a capped viewport height; hiding the HUD hides all explanations. The main Newtonian drawing folds the existing ray coordinates at a diagonal secondary and renders reflection visibly instead of reusing a lens ellipse. Camera, playback and capture use the same canvas.
