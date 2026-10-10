@@ -40,3 +40,7 @@ Do not put orbital, acoustic and optical science into the UI shell. Define an ad
 ## Visual correction — October 10 review
 
 The reference now uses the satellite-style unified dark control rail, flat sections with dividers, quieter grid and compact rectangular buttons. Radius tokens use explicit CSS pixel strings: MUI sx multiplies numeric borderRadius values by theme.shape.borderRadius, which previously produced elliptical/clipped panels. Keep physical design-token lengths explicitly unit-qualified. The generated scaffold also uses absolute shared-component aliases so a new simulation folder resolves its imports correctly.
+
+## Transparent HUD extension
+
+The shared `SimulationTransparentHUD` is now present in the 2D reference and Plop scaffold. It has no background or blur, supports Hide/Show, and accepts pointer input only on its toggle. `hudVisible` is configurable through the same browser-agent schema. See the [3D guide](ESBIKO_3D_REFERENCE_IMPLEMENTATION.md) for shared behavior and media scope.

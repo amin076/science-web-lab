@@ -211,3 +211,7 @@ A conformant implementation MUST test initial mount, loading, asset failure, cam
 ## 36. Conformance Evidence
 
 Conformance requires renderer declaration, coordinate and scale documentation, asset metadata, camera contract, interaction mapping, mobile evidence, resource-disposal evidence, performance budgets, accessibility alternatives, and automated tests.
+
+## Implemented admin reference
+
+See [3D reference implementation](ESBIKO_3D_REFERENCE_IMPLEMENTATION.md) for the shared workspace, camera, transparent HUD, graph, browser agent and dual-aspect video capture. Legacy migration and final browser/media acceptance are tracked separately.

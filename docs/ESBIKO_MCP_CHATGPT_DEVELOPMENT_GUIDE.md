@@ -1,5 +1,10 @@
 # MCP, ChatGPT and simulation development guide
 
+## October 10 — 3D reference and transparent HUD
+
+The admin-only 3D standard is implemented at `/admin/standards/3d`, alongside `/admin/standards/2d`. Both use the collapsible, fully transparent HUD; 3D adds orbit-camera controls, a live chart and shared silent landscape/portrait WebM recording. Both remain outside the public catalog. The Plop 2D/3D main templates are aligned with the shared standard. See [3D implementation and acceptance](simulation-standard/ESBIKO_3D_REFERENCE_IMPLEMENTATION.md). Catalog coverage remains 32 registered/31 declared advanced contracts; Gearbox remains quarantined. Real-device/ChatGPT/media acceptance remains feature-specific.
+
+
 Updated 2026-10-10. This guide is the current entry point; earlier v0.1 Doppler descriptions are historical.
 
 ## Three separate layers

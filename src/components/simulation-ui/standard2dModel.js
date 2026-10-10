@@ -5,8 +5,9 @@ export const standard2dParameters = Object.freeze({
   panX: { type: 'number', minimum: -10, maximum: 10 },
   panY: { type: 'number', minimum: -10, maximum: 10 },
   grid: { type: 'boolean' },
+  hudVisible: { type: 'boolean' },
 });
-export const defaultStandard2dParameters = { speed: 1, zoom: 1, panX: 0, panY: 0, grid: true };
+export const defaultStandard2dParameters = { speed: 1, zoom: 1, panX: 0, panY: 0, grid: true, hudVisible: true };
 export function sampleStandard2d(time) {
   return { time, x: Math.cos(time), y: Math.sin(time), units: { time: 's', x: 'm', y: 'm' } };
 }

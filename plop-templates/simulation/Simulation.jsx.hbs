@@ -1,3 +1,4 @@
+import SimulationTransparentHUD from '@/components/simulation-ui/SimulationTransparentHUD';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Chip, Slider, Stack, Switch, FormControlLabel, Typography } from '@mui/material';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
@@ -95,7 +96,13 @@ export default function {{componentName}}({ title = '{{title}}', simulationId = 
     <SimulationPanel title="Agent connection" compact><Box sx={ { p: 2 }}><Chip size="small" label={'WebMCP: ' + status} /><Typography sx={ { mt: 1, fontSize: 12 }}>UI and agent use the same state. Unsupported browsers keep all manual controls. Register and verify this simulation adapter before claiming remote MCP support.</Typography></Box></SimulationPanel>
     <SimulationPanel title="Video capture" compact><AgentCanvasRecorder ref={video} canvasSelector={'#' + canvasId} filePrefix="esbiko-standard-2d" /></SimulationPanel>
   </Stack>;
-  return <SimulationStandardWorkspace unifiedPanel title={title} subtitle="Development scaffold · replace reference model before publication" controls={controls}
+  return <SimulationStandardWorkspace hudPointerEvents="none" unifiedPanel title={title} subtitle="Development scaffold · replace reference model before publication" controls={controls}
+    hud={<SimulationTransparentHUD visible={params.hudVisible} onVisibleChange={(hudVisible) => configure({ hudVisible })}
+      title="Live coordinates" rows={[
+        { label: 'Time', value: snapshot.time.toFixed(2) + ' s' },
+        { label: 'Position', value: snapshot.x.toFixed(2) + ', ' + snapshot.y.toFixed(2) + ' m' },
+        { label: 'Playback', value: running ? 'Running' : 'Paused' },
+      ]} />}
     viewport={<SimulationCanvas2DViewport ref={viewport} canvasId={canvasId} running={running} draw={draw} step={step}
       onPointerDown={(point, event) => { event.currentTarget.setPointerCapture(event.pointerId); drag.current = { point, params: { ...live.current.params } }; }}
       onPointerMove={(point) => { if (!drag.current) return; const d = drag.current; const scale = Math.min(point.width, point.height) * 0.25 * d.params.zoom;

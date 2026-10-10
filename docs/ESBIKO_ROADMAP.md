@@ -1,5 +1,10 @@
 # ESBIKO ROADMAP
 
+## October 10 — 3D reference and transparent HUD
+
+The admin-only 3D standard is implemented at `/admin/standards/3d`, alongside `/admin/standards/2d`. Both use the collapsible, fully transparent HUD; 3D adds orbit-camera controls, a live chart and shared silent landscape/portrait WebM recording. Both remain outside the public catalog. The Plop 2D/3D main templates are aligned with the shared standard. See [3D implementation and acceptance](simulation-standard/ESBIKO_3D_REFERENCE_IMPLEMENTATION.md). Catalog coverage remains 32 registered/31 declared advanced contracts; Gearbox remains quarantined. Real-device/ChatGPT/media acceptance remains feature-specific.
+
+
 ## October 10, 2026 — 2D standard and agent infrastructure
 
 The implemented admin reference is available at `/admin/standards/2d` (Firebase admin claims required), outside the public simulation catalog. It reuses the shared workspace, DPR-aware canvas, camera controls, bounded measurements/chart history, live WebMCP actions and landscape/portrait browser video recording. Mobile uses canvas-first vertical flow; desktop uses a right rail. The Plop Canvas 2D main template now follows this composition. Existing simulations are not automatically migrated.

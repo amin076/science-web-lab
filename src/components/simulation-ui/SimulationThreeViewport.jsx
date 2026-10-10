@@ -59,6 +59,7 @@ function WebglContextBridge({ onContextLost, onContextRestored }) {
 export default function SimulationThreeViewport({
   children,
   camera = {},
+  frameloop = "always",
   controls = {},
   quality = "balanced",
   background = "#020617",
@@ -114,6 +115,8 @@ export default function SimulationThreeViewport({
       }}
     >
       <Canvas
+        frameloop={frameloop}
+        fallback={<div role="alert">WebGL is required for this 3D simulation. Try a browser with graphics acceleration enabled.</div>}
         shadows={shadows}
         camera={cameraConfig}
         dpr={qualityDpr[quality] || qualityDpr.balanced}

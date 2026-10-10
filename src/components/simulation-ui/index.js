@@ -27,3 +27,6 @@ export {
   simulationDomainThemes,
   getSimulationDomainTheme,
 } from "./simulationUiTokens";
+
+export { default as SimulationTransparentHUD } from "./SimulationTransparentHUD";
+export { default as Simulation3DReference } from "./Simulation3DReference";

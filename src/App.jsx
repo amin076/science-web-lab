@@ -32,6 +32,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminMessages from "./pages/admin/AdminMessages";
 import Simulation2DReference from "@/components/simulation-ui/Simulation2DReference";
+import Simulation3DReference from "@/components/simulation-ui/Simulation3DReference";
 
 // ▶️ Run Simulation (Fullscreen)
 import RunSimulation from "@/pages/simulations/RunSimulation";
@@ -96,6 +97,7 @@ export default function App() {
           <WebMcpSiteTools />
           <Routes>
             {/* ✅ Admin routes */}
+            <Route path="/admin/standards/3d" element={<AdminRoute><SimulationBoundary><Simulation3DReference /></SimulationBoundary></AdminRoute>} />
             <Route path="/admin/standards/2d" element={<AdminRoute><Simulation2DReference /></AdminRoute>} />
             <Route
               path="/admin/messages"
