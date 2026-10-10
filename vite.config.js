@@ -50,6 +50,8 @@ export default defineConfig({
 
       workbox: {
         cleanupOutdatedCaches: true,
+        // HTTP API/MCP navigation must reach the backend, never the SPA shell.
+        navigateFallbackDenylist: [/^\/api(?:\/|$)/, /^\/mcp(?:\/|$)/],
 
         globPatterns: ["**/*.{js,css,html,ico,svg,png}"],
 
