@@ -48,7 +48,7 @@ import {
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
 import { educationalPosition } from "./educationalScale.js";
-import { drawSunContext, drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
+import { drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -348,7 +348,6 @@ export default function SatellitesTelescopesSimulator() {
       );
       drawEarthSunlitHemisphere(ctx, cx, cy, earthPx);
 
-      drawSunContext(ctx, stageW, stageH, settings.mode, moon?.theta || 0);
 
       const site = groundTelescopeECI(sim.current.t, 0);
       const sitePx = {
@@ -749,6 +748,36 @@ export default function SatellitesTelescopesSimulator() {
                 <ZoomOut />
               </IconButton>
             </Paper>
+          </Box>
+
+          {/* Fixed HUD overlay: stays legible above all canvas objects and orbit trails. */}
+          <Box data-esbiko-sun-context sx={{
+            position: "absolute", bottom: 12, left: 12, zIndex: 20,
+            width: { xs: 198, sm: 248 }, boxSizing: "border-box",
+            p: 1.25, borderRadius: 2, pointerEvents: "none",
+            bgcolor: "rgba(2,6,23,0.94)",
+            border: "1px solid rgba(251,191,36,0.65)",
+            boxShadow: "0 5px 18px rgba(0,0,0,0.65)",
+          }}>
+            <Box sx={{ color: "#fde68a", fontSize: 12, fontWeight: 800 }}>
+              ☀ Sun · Earth · Moon
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, my: 0.5 }}>
+              <Box aria-label="Sun" sx={{
+                width: 34, height: 34, borderRadius: "50%", flexShrink: 0,
+                background: "radial-gradient(circle at 35% 35%, #fff7ad, #fbbf24 55%, #ea580c)",
+                boxShadow: "0 0 18px 5px rgba(251,191,36,0.55)",
+              }}/>
+              <Box sx={{ flex: 1, borderTop: "2px dashed #fbbf24", minWidth: 8 }}/>
+              <Box aria-label="Earth" sx={{ width: 15, height: 15, borderRadius: "50%", bgcolor: "#3b82f6",
+                border: "2px solid #93c5fd", flexShrink: 0 }}/>
+              <Box aria-label="Moon" sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: "#cbd5e1", flexShrink: 0 }}/>
+            </Box>
+            <Box sx={{ fontSize: 10, color: "#f8fafc" }}>Earth–Sun: 149.6 million km</Box>
+            <Box sx={{ fontSize: 10, color: "#cbd5e1" }}>Moon: 384,400 km from Earth</Box>
+            <Box sx={{ fontSize: 9, color: "#fbbf24", mt: 0.4 }}>
+              {settings.mode === VIEW_MODES.EDUCATIONAL ? "Education" : "Realistic"} · diagram not to scale
+            </Box>
           </Box>
 
           <SatellitesHUD
