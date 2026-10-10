@@ -1,6 +1,4 @@
 // src/simulations/subjects/physics/acoustics/Doppler/components/DopplerControls.jsx
-import { useState } from "react";
-
 import {
   Play,
   Pause,
@@ -13,24 +11,12 @@ import {
   Music,
   Car,
   FlaskConical,
-  Bot,
-  Check,
-  ChevronDown,
-  Clipboard,
-  ExternalLink,
-  Wrench,
   Clapperboard,
   Download,
   Square,
 } from "lucide-react";
 
 import { MAX_DISTANCE, SOURCE_PRESETS } from "../constants";
-import {
-  DOPPLER_WEBMCP_TEST_PROMPT,
-  DOPPLER_WEBMCP_TOOL_NAMES,
-  formatDopplerResultSummary,
-  getWebMcpGuideStatus,
-} from "../webMcpGuide";
 import SourceControlCard from "./SourceControlCard";
 
 const DopplerControls = ({
@@ -49,33 +35,16 @@ const DopplerControls = ({
   onSetObserver,
   onSetMasterVolume,
   masterGainRef,
-  webMcpStatus,
   hideAgentGuide = false,
   embeddedVideoRequest = null,
-  lastAgentAction,
   directorStatus,
   onStartDirector,
   onStopDirector,
   onDownloadDirector,
 }) => {
-  const agentToolsReady = webMcpStatus === "ready";
-  const [isAgentGuideOpen, setIsAgentGuideOpen] = useState(true);
-  const [promptCopied, setPromptCopied] = useState(false);
-  const guideStatus = getWebMcpGuideStatus(webMcpStatus);
-  const resultSummary = formatDopplerResultSummary(sources);
   const directorActive = ["preparing", "recording", "finalizing"].includes(
     directorStatus?.state,
   );
-
-  const copyTestPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(DOPPLER_WEBMCP_TEST_PROMPT);
-      setPromptCopied(true);
-      window.setTimeout(() => setPromptCopied(false), 2000);
-    } catch (error) {
-      console.warn("Could not copy the WebMCP test prompt:", error);
-    }
-  };
 
   const runDirectorAction = async (action) => {
     try {
@@ -91,56 +60,6 @@ const DopplerControls = ({
         <h2 className="text-xl font-bold text-white flex items-center gap-2 mb-1">
           <Activity className="text-blue-500" /> Doppler Lab
         </h2>
-
-        {!hideAgentGuide && <button
-          type="button"
-          onClick={() => setIsAgentGuideOpen((open) => !open)}
-          aria-expanded={isAgentGuideOpen}
-          className={`mt-3 w-full rounded-xl border p-3 text-left transition-colors ${
-            agentToolsReady
-              ? "border-emerald-400/30 bg-emerald-400/10 hover:bg-emerald-400/15"
-              : "border-slate-700 bg-slate-950/70 hover:bg-slate-900"
-          }`}
-        >
-          <span className="flex items-center gap-3">
-            <span
-              className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
-                agentToolsReady
-                  ? "bg-emerald-400/15 text-emerald-300"
-                  : "bg-slate-800 text-slate-400"
-              }`}
-            >
-              <Bot size={18} />
-            </span>
-
-            <span className="min-w-0 flex-1">
-              <span className="flex items-center gap-2 text-xs font-bold text-white">
-                AI Agent <span className="text-slate-500">·</span> WebMCP
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[9px] uppercase tracking-wide ${
-                    agentToolsReady
-                      ? "bg-emerald-400/15 text-emerald-300"
-                      : webMcpStatus === "error"
-                        ? "bg-rose-400/15 text-rose-300"
-                        : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  {guideStatus.label}
-                </span>
-              </span>
-              <span className="mt-0.5 block text-[10px] text-slate-400">
-                {guideStatus.detail}
-              </span>
-            </span>
-
-            <ChevronDown
-              size={16}
-              className={`shrink-0 text-slate-500 transition-transform ${
-                isAgentGuideOpen ? "rotate-180" : ""
-              }`}
-            />
-          </span>
-        </button>}
 
         <div className="grid grid-cols-2 gap-2 mt-5">
           <button
@@ -273,159 +192,6 @@ const DopplerControls = ({
             </div>
           </section>
         )}
-        {!hideAgentGuide && isAgentGuideOpen && (
-          <section
-            aria-label="WebMCP agent testing guide"
-            className="space-y-4 rounded-xl border border-blue-400/25 bg-gradient-to-b from-blue-400/10 to-slate-950/40 p-4"
-          >
-            <div>
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-300">
-                <Wrench size={14} /> Test with an AI agent
-              </div>
-              <p className="mt-2 text-[11px] leading-5 text-slate-300">
-                {guideStatus.help}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-white/10 bg-slate-950/70 p-3">
-              <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  Judge test prompt
-                </span>
-                <button
-                  type="button"
-                  onClick={copyTestPrompt}
-                  className="flex items-center gap-1 rounded-md border border-blue-400/30 bg-blue-400/10 px-2 py-1 text-[10px] font-bold text-blue-200 hover:bg-blue-400/20"
-                >
-                  {promptCopied ? <Check size={11} /> : <Clipboard size={11} />}
-                  {promptCopied ? "Copied" : "Copy prompt"}
-                </button>
-              </div>
-              <p className="select-text text-[11px] leading-5 text-slate-300">
-                {DOPPLER_WEBMCP_TEST_PROMPT}
-              </p>
-            </div>
-
-            <div className="rounded-lg border border-violet-400/25 bg-violet-400/10 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-violet-200">
-                  <Clapperboard size={13} /> AI Video Director
-                </div>
-                <span className="rounded-full bg-slate-950/60 px-2 py-1 text-[9px] font-bold uppercase text-slate-300">
-                  {directorStatus?.state || "idle"}
-                </span>
-              </div>
-
-              <div className="mt-2 text-[11px] font-bold text-white">
-                {directorStatus?.phaseTitle || "30-second two-vehicle Doppler story"}
-              </div>
-              <div className="mt-1 text-[10px] leading-4 text-slate-300">
-                {directorStatus?.phaseCaption ||
-                  "Esbiko Voice from the left, Ambulance Siren from the right, exact four-phase motion, before/after pitch, captions, wavefronts, live browser preview, and recorded audio."}
-              </div>
-
-              {directorActive && (
-                <div className="mt-3">
-                  <div className="mb-1 flex justify-between text-[9px] font-bold text-slate-400">
-                    <span>
-                      {Math.round(directorStatus.elapsedSeconds || 0)}s / {directorStatus.durationSeconds}s
-                    </span>
-                    <span>{Math.round(directorStatus.progressPercent || 0)}%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
-                    <div
-                      className="h-full rounded-full bg-violet-400 transition-[width] duration-200"
-                      style={{ width: `${Math.min(100, directorStatus.progressPercent || 0)}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-3 flex gap-2">
-                {!directorActive && directorStatus?.state !== "ready" && (
-                  <button
-                    type="button"
-                    onClick={() => runDirectorAction(onStartDirector)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-violet-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-violet-300"
-                  >
-                    <Clapperboard size={12} /> Create 30s default video
-                  </button>
-                )}
-
-                {directorActive && directorStatus?.state !== "finalizing" && (
-                  <button
-                    type="button"
-                    onClick={() => runDirectorAction(onStopDirector)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-rose-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-rose-300"
-                  >
-                    <Square size={11} fill="currentColor" /> Stop &amp; prepare
-                  </button>
-                )}
-
-                {directorStatus?.state === "ready" && (
-                  <button
-                    type="button"
-                    onClick={() => runDirectorAction(onDownloadDirector)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-emerald-400 px-2 py-2 text-[10px] font-black text-slate-950 hover:bg-emerald-300"
-                  >
-                    <Download size={12} /> Download WebM
-                  </button>
-                )}
-              </div>
-
-              {directorStatus?.state === "ready" && (
-                <div className="mt-2 text-[9px] text-emerald-200">
-                  Audio {directorStatus.audioIncluded ? "included" : "not detected"} · {Math.max(1, Math.round((directorStatus.bytes || 0) / 1024 / 1024))} MB
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                Available tools ({DOPPLER_WEBMCP_TOOL_NAMES.length})
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {DOPPLER_WEBMCP_TOOL_NAMES.map((toolName) => (
-                  <code
-                    key={toolName}
-                    className="rounded border border-white/10 bg-slate-900 px-1.5 py-1 text-[9px] text-slate-300"
-                  >
-                    {toolName}
-                  </code>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <div className="rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-slate-600">
-                  Last agent action
-                </div>
-                <div className="mt-1 text-[11px] text-blue-200">
-                  {lastAgentAction || "Waiting for an agent tool call"}
-                </div>
-              </div>
-              <div className="rounded-lg border border-white/10 bg-slate-950/50 px-3 py-2">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-slate-600">
-                  Live result
-                </div>
-                <div className="mt-1 font-mono text-[11px] text-emerald-300">
-                  {resultSummary}
-                </div>
-              </div>
-            </div>
-
-            <a
-              href="https://learn.chatgpt.com/docs/webmcp"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-300 hover:text-blue-200"
-            >
-              OpenAI Site Tools guide <ExternalLink size={11} />
-            </a>
-          </section>
-        )}
-
         {mode === "car" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 uppercase tracking-wider">
