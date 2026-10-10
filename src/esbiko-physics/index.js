@@ -1,4 +1,4 @@
-export const ESBIKO_PHYSICS_VERSION='0.2.0';
+export const ESBIKO_PHYSICS_VERSION='0.3.0';
 export * as vector from './math/vector3.js';
 export * from './mechanics/laws.js';
 export * from './mechanics/gravity.js';
@@ -8,3 +8,4 @@ export * from './optics/thinElement.js';
 export * from './mechanics/createParticleModel.js';
 export * from './mechanics/drag.js';
 export * from './mechanics/projectile.js';
+export * from './optics/compoundInstruments.js';

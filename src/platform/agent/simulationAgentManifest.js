@@ -1,5 +1,12 @@
+import { instrumentParameters } from '../../simulations/subjects/physics/optics/microscope-telescope/instrumentModel.js';
 import { projectileParameters } from '../../simulations/subjects/physics/mechanics/simple-projectile/simpleProjectileModel.js';
 export const simulationAgentManifest = Object.freeze({
+  "physics.optics.microscope-telescope": Object.freeze({
+    adapterVersion: 'optical-instruments.v1', actions: ['open','configure','readState','play','pause','reset','record','export'],
+    tools: ['open_science_simulation'], video: true, exportable: true,
+    parameterSchema: { type: 'object', properties: instrumentParameters, additionalProperties: false },
+    stateSchema: { type: 'object', properties: { parameters: { type: 'object' }, optics: { type: 'object' }, running: { type: 'boolean' }, animationTime: { type: 'number' } } },
+  }),
   "physics.mechanics.simple-projectile": Object.freeze({adapterVersion:'simple-projectile.v1',actions:['open','configure','readState','play','pause','reset','record','export'],tools:['open_science_simulation'],video:true,exportable:true,parameterSchema:{type:'object',properties:projectileParameters,additionalProperties:false},stateSchema:{type:'object',properties:{running:{type:'boolean'},time:{type:'number'},x:{type:'number'},y:{type:'number'},vx:{type:'number'},vy:{type:'number'},parameters:{type:'object'}}}}),
   "evolution-of-life": Object.freeze({adapterVersion:"evolution-timeline.v1",actions:["open","configure","readState","play","pause","reset"],tools:["open_science_simulation"],video:false,exportable:false,parameterSchema:{type:"object",properties:{"subjectId":{"type":"string","enum":["life","humans","cats","horses"]},"stageIndex":{"type":"integer","minimum":0,"maximum":200}},additionalProperties:false},stateSchema:{type:"object",properties:{simulationId:{type:"string"},state:{type:"object"}}}}),
   "physics.challenges.moon-lander": Object.freeze({adapterVersion:"moon-lander.v1",actions:["open","configure","readState","play","pause","reset"],tools:["open_science_simulation"],video:false,exportable:false,parameterSchema:{type:"object",properties:{"mainThrust":{"type":"boolean"},"rotateLeft":{"type":"boolean"},"rotateRight":{"type":"boolean"}},additionalProperties:false},stateSchema:{type:"object",properties:{simulationId:{type:"string"},state:{type:"object"}}}}),

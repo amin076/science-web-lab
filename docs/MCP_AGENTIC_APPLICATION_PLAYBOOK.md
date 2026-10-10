@@ -781,3 +781,9 @@ The next platform layer is a shared math/numerics foundation, specialized scient
 ## Three-stage simulation publication standard — 2026-10-10
 
 [Publication standard](simulation-standard/ESBIKO_SIMULATION_PUBLICATION_STANDARD.md) now connects the accepted UI standard, declared scientific engine and manifest-based public catalog/runtime registration. Simple Projectile is public under Physics / Mechanics at `/experiments/physics.mechanics.simple-projectile/run`, with the admin preview retained. New manifests drive metadata and lazy runtime from one source; Plop registration no longer writes the obsolete experiments file. Inventory: 33 registered, 32 declared advanced contracts, Gearbox quarantined. External feature verification remains separate.
+
+## Worked example: compound optical instruments (2026-10-10)
+
+`physics.optics.microscope-telescope` completes the same three-stage path: shared 2D UI → pure Esbiko Physics model → taxonomy manifest publication. The profile imports the actual parameter schema from `instrumentModel.js`; both UI and WebMCP call the same validation/state callbacks. The independent mounted-page SDK is `window.esbikoOpticalInstruments`; it is not an HTTP remote-session API. Hosted MCP opens the public run route with validated parameters, while browser WebMCP supports live state/configuration/playback/recording when available. Mode changes apply a focused preset before explicit overrides, including embedded launch parameters.
+
+The engine reports SI optics and explicit infinity, the UI/schema declare mm/degree inputs, and animation time is explicitly illustrative. These distinctions should be preserved by agents when explaining results. Full contract, source references and model exclusions: `simulation-standard/ESBIKO_OPTICAL_INSTRUMENTS_LAB.md`.

@@ -69,3 +69,7 @@ Implemented private admin preview at `/admin/examples/simple-projectile`, using 
 ## Esbiko Physics v0.2 / projectile drag update — 2026-10-10
 
 Added shared quadratic/linear drag, sphere area, general velocity-dependent RK4 and projectile propagation/measurement laws. Private Simple Projectile now offers optional spherical drag, independently toggleable velocity/component arrows, upper transparent HUD and a visited-only trail. Mounted browser SDK `window.esbikoSimpleProjectile` and pure Node model API work independently of MCP; no new HTTP session endpoint or public ChatGPT catalog entry. See [current pilot specification](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md).
+
+## 0.3.0 — compound optical instruments (2026-10-10)
+
+Added pure SI paraxial propagation, thin-element power, signed image conjugates and compound microscope/refractor/unfolded Newtonian calculation. Infinity is explicit; relaxed-eye magnification is withheld when defocused. The legacy thin-element compatibility helper remains unchanged. The new public Microscope & Telescope Lab consumes this engine; see `simulation-standard/ESBIKO_OPTICAL_INSTRUMENTS_LAB.md` for contracts, limitations and sources. Scientific regression: `node scripts/test-compound-optics.mjs`.

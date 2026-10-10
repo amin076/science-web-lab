@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "esbiko-simulation-registration.v1",
+  "id": "physics.optics.microscope-telescope",
+  "domain": "physics",
+  "topic": "optics",
+  "name": "Microscope & Telescope Lab",
+  "desc": "Build a compound microscope, refracting telescope or Newtonian reflector. Adjust focal lengths and optical path, trace rays and discover how focus and magnification work.",
+  "shortDesc": "Three optical instruments, one ray bench: adjust lenses, mirrors and focus.",
+  "engine": "canvas2d",
+  "uiStandard": "2d-v0.1",
+  "scientificEngine": "esbiko-physics",
+  "entry": "index.jsx",
+  "visibility": "public",
+  "gradient": "linear-gradient(135deg, #0891b2, #8b5cf6)",
+  "demo": true,
+  "tags": [
+    "microscope",
+    "telescope",
+    "optics",
+    "lenses",
+    "mirrors",
+    "Esbiko Physics"
+  ],
+  "difficulty": "Intermediate",
+  "yearLevel": "Years 10\u201312 Physics",
+  "estimatedTime": "15\u201325 mins",
+  "estimatedDurationMinutes": 20,
+  "supportedDevices": "Desktop / Tablet / Mobile",
+  "learningObjectives": [
+    "Explain the roles of objective and eyepiece",
+    "Find the separation for relaxed-eye focus",
+    "Compare compound microscopes, refractors and Newtonian reflectors",
+    "Distinguish angular magnification from image position"
+  ],
+  "curriculumLinks": [
+    "Geometrical optics",
+    "Thin lenses",
+    "Optical instruments"
+  ],
+  "modelAssumptions": [
+    "Paraxial monochromatic geometric optics",
+    "Ideal thin lenses and mirrors; unfolded Newtonian optical path",
+    "Relaxed-eye focus; microscope reference distance 250 mm",
+    "Illustrative image preview; no diffraction, aberrations or aperture clipping"
+  ]
+}

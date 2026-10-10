@@ -410,3 +410,7 @@ Added shared quadratic/linear drag, sphere area, general velocity-dependent RK4 
 ## Three-stage simulation publication standard — 2026-10-10
 
 [Publication standard](simulation-standard/ESBIKO_SIMULATION_PUBLICATION_STANDARD.md) now connects the accepted UI standard, declared scientific engine and manifest-based public catalog/runtime registration. Simple Projectile is public under Physics / Mechanics at `/experiments/physics.mechanics.simple-projectile/run`, with the admin preview retained. New manifests drive metadata and lazy runtime from one source; Plop registration no longer writes the obsolete experiments file. Inventory: 33 registered, 32 declared advanced contracts, Gearbox quarantined. External feature verification remains separate.
+
+## Compound optics publication — 2026-10-10
+
+Added `physics.optics.microscope-telescope` under Physics → Optics through the manifest publication standard. Three 2D modes use Esbiko Physics 0.3 with shared responsive UI, transparent HUD, camera, focus graph, landscape/portrait canvas recording, independent page SDK and explicit MCP/WebMCP adapter. This adds one public registration and one adapted profile; it does not replace Virtual Microscope. Detailed scope, scientific assumptions and verification are in `simulation-standard/ESBIKO_OPTICAL_INSTRUMENTS_LAB.md`.

@@ -1,6 +1,7 @@
 import { createSafeToolExecutor } from "./registerWebMcpTools.js";
 
 export const WEBMCP_ENABLED_SIMULATIONS = Object.freeze([
+  Object.freeze({ id: 'physics.optics.microscope-telescope', name: 'Microscope & Telescope Lab', topic: 'Optics', description: 'Compound microscope, refractor and Newtonian reflector: focal lengths, spacing, focus, ray tracing and recording', route: '/experiments/physics.optics.microscope-telescope/run', capabilities: ['state-read','configure','playback','reset','recording','export'] }),
   Object.freeze({id:'physics.mechanics.simple-projectile',name:'Simple Projectile',topic:'Mechanics',description:'Launch conditions, spherical drag, velocity components, transparent HUD and video capture',route:'/experiments/physics.mechanics.simple-projectile/run',capabilities:['state-read','configure','playback','reset','recording','export']}),
   Object.freeze({id:"evolution-of-life",name:"Evolution of Life",topic:"Biological evolution timeline",description:"Choose lineage and stage, read timeline, play and reset",route:"/experiments/evolution-of-life/run",capabilities:["state-read","configure","playback","reset"]}),
   Object.freeze({id:"physics.challenges.moon-lander",name:"Moon Lander Challenge",topic:"Lunar physics training game",description:"Thrust, rotate, pause and reset while reading position, fuel and result",route:"/experiments/physics.challenges.moon-lander/run",capabilities:["state-read","configure","playback","reset"]}),
