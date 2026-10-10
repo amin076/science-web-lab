@@ -18,6 +18,7 @@ export default function SimulationStandardWorkspace({
   controls,
   hud,
   hudPointerEvents = "auto",
+  hudPlacement = "bottom-left",
   timeline,
   info,
   toolbar,
@@ -174,6 +175,7 @@ export default function SimulationStandardWorkspace({
                   bottom: timeline && !chromeHidden ? { xs: 116, md: 126 } : { xs: 10, md: 14 },
                   maxWidth: { xs: "none", sm: 430 },
                   pointerEvents: hudPointerEvents,
+                  ...(hudPlacement === "top-right" && { top: 76, bottom: "auto", left: "auto", right: 14, maxWidth: 240 }),
                 }}
               >
                 {hud}

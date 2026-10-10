@@ -64,3 +64,8 @@ Read [research and API gap](ESBIKO_SHARED_SCIENTIFIC_ENGINE_RESEARCH.md). The in
 ## Simple Projectile scientific pilot — 2026-10-10
 
 Implemented private admin preview at `/admin/examples/simple-projectile`, using Esbiko Physics and the accepted 2D workspace. [Pilot details](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md). Public catalog remains unchanged.
+
+
+## Esbiko Physics v0.2 / projectile drag update — 2026-10-10
+
+Added shared quadratic/linear drag, sphere area, general velocity-dependent RK4 and projectile propagation/measurement laws. Private Simple Projectile now offers optional spherical drag, independently toggleable velocity/component arrows, upper transparent HUD and a visited-only trail. Mounted browser SDK `window.esbikoSimpleProjectile` and pure Node model API work independently of MCP; no new HTTP session endpoint or public ChatGPT catalog entry. See [current pilot specification](simulation-standard/ESBIKO_SIMPLE_PROJECTILE_PILOT.md).
