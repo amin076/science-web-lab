@@ -27,6 +27,7 @@ import {
   makeCircularOrbit,
   rk4Step,
   moonStateECI,
+  lunarRelativeState,
 } from "./satellites.physics.js";
 import {
   SATELLITE_CONFIGS,
@@ -48,7 +49,7 @@ import {
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
 import { educationalPosition } from "./educationalScale.js";
-import { drawSun, sunDisplayGeometry, drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
+import { drawSun, sunDisplayGeometry, earthSolarOrbit, drawEarthSolarOrbit, drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -175,6 +176,11 @@ export default function SatellitesTelescopesSimulator() {
         hidden: false,
       },
     ];
+    for(const preset of ["TIANGONG","HUBBLE","JWST","STARLINK","LRO","CAPSTONE","GATEWAY"]) {
+      const c=SATELLITE_CONFIGS[preset];
+      sim.current.objects.push({id:preset+"-unique",type:c.type,name:c.name,color:c.color,centralBody:c.centralBody||"EARTH",planned:!!c.planned,
+        state:c.type==="JWST"?{pos:{x:1500000,y:0},vel:{x:0,y:0}}:c.centralBody==="MOON"?{pos:vec.add(moonStateECI(0).pos,lunarRelativeState(c,0).pos),vel:{x:0,y:0}}:makeCircularOrbit(c.alt,90),trail:[],hidden:false});
+    }
     setObjectsList([...sim.current.objects]);
     setSelectedObjId("SUN");
 
@@ -209,15 +215,13 @@ export default function SatellitesTelescopesSimulator() {
   const reset = () => {
     setRunning(false);
     sim.current.t = 0;
-    sim.current.objects = sim.current.objects.filter((o) => o.type === "MOON");
-    sim.current.objects.push({
-      id: "ISS-unique",
-      type: "ISS",
-      name: "International Space Station",
-      color: "#ffffff",
-      state: makeCircularOrbit(408, 0),
-      trail: [],
-      hidden: false,
+    sim.current.objects.forEach(o => {
+      const config=Object.values(SATELLITE_CONFIGS).find(c=>c.name===o.name);
+      if(o.type === "MOON") o.state={pos:moonStateECI(0).pos,vel:{x:0,y:0}};
+      else if(o.type === "JWST") o.state={pos:{x:1500000,y:0},vel:{x:0,y:0}};
+      else if(o.centralBody === "MOON") {const rel=lunarRelativeState(config,0);o.state={pos:vec.add(moonStateECI(0).pos,rel.pos),vel:rel.vel};}
+      else o.state=makeCircularOrbit(config?.alt ?? Math.max(1,vec.len(o.state.pos)-EARTH.radiusKm),0);
+      o.trail=[];o.hidden=false;
     });
     accRef.current = 0;
     lastRef.current = performance.now();
@@ -231,10 +235,10 @@ export default function SatellitesTelescopesSimulator() {
     const config = SATELLITE_CONFIGS[preset];
     if (!config) return;
 
-    if (["ISS", "HUBBLE", "JWST"].includes(config.type)) {
+    if (config.type !== "satellite") {
       const existing = sim.current.objects.find((o) => o.type === config.type);
       if (existing) {
-        setSelectedObjId(existing.id);
+        selectObject(existing.id);
         if (existing.hidden) {
           existing.hidden = false;
           setObjectsList([...sim.current.objects]);
@@ -243,7 +247,7 @@ export default function SatellitesTelescopesSimulator() {
       }
     }
 
-    const idPrefix = ["ISS", "HUBBLE", "JWST"].includes(config.type)
+    const idPrefix = config.type !== "satellite"
       ? `${config.type}-unique`
       : `${preset}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -252,22 +256,31 @@ export default function SatellitesTelescopesSimulator() {
       type: config.type,
       name: config.name,
       color: config.color,
-      state: makeCircularOrbit(config.alt, Math.random() * 360),
+      centralBody: config.centralBody || "EARTH",
+      planned: !!config.planned,
+      state: config.type === "JWST" ? {pos:{x:1500000,y:0},vel:{x:0,y:0}}
+        : config.centralBody === "MOON" ? {pos:moonStateECI(sim.current.t).pos,vel:{x:0,y:0}}
+        : makeCircularOrbit(config.alt, Math.random() * 360),
       trail: [],
       hidden: false,
     };
     sim.current.objects.push(newObj);
     setObjectsList([...sim.current.objects]);
-    setSelectedObjId(newObj.id);
+    selectObject(newObj.id);
   };
 
   const selectObject = (id) => {
     if (id === "SUN") {
-      const sun = sunDisplayGeometry(settings.mode);
       const scale = RENDER.EARTH_SCALE || 0.28;
       // Fit Sun and Earth with margins, in both display modes.
       viewRef.current.k = Math.min(stageW * 0.65, stageH * 0.65) * EARTH.radiusKm /
-        ((Math.abs(sun.x) + sun.radius * 3.4) * Math.min(stageW, stageH) * scale * 5);
+        ((earthSolarOrbit().a * 2.2) * Math.min(stageW, stageH) * scale * 5);
+    }
+    const target=sim.current.objects.find(o=>o.id===id);
+    if(id !== "SUN") {
+      const radius = target?.type === "JWST" ? 2000000 : id === "MOON" || target?.centralBody === "MOON"
+        ? MOON.radiusKm*(target?.type === "LRO" ? 4 : 50) : EARTH.radiusKm*4;
+      viewRef.current.k = Math.min(20, EARTH.radiusKm * 0.35 / (radius * (RENDER.EARTH_SCALE || 0.28) * 5));
     }
     setSelectedObjId(id);
   };
@@ -327,21 +340,17 @@ export default function SatellitesTelescopesSimulator() {
       }
 
       if (selectedObjId === "SUN") {
-        const sun = sunDisplayGeometry(settings.mode);
-        viewRef.current.x = -sun.x * kmToPx * 0.5;
-        viewRef.current.y = 0;
+        const sun = sunDisplayGeometry(settings.mode, sim.current.t);
+        const orbit=earthSolarOrbit(sim.current.t);
+        viewRef.current.x = -orbit.centerX * kmToPx;
+        viewRef.current.y = -orbit.centerY * kmToPx;
       } else if (selectedObjId && selectedObjId !== "EARTH") {
         const target = sim.current.objects.find((o) => o.id === selectedObjId);
         if (target) {
           const visualTargetPos = getVisualPosition(target, settings.mode);
 
-          // In educational mode, frame Earth + Moon/JWST together.
-          // Centering directly on the object hides the orbit center (Earth).
-          const trackPos =
-            settings.mode === VIEW_MODES.EDUCATIONAL &&
-            (target.type === "MOON" || target.type === "JWST")
-              ? vec.mul(visualTargetPos, 0.5)
-              : visualTargetPos;
+          // Webb is shown beyond Earth along the anti-solar direction.
+          const trackPos = target.type === "JWST" ? vec.mul(visualTargetPos,0.5) : visualTargetPos;
 
           viewRef.current.x = -trackPos.x * kmToPx;
           viewRef.current.y = -trackPos.y * kmToPx;
@@ -364,8 +373,12 @@ export default function SatellitesTelescopesSimulator() {
         ctx.restore();
       }
 
-      const sun = sunDisplayGeometry(settings.mode);
+      const sun = sunDisplayGeometry(settings.mode, sim.current.t);
+      if (settings.showOrbits) drawEarthSolarOrbit(ctx,cx,cy,kmToPx,sim.current.t);
       drawSun(ctx, cx + sun.x * kmToPx, cy, sun.radius * kmToPx);
+      ctx.fillStyle="#94a3b8"; ctx.font="11px sans-serif";
+      ctx.fillText("Linear km scale · tiny bodies / spacecraft use labelled markers",12,stageH-170);
+      ctx.fillText("Earth ellipse: e = 0.0167 · Sun at a focus · 147.1–152.1 million km",12,stageH-154);
       drawSunlightDirection(ctx, cx, cy, earthPx, stageW, stageH);
 
       drawEarthTextured(
@@ -383,7 +396,7 @@ export default function SatellitesTelescopesSimulator() {
         ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
         ctx.font = "12px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("Earth · marker", cx, cy - 12);
+        ctx.fillText("Earth–Moon system · marker", cx, cy - 12);
         ctx.textAlign = "start";
       }
 
@@ -414,14 +427,25 @@ export default function SatellitesTelescopesSimulator() {
 
       sim.current.objects.forEach((o) => {
         if (o.hidden) return;
+        // At solar-system zoom, mission icons would overlap in one pixel cluster.
+        // Mission selection opens a local view without changing any distances.
+        if (earthPx < 3 && o.type !== "MOON" && o.id !== selectedObjId) return;
 
         const pos = getVisualPosition(o, settings.mode);
 
         const px = { x: cx + pos.x * kmToPx, y: cy + pos.y * kmToPx };
         const dist = vec.len(pos);
 
-        if (settings.showOrbits) {
-          drawVisibleOrbitPath(ctx, cx, cy, dist * kmToPx, o.type);
+        if (settings.showOrbits && o.type !== "JWST") {
+          if (o.centralBody === "MOON") {
+            const ms=moonStateECI(sim.current.t), rel=lunarRelativeState(SATELLITE_CONFIGS[o.type],sim.current.t);
+            ctx.save();ctx.strokeStyle=o.color;ctx.lineWidth=1;ctx.setLineDash(o.planned?[4,4]:[]);
+            ctx.beginPath();ctx.ellipse(cx+ms.pos.x*kmToPx,cy+(ms.pos.y-rel.a*rel.e)*kmToPx,rel.b*kmToPx,rel.a*kmToPx,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+          } else drawVisibleOrbitPath(ctx, cx, cy, dist * kmToPx, o.type);
+        }
+        if (o.type === "JWST") {
+          ctx.fillStyle="#fde68a";ctx.font="11px sans-serif";
+          ctx.fillText("JWST · L2 · away from Sun · 1.5 million km",px.x+12,px.y+20);
         }
 
         if (settings.showTrails && o.trail.length > 1 && o.type !== "MOON") {
@@ -441,11 +465,10 @@ export default function SatellitesTelescopesSimulator() {
         }
 
         if (o.type === "MOON") {
-          const moonPx =
-            settings.mode === VIEW_MODES.EDUCATIONAL
-              ? earthPx * 0.28
-              : o.radius * kmToPx;
+          const moonPx = o.radius * kmToPx;
           drawMoon(ctx, px.x, px.y, moonPx, moonImg, o.theta || 0);
+          if(moonPx < 2) {ctx.fillStyle="#cbd5e1";ctx.beginPath();ctx.arc(px.x,px.y,2,0,Math.PI*2);ctx.fill();}
+          ctx.fillStyle="#cbd5e1";ctx.font="11px sans-serif";if(earthPx >= 3) ctx.fillText(moonPx < 2 ? "Moon · marker" : "Moon",px.x+8,px.y-12);
         } else {
           const spriteScale = Math.max(0.15, Math.min(2.5, zoom * 4));
 
@@ -463,7 +486,9 @@ export default function SatellitesTelescopesSimulator() {
           else drawSatellite(ctx, px.x, px.y, o.color);
           ctx.restore();
 
-          if (settings.showLOS && o.type !== "MOON") {
+          ctx.fillStyle=o.color;ctx.font="11px sans-serif";
+          if(o.type !== "JWST") ctx.fillText(o.name,px.x+10,px.y-10);
+          if (settings.showLOS && o.centralBody !== "MOON" && o.type !== "JWST") {
             const visible = isVisibleFromGround(site, o.state.pos);
             if (visible) {
               ctx.strokeStyle = "#00E676";
@@ -485,7 +510,7 @@ export default function SatellitesTelescopesSimulator() {
         let radius = earthPx + 10;
 
         if (selectedObjId === "SUN") {
-          const sun = sunDisplayGeometry(settings.mode);
+          const sun = sunDisplayGeometry(settings.mode, sim.current.t);
           px = { x: cx + sun.x * kmToPx, y: cy };
           radius = Math.max(6, sun.radius * kmToPx) * 1.7 + 8;
         } else if (selectedObjId !== "EARTH") {
@@ -521,7 +546,11 @@ export default function SatellitesTelescopesSimulator() {
           accRef.current -= settings.dt;
           sim.current.t += settings.dt;
           sim.current.objects.forEach((o) => {
-            if (o.type === "MOON") return;
+            if (o.type === "MOON" || o.type === "JWST") return;
+            if (o.centralBody === "MOON") {
+              const ms=moonStateECI(sim.current.t), rel=lunarRelativeState(SATELLITE_CONFIGS[o.type],sim.current.t);
+              o.state={pos:vec.add(ms.pos,rel.pos),vel:rel.vel}; o.trail=[]; return;
+            }
             const ns = rk4Step(o.state, settings.dt);
             if (settings.showTrails) {
               o.trail.push({ x: ns.pos.x, y: ns.pos.y });
@@ -544,7 +573,7 @@ export default function SatellitesTelescopesSimulator() {
 
 
   const liveRef=useRef({});
-  liveRef.current={running,settings,selectedObjId,uiTime,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k};
+  liveRef.current={running,settings,selectedObjId,uiTime,objects:sim.current.objects.map(({id,type,name,hidden,state,centralBody,planned})=>({id,type,name,hidden:!!hidden,state,centralBody,planned})),zoom:viewRef.current.k};
   const functionsRef=useRef({});
   functionsRef.current={setRunning,setSettings,setSelectedObjId:selectObject,reset,addPreset,removeObject,toggleVisible};
   useEffect(()=>{
@@ -558,7 +587,7 @@ export default function SatellitesTelescopesSimulator() {
       zoom:{type:"number",minimum:0.000001,maximum:20},
     };
     const snapshot=()=>({simulationId:"astronomy.space.satellites-telescopes",state:{
-      ...liveRef.current,objects:sim.current.objects.map(({id,type,name,hidden,state})=>({id,type,name,hidden:!!hidden,state})),zoom:viewRef.current.k,time:sim.current.t,
+      ...liveRef.current,objects:sim.current.objects.map(({id,type,name,hidden,state,centralBody,planned})=>({id,type,name,hidden:!!hidden,state,centralBody,planned})),zoom:viewRef.current.k,time:sim.current.t,
     }});
     const tools=[
       {name:"esbiko_satellites_get_state",description:"Read orbital time, objects, current positions, visibility, selection and display configuration.",inputSchema:empty,annotations:{readOnlyHint:true},execute:createSafeToolExecutor("satellites_get_state",async()=>snapshot())},
@@ -570,7 +599,7 @@ export default function SatellitesTelescopesSimulator() {
         if(Object.keys(next).length)functionsRef.current.setSettings(old=>({...old,...next}));
         return {accepted:input};
       })},
-      {name:"esbiko_satellites_add_preset",description:"Add an actual ISS, Hubble, JWST, LEO, MEO or GEO orbital object.",inputSchema:{type:"object",properties:{preset:{type:"string",enum:Object.keys(SATELLITE_CONFIGS)}},required:["preset"],additionalProperties:false},execute:createSafeToolExecutor("satellites_add_preset",async({preset})=>{
+      {name:"esbiko_satellites_add_preset",description:"Add an Earth or lunar mission preset; Gateway is planned and lunar paths are illustrative.",inputSchema:{type:"object",properties:{preset:{type:"string",enum:Object.keys(SATELLITE_CONFIGS)}},required:["preset"],additionalProperties:false},execute:createSafeToolExecutor("satellites_add_preset",async({preset})=>{
         if(!(preset in SATELLITE_CONFIGS))throw Error("Unknown satellite preset");
         functionsRef.current.addPreset(preset);
         return {preset,objects:sim.current.objects.length};
@@ -593,7 +622,7 @@ export default function SatellitesTelescopesSimulator() {
         if(typeof running!=="boolean")throw Error("running must be boolean");
         functionsRef.current.setRunning(running);return {running};
       })},
-      {name:"esbiko_satellites_reset",description:"Reinitialize Earth/Moon/ISS, orbit time and zoom.",inputSchema:empty,execute:createSafeToolExecutor("satellites_reset",async()=>{functionsRef.current.reset();return {reset:true};})},
+      {name:"esbiko_satellites_reset",description:"Reset orbit time and all displayed mission reference positions and zoom.",inputSchema:empty,execute:createSafeToolExecutor("satellites_reset",async()=>{functionsRef.current.reset();return {reset:true};})},
     ];
     registerWebMcpTools({modelContext:getDocumentModelContext(),tools,signal:controller.signal})
       .catch(error=>{if(!controller.signal.aborted)console.warn("Satellite MCP",error);});
@@ -615,12 +644,12 @@ export default function SatellitesTelescopesSimulator() {
     const earthPx = Math.min(stageW, stageH) * earthScale * (zoom * 5);
 
     if (Math.hypot(mx - cx, my - cy) < earthPx) {
-      setSelectedObjId("EARTH");
+      selectObject("EARTH");
       return true;
     }
 
     const kmToPx = earthPx / EARTH.radiusKm;
-    const sun = sunDisplayGeometry(settings.mode);
+    const sun = sunDisplayGeometry(settings.mode, sim.current.t);
     if (Math.hypot(mx - (cx + sun.x * kmToPx), my - cy) < Math.max(12, sun.radius * kmToPx)) {
       selectObject("SUN");
       return true;
@@ -631,7 +660,7 @@ export default function SatellitesTelescopesSimulator() {
       const px = cx + pos.x * kmToPx;
       const py = cy + pos.y * kmToPx;
       if (Math.hypot(mx - px, my - py) < 30) {
-        setSelectedObjId(o.id);
+        selectObject(o.id);
         return true;
       }
     }
@@ -818,13 +847,15 @@ export default function SatellitesTelescopesSimulator() {
                 border: "2px solid #93c5fd", flexShrink: 0 }}/>
               <Box aria-label="Moon" sx={{ width: 7, height: 7, borderRadius: "50%", bgcolor: "#cbd5e1", flexShrink: 0 }}/>
             </Box>
-            <Box sx={{ fontSize: 10, color: "#f8fafc" }}>Earth–Sun: 149.6 million km</Box>
+            <Box sx={{ fontSize: 10, color: "#f8fafc" }}>Earth–Sun: 149.6 million km (mean)</Box>
+            <Box sx={{fontSize:10,color:"#fde68a"}}>Sun → Earth → L2 / Webb</Box>
+            <Box sx={{fontSize:9,color:"#cbd5e1"}}>Webb: 1.5 million km beyond Earth</Box>
             {settings.mode === VIEW_MODES.REALISTIC && <Box sx={{ fontSize: 9, color: "#cbd5e1" }}>
-              Main scene: real distances; tiny bodies use visibility markers.
+              Main scene: linear distances and radii; tiny bodies use markers.
             </Box>}
             <Box sx={{ fontSize: 10, color: "#cbd5e1" }}>Moon: 384,400 km from Earth</Box>
             <Box sx={{ fontSize: 9, color: "#fbbf24", mt: 0.4 }}>
-              {settings.mode === VIEW_MODES.EDUCATIONAL ? "Education" : "Realistic"} · diagram not to scale
+              {settings.mode === VIEW_MODES.EDUCATIONAL ? "Education" : "Realistic"} · inset not to scale
             </Box>
           </Box>
 

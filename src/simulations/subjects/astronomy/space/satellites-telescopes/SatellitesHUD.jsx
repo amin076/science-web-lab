@@ -42,7 +42,9 @@ export default function SatellitesHUD({ selectedObjId, objectsList, uiTime }) {
     if (objectRef.type === "MOON") staticData = OBJECT_INFO.MOON;
     else if (objectRef.type === "ISS") staticData = OBJECT_INFO.ISS;
     else if (objectRef.type === "HUBBLE") staticData = OBJECT_INFO.HUBBLE;
-    else if (objectRef.type === "JWST") staticData = OBJECT_INFO.JWST;
+    else if (objectRef.type === "JWST") staticData = {...OBJECT_INFO.JWST,description:"Reference position near Sun–Earth L2, 1.5 million km beyond Earth away from the Sun. Webb follows a halo orbit around L2, not an Earth-centred orbit. This marker is not a live ephemeris."};
+    else if (objectRef.type === "TIANGONG") staticData={title:"Tiangong",description:"China’s modular space station. Representative 400 km Earth orbit; no live tracking.",stats:[]};
+    else if (objectRef.centralBody === "MOON") staticData={title:objectRef.name,description:objectRef.type === "LRO" ? "Original 50 km lunar reference orbit; current mission ephemeris is not used." : "Illustrative 2D projection of a near-rectilinear halo orbit (NRHO). A true NRHO needs a three-body model; this path is a geometric approximation.",stats:[{label:"Central body",value:"Moon"},{label:"Mission",value:objectRef.planned?"Planned":objectRef.type==="CAPSTONE"?"Historical · NASA activities ended June 2026":"Reference model"}]};
   }
 
   // 2. Calculate Dynamic Data
@@ -155,7 +157,7 @@ export default function SatellitesHUD({ selectedObjId, objectsList, uiTime }) {
           )}
 
           {/* LIVE TELEMETRY */}
-          {objectRef && (
+          {objectRef && objectRef.centralBody !== "MOON" && objectRef.type !== "JWST" && (
             <>
               <Divider sx={{ my: 1, borderColor: "rgba(255,255,255,0.3)" }} />
               

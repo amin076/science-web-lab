@@ -83,3 +83,14 @@ This checks if the satellite is above the local horizon.
 
 Built with React, Material-UI, and HTML5 Canvas.  
 Physics engine uses RK4 integration for numerical stability.
+
+## Solar and lunar reference model
+
+- Earth follows a Kepler ellipse: semimajor axis 149,597,870.7 km, eccentricity 0.0167, sidereal period 365.256363004 days. The Sun is at a focus. The view rotates to keep the anti-solar axis horizontal.
+- Both modes now use linear kilometres for positions AND body radii. Apparent tiny-body dots and spacecraft icons are labelled visibility markers, not physical sizes. Select Earth, Moon or a mission for a local view; select Sun for the full annual ellipse. The separate context card is explicitly not to scale.
+- Webb is a reference marker at +1,500,000 km along the anti-solar axis. It is never integrated under Earth-only gravity and has no Earth-centred orbit or trail. Its actual halo orbit around L2 is not modelled; this is not a live ephemeris.
+- Tiangong uses a representative 400 km Earth orbit; Starlink is a representative 550 km orbit, not a complete constellation.
+- LRO uses its original 50 km lunar reference orbit. Gateway (planned) and CAPSTONE (historical, NASA activities ended June 2026) use illustrative 2D eccentric paths with a 6.5-day period. These are geometric NRHO approximations, not three-body integrations or current flight trajectories.
+- Reset preserves displayed missions and resets reference time and positions.
+
+Sources: https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html ; https://science.nasa.gov/mission/webb/orbit/ ; https://www.nasa.gov/gateway-frequently-asked-questions/ ; https://www.nasa.gov/mission/capstone/ ; https://science.nasa.gov/mission/lro/spacecraft-and-instruments/ ; https://www.cnsa.gov.cn/english/n6465652/n6465653/c6809605/content.html

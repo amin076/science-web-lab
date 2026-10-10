@@ -114,3 +114,17 @@ export function isVisibleFromGround(site, satPosKm) {
   const rel = vec.sub(satPosKm, site.pos);
   return vec.dot(rel, site.normal) > 0;
 }
+// Approximate 2D lunar-relative models, not live mission ephemerides.
+export function lunarRelativeState(config, t) {
+  const phase = config.type === "GATEWAY" ? Math.PI : 0;
+  const nrho = config.type !== "LRO";
+  const peri = MOON.radiusKm + (nrho ? 1500 : 50);
+  const apo = nrho ? MOON.radiusKm + 70000 : peri;
+  const a=(peri+apo)/2, e=(apo-peri)/(apo+peri), b=a*Math.sqrt(1-e*e);
+  const period=nrho ? 6.5*86400 : 2*Math.PI*Math.sqrt(a**3/4902.8);
+  const mean=2*Math.PI*t/period+phase;
+  let E=mean;
+  for(let i=0;i<12;i++) E-=(E-e*Math.sin(E)-mean)/(1-e*Math.cos(E));
+  const rate=(2*Math.PI/period)/(1-e*Math.cos(E));
+  return {pos:{x:b*Math.sin(E),y:a*(Math.cos(E)-e)},vel:{x:b*Math.cos(E)*rate,y:-a*Math.sin(E)*rate},a,b,e,period};
+}

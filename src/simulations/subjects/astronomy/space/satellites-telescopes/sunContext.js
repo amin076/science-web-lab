@@ -72,10 +72,27 @@ export function drawSunContext(ctx, width, height, mode, moonTheta = 0) {
   ctx.restore();
 }
 
-export function sunDisplayGeometry(mode) {
-  return mode === "EDUCATIONAL"
-    ? { x: -500000, y: 0, radius: 63710 }
-    : { x: -SOLAR_DISTANCE_KM, y: 0, radius: SUN_RADIUS_KM };
+export const EARTH_ORBIT_ECCENTRICITY = 0.0167;
+export const EARTH_YEAR_SECONDS = 365.256363004 * 86400;
+export function earthSolarOrbit(t = 0) {
+  const a = SOLAR_DISTANCE_KM, e = EARTH_ORBIT_ECCENTRICITY;
+  const mean = (2 * Math.PI * t / EARTH_YEAR_SECONDS) % (2 * Math.PI);
+  let E = mean;
+  for (let i=0;i<8;i++) E -= (E-e*Math.sin(E)-mean)/(1-e*Math.cos(E));
+  const b = a*Math.sqrt(1-e*e);
+  const hx = a*(Math.cos(E)-e), hy = b*Math.sin(E);
+  const distance = Math.hypot(hx,hy), angle = Math.atan2(hy,hx);
+  return {a,b,e,distance,angle, centerX:-distance-a*e*Math.cos(angle), centerY:a*e*Math.sin(angle)};
+}
+export function sunDisplayGeometry(mode, t = 0) {
+  return {x:-earthSolarOrbit(t).distance,y:0,radius:SUN_RADIUS_KM};
+}
+export function drawEarthSolarOrbit(ctx, cx, cy, kmToPx, t) {
+  const o=earthSolarOrbit(t);
+  ctx.save(); ctx.strokeStyle="rgba(96,165,250,0.65)"; ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.ellipse(cx+o.centerX*kmToPx,cy+o.centerY*kmToPx,o.a*kmToPx,o.b*kmToPx,-o.angle,0,Math.PI*2);
+  ctx.stroke(); ctx.restore();
 }
 
 export function drawSun(ctx, x, y, radius) {
@@ -101,6 +118,6 @@ export function drawSun(ctx, x, y, radius) {
   ctx.fillStyle = "#fde68a";
   ctx.font = "bold 13px sans-serif";
   ctx.textAlign = "center";
-  ctx.fillText("Sun", x, y - r * 1.7 - 8);
+  ctx.fillText(radius < 6 ? "Sun · marker" : "Sun", x, y - r * 1.7 - 8);
   ctx.restore();
 }

@@ -47,6 +47,11 @@ export const RENDER = {
 };
 
 export const SATELLITE_CONFIGS = {
+  TIANGONG: {alt:400,type:"TIANGONG",name:"Tiangong — China Space Station",color:"#fb7185"},
+  STARLINK: {alt:550,type:"satellite",name:"Starlink — representative orbit",color:"#a78bfa"},
+  LRO: {alt:50,type:"LRO",centralBody:"MOON",name:"Lunar Reconnaissance Orbiter",color:"#38bdf8"},
+  CAPSTONE: {type:"CAPSTONE",centralBody:"MOON",name:"CAPSTONE — historical / illustrative NRHO",color:"#a3e635",periodDays:6.5,historical:true},
+  GATEWAY: {type:"GATEWAY",centralBody:"MOON",name:"Gateway — planned / illustrative NRHO",color:"#f472b6",periodDays:6.5,planned:true},
   ISS: {
     alt: 408,
     type: "ISS",

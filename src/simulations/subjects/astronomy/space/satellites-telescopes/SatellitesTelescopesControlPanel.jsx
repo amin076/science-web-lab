@@ -21,9 +21,9 @@ import {
   Science,
   SatelliteAlt,
 } from "@mui/icons-material";
-import { orbitalPeriodMinutes, EARTH } from "./satellites.physics.js";
+import { orbitalPeriodMinutes, EARTH, moonStateECI, lunarRelativeState } from "./satellites.physics.js";
 import { vec } from "./satellites.math.js";
-import { VIEW_MODES } from "./satellites.constants.js";
+import { VIEW_MODES, MOON, SATELLITE_CONFIGS } from "./satellites.constants.js";
 
 export default function SatellitesTelescopesControlPanel({
   settings,
@@ -125,6 +125,18 @@ export default function SatellitesTelescopesControlPanel({
         </Button>
       </Stack>
 
+      <Stack direction="row" gap={1} flexWrap="wrap" sx={{mb:2}}>
+        <Button size="small" onClick={()=>onAddPreset("TIANGONG")}>Tiangong</Button>
+        <Button size="small" onClick={()=>onAddPreset("STARLINK")}>Starlink</Button>
+      </Stack>
+      <Typography fontWeight={700}>Lunar missions</Typography>
+      <Stack direction="row" gap={1} flexWrap="wrap" sx={{my:1}}>
+        {["LRO","CAPSTONE","GATEWAY"].map(p=><Button key={p} size="small" onClick={()=>onAddPreset(p)}>{p}</Button>)}
+      </Stack>
+      <Typography variant="caption" sx={{mb:2,opacity:0.8}}>
+        Gateway: planned. CAPSTONE: historical (NASA activities ended June 2026).
+        Lunar paths are 2D approximations; LRO uses its original 50 km reference orbit.
+      </Typography>
       {/* TELESCOPES SECTION */}
       <Typography
         fontWeight={700}
@@ -168,8 +180,8 @@ export default function SatellitesTelescopesControlPanel({
           ☀ Sun (Star) · View Sun &amp; Earth
         </Button>
         <Typography variant="caption" sx={{ opacity: 0.7 }}>
-          Sun–Earth: 149.6 million km. Educational sizes and distances are compressed.
-          Solar direction is illustrative.
+          Sun–Earth: 149.6 million km. Both modes use a common linear kilometre scale for all bodies and distances.
+          Tiny bodies and spacecraft use labelled visibility markers.
         </Typography>
         {/* EARTH ENTRY */}
         <Paper
@@ -206,9 +218,10 @@ export default function SatellitesTelescopesControlPanel({
         </Paper>
 
         {objectsList.map((o) => {
-          const r = vec.len(o.state.pos);
-          const alt = r - EARTH.radiusKm;
-          const period = orbitalPeriodMinutes(alt);
+          const lunar=o.centralBody === "MOON";
+          const r = vec.len(lunar ? vec.sub(o.state.pos,moonStateECI(uiTime).pos) : o.state.pos);
+          const alt = r - (lunar ? MOON.radiusKm : EARTH.radiusKm);
+          const period = lunar ? lunarRelativeState(SATELLITE_CONFIGS[o.type],uiTime).period/60 : orbitalPeriodMinutes(alt);
           const isSel = selectedId === o.id;
 
           return (
@@ -247,7 +260,8 @@ export default function SatellitesTelescopesControlPanel({
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
                   {o.type === "MOON"
                     ? "Orbit: 27.3 days"
-                    : `${alt.toFixed(0)} km | ${period.toFixed(0)} min`}
+                    : o.type === "JWST" ? "Sun–Earth L2 · anti-solar · no Earth orbit"
+                    : `${alt.toFixed(0)} km above ${lunar ? "Moon" : "Earth"} | ${period.toFixed(0)} min`}
                 </Typography>
               </Box>
 

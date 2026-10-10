@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { SOLAR_DISTANCE_KM, SUN_RADIUS_KM, EARTH_RADIUS_KM, MOON_DISTANCE_KM,
-  sunDisplayGeometry, drawSun, drawSunContext, drawSunlightDirection, drawEarthSunlitHemisphere } from "../src/simulations/subjects/astronomy/space/satellites-telescopes/sunContext.js";
+  earthSolarOrbit, EARTH_YEAR_SECONDS, drawEarthSolarOrbit, sunDisplayGeometry, drawSun, drawSunContext, drawSunlightDirection, drawEarthSunlitHemisphere } from "../src/simulations/subjects/astronomy/space/satellites-telescopes/sunContext.js";
 
 assert(SOLAR_DISTANCE_KM > MOON_DISTANCE_KM * 300, "Sun must be much farther than Moon");
 assert(SUN_RADIUS_KM > EARTH_RADIUS_KM * 100, "Sun is over 100 Earth radii");
@@ -27,7 +27,7 @@ console.log("SUN 2D CONTEXT TEST PASS");
 for (const mode of ["EDUCATIONAL", "REALISTIC"]) {
   const sun = sunDisplayGeometry(mode);
   assert(sun.x < 0 && sun.radius > 0);
-  if (mode === "REALISTIC") assert.equal(-sun.x, SOLAR_DISTANCE_KM);
+  if (mode === "REALISTIC") assert.equal(-sun.x, SOLAR_DISTANCE_KM * (1-0.0167));
   else {
     assert(sun.radius >= EARTH_RADIUS_KM * 10, "Sun must dwarf Earth");
     assert(-sun.x - sun.radius > 34000 * 10, "Sun must be far beyond Moon orbit");
@@ -47,7 +47,35 @@ for (const mode of ["EDUCATIONAL", "REALISTIC"]) {
     },set(){return true;}});
     drawSun(canvas,sunX,height/2,sun.radius*kmToPx);
     assert(rendered.filter(c=>c[0] === "arc").length === 2, "Separate corona and solid solar disc");
-    assert(rendered.some(c=>c[0] === "fillText" && c[1] === "Sun"));
+    assert(rendered.some(c=>c[0] === "fillText" && c[1].startsWith("Sun")));
   }
 }
 console.log("SUN SCENE GEOMETRY AND RENDER PASS");
+
+for(const t of [0, EARTH_YEAR_SECONDS/4, EARTH_YEAR_SECONDS/2, EARTH_YEAR_SECONDS]) {
+  const o=earthSolarOrbit(t);
+  assert(o.b<o.a && o.e===0.0167);
+  // Rotate Earth-relative origin back into the ellipse's unrotated frame.
+  const dx=-o.centerX,dy=-o.centerY;
+  const x=dx*Math.cos(o.angle)-dy*Math.sin(o.angle);
+  const y=dx*Math.sin(o.angle)+dy*Math.cos(o.angle);
+  assert(Math.abs(x*x/(o.a*o.a)+y*y/(o.b*o.b)-1)<1e-10,"Earth lies on ellipse");
+  assert(Math.abs(Math.hypot(o.a*o.e*Math.cos(o.angle),o.a*o.e*Math.sin(o.angle))-o.a*o.e)<1e-6);
+}
+console.log("EARTH SOLAR ELLIPSE / FOCUS / ANNUAL MOTION PASS");
+
+const { lunarRelativeState } = await import("../src/simulations/subjects/astronomy/space/satellites-telescopes/satellites.physics.js");
+const { SATELLITE_CONFIGS, MOON } = await import("../src/simulations/subjects/astronomy/space/satellites-telescopes/satellites.constants.js");
+for(const type of ["LRO","CAPSTONE","GATEWAY"]) {
+  const c=SATELLITE_CONFIGS[type];
+  const initial=lunarRelativeState(c,0);
+  const opposite=lunarRelativeState(c,initial.period/2);
+  const returned=lunarRelativeState(c,initial.period);
+  assert(Math.hypot(initial.pos.x,initial.pos.y)>MOON.radiusKm);
+  assert(Math.hypot(opposite.pos.x,opposite.pos.y)>MOON.radiusKm);
+  assert(Math.hypot(returned.pos.x-initial.pos.x,returned.pos.y-initial.pos.y)<1e-6);
+  assert.equal(c.centralBody,"MOON");
+}
+assert(SATELLITE_CONFIGS.GATEWAY.planned);
+assert(SATELLITE_CONFIGS.CAPSTONE.historical);
+console.log("LUNAR BODY / PERIOD / MISSION LABELS PASS");
