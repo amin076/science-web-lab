@@ -553,10 +553,8 @@ const DopplerSimulator = () => {
         onSetObserver={updateObserver}
         onSetMasterVolume={setMasterVolume}
         masterGainRef={masterGainRef}
-        webMcpStatus={webMcpStatus}
         hideAgentGuide={embeddedMcpApp}
         embeddedVideoRequest={embeddedVideoRequest}
-        lastAgentAction={lastAgentAction}
         directorStatus={director.status}
         onStartDirector={() => director.startDirector(embeddedVideoRequest || {})}
         onStopDirector={director.stopDirector}
