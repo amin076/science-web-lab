@@ -48,7 +48,7 @@ import {
 } from "./satellites.render.js";
 import { vec } from "./satellites.math.js";
 import { educationalPosition } from "./educationalScale.js";
-import { drawSunContext, drawSunlightDirection } from "./sunContext.js";
+import { drawSunContext, drawSunlightDirection, drawEarthSunlitHemisphere } from "./sunContext.js";
 
 function useResizeObserver(ref) {
   const [size, setSize] = useState({ w: 800, h: 500 });
@@ -346,8 +346,9 @@ export default function SatellitesTelescopesSimulator() {
         sim.current.t * EARTH.omegaRadS,
         earthImg,
       );
+      drawEarthSunlitHemisphere(ctx, cx, cy, earthPx);
 
-      drawSunContext(ctx, stageW, stageH, settings.mode);
+      drawSunContext(ctx, stageW, stageH, settings.mode, moon?.theta || 0);
 
       const site = groundTelescopeECI(sim.current.t, 0);
       const sitePx = {
