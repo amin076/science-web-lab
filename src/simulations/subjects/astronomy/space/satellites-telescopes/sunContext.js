@@ -14,11 +14,11 @@ export function drawSunlightDirection(ctx, earthX, earthY, earthRadiusPx, width,
   ctx.fillStyle = "rgba(255,204,91,0.8)";
   ctx.lineWidth = 1.5;
   const y = Math.min(height - 25, Math.max(35, earthY - earthRadiusPx * 1.4));
-  const x1 = Math.min(width - 12, earthX + earthRadiusPx + 75);
-  const x2 = Math.min(width - 12, earthX + earthRadiusPx + 12);
-  if (x1 > x2 + 16 && x2 >= 0) {
+  const x1 = Math.min(width - 12, earthX - earthRadiusPx - 75);
+  const x2 = Math.min(width - 12, earthX - earthRadiusPx - 12);
+  if (x2 > x1 + 16 && x1 >= 0) {
     ctx.beginPath(); ctx.moveTo(x1,y); ctx.lineTo(x2,y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x2,y); ctx.lineTo(x2 + 7,y - 4); ctx.lineTo(x2 + 7,y + 4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x2,y); ctx.lineTo(x2 - 7,y - 4); ctx.lineTo(x2 - 7,y + 4); ctx.closePath(); ctx.fill();
   }
   ctx.restore();
 }
