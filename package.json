@@ -24,7 +24,8 @@
     "test:esbiko-physics": "node scripts/test-esbiko-physics.mjs",
     "sim:register": "node scripts/generate-simulation-registrations.cjs",
     "test:html-standard": "node scripts/test-html-simulation-standard.mjs",
-    "test:compound-pendulum": "node scripts/test-compound-pendulum.mjs"
+    "test:compound-pendulum": "node scripts/test-compound-pendulum.mjs",
+    "test:compound-comparison": "node scripts/test-compound-comparison.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
