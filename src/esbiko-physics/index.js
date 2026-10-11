@@ -9,3 +9,5 @@ export * from './mechanics/createParticleModel.js';
 export * from './mechanics/drag.js';
 export * from './mechanics/projectile.js';
 export * from './optics/compoundInstruments.js';
+
+export * from './mechanics/compoundPendulum.js';

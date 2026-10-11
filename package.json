@@ -22,7 +22,9 @@
     "test:gyroscope-responsive": "node scripts/test-gyroscope-responsive.mjs",
     "test:solar-system-complete": "node scripts/test-solar-system-complete.mjs",
     "test:esbiko-physics": "node scripts/test-esbiko-physics.mjs",
-    "sim:register": "node scripts/generate-simulation-registrations.cjs"
+    "sim:register": "node scripts/generate-simulation-registrations.cjs",
+    "test:html-standard": "node scripts/test-html-simulation-standard.mjs",
+    "test:compound-pendulum": "node scripts/test-compound-pendulum.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
