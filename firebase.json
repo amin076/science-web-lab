@@ -62,6 +62,10 @@
         "function": "mcp"
       },
       {
+        "source": "/api/v1/control/**",
+        "function": "simulationControlApi"
+      },
+      {
         "source": "/api/**",
         "function": "platformApi"
       },
