@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07192c">
+<title>Esbiko • HTML Simulation Standard Reference</title>
+<style>
+:root{font-family:Inter,system-ui,sans-serif;color:#e6f7ff;background:#07192c;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;min-width:0}
+header{padding:16px clamp(12px,2vw,28px);border-bottom:1px solid #27465c;background:#0f2840}
+h1{font-size:clamp(1.1rem,2vw,1.5rem);margin:0 0 6px}p{margin:0;color:#aad0e1;font-size:.88rem}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:14px;padding:14px;min-width:0;max-width:1800px;margin:auto}
+.stage,.panel{background:#0c2135;border:1px solid #2b4c64;border-radius:14px;min-width:0}
+.stage{overflow:hidden;display:flex;flex-direction:column}
+.canvas-wrap{position:relative;height:clamp(310px,65dvh,750px);background:#071626;touch-action:none}
+#simulation-canvas{display:block;width:100%;height:100%}
+.overlay{position:absolute;top:12px;left:12px;pointer-events:none;color:#c0e9ff;background:#051525b8;padding:8px;border-radius:8px;font-size:.75rem}
+.telemetry{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:10px}
+.stat{background:#142e48;border-radius:8px;padding:10px;min-width:0}
+.stat small{display:block;color:#9dbed1}.stat strong{font-size:1rem;font-variant-numeric:tabular-nums}
+.panel{padding:16px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.panel h2{font-size:1.1rem;margin:0}
+label{display:flex;flex-direction:column;gap:6px;font-size:.86rem}
+label span{display:flex;justify-content:space-between;gap:6px}
+output{color:#54ddf6;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:#39c7e3;min-height:30px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+button{background:#194260;color:white;border:1px solid #4d859d;padding:10px 14px;border-radius:8px;min-height:44px;cursor:pointer}
+button:hover{background:#225975}
+button:focus-visible,input:focus-visible{outline:3px solid #7de6ff;outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+section h3{font-size:.9rem;color:#a5d9ec;margin:2px 0 8px}
+#status,#recording-status{min-height:1.2em;font-size:.8rem;color:#b0d9e8;overflow-wrap:anywhere}
+footer{padding:0 14px 16px;color:#9bbad0;font-size:.8rem}
+@media(max-width:850px){.layout{display:flex;flex-direction:column;padding:8px}.panel{padding:14px}.canvas-wrap{height:clamp(300px,53dvh,540px)}}
+@media(max-width:420px){.telemetry{grid-template-columns:repeat(2,minmax(0,1fr))}.canvas-wrap{height:min(50dvh,420px);min-height:290px}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Esbiko • HTML Simulation Standard</h1>
+  <p>Reference only • Shared Esbiko Physics • Canvas 2D • WebMCP • Video • Responsive</p>
+</header>
+<main class="layout">
+ <section class="stage" aria-label="Scientific visualization">
+  <div class="canvas-wrap" id="stage">
+    <canvas id="simulation-canvas" aria-label="2D projectile trajectory and origin" role="img"></canvas>
+    <div class="overlay">Drag to pan · wheel to zoom · trajectories in metres</div>
+  </div>
+  <div class="telemetry" aria-live="off">
+   <div class="stat"><small>Simulation time</small><strong id="time">0.00 s</strong></div>
+   <div class="stat"><small>x</small><strong id="x">0.00 m</strong></div>
+   <div class="stat"><small>y</small><strong id="y">0.00 m</strong></div>
+   <div class="stat"><small>vx</small><strong id="vx">0.00 m/s</strong></div>
+   <div class="stat"><small>vy</small><strong id="vy">0.00 m/s</strong></div>
+   <div class="stat"><small>Model</small><strong>Shared engine</strong></div>
+  </div>
+ </section>
+ <aside class="panel" aria-label="Simulation settings">
+   <h2>Projectile reference laboratory</h2>
+   <p>Physics comes exclusively from <code>src/esbiko-physics</code>. This is the template reference, not the compound pendulum.</p>
+   <div id="sliders"></div>
+   <section>
+    <h3>Playback & camera</h3>
+    <div class="actions">
+     <button type="button" data-agent-action="play" id="play">Play</button>
+     <button type="button" data-agent-action="pause" id="pause">Pause</button>
+     <button type="button" data-agent-action="reset" id="reset">Reset</button>
+     <button type="button" data-agent-action="fitCamera" id="fit">Fit camera</button>
+    </div>
+   </section>
+   <section>
+    <h3>Video capture (silent WebM)</h3>
+    <div class="actions">
+     <button type="button" id="record-landscape">Record 16:9</button>
+     <button type="button" id="record-shorts">Record 9:16</button>
+     <button type="button" id="stop-record">Stop</button>
+     <button type="button" id="download-record">Download</button>
+    </div>
+    <p id="recording-status" role="status"></p>
+   </section>
+   <section>
+    <h3>Agent connection</h3>
+    <p id="mcp-status" role="status">Checking WebMCP support…</p>
+    <p id="status" role="status"></p>
+   </section>
+ </aside>
+</main>
+<footer>Standalone HTML runtime reference • No React • Renderer and camera are independent of physical state.</footer>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
