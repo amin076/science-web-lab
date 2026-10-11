@@ -1,6 +1,19 @@
 import { instrumentParameters } from '../../simulations/subjects/physics/optics/microscope-telescope/instrumentModel.js';
 import { projectileParameters } from '../../simulations/subjects/physics/mechanics/simple-projectile/simpleProjectileModel.js';
+import {COMPARISON_PARAMETER_SCHEMA} from "../../simulations/subjects/physics/mechanics/compound-pendulum/comparisonModel.js";
 export const simulationAgentManifest = Object.freeze({
+  "physics.mechanics.compound-pendulum": Object.freeze({
+    adapterVersion: "compound-pendulum-comparison.v1",
+    actions: ["open","configure","readState","play","pause","reset","record","export"],
+    tools: ["open_science_simulation"],
+    video: true, exportable: true,
+    parameterSchema: COMPARISON_PARAMETER_SCHEMA,
+    stateSchema: {type:"object",properties:{
+      running:{type:"boolean"}, elapsedSeconds:{type:"number"},
+      parameters:{type:"object"},physics:{type:"object"},
+      camera:{type:"object"},recording:{type:"object"},
+    }},
+  }),
   "physics.optics.microscope-telescope": Object.freeze({
     adapterVersion: 'optical-instruments.v1', actions: ['open','configure','readState','play','pause','reset','record','export'],
     tools: ['open_science_simulation'], video: true, exportable: true,

@@ -1,0 +1,74 @@
+name: Compound Pendulum Comparison
+
+on:
+  push:
+    branches: [feature/compound-pendulum-comparison]
+    paths:
+      - "src/simulations/subjects/physics/mechanics/compound-pendulum/**"
+      - "src/platform/agent/simulationAgentManifest.js"
+      - "functions/mcp/simulationRegistry.mjs"
+      - "scripts/test-compound-comparison*"
+      - ".github/workflows/compound-comparison.yml"
+  pull_request:
+    paths:
+      - "src/simulations/subjects/physics/mechanics/compound-pendulum/**"
+      - "src/platform/agent/simulationAgentManifest.js"
+      - "functions/mcp/simulationRegistry.mjs"
+      - "scripts/test-compound-comparison*"
+  workflow_dispatch:
+
+jobs:
+  validate-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Shared pendulum physics checks
+        run: npm run test:compound-pendulum
+      - name: Four-way comparison scientific regression
+        run: npm run test:compound-comparison
+      - name: HTML and advanced WebMCP runtime
+        run: npm run test:html-standard
+      - name: Generate registration and server-side MCP catalog
+        run: npm run platform:catalog
+      - name: Install MCP server dependencies
+        run: npm ci --prefix functions
+      - name: Validate server MCP manifest
+        run: node scripts/test-mcp-runtime.mjs
+      - name: Check simulation registration
+        run: npm run sim:check
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Public route + mobile + WebMCP + video test
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/compound-comparison.log 2>&1 &
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:4173/examples/compound-pendulum-comparison/index.html >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-compound-comparison-browser.mjs || { cat /tmp/compound-comparison.log; exit 1; }
+      - name: Upload browser artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compound-pendulum-comparison-evidence
+          path: |
+            artifacts/compound-comparison/*.png
+            artifacts/compound-comparison/*.webm
+          if-no-files-found: warn
