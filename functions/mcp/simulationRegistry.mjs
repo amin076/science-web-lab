@@ -16,6 +16,7 @@ function normalizeRoute(simulation) {
 
 function typeMatches(value, type) {
   if (type === "number") return typeof value === "number" && Number.isFinite(value);
+  if (type === "integer") return typeof value === "number" && Number.isSafeInteger(value);
   if (type === "string") return typeof value === "string";
   if (type === "boolean") return typeof value === "boolean";
   return true;
