@@ -15,7 +15,6 @@ import {GENERIC_SIMULATION_WIDGET_HTML, GENERIC_SIMULATION_WIDGET_URI} from "./s
 import {
   listSimulationProfiles,
   requireSimulationProfile,
-  SIMULATION_IDS,
   validateSimulationParameters,
 } from "./simulationRegistry.mjs";
 
@@ -150,10 +149,14 @@ export function createServer() {
       title: "Open Esbiko science simulation",
       description:
         "Open any Esbiko simulation in the reusable interactive MCP App shell. " +
-        "Use list_science_simulations to discover simulation IDs. Simulations " +
+        "Use list_science_simulations to discover simulation IDs; IDs are validated " +
+        "against the current server catalog, not a static tool enum. Simulations " +
         "with integrationLevel=adapted also support deeper agent controls.",
       inputSchema: z.object({
-        simulationId: z.enum(SIMULATION_IDS),
+        // Do not freeze catalog IDs into the MCP tool schema: connected clients may
+        // retain an older tools/list response even after the server catalog grows.
+        // requireSimulationProfile() checks the current, non-quarantined catalog.
+        simulationId: z.string().trim().min(1).max(160),
         parameters: z.record(z.string(), z.union([
           z.string(),
           z.number(),
