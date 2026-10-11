@@ -23,8 +23,8 @@ export async function handleControlHttp(req,res){
  }
  if(origin&&!knownOrigins.has(origin))return send(res,403,{error:"ORIGIN_NOT_ALLOWED"});
  const segments=(req.path||"/").split("/").filter(Boolean);
- const prefix=["api","v1","control"];
- const local=prefix.every((k,i)=>segments[i]===k)?segments.slice(prefix.length):segments;
+ const controlIndex=segments.indexOf("control");
+ const local=controlIndex>=0?segments.slice(controlIndex+1):segments;
  try{
   if(req.method==="GET"&&local.length===1&&local[0]==="schema")
    return send(res,200,{capabilities:getControlDescriptor()});
