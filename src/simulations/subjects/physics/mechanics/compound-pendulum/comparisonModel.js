@@ -6,7 +6,7 @@
 import {
  createCompoundPendulumModel, COMPOUND_PENDULUM_DEFAULTS,
  COMPOUND_PENDULUM_PARAMETER_SCHEMA,
-} from "../../../../esbiko-physics/mechanics/compoundPendulum.js";
+} from "../../../../../esbiko-physics/mechanics/compoundPendulum.js";
 
 export const COMPARISON_MAX = 4;
 const fields=Object.keys(COMPOUND_PENDULUM_PARAMETER_SCHEMA.properties).filter(k=>k!=="playbackRate");
@@ -72,7 +72,7 @@ export function createCompoundPendulumComparison(initial=COMPARISON_DEFAULTS) {
    proposed.selectedPane=Math.min(proposed.selectedPane,proposed.paneCount);
   validate(proposed);
   const physicsChanged=Object.entries(proposed).some(([key,v])=>
-    v!==config[key] && (key==="paneCount" || (key.startsWith("p") &&
+    v!==config[key] && (key==="paneCount" || (/^p[1-4]_/.test(key) &&
     !["trace","showTrails","fadeTrails","showRods","showGrid"].some(field=>
       key.replace(/^p[1-4]_/, "").startsWith(field)))));
   if(physicsChanged) { reset(proposed);return {reset:true,parameters:{...config}}; }
