@@ -103,6 +103,17 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
         });
       }
 
+      const remote = data?.remoteSession;
+      if (remote?.sessionId && remote?.token && /^[a-f0-9]{64}$/.test(remote.token)) {
+        url.searchParams.set("remoteSessionId", remote.sessionId);
+        frame.addEventListener("load", () => {
+          frame.contentWindow?.postMessage({
+            type:"esbiko-control-session-v1",
+            sessionId:remote.sessionId,
+            token:remote.token,
+          }, new URL(simulation.runUrl).origin);
+        }, {once:true});
+      }
       frame.src = url.toString();
     }
 
