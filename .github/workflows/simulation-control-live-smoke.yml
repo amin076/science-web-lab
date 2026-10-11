@@ -1,0 +1,35 @@
+name: Live Simulation Control API Smoke
+
+on:
+  workflow_run:
+    workflows:
+      - Deploy Esbiko Hosting
+      - Deploy Esbiko MCP PoC
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  live-api:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Wait for Hosting and control function
+        run: |
+          for i in {1..24}; do
+            if curl -fsS --max-time 15 https://www.esbiko.com/api/v1/control/schema | grep -q 'esbiko-control.v1'; then
+              echo "Simulation Control endpoint ready."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Control API not available on Hosting." >&2
+          exit 1
+      - name: Real API session creation and scientific control smoke
+        run: node scripts/test-control-api-live.mjs
