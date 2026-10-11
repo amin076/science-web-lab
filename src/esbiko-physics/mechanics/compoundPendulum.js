@@ -243,7 +243,42 @@ export function createCompoundPendulumModel(initialConfiguration = {}) {
  }
  function clearTrails(){assertActive();trails=[[],[],[],[]];traceAccum=0;sample();return {cleared:true};}
  function getParameters(){assertActive();return {...config};}
- function dispose(){disposed=true;trails=[];}
+
+ function checkpoint() {
+  assertActive();
+  return {modelVersion:COMPOUND_PENDULUM_MODEL_VERSION,
+    parameters:{...config},anglesRad:[...angles],omegasRadps:[...omegas],
+    timeSeconds,initialEnergyJ,traceAccum,
+    trails:trails.map(points=>points.slice(-360).map(x=>[...x]))};
+ }
+ function restore(saved) {
+  assertActive();
+  if(!saved || typeof saved!=="object" || saved.modelVersion!==COMPOUND_PENDULUM_MODEL_VERSION)
+    throw new RangeError("Invalid checkpoint model version");
+  const next={...COMPOUND_PENDULUM_DEFAULTS,...validateCompoundPendulumConfig(saved.parameters)};
+  const n=next.rodCount;
+  const anglesNext=saved.anglesRad,omegaNext=saved.omegasRadps;
+  if(!Array.isArray(anglesNext)||anglesNext.length!==n||
+     !Array.isArray(omegaNext)||omegaNext.length!==n ||
+     !anglesNext.every(x=>Number.isFinite(x)&&Math.abs(x)<=Math.PI+1e-7) ||
+     !omegaNext.every(x=>Number.isFinite(x)&&Math.abs(x)<=1e5))
+     throw new RangeError("Invalid checkpoint coordinates");
+  if(!Number.isFinite(saved.timeSeconds)||saved.timeSeconds<0||saved.timeSeconds>3600||
+     !Number.isFinite(saved.initialEnergyJ)||
+     !Number.isFinite(saved.traceAccum)||saved.traceAccum<0||saved.traceAccum>1)
+     throw new RangeError("Invalid checkpoint time or energy");
+  if(!Array.isArray(saved.trails)||saved.trails.length!==4 ||
+     !saved.trails.every((points,i)=>Array.isArray(points)&&points.length<=360 &&
+       points.every(point=>Array.isArray(point)&&point.length===2&&
+       point.every(Number.isFinite))))
+     throw new RangeError("Invalid checkpoint trajectories");
+  config=next; angles=[...anglesNext];omegas=[...omegaNext];
+  timeSeconds=saved.timeSeconds;initialEnergyJ=saved.initialEnergyJ;
+  traceAccum=saved.traceAccum;stepHint=1/240;
+  trails=saved.trails.map(points=>points.map(p=>[...p]));
+  return snapshot();
+ }
+  function dispose(){disposed=true;trails=[];}
  reset(config);
- return {configure,reset,step,snapshot,getParameters,trajectory,clearTrails,dispose};
+ return {configure,reset,step,snapshot,getParameters,trajectory,clearTrails,checkpoint,restore,dispose};
 }
