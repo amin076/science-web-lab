@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHtmlSimulationRuntime,validateHtmlParameters } from "../src/platform/html-simulation/createHtmlSimulationRuntime.js";
+import { createHtmlCanvasRecorder } from "../src/platform/html-simulation/createHtmlCanvasRecorder.js";
 import { constantAccelerationStep,uniformGravity } from "../src/esbiko-physics/index.js";
 
 const schema = {type:"object",properties:{
@@ -104,4 +105,46 @@ assert.ok(Number.isFinite(runtime.getState().physics.position[0]));
 runtime.dispose();
 assert.equal(frames.size,0);
 assert.throws(()=>runtime.getState(),/DISPOSED/);
+
+// Browser-like media shim verifies the HTML-only recorder lifecycle without a webcam.
+let stoppedTracks=0, clickCount=0;
+class FakeMediaRecorder {
+  static isTypeSupported(type) { return type==="video/webm"; }
+  constructor(){this.state="inactive";}
+  start(){this.state="recording";}
+  stop(){
+    this.state="inactive";
+    this.ondataavailable?.({data:new Blob(["video bytes"],{type:"video/webm"})});
+    this.onstop?.();
+  }
+}
+const mediaWindow={
+  Blob,MediaRecorder:FakeMediaRecorder,requestAnimationFrame:()=>123,cancelAnimationFrame:()=>{},
+  URL:{createObjectURL:()=>"blob:example",revokeObjectURL:()=>{}},
+};
+const videoDocument={
+  defaultView:mediaWindow,body:{appendChild:()=>{}},
+  createElement(tag) {
+    if(tag==="canvas")return {
+      width:0,height:0,getContext:()=>({fillRect(){},drawImage(){}}),
+      captureStream:()=>({getTracks:()=>[{stop(){stoppedTracks++;}}]}),
+    };
+    if(tag==="a")return {click(){clickCount++;},remove(){}};
+    throw new Error(tag);
+  },
+};
+const videoCanvas={ownerDocument:videoDocument,width:800,height:500,captureStream:()=>{}};
+const vr=createHtmlCanvasRecorder(videoCanvas);
+assert.equal(vr.getStatus().status,"idle");
+assert.equal(vr.start("shorts").status,"recording");
+assert.equal(vr.stop().status,"ready");
+assert.equal(vr.getStatus().file.fileName,"esbiko-simulation-shorts.webm");
+assert.ok(vr.getStatus().file.bytes>0);
+assert.equal(vr.download().downloadRequested,true);
+assert.equal(clickCount,1);
+assert.equal(stoppedTracks,1);
+assert.equal(vr.start("landscape").status,"recording");
+assert.equal(vr.stop().status,"ready");
+vr.dispose();
+assert.throws(()=>vr.start("shorts"),/DISPOSED/);
 console.log("HTML standard: shared model, schema, UI/WebMCP state, camera, time, numerical recovery and disposal OK");
