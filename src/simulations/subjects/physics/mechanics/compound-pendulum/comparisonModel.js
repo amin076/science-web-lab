@@ -53,7 +53,7 @@ export function createCompoundPendulumComparison(initial=COMPARISON_DEFAULTS) {
    if((rule.type==="boolean" && typeof v!=="boolean") ||
       ((rule.type==="number"||rule.type==="integer") &&
        (typeof v!=="number"||!Number.isFinite(v)||v<rule.minimum||v>rule.maximum||
-        (rule.type==="integer"&&!Number.isInteger(v))))throw new RangeError("Invalid "+key);
+        (rule.type==="integer"&&!Number.isInteger(v)))))throw new RangeError("Invalid "+key);
   }
   if(value.selectedPane>value.paneCount)throw new RangeError("Selected pane exceeds active pane count");
  }
