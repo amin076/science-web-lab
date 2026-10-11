@@ -11,7 +11,7 @@ import {
 export const SIMULATION_CONTROL_ID="physics.mechanics.compound-pendulum";
 export const SESSION_LIMIT_SECONDS=120;
 export const ADVANCE_LIMIT_SECONDS=2;
-export const MAX_COMMANDS=200;
+export const MAX_COMMANDS=80;
 export const DESCRIPTOR={
  id:SIMULATION_CONTROL_ID,adapterVersion:"esbiko-control.v1",schema:COMPARISON_PARAMETER_SCHEMA,
  defaults:COMPARISON_DEFAULTS,
