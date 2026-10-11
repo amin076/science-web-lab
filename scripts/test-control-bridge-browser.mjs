@@ -61,7 +61,7 @@ try{
  assert.equal(after.physics.pendulums.length,2);
  assert.ok(after.physics.comparisons[0].tipSeparationM>0);
  await page.selectOption('[data-compare="selected"]',"2");
- await page.waitForFunction(()=>document.querySelector('[data-compare="controls"] [data-field="rodCount"]'));
+ await page.waitForFunction(()=>document.querySelector('[data-agent-param="p2_rodCount"]'));
  await page.locator('[data-compare="controls"] [data-field="rodCount"]').selectOption("2");
  await page.waitForFunction(()=>window.__compoundComparison.api.getState().parameters.p2_rodCount===2,null,{timeout:12000});
  assert.equal(doc.checkpoint.parameters.p2_rodCount,2);
