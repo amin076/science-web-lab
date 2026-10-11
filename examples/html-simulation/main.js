@@ -78,6 +78,7 @@ function updateUI(s) {
   if (now-lastUiAt<70 && s.running) return;
   lastUiAt=now;
   $("time").textContent=s.elapsedSeconds.toFixed(2)+" s";
+  if (!s.physics) { $("status").textContent=s.error?.message || "Invalid physical state — reset"; return; }
   $("x").textContent=s.physics.position[0].toFixed(2)+" m";
   $("y").textContent=s.physics.position[1].toFixed(2)+" m";
   $("vx").textContent=s.physics.velocity[0].toFixed(2)+" m/s";
