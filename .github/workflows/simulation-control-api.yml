@@ -12,6 +12,7 @@ on:
       - "src/platform/html-simulation/**"
       - "scripts/pack-simulation-control-engine.cjs"
       - "scripts/test-simulation-control.mjs"
+      - "scripts/test-control-bridge-browser.mjs"
       - "scripts/test-html-simulation-standard.mjs"
       - ".github/workflows/simulation-control-api.yml"
   pull_request:
@@ -62,6 +63,18 @@ jobs:
           node --check functions/mcp/simulationWidget.mjs
       - name: Production frontend build
         run: npm run build
+      - name: Install Chromium for MCP App session bridge
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify same-session server/iframe/agent control
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/simulation-control-v1.log 2>&1 &
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:4173/examples/compound-pendulum-comparison/index.html >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-control-bridge-browser.mjs || { cat /tmp/simulation-control-v1.log; exit 1; }
       - name: Upload contract evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,4 +83,5 @@ jobs:
           path: |
             functions/api/engine/compoundPendulum.mjs
             functions/api/engine/compoundComparison.mjs
+            artifacts/control-bridge/*.png
           if-no-files-found: warn
