@@ -43,6 +43,8 @@ jobs:
         run: npm run test:html-standard
       - name: Generate registration and server-side MCP catalog
         run: npm run platform:catalog
+      - name: Install MCP server dependencies
+        run: npm ci --prefix functions
       - name: Validate server MCP manifest
         run: node scripts/test-mcp-runtime.mjs
       - name: Check simulation registration
