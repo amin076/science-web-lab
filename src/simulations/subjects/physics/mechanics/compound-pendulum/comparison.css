@@ -1,4 +1,4 @@
-.cpc-root{color-scheme:dark;color:#e7f3ff;background:radial-gradient(ellipse at 25% 0%,#152e4a,#071423 65%);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100dvh;min-width:0;overflow-x:hidden}
+.cpc-root{color-scheme:dark;color:#e7f3ff;background:radial-gradient(ellipse at 25% 0%,#152e4a,#071423 65%);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;height:100dvh;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 .cpc-root *{box-sizing:border-box}
 .cpc-root h1{font-size:clamp(20px,2vw,28px);margin:0}
 .cpc-root h2{font-size:18px;margin:0}
