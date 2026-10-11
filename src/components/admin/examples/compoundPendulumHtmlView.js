@@ -1,7 +1,7 @@
 import { createCompoundPendulumModel, COMPOUND_PENDULUM_DEFAULTS,
  COMPOUND_PENDULUM_PARAMETER_SCHEMA, COMPOUND_PENDULUM_PRESETS, ROD_COLORS
-} from "../../esbiko-physics/mechanics/compoundPendulum.js";
-import { createHtmlSimulationRuntime } from "../../platform/html-simulation/createHtmlSimulationRuntime.js";
+} from "../../../esbiko-physics/mechanics/compoundPendulum.js";
+import { createHtmlSimulationRuntime } from "../../../platform/html-simulation/createHtmlSimulationRuntime.js";
 import "./compoundPendulumAdmin.css";
 
 const $ = (root, key) => root.querySelector('[data-cp="'+key+'"]');
