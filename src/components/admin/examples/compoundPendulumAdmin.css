@@ -1,0 +1,60 @@
+.cp-root{--cp-bg:#071220;--cp-edge:#36516b;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#ebf3ff;background:radial-gradient(ellipse at 35% 0,#173656,#071220 72%);color-scheme:dark;min-height:100dvh;overflow-x:hidden}
+.cp-root *{box-sizing:border-box}
+.cp-root .cp-header{padding:16px clamp(12px,2vw,28px);border-bottom:1px solid #31516c;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cp-root h1{font-size:clamp(18px,2vw,23px);margin:0 0 4px;font-weight:750}
+.cp-root p{margin:0;color:#acc5d8;font-size:12px;line-height:1.5}
+.cp-root .cp-pill{background:#123d52;color:#a7ecf1;border:1px solid #3c637d;border-radius:8px;padding:8px 10px;font-size:12px}
+.cp-root .cp-layout{max-width:1800px;margin:auto;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px;align-items:start;min-width:0}
+.cp-root .cp-stage,.cp-root .cp-controls{background:#0d1d30;border:1px solid var(--cp-edge);border-radius:14px;min-width:0;overflow:hidden}
+.cp-root .cp-view{height:clamp(350px,67dvh,750px);position:relative;touch-action:none}
+.cp-root canvas{display:block;width:100%;height:100%;touch-action:none}
+.cp-root .cp-overlay{position:absolute;pointer-events:none;top:12px;right:12px;background:#081d2baa;border:1px solid #385c76;border-radius:7px;padding:8px;color:#b9d9e9;font-size:11px}
+.cp-root .cp-metrics{padding:9px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.cp-root .cp-metric{min-width:0;background:#162e49;border-radius:8px;padding:8px;font-size:11px;color:#b8cde0}
+.cp-root .cp-metric strong{display:block;font-size:15px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;color:#f4f9ff;margin-top:3px}
+.cp-root .cp-hint{padding:1px 12px 12px!important;color:#b7d0e4;overflow-wrap:anywhere}
+.cp-root .cp-controls{padding:14px;max-height:calc(100dvh - 100px);overflow-y:auto;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain}
+.cp-root h2{font-size:17px;margin:4px 0;font-weight:700}
+.cp-root h3{font-size:14px;margin:3px 0 9px;font-weight:700;color:#c5e7f3}
+.cp-root button,.cp-root select{border:1px solid #4b7794;background:#19415f;color:#eaf6fc;border-radius:8px;padding:10px;font-size:12px;min-height:44px;cursor:pointer}
+.cp-root button:disabled,.cp-root input:disabled{opacity:.44;cursor:not-allowed}
+.cp-root button:focus-visible,.cp-root select:focus-visible,.cp-root input:focus-visible{outline:3px solid #72e0ff;outline-offset:2px}
+.cp-root button:hover:not(:disabled){background:#235777}
+.cp-root select{width:100%}
+.cp-root .cp-actions{display:flex;flex-wrap:wrap;gap:7px}
+.cp-root .cp-actions button{flex:1 1 84px}
+.cp-root .cp-wide{width:100%}
+.cp-root .cp-field{display:block;font-size:12px;color:#d8eaf5}
+.cp-root .cp-field>span{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:3px}
+.cp-root .cp-field output{white-space:nowrap;color:#7cecf5;font-variant-numeric:tabular-nums}
+.cp-root input[type=range]{display:block;width:100%;height:32px;accent-color:var(--accent,#3bcadd)}
+.cp-root input[type=checkbox]{width:17px;height:17px;accent-color:var(--color,#36c6e0);flex:none}
+.cp-root .cp-traces,.cp-root .cp-video{background:#12283f;border:1px solid #375a72;border-radius:10px;padding:11px}
+.cp-root .cp-tracegrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-bottom:10px}
+.cp-root .cp-trace{display:flex;gap:7px;align-items:center;border:1px solid #35516c;border-radius:7px;padding:9px 7px;min-width:0;font-size:12px}
+.cp-root .cp-trace.cp-inactive{opacity:.4}
+.cp-root .cp-dot{background:var(--color);width:10px;height:10px;border-radius:50%;flex:none}
+.cp-root .cp-flags{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.cp-root .cp-flags label{display:flex;gap:8px;align-items:center;font-size:12px}
+.cp-root .cp-rod{border:1px solid #35536c;border-left:4px solid var(--color);border-radius:10px;margin:10px 0;padding:11px;background:#11283e}
+.cp-root .cp-rod h3{color:var(--color)}
+.cp-root .cp-rod .cp-field{margin:11px 0}
+.cp-root .cp-small{font-size:11px}
+.cp-root [hidden]{display:none!important}
+@media(max-width:1000px){
+  .cp-root .cp-layout{display:flex;flex-direction:column;padding:8px}
+  .cp-root .cp-stage,.cp-root .cp-controls{width:100%}
+  .cp-root .cp-controls{max-height:none;overflow:visible}
+  .cp-root .cp-view{height:min(56dvh,600px);min-height:320px}
+}
+@media(max-width:580px){
+  .cp-root .cp-view{height:48dvh;min-height:285px}
+  .cp-root .cp-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cp-root .cp-metric:last-child{grid-column:span 2}
+  .cp-root .cp-overlay{font-size:10px;padding:5px}
+  .cp-root .cp-header{padding:12px}
+  .cp-root .cp-controls{padding:12px}
+}
+@supports (padding: max(0px)) {
+  .cp-root .cp-layout{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+}
