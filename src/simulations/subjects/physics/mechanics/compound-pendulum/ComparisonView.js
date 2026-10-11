@@ -216,7 +216,8 @@ export function mountCompoundComparison(container){
   onStatus:state=>{
    if(disposed)return;
    const now=performance.now();
-   if(now-lastUi<120)return;
+   if(now-lastUi<120 && state.running && lastPanel===state.parameters.selectedPane &&
+      String(state.parameters.paneCount)===viewport.dataset.count)return;
    lastUi=now;
    syncViewport(state);
    syncControlPanel(state);
