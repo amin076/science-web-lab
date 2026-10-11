@@ -1,4 +1,5 @@
-import { Grid, Paper, Typography } from "@mui/material";
+import { Grid, Paper, Typography, Button } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { listUsersFunction } from "../../services/adminService";
@@ -55,6 +56,11 @@ export default function AdminDashboard() {
         Admin Dashboard
       </Typography>
 
+      <Paper sx={{p:2,mb:3,borderRadius:3}}>
+        <Typography fontWeight={700}>Scientific simulation previews</Typography>
+        <Typography variant="body2" sx={{mb:1,opacity:.8}}>Admin-only HTML runtime pilot. Not published in the public Experiments catalog.</Typography>
+        <Button component={RouterLink} to="/admin/examples/compound-pendulum" variant="outlined">Open compound pendulum (1–4 rods)</Button>
+      </Paper>
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
           <StatCard title="Total Users" value={stats.totalUsers} />
