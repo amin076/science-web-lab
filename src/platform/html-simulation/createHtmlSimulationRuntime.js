@@ -199,7 +199,7 @@ export function createHtmlSimulationRuntime({
     commandHandler=handler;
     return () => {commandHandler=null;};
   }
-  function loadCheckpoint({checkpoint,camera:nextCamera}={}) {
+  function loadCheckpoint({checkpoint,camera:nextCamera,serverRunning=false}={}) {
     active();if(!checkpoint||typeof engine.restore!=="function")throw new Error("CHECKPOINT_UNSUPPORTED");
     if(frameId!==null){caf(frameId);frameId=null;}
     running=false;lastTimestamp=null;accumulator=0;
@@ -207,6 +207,7 @@ export function createHtmlSimulationRuntime({
     params=clone(engine.getParameters()); // hydrated state reflects actual configuration
     elapsedSeconds=engine.snapshot().timeSeconds;
     if(nextCamera)camera={...camera,...nextCamera};
+    running=serverRunning===true; // remote clock advances only via explicit API commands
     render();return getState();
   }
   const remote=(action,input,run)=>commandHandler?commandHandler(action,input):run();
