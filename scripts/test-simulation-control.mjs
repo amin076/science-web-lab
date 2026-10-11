@@ -42,6 +42,7 @@ const cmd=(action,rest={})=>{
 };
 assert.equal(cmd("get_state").result.state.pendulums.length,2);
 assert.equal(doc.revision,0);
+assert.equal(exposeControlState(doc).state.parameters.p2_initialOmegaRadps1,15.05);
 assert.equal(cmd("get_capabilities").result.limits.maxAdvanceSeconds,2);
 assert.equal(cmd("configure",{parameters:{p2_initialAngleDeg1:155.1}}).mutation,true);
 assert.equal(doc.revision,1);
