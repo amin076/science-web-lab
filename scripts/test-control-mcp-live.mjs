@@ -44,6 +44,13 @@ const names=(catalog?.tools||[]).map(x=>x.name);
 for(const name of ["get_simulation_control_schema","create_simulation_session",
  "control_simulation_session","read_simulation_session","close_simulation_session"])
  assert.ok(names.includes(name),"Missing public MCP tool "+name);
+const openTool=catalog.tools.find(x=>x.name==="open_science_simulation");
+assert(openTool,"Missing open_science_simulation");
+assert.equal(openTool.inputSchema?.properties?.simulationId?.type,"string",
+ "Opening simulations must accept future catalog IDs without a frozen enum.");
+assert.equal(openTool.inputSchema?.properties?.simulationId?.enum,undefined,
+ "A static ID enum causes stale tool schemas in connected ChatGPT clients.");
+console.log("MCP dynamic simulation IDs input schema PASS");
 console.log("MCP advanced tool discovery PASS");
 async function call(name,args){
  const out=await rpc("tools/call",{name,arguments:args});
@@ -51,6 +58,17 @@ async function call(name,args){
  return out.structuredContent||out;
 }
 const controlId="physics.mechanics.compound-pendulum";
+const opened=await call("open_science_simulation",{
+ simulationId:controlId,parameters:{paneCount:2,p1_rodCount:3,p2_rodCount:3},
+});
+assert.equal(opened.simulation?.id,controlId,
+ "Open tool must return Compound Pendulum MCP App resource.");
+assert.equal(opened.parameters?.paneCount,2);
+const rejected=await rpc("tools/call",{name:"open_science_simulation",
+ arguments:{simulationId:"physics.invalid.not-registered"}});
+assert.equal(rejected.isError,true,
+ "Unknown simulations must be rejected by the live catalog validator.");
+console.log("MCP actual Compound Pendulum open + unknown ID rejection PASS");
 const schema=await call("get_simulation_control_schema",{simulationId:controlId});
 assert.equal(schema.capabilities.id,controlId);
 let session=null;
