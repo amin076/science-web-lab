@@ -7,6 +7,10 @@ on:
       - "feature/esbiko-*"
     paths:
       - "functions/mcp/**"
+      - "functions/control/**"
+      - "src/esbiko-physics/mechanics/compoundPendulum.js"
+      - "src/simulations/subjects/physics/mechanics/compound-pendulum/comparisonModel.js"
+      - "scripts/pack-simulation-control-engine.cjs"
       - "functions/index.js"
       - "functions/api/**"
       - "src/platform/agent/**"
@@ -47,6 +51,9 @@ jobs:
       - name: Verify regenerated MCP discovery catalog
         run: node scripts/test-mcp-runtime.mjs
 
+      - name: Verify shared Simulation Control API
+        run: npm run test:control
+
       - name: Write Firebase service account
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -56,4 +63,4 @@ jobs:
       - name: Deploy MCP and Platform API functions
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
-        run: npx firebase-tools@latest deploy --only functions:mcp,functions:platformApi --project sience-web-app --non-interactive
+        run: npx firebase-tools@latest deploy --only functions:mcp,functions:platformApi,functions:simulationControlApi --project sience-web-app --non-interactive
