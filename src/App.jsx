@@ -32,6 +32,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminMessages from "./pages/admin/AdminMessages";
 import SimpleProjectile from '@/components/admin/examples/SimpleProjectile';
+import CompoundPendulumAdmin from "@/components/admin/examples/CompoundPendulumAdmin";
 import Simulation2DReference from "@/components/simulation-ui/Simulation2DReference";
 import Simulation3DReference from "@/components/simulation-ui/Simulation3DReference";
 
@@ -100,6 +101,7 @@ export default function App() {
             {/* ✅ Admin routes */}
             <Route path="/admin/standards/3d" element={<AdminRoute><SimulationBoundary><Simulation3DReference /></SimulationBoundary></AdminRoute>} />
             <Route path="/admin/examples/simple-projectile" element={<AdminRoute><SimulationBoundary><SimpleProjectile /></SimulationBoundary></AdminRoute>} />
+            <Route path="/admin/examples/compound-pendulum" element={<AdminRoute><SimulationBoundary><CompoundPendulumAdmin /></SimulationBoundary></AdminRoute>} />
             <Route path="/admin/standards/2d" element={<AdminRoute><Simulation2DReference /></AdminRoute>} />
             <Route
               path="/admin/messages"
