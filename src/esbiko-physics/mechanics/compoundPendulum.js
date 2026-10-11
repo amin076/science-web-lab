@@ -189,6 +189,7 @@ export function createCompoundPendulumModel(initialConfiguration = {}) {
   let iterations=0;
   while(remaining>1e-12){
    if(++iterations>10000)throw new RangeError("Integrator iteration limit");
+   if(remaining<MIN_H){ y=rk4(config,y,remaining);remaining=0;break; }
    let h=Math.min(localStep,MAX_H,remaining),ok=false;
    for(let attempts=0;attempts<26;attempts++){
     if(h<MIN_H)throw new RangeError("Adaptive step underflow");
