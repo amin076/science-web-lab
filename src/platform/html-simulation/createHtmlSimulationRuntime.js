@@ -190,8 +190,8 @@ export function createHtmlSimulationRuntime({
   function downloadVideo() { active(); if (!recorder) throw new Error("VIDEO_UNSUPPORTED"); return recorder.download(); }
 
   function getCapabilities() { active(); return {simulationId:id,standardVersion:HTML_SIMULATION_STANDARD_VERSION, parameterSchema:clone(parameterSchema),commands:["getState","getCapabilities","configure","play","pause","reset","stepOnce","setCamera","fitCamera","getTrajectories","clearTrails","startVideo","stopVideo","getVideoStatus","downloadVideo"],video:!!recorder}; }
-  function getTrajectories({rodIndex,limit=1200}={}) { active();if(typeof engine.trajectory!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");return {rodIndex,pointsM:engine.trajectory({rodIndex,limit})}; }
-  function clearTrails() { active();if(typeof engine.clearTrails!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");const result=engine.clearTrails();render();return result; }
+  function getTrajectories({paneIndex,rodIndex,limit=1200}={}) { active();if(typeof engine.trajectory!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");return {paneIndex:paneIndex??1,rodIndex,pointsM:engine.trajectory({paneIndex,rodIndex,limit})}; }
+  function clearTrails({paneIndex}={}) { active();if(typeof engine.clearTrails!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");const result=engine.clearTrails({paneIndex});render();return result; }
   function stepOnce() { active();if(running)throw new Error("Pause before stepping");engine.step(STEP);checkFiniteTree(engine.snapshot());elapsedSeconds+=STEP;render();return getState(); }
   const api = {getState,getCapabilities,getTrajectories,clearTrails,stepOnce,configure,play,pause,reset,setCamera,fitCamera,
     setPlayback: ({running:desired}) => {
@@ -219,8 +219,8 @@ export function createHtmlSimulationRuntime({
       tool("set_camera",{type:"object",properties:{x:{type:"number",minimum:-1e6,maximum:1e6},y:{type:"number",minimum:-1e6,maximum:1e6},zoom:{type:"number",minimum:0.2,maximum:8}},additionalProperties:false},"setCamera"),
     ];
     if (typeof engine.trajectory === "function") tools.push(
-      tool("get_trajectory",{type:"object",properties:{rodIndex:{type:"integer",minimum:1,maximum:4},limit:{type:"integer",minimum:1,maximum:18000}},required:["rodIndex"],additionalProperties:false},"getTrajectories",true),
-      tool("clear_trails",empty,"clearTrails"),
+      tool("get_trajectory",{type:"object",properties:{paneIndex:{type:"integer",minimum:1,maximum:4},rodIndex:{type:"integer",minimum:1,maximum:4},limit:{type:"integer",minimum:1,maximum:18000}},required:["rodIndex"],additionalProperties:false},"getTrajectories",true),
+      tool("clear_trails",{type:"object",properties:{paneIndex:{type:"integer",minimum:1,maximum:4}},additionalProperties:false},"clearTrails"),
     );
     if (recorder) tools.push(
       tool("start_video",{type:"object",properties:{mode:{type:"string",enum:["landscape","shorts"]}},additionalProperties:false},"startVideo"),
