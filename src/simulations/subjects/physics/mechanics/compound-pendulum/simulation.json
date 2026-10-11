@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "esbiko-simulation-registration.v1",
+  "id": "physics.mechanics.compound-pendulum",
+  "domain": "physics",
+  "topic": "mechanics",
+  "name": "Compound Pendulum",
+  "desc": "Explore the chaotic motion of up to four connected rigid rods, then compare as many as four independently configured pendulum experiments side by side with shared time, colorful trajectories and energy tracking.",
+  "shortDesc": "Compare up to four multirod pendulums with different initial angles, lengths, and angular speeds.",
+  "engine": "canvas2d",
+  "uiStandard": "2d-v0.1",
+  "scientificEngine": "esbiko-physics",
+  "entry": "index.jsx",
+  "visibility": "public",
+  "gradient": "linear-gradient(135deg,#0e7490,#8b5cf6)",
+  "demo": true,
+  "tags": [
+    "compound pendulum",
+    "chaos",
+    "rigid bodies",
+    "nonlinear dynamics",
+    "comparison",
+    "energy",
+    "trails"
+  ],
+  "difficulty": "Advanced",
+  "yearLevel": "Years 11–12 Physics / University",
+  "estimatedTime": "15–30 mins",
+  "estimatedDurationMinutes": 20,
+  "supportedDevices": "Desktop / Tablet / Mobile",
+  "learningObjectives": [
+    "Explore nonlinear motion of one to four connected rigid rods",
+    "Compare trajectories and the sensitivity to small differences in initial conditions",
+    "Distinguish changes in physical energy from view-only camera scaling",
+    "Investigate how viscous joint friction dissipates mechanical energy"
+  ],
+  "curriculumLinks": [
+    "Dynamics",
+    "Oscillations",
+    "Energy",
+    "Nonlinear systems"
+  ],
+  "modelAssumptions": [
+    "Uniform slender rigid rods with equal linear mass density",
+    "Independent ideal rotary pin joints",
+    "Uniform gravitational field",
+    "Viscous hinge damping without air resistance or collision geometry",
+    "Independently evolved systems with synchronized simulation time"
+  ]
+}
