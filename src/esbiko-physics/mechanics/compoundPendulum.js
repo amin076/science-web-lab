@@ -248,7 +248,7 @@ export function createCompoundPendulumModel(initialConfiguration = {}) {
   assertActive();
   return {modelVersion:COMPOUND_PENDULUM_MODEL_VERSION,
     parameters:{...config},anglesRad:[...angles],omegasRadps:[...omegas],
-    timeSeconds,initialEnergyJ,traceAccum,
+    timeSeconds,initialEnergyJ,traceAccum,stepHint,
     trails:trails.map(points=>points.slice(-360).map(x=>[...x]))};
  }
  function restore(saved) {
@@ -265,7 +265,8 @@ export function createCompoundPendulumModel(initialConfiguration = {}) {
      throw new RangeError("Invalid checkpoint coordinates");
   if(!Number.isFinite(saved.timeSeconds)||saved.timeSeconds<0||saved.timeSeconds>3600||
      !Number.isFinite(saved.initialEnergyJ)||
-     !Number.isFinite(saved.traceAccum)||saved.traceAccum<0||saved.traceAccum>1)
+     !Number.isFinite(saved.traceAccum)||saved.traceAccum<0||saved.traceAccum>1||
+     !Number.isFinite(saved.stepHint)||saved.stepHint<=0||saved.stepHint>MAX_H)
      throw new RangeError("Invalid checkpoint time or energy");
   if(!Array.isArray(saved.trails)||saved.trails.length!==4 ||
      !saved.trails.every((points,i)=>Array.isArray(points)&&points.length<=360 &&
@@ -274,7 +275,7 @@ export function createCompoundPendulumModel(initialConfiguration = {}) {
      throw new RangeError("Invalid checkpoint trajectories");
   config=next; angles=[...anglesNext];omegas=[...omegaNext];
   timeSeconds=saved.timeSeconds;initialEnergyJ=saved.initialEnergyJ;
-  traceAccum=saved.traceAccum;stepHint=1/240;
+  traceAccum=saved.traceAccum;stepHint=saved.stepHint;
   trails=saved.trails.map(points=>points.map(p=>[...p]));
   return snapshot();
  }
