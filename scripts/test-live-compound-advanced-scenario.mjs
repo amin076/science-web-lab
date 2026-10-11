@@ -62,7 +62,7 @@ try{
  const created=await tool("create_simulation_session",{
   simulationId:"physics.mechanics.compound-pendulum",parameters:values,
  });
- credentials=created.remoteSession;
+ credentials={sessionId:created.remoteSession.sessionId,token:created.remoteSession.token};
  assert.match(credentials?.token||"",/^[0-9a-f]{64}$/);
  assert.match(credentials?.sessionId||"",/^[0-9a-f-]{36}$/);
  const snap=await tool("read_simulation_session",credentials);
