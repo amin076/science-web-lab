@@ -193,10 +193,37 @@ export function createHtmlSimulationRuntime({
   function getTrajectories({paneIndex,rodIndex,limit=1200}={}) { active();if(typeof engine.trajectory!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");return {paneIndex:paneIndex??1,rodIndex,pointsM:engine.trajectory({paneIndex,rodIndex,limit})}; }
   function clearTrails({paneIndex}={}) { active();if(typeof engine.clearTrails!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");const result=engine.clearTrails({paneIndex});render();return result; }
   function stepOnce() { active();if(running)throw new Error("Pause before stepping");engine.step(STEP);checkFiniteTree(engine.snapshot());elapsedSeconds+=STEP;render();return getState(); }
-  const api = {getState,getCapabilities,getTrajectories,clearTrails,stepOnce,configure,play,pause,reset,setCamera,fitCamera,
+  let commandHandler=null;
+  function setCommandHandler(handler) {
+    active();if(handler!==null&&typeof handler!=="function")throw new TypeError("Command handler must be a function or null");
+    commandHandler=handler;
+    return () => {commandHandler=null;};
+  }
+  function loadCheckpoint({checkpoint,camera:nextCamera,serverRunning=false}={}) {
+    active();if(!checkpoint||typeof engine.restore!=="function")throw new Error("CHECKPOINT_UNSUPPORTED");
+    if(frameId!==null){caf(frameId);frameId=null;}
+    running=false;lastTimestamp=null;accumulator=0;
+    engine.restore(checkpoint);
+    params=clone(engine.getParameters()); // hydrated state reflects actual configuration
+    elapsedSeconds=engine.snapshot().timeSeconds;
+    if(nextCamera)camera={...camera,...nextCamera};
+    running=serverRunning===true; // remote clock advances only via explicit API commands
+    render();return getState();
+  }
+  const remote=(action,input,run)=>commandHandler?commandHandler(action,input):run();
+  const api = {getState,getCapabilities,
+    getTrajectories,loadCheckpoint,setCommandHandler,
+    clearTrails:input=>remote("clear_trails",input||{},()=>clearTrails(input||{})),
+    stepOnce:()=>remote("step",{},()=>stepOnce()),
+    configure:patch=>remote("configure",{parameters:patch},()=>configure(patch)),
+    play:()=>remote("play",{},()=>play()),
+    pause:()=>remote("pause",{},()=>pause()),
+    reset:()=>remote("reset",{},()=>reset()),
+    setCamera:input=>remote("set_camera",{camera:input},()=>setCamera(input)),
+    fitCamera:()=>remote("set_camera",{camera:{x:0,y:0,zoom:1}},()=>fitCamera()),
     setPlayback: ({running:desired}) => {
       if (typeof desired !== "boolean") throw new TypeError("running must be boolean");
-      return desired ? play() : pause();
+      return desired ? api.play() : api.pause();
     }, startVideo,stopVideo,getVideoStatus,downloadVideo,resize};
 
   async function registerWebMcp(prefix = id.replace(/[^a-z0-9]+/gi, "_").toLowerCase()) {

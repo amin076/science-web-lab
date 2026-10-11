@@ -5,6 +5,11 @@ import {createMcpHandler, McpServer} from "@modelcontextprotocol/server";
 import {toNodeHandler} from "@modelcontextprotocol/node";
 import * as z from "zod/v4";
 import legacyServer from "./server.js";
+import {
+ getControlDescriptor,createControlSession,readControlSession,
+ commandControlSession,deleteControlSession,
+} from "../control/controlService.mjs";
+
 import {DOPPLER_WIDGET_HTML, DOPPLER_WIDGET_URI} from "./dopplerWidget.mjs";
 import {GENERIC_SIMULATION_WIDGET_HTML, GENERIC_SIMULATION_WIDGET_URI} from "./simulationWidget.mjs";
 import {
@@ -418,6 +423,90 @@ export function createServer() {
     },
     async (args) => executeTool("run_doppler_experiment", args),
   );
+
+
+  // Simulation Control API v1: transport-neutral headless scientific sessions.
+  // The same Firestore-backed service also powers /api/v1/control/** HTTP routes.
+  const controlId = "physics.mechanics.compound-pendulum";
+  const scalarParameters=z.record(z.string(),z.union([z.number(),z.boolean()])).optional();
+  server.registerTool("get_simulation_control_schema",{
+    title:"Read reusable Esbiko Simulation Control API schema",
+    description:"Read all verified commands, parameter schema, limits and units for the Compound Pendulum control API.",
+    inputSchema:z.object({simulationId:z.literal(controlId)}).strict(),
+    annotations:{readOnlyHint:true,openWorldHint:false},
+  },async()=>({structuredContent:{capabilities:getControlDescriptor()},
+    content:[{type:"text",text:"Esbiko Simulation Control API v1 capabilities and schema returned."}]}));
+
+  server.registerTool("create_simulation_session",{
+    title:"Create a controllable Esbiko science session",
+    description:"Create a time-bounded private capability-token session that can be advanced, configured and read repeatedly via ChatGPT MCP or HTTP API. Returns a secret token needed for subsequent calls. The attached MCP App can follow this same session.",
+    inputSchema:z.object({
+      simulationId:z.literal(controlId),parameters:scalarParameters,
+    }).strict(),
+    _meta:{
+      ui:{resourceUri:GENERIC_SIMULATION_WIDGET_URI},
+      "openai/outputTemplate":GENERIC_SIMULATION_WIDGET_URI,
+      "openai/toolInvocation/invoking":"Creating a controllable compound pendulum session…",
+      "openai/toolInvocation/invoked":"Simulation session ready.",
+    },
+  },async({simulationId,parameters})=>{
+    const created=await createControlSession(parameters||{});
+    return {structuredContent:{
+      simulation:requireSimulationProfile(simulationId),
+      parameters:parameters||{},
+      remoteSession:{sessionId:created.sessionId,token:created.token,
+        expiresAt:created.expiresAt,revision:created.revision},
+      capabilities:created.capabilities,
+    },content:[{type:"text",text:
+      "Created a private Esbiko control session. Reuse sessionId and token for control_simulation_session and read_simulation_session. The token is a credential; do not share it. Session expires in 30 minutes."}]};
+  });
+  server.registerTool("control_simulation_session",{
+    title:"Control a running Esbiko scientific experiment",
+    description:"Run an advanced command on the same persistent, independently controllable compound-pendulum simulation. 'advance' moves exactly the requested number of simulated seconds; physics does not automatically advance with wall-clock time. All changes are validated by the same Control API used by HTTP clients.",
+    inputSchema:z.object({
+      sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
+      action:z.enum(["configure","advance","step","play","pause","reset",
+        "set_camera","clear_trails","get_trajectory"]),
+      parameters:scalarParameters,
+      seconds:z.number().gt(0).max(2).optional(),
+      paneIndex:z.number().int().min(1).max(4).optional(),
+      rodIndex:z.number().int().min(1).max(4).optional(),
+      limit:z.number().int().min(1).max(300).optional(),
+      camera:z.object({x:z.number().optional(),y:z.number().optional(),
+        zoom:z.number().optional()}).strict().optional(),
+      expectedRevision:z.number().int().min(0).optional(),
+    }).strict(),
+  },async(args)=>{
+    const {sessionId,token,expectedRevision,action,...input}=args;
+    const response=await commandControlSession({sessionId,token,
+      expectedRevision,request:{action,...input}});
+    return {structuredContent:response,
+      content:[{type:"text",text:"Control command "+action+" applied; revision "+
+        response.revision+". Full scientific results returned in structuredContent."}]};
+  });
+  server.registerTool("read_simulation_session",{
+    title:"Read live state of the same Esbiko simulation session",
+    description:"Read positions, velocities, mechanical energy, elapsed simulation time and A/B/C/D tip separation from an existing controllable session. Returns measured state, not a parameter echo.",
+    inputSchema:z.object({
+      sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
+    }).strict(),
+    annotations:{readOnlyHint:true,openWorldHint:false},
+  },async(args)=>{
+    const response=await readControlSession(args);
+    return {structuredContent:response,
+      content:[{type:"text",text:"Read physical state at "+
+        response.elapsedSeconds+" simulation seconds (revision "+response.revision+")."}]};
+  });
+  server.registerTool("close_simulation_session",{
+    title:"Close an Esbiko simulation control session",
+    description:"Immediately revoke access to a compound-pendulum control session and delete its stored state.",
+    inputSchema:z.object({
+      sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
+    }).strict(),
+  },async(args)=>({
+    structuredContent:await deleteControlSession(args),
+    content:[{type:"text",text:"Simulation control session closed."}],
+  }));
 
   return server;
 }

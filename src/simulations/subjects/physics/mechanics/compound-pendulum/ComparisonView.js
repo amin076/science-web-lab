@@ -276,12 +276,66 @@ export function mountCompoundComparison(container){
   $(container,"download").disabled=s.status!=="ready";
   for(const id of ["landscape","shorts"])$(container,id).disabled=["recording","processing"].includes(s.status);
  },300);
+
+ // MCP App delivers the bearer token via postMessage to this specific iframe,
+ // never through the URL; all remote changes persist in Firestore.
+ let remoteTimer=null,remoteActive=false,remoteRevision=-1;
+ const remoteId=new URLSearchParams(window.location.search).get("remoteSessionId");
+ const acceptRemote=async(event)=>{
+  if(disposed||!remoteId||event.source!==window.parent)return;
+  const msg=event.data;
+  if(!msg||msg.type!=="esbiko-control-session-v1"||
+     msg.sessionId!==remoteId||!(/^[a-f0-9]{64}$/.test(msg.token||"")))return;
+  if(remoteActive)return;
+  const base="/api/v1/control/sessions/"+encodeURIComponent(remoteId);
+  const token=msg.token;
+  const request=async(suffix="",options={})=>{
+   const response=await fetch(base+suffix,{
+     ...options,headers:{"X-Esbiko-Control-Token":token,
+       ...(options.body?{"Content-Type":"application/json"}:{})},cache:"no-store",
+   });
+   const body=await response.json();
+   if(!response.ok||!body.ok)throw Error(body.error||"Remote control unavailable");
+   return body;
+  };
+  const apply=async(force=false)=>{
+   if(disposed)return;
+   const result=await request("?checkpoint=1"+(!force&&remoteRevision>=0?"&since="+remoteRevision:""));
+   if(result.unchanged||result.revision<remoteRevision)return;
+   remoteRevision=result.revision;
+   api.loadCheckpoint({checkpoint:result.checkpoint,camera:result.camera,
+     serverRunning:result.running});
+   $(container,"mcp-status").textContent="ChatGPT remote session · revision "+remoteRevision+
+     " · advance simulation through the agent";
+  };
+  try {
+   await apply(true);remoteActive=true;
+   // Non-secret acknowledgement stops parent retransmission after SPA load.
+   window.parent?.postMessage({type:"esbiko-control-attached-v1",
+     sessionId:remoteId},"*");
+   api.setCommandHandler(async(action,input)=>{
+    try {
+     const response=await request("/commands",{method:"POST",
+       body:JSON.stringify({action,...input})});
+     await apply(true);
+     return response.result;
+    }catch(error){err(error);throw error;}
+   });
+   remoteTimer=setInterval(()=>apply().catch(e=>{
+    $(container,"mcp-status").textContent="Session disconnected: "+e.message;
+    clearInterval(remoteTimer);remoteTimer=null;
+    api.setCommandHandler(null);remoteActive=false;
+   }),1250);
+  }catch(error){err(error);}
+ };
+ on(window,"message",acceptRemote);
+
  const hydration=readEmbeddedMcpParameters("physics.mechanics.compound-pendulum",COMPARISON_DEFAULTS);
  if(hydration.embeddedMcpApp && hydration.providedKeys.length)api.configure(hydration.values);
  api.registerWebMcp("esbiko_compound_pendulum").then(x=>{
   if(!disposed)$(container,"mcp-status").textContent=x.status==="ready"?
     "WebMCP connected: "+x.registered.length+" tools":"WebMCP "+x.status+" · controls still work";
  }).catch(err=>{if(!disposed)$(container,"mcp-status").textContent="WebMCP: "+err.message;});
- syncViewport(api.getState());syncControlPanel(api.getState());api.play();
- return {api,dispose(){if(disposed)return;disposed=true;clearInterval(timer);disposers.forEach(fn=>fn());api.dispose();container.innerHTML="";}};
+ syncViewport(api.getState());syncControlPanel(api.getState());if(!remoteId)api.play();
+ return {api,dispose(){if(disposed)return;disposed=true;clearInterval(timer);if(remoteTimer)clearInterval(remoteTimer);disposers.forEach(fn=>fn());api.dispose();container.innerHTML="";}};
 }

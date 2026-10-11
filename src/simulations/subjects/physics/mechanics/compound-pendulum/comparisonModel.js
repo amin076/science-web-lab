@@ -123,7 +123,29 @@ export function createCompoundPendulumComparison(initial=COMPARISON_DEFAULTS) {
   }else models.slice(0,config.paneCount).forEach(m=>m.clearTrails());
   return {cleared:true,paneIndex:paneIndex||"all"};
  }
- function dispose(){if(disposed)return;disposed=true;models.forEach(m=>m.dispose());}
+
+ function checkpoint(){
+  check();return {format:"esbiko-compound-comparison.v1",parameters:{...config},
+    timeSeconds:liveTime,models:models.map(m=>m.checkpoint())};
+ }
+ function restore(data){
+  check();
+  if(!data||data.format!=="esbiko-compound-comparison.v1"||
+    !Array.isArray(data.models)||data.models.length!==4||
+    typeof data.timeSeconds!=="number"||!Number.isFinite(data.timeSeconds)||
+    data.timeSeconds<0||data.timeSeconds>3600)throw new RangeError("Invalid comparison checkpoint");
+  const proposed={...COMPARISON_DEFAULTS,...data.parameters};validate(proposed);
+  const backups=models.map(m=>m.checkpoint());
+  try {
+    data.models.forEach((item,i)=>models[i].restore(item));
+    config=proposed;liveTime=data.timeSeconds;
+    return snapshot();
+  }catch(error){
+    backups.forEach((item,i)=>models[i].restore(item));
+    throw error;
+  }
+ }
+  function dispose(){if(disposed)return;disposed=true;models.forEach(m=>m.dispose());}
  reset(config);
- return {configure,reset,step,snapshot,trajectory,clearTrails,dispose,getParameters:()=>({...config})};
+ return {configure,reset,step,snapshot,trajectory,clearTrails,checkpoint,restore,dispose,getParameters:()=>({...config})};
 }

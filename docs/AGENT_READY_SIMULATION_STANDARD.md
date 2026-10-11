@@ -491,3 +491,37 @@ showOrientationAdvice=true
 ```
 
 For MCP App / iframe mode, orientation advice must remain disabled so the embedded experience is never blocked by a rotate-device prompt.
+
+---
+
+## Advanced API-first agent control standard (2026-10-11)
+
+Read [Advanced Simulation Control API v1](simulation-standard/ESBIKO_ADVANCED_CONTROL_API_V1.md)
+for the first production-oriented pilot on Compound Pendulum.
+
+The implementation order is mandatory for new deeply agent-controllable simulations:
+
+1. **Science/model API**: versioned domain model and reusable physics engine,
+   with validated parameters, serializable scientific state, measurable outputs
+   and deterministic progression independent of UI and AI providers.
+2. **Simulation Control API**: a transport-neutral controller declares supported
+   commands, ranges, units, state schema, side-effects, permissions and
+   checkpoint behavior. HTTP must work **without MCP**.
+3. **Transport adapters**: expose the **same controller** through browser UI,
+   HTTP, MCP, future Gemini agents, classroom tools or other clients.
+   No protocol is allowed to duplicate scientific equations or maintain
+   a separate shadow physics model.
+4. **End-to-end validation**: execute a command, read measured state from that
+   same experiment, repeat after changing parameters, reject invalid input,
+   verify authorization/revision/expiry and check scientific invariants.
+
+The shared API **must not assume all experiments have the same controls**.
+Pendulums expose rods, angles and hinge damping; Archimedes exposes objects,
+fluid properties and buoyancy; circuits expose component/wiring operations;
+Solar System exposes targets and camera. Each simulation registers custom
+domain commands and schemas alongside shared lifecycle commands.
+
+A parameter manifest is necessary but insufficient: **the final acceptance
+requires real repeated remote control and state readback in an attached
+simulation session**. Browser WebMCP, remote MCP and direct HTTP are distinct
+transports, and their test status must be reported separately.

@@ -103,11 +103,36 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
         });
       }
 
+      const remote = data?.remoteSession;
+      if (window.esbikoRemoteRetry) clearInterval(window.esbikoRemoteRetry);
+      if (remote?.sessionId && remote?.token && /^[a-f0-9]{64}$/.test(remote.token)) {
+        url.searchParams.set("remoteSessionId", remote.sessionId);
+        const targetOrigin = new URL(simulation.runUrl).origin;
+        frame.addEventListener("load", () => {
+          const message = {type:"esbiko-control-session-v1",
+            sessionId:remote.sessionId,token:remote.token};
+          const deliver = () => frame.contentWindow?.postMessage(message,targetOrigin);
+          deliver();
+          let retries = 0;
+          window.esbikoRemoteRetry = setInterval(() => {
+            if (++retries > 25) {clearInterval(window.esbikoRemoteRetry);return;}
+            deliver();
+          },500);
+        }, {once:true});
+      }
       frame.src = url.toString();
     }
 
     render(window.openai?.toolOutput);
 
+    window.addEventListener("message", (event) => {
+      const frame=$("simulation-frame");
+      const target=frame?.src?new URL(frame.src).origin:null;
+      if (target && event.source === frame.contentWindow && event.origin===target &&
+          event.data?.type==="esbiko-control-attached-v1") {
+        clearInterval(window.esbikoRemoteRetry);
+      }
+    });
     window.addEventListener("message", (event) => {
       if (event.source !== window.parent) return;
       const message = event.data;
