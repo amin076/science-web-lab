@@ -1,6 +1,6 @@
 /* eslint-env node */
 import {
- getControlDescriptor,createControlSession,readControlSession,
+ getControlDescriptor,listSimulationControlAdapters,createControlSession,readControlSession,
  commandControlSession,deleteControlSession,
 } from "./controlService.mjs";
 
@@ -27,11 +27,12 @@ export async function handleControlHttp(req,res){
  const local=controlIndex>=0?segments.slice(controlIndex+1):segments;
  try{
   if(req.method==="GET"&&local.length===1&&local[0]==="schema")
-   return send(res,200,{capabilities:getControlDescriptor()});
+   return send(res,200,{capabilities:getControlDescriptor(req.query?.simulationId),
+     availableAdapters:listSimulationControlAdapters().map(a=>a.id)});
   if(req.method==="POST"&&local.join("/")==="sessions"){
    if(!validBody(req)||JSON.stringify(req.body).length>16000)
     return send(res,400,{error:"INVALID_BODY"});
-   const result=await createControlSession(req.body.parameters||{});
+   const result=await createControlSession(req.body.parameters||{},req.body.simulationId);
    return send(res,201,result);
   }
   if(local[0]==="sessions"&&local.length>=2){
