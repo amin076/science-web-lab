@@ -49,6 +49,7 @@ function compactSnapshot(model){
  const snap=model.snapshot();
  return {
   ...snap,
+  parameters:model.getParameters(),
   pendulums:snap.pendulums.map(({paneIndex,modelVersion,timeSeconds,rodCount,
    anglesRad,omegasRadps,tipsM,energy,units})=>({
     paneIndex,modelVersion,timeSeconds,rodCount,anglesRad,omegasRadps,tipsM,energy,units,
