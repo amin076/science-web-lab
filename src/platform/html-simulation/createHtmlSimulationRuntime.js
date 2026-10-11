@@ -91,13 +91,19 @@ export function createHtmlSimulationRuntime({
   const status = () => onStatus(getState());
   function getState() {
     active();
-    const physics = clone(engine.snapshot());
-    checkFiniteTree(physics);
+    let physics = null, snapshotError = null;
+    try {
+      physics = clone(engine.snapshot());
+      checkFiniteTree(physics);
+    } catch (e) {
+      physics = null;
+      snapshotError = {code:"SIMULATION_NUMERICAL_ERROR",message:e.message || "Invalid physical state"};
+    }
     return {
       simulationId: id, standardVersion: HTML_SIMULATION_STANDARD_VERSION,
       running, elapsedSeconds, parameters: clone(params),
       physics, camera: {...camera}, recording: recorder?.getStatus() || {status:"unsupported"},
-      error,
+      error: error || snapshotError,
     };
   }
   function render() {
@@ -132,6 +138,7 @@ export function createHtmlSimulationRuntime({
         let steps = 0;
         while (accumulator >= STEP && steps < 16) {
           engine.step(STEP);
+          checkFiniteTree(engine.snapshot());
           elapsedSeconds += STEP;
           accumulator -= STEP; steps++;
         }
