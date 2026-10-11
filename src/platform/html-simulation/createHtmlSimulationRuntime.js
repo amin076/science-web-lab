@@ -134,15 +134,15 @@ export function createHtmlSimulationRuntime({
     if (!running || disposed) return;
     try {
       if (lastTimestamp !== null) {
-        accumulator += Math.min(0.05, Math.max(0, (timestamp - lastTimestamp) / 1000));
+        accumulator += Math.min(0.05, Math.max(0, (timestamp - lastTimestamp) / 1000)) * (params.playbackRate || 1);
         let steps = 0;
-        while (accumulator >= STEP && steps < 16) {
+        while (accumulator >= STEP && steps < 128) {
           engine.step(STEP);
           checkFiniteTree(engine.snapshot());
           elapsedSeconds += STEP;
           accumulator -= STEP; steps++;
         }
-        if (steps === 16) accumulator = 0; // no catch-up spiral after background tab
+        if (steps === 128) accumulator = 0; // no catch-up spiral after background tab
       }
       lastTimestamp = timestamp;
       render();
@@ -162,8 +162,9 @@ export function createHtmlSimulationRuntime({
   function configure(patch) {
     active();
     const proposed = {...params, ...validateHtmlParameters(patch, parameterSchema)};
-    engine.configure(clone(proposed)); // commit only after engine accepts
+    const outcome = engine.configure(clone(proposed)); // commit only after engine accepts
     params = proposed;
+    if (outcome?.reset) { elapsedSeconds = 0; accumulator = 0; lastTimestamp = null; }
     render(); return getState();
   }
   function reset() {
@@ -188,7 +189,11 @@ export function createHtmlSimulationRuntime({
   function getVideoStatus() { active(); return recorder?.getStatus() || {status:"unsupported"}; }
   function downloadVideo() { active(); if (!recorder) throw new Error("VIDEO_UNSUPPORTED"); return recorder.download(); }
 
-  const api = {getState,configure,play,pause,reset,setCamera,fitCamera,
+  function getCapabilities() { active(); return {simulationId:id,standardVersion:HTML_SIMULATION_STANDARD_VERSION, parameterSchema:clone(parameterSchema),commands:["getState","getCapabilities","configure","play","pause","reset","stepOnce","setCamera","fitCamera","getTrajectories","clearTrails","startVideo","stopVideo","getVideoStatus","downloadVideo"],video:!!recorder}; }
+  function getTrajectories({rodIndex,limit=1200}={}) { active();if(typeof engine.trajectory!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");return {rodIndex,pointsM:engine.trajectory({rodIndex,limit})}; }
+  function clearTrails() { active();if(typeof engine.clearTrails!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");const result=engine.clearTrails();render();return result; }
+  function stepOnce() { active();if(running)throw new Error("Pause before stepping");engine.step(STEP);checkFiniteTree(engine.snapshot());elapsedSeconds+=STEP;render();return getState(); }
+  const api = {getState,getCapabilities,getTrajectories,clearTrails,stepOnce,configure,play,pause,reset,setCamera,fitCamera,
     setPlayback: ({running:desired}) => {
       if (typeof desired !== "boolean") throw new TypeError("running must be boolean");
       return desired ? play() : pause();
@@ -206,11 +211,17 @@ export function createHtmlSimulationRuntime({
     });
     const tools = [
       tool("get_state",empty,"getState",true),
+      tool("get_capabilities",empty,"getCapabilities",true),
+      tool("step_once",empty,"stepOnce"),
       tool("configure",{...parameterSchema,additionalProperties:false},"configure"),
       tool("set_playback",{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},"setPlayback"),
       tool("reset",empty,"reset"),
       tool("set_camera",{type:"object",properties:{x:{type:"number",minimum:-1e6,maximum:1e6},y:{type:"number",minimum:-1e6,maximum:1e6},zoom:{type:"number",minimum:0.2,maximum:8}},additionalProperties:false},"setCamera"),
     ];
+    if (typeof engine.trajectory === "function") tools.push(
+      tool("get_trajectory",{type:"object",properties:{rodIndex:{type:"integer",minimum:1,maximum:4},limit:{type:"integer",minimum:1,maximum:18000}},required:["rodIndex"],additionalProperties:false},"getTrajectories",true),
+      tool("clear_trails",empty,"clearTrails"),
+    );
     if (recorder) tools.push(
       tool("start_video",{type:"object",properties:{mode:{type:"string",enum:["landscape","shorts"]}},additionalProperties:false},"startVideo"),
       tool("video_status",empty,"getVideoStatus",true),
