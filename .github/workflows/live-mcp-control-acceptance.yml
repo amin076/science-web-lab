@@ -1,16 +1,20 @@
 name: Live MCP Control Acceptance
 
 on:
-  push:
-    branches: [test/live-mcp-control-acceptance]
+  workflow_run:
+    workflows: [Deploy Esbiko MCP PoC]
+    types: [completed]
   workflow_dispatch:
 
 jobs:
   probe-live-mcp:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 7
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
