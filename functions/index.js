@@ -278,3 +278,8 @@ exports.mcp = onRequest(async (req, res) => {
   const {handleMcpRequest} = await import("./mcp/transport.mjs");
   return handleMcpRequest(req, res);
 });
+
+exports.simulationControlApi = onRequest(async (req, res) => {
+  const {handleControlHttp} = await import("./control/http.mjs");
+  return handleControlHttp(req, res);
+});
