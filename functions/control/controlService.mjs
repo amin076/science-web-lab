@@ -1,7 +1,8 @@
 /* eslint-env node */
 import admin from "firebase-admin";
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from "node:crypto";
-import {DESCRIPTOR,createControlDocument,exposeControlState,executeSimulationCommand} from "./controlCore.mjs";
+import {SIMULATION_CONTROL_ID} from "./controlCore.mjs";
+import {requireSimulationControlAdapter,listSimulationControlAdapters} from "./adapterRegistry.mjs";
 
 if(!admin.apps.length)admin.initializeApp();
 const db=admin.firestore();
@@ -24,9 +25,11 @@ function validateId(id){
 function expireCheck(data){
  if(data.expiresAt?.toMillis?.()<=Date.now())throw failure(410,"SESSION_EXPIRED","Session expired; create a new session");
 }
-export function getControlDescriptor(){return DESCRIPTOR;}
-export async function createControlSession(parameters={}){
- const doc=createControlDocument(parameters);
+export function getControlDescriptor(simulationId=SIMULATION_CONTROL_ID){return requireSimulationControlAdapter(simulationId).descriptor;}
+export {listSimulationControlAdapters};
+export async function createControlSession(parameters={},simulationId=SIMULATION_CONTROL_ID){
+ const adapter=requireSimulationControlAdapter(simulationId);
+ const doc=adapter.create(parameters);
  const id=randomUUID(),token=randomBytes(32).toString("hex"),now=Date.now();
  const ref=collection.doc(id);
  const limitId=new Date(now).toISOString().slice(0,13).replace(/[^0-9]/g,"");
@@ -41,7 +44,7 @@ export async function createControlSession(parameters={}){
    expiresAt:admin.firestore.Timestamp.fromMillis(now+SESSION_MINUTES*60000)});
  });
  return {sessionId:id,token,expiresAt:new Date(now+SESSION_MINUTES*60000).toISOString(),
-  simulationId:DESCRIPTOR.id,revision:0,capabilities:DESCRIPTOR};
+  simulationId:adapter.id,revision:0,capabilities:adapter.descriptor};
 }
 async function authorizedSnapshot(id,token){
  validateId(id);
@@ -53,7 +56,7 @@ async function authorizedSnapshot(id,token){
  return data;
 }
 function publicDoc(data,includeCheckpoint=false){
- return {...exposeControlState(data),expiresAt:data.expiresAt.toDate().toISOString(),
+ return {...requireSimulationControlAdapter(data.simulationId).expose(data),expiresAt:data.expiresAt.toDate().toISOString(),
    ...(includeCheckpoint?{checkpoint:data.checkpoint}:{})};
 }
 export async function readControlSession({sessionId,token,includeCheckpoint=false,sinceRevision}){
@@ -75,7 +78,7 @@ export async function commandControlSession({sessionId,token,request,expectedRev
   expireCheck(data);
   if(expectedRevision!==undefined&&(!Number.isInteger(expectedRevision)||expectedRevision!==data.revision))
    throw failure(409,"REVISION_CONFLICT","Session revision changed; read state and retry");
-  const {document:next,result,mutation}=executeSimulationCommand(data,request);
+  const {document:next,result,mutation}=requireSimulationControlAdapter(data.simulationId).execute(data,request);
   if(mutation){
    const spent=actionLimit.exists?actionLimit.data()?.count||0:0;
    if(spent>=MAX_MODIFICATIONS_PER_HOUR)
