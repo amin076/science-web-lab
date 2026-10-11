@@ -60,7 +60,7 @@ assert.ok(draws>=1);
 const registration=await runtime.registerWebMcp("standard_test");
 assert.equal(registration.status,"ready");
 assert.equal(registered.length,7);
-assert.equal((await invoke("get_capabilities")).data.video,false;
+
 const tool=name=>registered.find(t=>t.name==="standard_test_"+name);
 const invoke=async(name,input={})=>JSON.parse(await tool(name).execute(input));
 assert.equal((await invoke("get_capabilities")).data.video,false);
