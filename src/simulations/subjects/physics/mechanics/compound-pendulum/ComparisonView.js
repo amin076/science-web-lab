@@ -310,6 +310,9 @@ export function mountCompoundComparison(container){
   };
   try {
    await apply(true);remoteActive=true;
+   // Non-secret acknowledgement stops parent retransmission after SPA load.
+   window.parent?.postMessage({type:"esbiko-control-attached-v1",
+     sessionId:remoteId},"*");
    api.setCommandHandler(async(action,input)=>{
     try {
      const response=await request("/commands",{method:"POST",
