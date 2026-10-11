@@ -301,9 +301,10 @@ export function mountCompoundComparison(container){
   const apply=async(force=false)=>{
    if(disposed)return;
    const result=await request("?checkpoint=1"+(!force&&remoteRevision>=0?"&since="+remoteRevision:""));
-   if(result.unchanged)return;
+   if(result.unchanged||result.revision<remoteRevision)return;
    remoteRevision=result.revision;
-   api.loadCheckpoint({checkpoint:result.checkpoint,camera:result.camera});
+   api.loadCheckpoint({checkpoint:result.checkpoint,camera:result.camera,
+     serverRunning:result.running});
    $(container,"mcp-status").textContent="ChatGPT remote session · revision "+remoteRevision+
      " · advance simulation through the agent";
   };
