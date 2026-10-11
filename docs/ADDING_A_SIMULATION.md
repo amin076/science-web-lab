@@ -433,3 +433,26 @@ showOrientationAdvice=true
 ```
 
 For MCP App / iframe mode, orientation advice must remain disabled so the embedded experience is never blocked by a rotate-device prompt.
+
+---
+
+## HTML Canvas simulation pathway (v1 reference, not yet a public route)
+
+New standalone HTML/JavaScript simulations follow
+[Esbiko HTML Simulation Standard](ESBIKO_HTML_SIMULATION_STANDARD.md).
+
+- Use \`src/esbiko-physics\` for all scientific equations. Do not copy physics into HTML.
+- Use the HTML runtime/controller for validated settings, playback, virtual camera,
+  local WebMCP, lifecycle and browser recording.
+- Prototype with \`examples/html-simulation/index.html\` on the Vite dev server.
+- The current \`RunSimulation.jsx\` registry still expects a React component:
+  **production publication must add an approved React host/wrapper or a safe
+  scoped iframe host**, retaining the canonical \`/experiments/:id/run\` route.
+- Remote MCP discovery, MCP App resources, embed hydration, catalog, build,
+  video and responsive acceptance are mandatory before publishing. Local
+  WebMCP success alone does not satisfy this requirement.
+- Run \`npm run test:html-standard\` along with shared physics, agent tests
+  and all existing repository release checks.
+
+This pathway is additive; no existing React + Canvas/Three simulation needs to
+be rewritten.
