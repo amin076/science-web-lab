@@ -432,7 +432,7 @@ export function createServer() {
   // The same Firestore-backed service also powers /api/v1/control/** HTTP routes.
   // Advanced session tools accept current registered control adapters, not a frozen ID.
   const controlId = z.string().trim().min(1).max(160);
-  const scalarParameters=z.record(z.string(),z.union([z.number(),z.boolean()])).optional();
+  const scalarParameters=z.record(z.string(),z.union([z.number(),z.boolean(),z.string()])).optional();
   server.registerTool("get_simulation_control_schema",{
     title:"Read reusable Esbiko Simulation Control API schema",
     description:"Read verified commands, parameter schema and units for a registered advanced-control simulation.",
@@ -470,7 +470,7 @@ export function createServer() {
     inputSchema:z.object({
       sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
       action:z.enum(["configure","advance","step","play","pause","reset",
-        "set_camera","clear_trails","get_trajectory"]),
+        "set_camera","clear_trails","get_trajectory","fire"]),
       parameters:scalarParameters,
       seconds:z.number().gt(0).max(2).optional(),
       paneIndex:z.number().int().min(1).max(4).optional(),
