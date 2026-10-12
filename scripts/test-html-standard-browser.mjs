@@ -90,7 +90,7 @@ try{
  assert.ok(Math.abs(parseFloat(await page.locator("#x").innerText())-30)<0.1);
  // UI control -> remote API, not a second local physics state.
  const slider=page.locator('input[data-agent-param="gravityMps2"]');
- await slider.fill("7");
+ await slider.evaluate(el=>{el.value="7";el.dispatchEvent(new Event("input",{bubbles:true}));});
  await page.waitForFunction(()=>document.querySelector("#mcp-status")?.textContent.includes("revision 2"),null,{timeout:8000});
  assert.equal(doc.checkpoint.parameters.gravityMps2,7);
  assert.equal(doc.checkpoint.timeSeconds,0,"Parameter edit resets scientific remote model");
