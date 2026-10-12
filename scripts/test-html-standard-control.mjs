@@ -42,7 +42,7 @@ const cmd=(action,request={})=>{
 assert.equal(exposeHtmlReferenceState(doc).revision,0);
 assert.equal(cmd("get_state").mutation,false);
 assert.equal(cmd("get_capabilities").result.schema.properties.gravityMps2.unit,"m/s²");
-assert.equal(cmd("advance",{seconds:1}).result.elapsedSeconds,1.0000000000000007);
+assert.ok(Math.abs(cmd("advance",{seconds:1}).result.elapsedSeconds-1)<1e-8);
 assert.equal(exposeHtmlReferenceState(doc).revision,1);
 assert.ok(Math.abs(exposeHtmlReferenceState(doc).state.position[0]-20)<1e-7);
 assert.ok(cmd("get_trajectory",{limit:40}).result.pointsM.length>3);
