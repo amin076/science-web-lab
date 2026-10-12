@@ -3,13 +3,15 @@ import { createHtmlSimulationRuntime } from "../../src/platform/html-simulation/
 
 // Demonstration model only. Real simulations import their domain model from esbiko-physics.
 // No scientific formula is duplicated in the HTML adapter.
-const controls = {
-  startXM: {type:"number",minimum:-10,maximum:10,default:0,step:0.5,unit:"m",label:"Initial x"},
-  startYM: {type:"number",minimum:0,maximum:30,default:2,step:0.5,unit:"m",label:"Initial y"},
-  velocityXMps: {type:"number",minimum:-30,maximum:40,default:20,step:1,unit:"m/s",label:"Initial vx"},
-  velocityYMps: {type:"number",minimum:-30,maximum:40,default:20,step:1,unit:"m/s",label:"Initial vy"},
-  gravityMps2: {type:"number",minimum:0,maximum:20,default:9.81,step:0.01,unit:"m/s²",label:"Gravity"},
+// Labels and slider increments are presentational; bounds/defaults come from the model.
+const labels={
+ startXM:{step:.5,label:"Initial x"},startYM:{step:.5,label:"Initial y"},
+ velocityXMps:{step:1,label:"Initial vx"},velocityYMps:{step:1,label:"Initial vy"},
+ gravityMps2:{step:.01,label:"Gravity"},
 };
+const controls=Object.fromEntries(Object.entries(labels).map(([key,meta])=>[
+ key,{...HTML_REFERENCE_SCHEMA.properties[key],default:HTML_REFERENCE_DEFAULTS[key],...meta},
+]));
 const parameterSchema=HTML_REFERENCE_SCHEMA;
 const defaults=HTML_REFERENCE_DEFAULTS;
 // Browser, HTTP and MCP sessions all use this same pure scientific model.
@@ -73,6 +75,17 @@ runtime=createHtmlSimulationRuntime({
   canvas:$("simulation-canvas"),parameterSchema,defaults,engine,draw,
   onStatus:updateUI,
 });
+// Honor server-validated MCP parameters on open_science_simulation as well as local URLs.
+const initialMcp={};
+const query=new URLSearchParams(location.search);
+for(const key of Object.keys(parameterSchema.properties)){
+ const value=query.get("mcp."+key);
+ if(value!==null&&value.trim()!=="")initialMcp[key]=Number(value);
+}
+if(Object.keys(initialMcp).length){
+ try{runtime.configure(initialMcp);}
+ catch(error){$("status").textContent="Invalid MCP initial settings: "+error.message;}
+}
 for(const [key,meta] of Object.entries(controls)){
   const label=document.createElement("label");
   const heading=document.createElement("span");
@@ -90,6 +103,7 @@ for(const [key,meta] of Object.entries(controls)){
   label.append(heading,slider);
   $("sliders").append(label);
 }
+reflectControls(runtime.getState());
 function safely(fn) {try{Promise.resolve(fn()).catch(e=>{$("status").textContent=e.message;});}catch(e){$("status").textContent=e.message;}}
 $("play").onclick=()=>safely(()=>runtime.play());
 $("pause").onclick=()=>safely(()=>runtime.pause());
