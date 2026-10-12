@@ -27,6 +27,21 @@ button,input,select{font:inherit}button,select{color:inherit}button{cursor:point
 .readout-strip{display:flex;flex-wrap:wrap;gap:6px;padding:7px 13px 9px;border-top:1px solid rgba(130,184,213,.18)}.readout-strip span{font-size:10.5px;color:#c7e7fb;padding:4px 7px;border:1px solid #315274;border-radius:7px;background:rgba(12,36,58,.24)}
 @media(max-width:770px){.wave-hud{top:8px;right:8px;width:min(305px,calc(100% - 16px));max-height:74%;padding:10px;backdrop-filter:blur(2px)}}
 @media(max-width:470px){.wave-hud{max-height:78%;width:min(285px,calc(100% - 12px));right:6px;top:6px}.hud-metric strong{font-size:12px}}
+
+/* The standard video workflow is separate from wave controls; it never obscures the canvas. */
+.video-studio{display:flex;flex-wrap:wrap;align-items:center;gap:9px;padding:10px 13px;margin:-3px 0 12px;border:1px solid #365777;border-radius:12px;background:linear-gradient(110deg,rgba(19,44,70,.84),rgba(14,30,52,.76))}
+.video-studio .studio-title{color:#87eeff;font-size:13px;font-weight:800;white-space:nowrap;margin-right:5px}
+.video-studio label{display:flex;align-items:center;gap:7px;font-size:12px;color:#c7def0}
+.video-studio select{width:auto;max-width:185px;min-height:36px}
+.video-studio .button{min-height:36px;padding:6px 10px;font-size:12px}
+.video-studio .record-start{border-color:#eb7281;color:#ffe4e8;background:#512a3e}
+.video-studio .record-stop{border-color:#f59e65;color:#fff0cf;background:#523823}
+.video-studio .record-ready{border-color:#4abbbf;color:#c6fcff;background:#194e58}
+.video-studio .video-status{min-width:130px;font-size:11px;color:#bad3e9;font-variant-numeric:tabular-nums}
+.video-studio .video-status[data-status=recording]{color:#ff99aa;font-weight:700}
+.video-studio .video-status[data-status=ready]{color:#8cf4ce}
+.video-studio .video-hint{font-size:10px;color:#91afca;flex-basis:100%}
+@media(max-width:470px){.video-studio{gap:6px;padding:8px}.video-studio .studio-title{flex-basis:100%}.video-studio .button{font-size:11px;padding:6px}.video-studio .video-status{min-width:unset}}
 </style>
 </head>
 <body>
@@ -40,6 +55,15 @@ button,input,select{font:inherit}button,select{color:inherit}button{cursor:point
 <span class="grow"></span><label for="stringCount">Strings <select id="stringCount" data-agent-param="visibleCount" aria-label="Number of visible strings"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option></select></label><label for="timeSpeed">Time speed <select id="timeSpeed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
 <span class="clock" id="clock" aria-live="off">0.00 s</span>
 </div>
+<section class="video-studio" aria-label="Video Studio capture controls">
+<strong class="studio-title">● Video Studio</strong>
+<label for="videoMode">Format <select id="videoMode" aria-label="Recording format"><option value="landscape">Landscape 16:9 · 1280×720</option><option value="shorts">Portrait 9:16 · 720×1280</option></select></label>
+<button class="button record-start" id="videoStart" type="button" data-agent-action="startVideo">● Start recording</button>
+<button class="button record-stop" id="videoStop" type="button" data-agent-action="stopVideo" disabled>■ Stop</button>
+<button class="button record-ready" id="videoDownload" type="button" data-agent-action="downloadVideo" disabled>↓ Download WebM</button>
+<span class="video-status" id="videoStatus" data-status="idle" aria-live="polite">Not recording</span>
+<span class="video-hint">Records the simulation canvas, not your webcam or microphone. Requires MediaRecorder and WebM support in the browser.</span>
+</section>
 <section class="stage" aria-label="One to four waves on one shared canvas"><div class="stage-head"><strong>Live wave comparison</strong><span>String length 12 m · Ideal uniform string · Same timeline</span></div>
 <div class="canvas-wrap"><canvas id="waveCanvas" role="img" aria-label="One shared canvas displaying the selected number of parallel horizontal strings. Each string has independently configurable wave behavior.">Your browser does not support HTML Canvas.</canvas>
 <aside class="wave-hud" id="waveHud" aria-label="Wave physics heads-up display">
@@ -255,7 +279,7 @@ function loop(now){const frameDelta=Math.max(0,Math.min(.055,(now-lastFrame)/100
    if(elapsed>=s.nextRepeat){fire(s,s.nextRepeat);s.nextRepeat+=repeatPeriod(s)}
   }
  }
- render();requestAnimationFrame(loop)
+ render();if(video.state==='recording')updateVideoButtons();requestAnimationFrame(loop)
 }
 const hud=$('waveHud'),hudToggle=$('hudToggle'),hudSelect=$('hudSelect');
 let hudOpen=!window.matchMedia('(max-width:770px)').matches;
@@ -275,6 +299,71 @@ hudToggle.addEventListener('click',()=>setHudOpen(!hudOpen));$('hudClose').addEv
 setHudOpen(hudOpen);
 window.addEventListener('resize',()=>setStringCount(visibleCount),{passive:true});document.addEventListener('visibilitychange',()=>{lastFrame=performance.now()});
 setStringCount(4);
+// Canvas-only WebM Video Studio. Mirrors Esbiko's standard 16:9 and 9:16 recorder
+// and keeps the one shared wave canvas as the single video source.
+const video={state:'idle',mode:null,mimeType:null,recorder:null,stream:null,canvas:null,raf:null,chunks:[],blob:null,url:null,error:null,startedAt:0,filename:null};
+const videoFormats=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+function videoCapabilities(){return {supported:typeof window.MediaRecorder==='function'&&typeof canvas.captureStream==='function',formats:videoFormats.filter(f=>window.MediaRecorder?.isTypeSupported?.(f)),modes:['landscape','shorts'],audioIncluded:false}}
+function getVideoStatus(){return {status:video.state,mode:video.mode,audioIncluded:false,elapsedRecordingSeconds:video.state==='recording'?(performance.now()-video.startedAt)/1000:null,
+ file:video.blob?{fileName:video.filename,bytes:video.blob.size}:null,error:video.error,capabilities:videoCapabilities()}}
+function updateVideoButtons(){
+ $('videoStart').disabled=video.state==='recording'||video.state==='processing';
+ $('videoStop').disabled=video.state!=='recording';
+ $('videoDownload').disabled=video.state!=='ready';
+ $('videoMode').disabled=video.state==='recording'||video.state==='processing';
+ const t=video.state==='recording'?'Recording… '+((performance.now()-video.startedAt)/1000).toFixed(1)+' s':
+ video.state==='processing'?'Finishing WebM…':video.state==='ready'?'Video ready · '+(video.blob.size/1024).toFixed(0)+' KB':
+ video.state==='failed'?video.error?.message||'Recording failed':'Not recording';
+ $('videoStatus').textContent=t;$('videoStatus').dataset.status=video.state;
+}
+function stopVideoResources(){if(video.raf!==null)cancelAnimationFrame(video.raf);video.raf=null;video.stream?.getTracks().forEach(t=>t.stop());video.stream=null;video.canvas=null}
+function startVideo(input={}){
+ const mode=input.mode||$('videoMode').value;
+ if(mode!=='landscape'&&mode!=='shorts')throw Error('Video mode must be landscape or shorts');
+ if(['recording','processing'].includes(video.state))throw Error('Recording already in progress');
+ const mime=videoFormats.find(f=>window.MediaRecorder?.isTypeSupported?.(f));
+ if(!videoCapabilities().supported||!mime)throw Error('This browser does not support Canvas WebM recording');
+ if(video.url){URL.revokeObjectURL(video.url);video.url=null}
+ video.blob=null;video.filename=null;video.chunks=[];video.error=null;
+ video.mode=mode;video.mimeType=mime;video.state='idle';
+ const target=document.createElement('canvas');target.width=mode==='shorts'?720:1280;target.height=mode==='shorts'?1280:720;
+ const g=target.getContext('2d',{alpha:false});if(!g)throw Error('Video 2D canvas unavailable');
+ function paint(){if(video.state!=='recording')return;
+  const w=target.width,h=target.height;g.fillStyle='#071524';g.fillRect(0,0,w,h);
+  const margin=mode==='shorts'?24:38,availW=w-2*margin,availH=h-(mode==='shorts'?340:142);
+  const scale=Math.min(availW/Math.max(canvas.width,1),availH/Math.max(canvas.height,1));
+  const dw=canvas.width*scale,dh=canvas.height*scale;
+  const y=mode==='shorts'?(h-dh)/2-25:(h-dh)/2+12;
+  g.drawImage(canvas,(w-dw)/2,y,dw,dh);
+  g.fillStyle='#8be9ff';g.textAlign='left';g.font='bold '+(mode==='shorts'?28:21)+'px system-ui';g.fillText('ESBIKO · WAVE STRINGS LAB',margin,mode==='shorts'?85:51);
+  g.fillStyle='#d1e8f6';g.font=(mode==='shorts'?20:14)+'px system-ui';g.fillText(visibleCount+' strings · t = '+elapsed.toFixed(2)+' s · Superposition & Reflection',margin,h-(mode==='shorts'?102:49));
+  video.raf=requestAnimationFrame(paint)
+ }
+ try{
+  video.canvas=target;video.stream=target.captureStream(30);
+  video.recorder=new MediaRecorder(video.stream,{mimeType:mime,videoBitsPerSecond:4_000_000});
+  video.recorder.ondataavailable=e=>{if(e.data?.size)video.chunks.push(e.data)};
+  video.recorder.onerror=e=>{video.state='failed';video.error={code:'RECORDING_FAILED',message:e.error?.message||'MediaRecorder error'};stopVideoResources();updateVideoButtons()};
+  video.recorder.onstop=()=>{
+   const chunks=video.chunks;video.chunks=[];
+   if(video.state!=='failed'){
+    const blob=new Blob(chunks,{type:mime});
+    if(!blob.size){video.state='failed';video.error={code:'EMPTY_VIDEO',message:'No encoded video frames'};}
+    else{video.blob=blob;video.filename='esbiko-wave-strings-'+mode+'.webm';video.state='ready'}
+   }
+   stopVideoResources();updateVideoButtons()
+  };
+  video.recorder.start(250);video.state='recording';video.startedAt=performance.now();
+  paint();updateVideoButtons();return getVideoStatus()
+ }catch(err){video.state='failed';video.error={code:'RECORDING_FAILED',message:err.message};stopVideoResources();updateVideoButtons();throw err}
+}
+function stopVideo(){if(video.state!=='recording'||!video.recorder)throw Error('No recording to stop');video.state='processing';if(video.raf!==null)cancelAnimationFrame(video.raf);video.raf=null;video.recorder.stop();updateVideoButtons();return getVideoStatus()}
+function downloadVideo(){if(video.state!=='ready'||!video.blob)throw Error('Video is not ready');if(video.url)URL.revokeObjectURL(video.url);video.url=URL.createObjectURL(video.blob);
+ const a=document.createElement('a');a.href=video.url;a.download=video.filename;document.body.appendChild(a);a.click();a.remove();return {downloadRequested:true,fileName:video.filename,bytes:video.blob.size}}
+$('videoStart').addEventListener('click',()=>{try{startVideo()}catch(e){console.error(e);video.state='failed';video.error={code:'VIDEO_UNSUPPORTED',message:e.message};updateVideoButtons()}});
+$('videoStop').addEventListener('click',()=>{try{stopVideo()}catch(e){console.error(e)}});
+$('videoDownload').addEventListener('click',()=>{try{downloadVideo()}catch(e){console.error(e)}});
+updateVideoButtons();
 // Embedded-host control adapter. Messages only from the embedding parent are processed;
 // every command uses the same functions that power the visible controls.
 const editable=new Set(['mode','leftEnd','rightEnd','amp','rightAmp','freq','period','speed','mu','tension','mass','shape','rightShape','cycles','polarity','auto']);
@@ -310,7 +399,12 @@ function configure(patch){if(!patch||typeof patch!=='object'||Array.isArray(patc
  }
  updateHud();return readState()}
 function command(action,args={}){
- if(action==='readState')return readState();
+ if(action==='readState')return {...readState(),recording:getVideoStatus()};
+ if(action==='startVideo')return startVideo(args);
+ if(action==='stopVideo')return stopVideo();
+ if(action==='getVideoStatus')return getVideoStatus();
+ if(action==='getVideoCapabilities')return videoCapabilities();
+ if(action==='downloadVideo')return downloadVideo();
  if(action==='configure')return configure(args);
  if(action==='play'){running=true;$('playPause').textContent='⏸ Pause';lastFrame=performance.now();return readState()}
  if(action==='pause'){running=false;$('playPause').textContent='▶ Play';return readState()}

@@ -94,6 +94,11 @@ export default function StringWaveLab(){
    schema("pause",empty,"pause"),
    schema("reset",empty,"reset"),
    schema("send_pulses",fireSchema,"fire"),
+   schema("video_capabilities",empty,"getVideoCapabilities",true),
+   schema("start_video",{type:"object",properties:{mode:{type:"string",enum:["landscape","shorts"]}},additionalProperties:false},"startVideo"),
+   schema("stop_video",empty,"stopVideo"),
+   schema("video_status",empty,"getVideoStatus",true),
+   schema("download_video",empty,"downloadVideo"),
   ];
   registerWebMcpTools({modelContext:getDocumentModelContext(document),tools,signal:abort.signal})
    .catch(error=>console.warn("Wave WebMCP registration:",error));
