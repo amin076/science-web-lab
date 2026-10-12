@@ -10,7 +10,8 @@ const browser=await chromium.launch({headless:true,args:["--autoplay-policy=no-u
 const errors=[];
 try{
  for(const width of [360,600,900,1280]){
-  const page=await browser.newPage({viewport:{width,height:720},acceptDownloads:true});
+  const page=await browser.newPage({viewport:{width,height:720},acceptDownloads:true,
+   ...(width===360?{isMobile:true,hasTouch:true,deviceScaleFactor:2}:{})});
   page.on("pageerror",e=>errors.push(e.message));
   const res=await page.goto(lab,{waitUntil:"networkidle",timeout:35000});
   assert.equal(res.status(),200);
@@ -30,6 +31,12 @@ try{
   assert.ok(dimensions.outer<=dimensions.inner+2,
    "Horizontal overflow at "+width+": "+JSON.stringify(dimensions));
   assert.ok(dimensions.canvas>160,"Canvas usable at "+width);
+  if(width===360){
+   assert.equal(await page.evaluate(()=>matchMedia("(pointer: coarse)").matches),true,
+    "Mobile viewport must expose touch pointer");
+   const target=await page.locator("#simulation-canvas").boundingBox();
+   await page.touchscreen.tap(target.x+target.width/2,target.y+target.height/2);
+  }
   await page.click("#play");
   await page.waitForTimeout(350);
   assert.ok(parseFloat(await page.locator("#time").innerText())>0);
