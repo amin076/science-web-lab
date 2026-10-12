@@ -14,8 +14,14 @@ const HTML_STANDARD_REFERENCE=Object.freeze({
  description:"Portable HTML scientific simulation reference with standalone API, MCP sessions, browser video, and responsive layout.",
  domain:"physics",topic:"mechanics",route:"/examples/html-simulation/index.html",
  runUrl:BASE_URL+"/examples/html-simulation/index.html",
- integrationLevel:"adapted",tools:["open_science_simulation","create_simulation_session","control_simulation_session","read_simulation_session"],
- stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:HTML_REFERENCE_DESCRIPTOR.schema,stateSchema:null,capabilityContract:null,
+ integrationLevel:"adapted",tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"],
+ stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:HTML_REFERENCE_DESCRIPTOR.schema,
+ stateSchema:{type:"object",properties:{
+  position:{type:"array",items:{type:"number"},minItems:3,maxItems:3},
+  velocity:{type:"array",items:{type:"number"},minItems:3,maxItems:3},
+  trail:{type:"array",items:{type:"array",items:{type:"number"}}},
+  timeSeconds:{type:"number"},parameters:HTML_REFERENCE_DESCRIPTOR.schema,
+ }},capabilityContract:null,
 });
 // Temporarily excluded from MCP until its layout and scientific controls are repaired.
 const MCP_QUARANTINED_IDS = new Set(["physics.mechanics.gearbox-differential-3d"]);
