@@ -5,7 +5,7 @@ import {getDocumentModelContext,registerWebMcpTools,createSafeToolExecutor} from
 const ID="physics.waves.string-wave-lab";
 const empty={type:"object",properties:{},additionalProperties:false};
 const parameters={visibleCount:{type:"integer",minimum:1,maximum:4},timeScale:{type:"number",enum:[0.25,0.5,1,2]}};
-const ends=["fixed","free","absorbing"], modes=["continuous","pulse","dual"];
+const ends=["fixed","free","absorbing"], modes=["continuous","pulse","dual"], shapes=["sine","gaussian","triangle","square","ricker","chirp","composite","asymmetric"];
 for(let i=1;i<=4;i++){
  const prefix="s"+i+"_";
  Object.assign(parameters,{
@@ -14,9 +14,15 @@ for(let i=1;i<=4;i++){
   [prefix+"rightEnd"]:{type:"string",enum:ends},
   [prefix+"amp"]:{type:"number",minimum:0.1,maximum:1.2},
   [prefix+"rightAmp"]:{type:"number",minimum:0.1,maximum:1.2},
-  [prefix+"freq"]:{type:"number",minimum:0.4,maximum:3},
-  [prefix+"speed"]:{type:"number",minimum:2,maximum:12},
-  [prefix+"cycles"]:{type:"number",enum:[0.5,0.75,1]},
+  [prefix+"freq"]:{type:"number",minimum:0.25,maximum:5},
+  [prefix+"period"]:{type:"number",minimum:0.2,maximum:4},
+  [prefix+"speed"]:{type:"number",minimum:1,maximum:40},
+  [prefix+"mu"]:{type:"number",minimum:0.05,maximum:2},
+  [prefix+"tension"]:{type:"number",minimum:0.2,maximum:300},
+  [prefix+"mass"]:{type:"number",minimum:0.6,maximum:24},
+  [prefix+"shape"]:{type:"string",enum:shapes},
+  [prefix+"rightShape"]:{type:"string",enum:shapes},
+  [prefix+"cycles"]:{type:"number",enum:[0.5,0.75,1,1.5,2,3]},
   [prefix+"polarity"]:{type:"integer",enum:[-1,1]},
   [prefix+"auto"]:{type:"boolean"},
  });
