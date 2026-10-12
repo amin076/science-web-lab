@@ -7,6 +7,15 @@ const platformCatalog = require("../api/data/platformCatalog.generated.json");
 const agentManifest = require("./data/simulationAgentManifest.generated.json");
 
 const BASE_URL = "https://www.esbiko.com";
+const HTML_STANDARD_REFERENCE_ID="physics.mechanics.html-reference-projectile";
+const HTML_STANDARD_REFERENCE=Object.freeze({
+ id:HTML_STANDARD_REFERENCE_ID,name:"HTML Simulation Standard — Projectile Reference",
+ description:"Portable HTML scientific simulation reference with standalone API, MCP sessions, browser video, and responsive layout.",
+ domain:"physics",topic:"mechanics",route:"/examples/html-simulation/index.html",
+ runUrl:BASE_URL+"/examples/html-simulation/index.html",
+ integrationLevel:"adapted",tools:["open_science_simulation","create_simulation_session","control_simulation_session","read_simulation_session"],
+ stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:null,stateSchema:null,capabilityContract:null,
+});
 // Temporarily excluded from MCP until its layout and scientific controls are repaired.
 const MCP_QUARANTINED_IDS = new Set(["physics.mechanics.gearbox-differential-3d"]);
 
@@ -108,6 +117,7 @@ export function validateSimulationParameters(id, parameters = null) {
 }
 
 export function getSimulationProfile(id) {
+  if(id===HTML_STANDARD_REFERENCE_ID)return {...HTML_STANDARD_REFERENCE};
   const simulation = platformCatalog.find((item) => item.id === id);
   if (!simulation || MCP_QUARANTINED_IDS.has(id)) return null;
 
@@ -136,10 +146,10 @@ export function getSimulationProfile(id) {
 }
 
 export function listSimulationProfiles() {
-  return platformCatalog
+  return [...platformCatalog
     .filter((simulation) => !MCP_QUARANTINED_IDS.has(simulation.id))
     .map((simulation) => getSimulationProfile(simulation.id))
-    .filter(Boolean);
+    .filter(Boolean),getSimulationProfile(HTML_STANDARD_REFERENCE_ID)];
 }
 
 export function requireSimulationProfile(id) {
@@ -152,5 +162,5 @@ export function requireSimulationProfile(id) {
 }
 
 export const SIMULATION_IDS = Object.freeze(
-  platformCatalog.filter((simulation) => !MCP_QUARANTINED_IDS.has(simulation.id)).map((simulation) => simulation.id),
+  [...platformCatalog.filter((simulation) => !MCP_QUARANTINED_IDS.has(simulation.id)).map((simulation) => simulation.id), HTML_STANDARD_REFERENCE_ID],
 );
