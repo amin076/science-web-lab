@@ -104,6 +104,18 @@ const boundaryOptions='<option value="absorbing">Absorbing (no reflection)</opti
 const $=id=>document.getElementById(id);const root=$('cards');const canvas=$('waveCanvas');const ctx=canvas.getContext('2d',{alpha:false});
 let elapsed=0,lastFrame=performance.now(),running=true,timeScale=1,canvasW=1000,canvasH=580,visibleCount=4;
 const lanes=defaults.map((p,i)=>({...p,id:i+1,events:[],continuousFrom:0,nextRepeat:Infinity}));
+window.esbikoRemoteAttached=false;
+let remotePatch={},remotePatchTimer=null;
+function emitRemote(action,args={}){
+ if(!window.esbikoRemoteAttached)return;
+ if(action==='configure'){
+  Object.assign(remotePatch,args);
+  clearTimeout(remotePatchTimer);
+  remotePatchTimer=setTimeout(()=>{const patch=remotePatch;remotePatch={};window.parent.postMessage({type:'esbiko-wave-ui-command-v1',action:'configure',args:patch},'*')},180);
+  return;
+ }
+ window.parent.postMessage({type:'esbiko-wave-ui-command-v1',action,args},'*');
+}
 function fmt(v,d=2){return Number(v).toFixed(d)}
 function template(s){const id=s.id;return `<article class="card" id="card-${id}" style="--accent:${s.color}">
  <div class="card-title"><h3>${s.name}</h3><span class="status" id="status-${id}"></span></div>
@@ -138,7 +150,7 @@ function setStringCount(value){const count=Number(value);if(!Number.isInteger(co
  const mobile=window.matchMedia('(max-width:470px)').matches;const tablet=window.matchMedia('(max-width:770px)').matches;
  canvas.style.height=(mobile?Math.max(205,count*125):tablet?Math.max(220,count*146):Math.max(240,count*146))+'px';
  render();updateHud();return true}
-$('stringCount').addEventListener('change',e=>setStringCount(e.target.value));
+$('stringCount').addEventListener('change',e=>{if(setStringCount(e.target.value))emitRemote('configure',{visibleCount:Number(e.target.value)})});
 function copySettings(target,source){for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','shape','rightShape','cycles','polarity','auto'])target[k]=source[k]}
 function updateUI(s){const id=s.id;
  for(const field of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','shape','rightShape','cycles','polarity'])$(field+'-'+id).value=s[field];$('period-'+id).value=1/s.freq;$('mass-'+id).value=s.mu*L;
@@ -161,21 +173,21 @@ function apply(s,prop,value){
  else if(prop==='mu'){s.mu=value;s.speed=Math.sqrt(s.tension/s.mu)}
  else if(prop==='mass'){s.mu=value/L;s.speed=Math.sqrt(s.tension/s.mu)}
  else s[prop]=value;
- updateUI(s);restartLane(s);updateHud();
+ updateUI(s);restartLane(s);updateHud();emitRemote('configure',{['s'+s.id+'_'+prop]:value});
 }
 for(const s of lanes){const id=s.id;updateUI(s);
  for(const field of ['mode','leftEnd','rightEnd','shape','rightShape','cycles','polarity'])$(field+'-'+id).addEventListener('change',e=>apply(s,field,field==='cycles'||field==='polarity'?Number(e.target.value):e.target.value));
  for(const field of ['amp','rightAmp','freq','period','speed','mu','tension','mass'])$(field+'-'+id).addEventListener('input',e=>apply(s,field,Number(e.target.value)));
  $('auto-'+id).addEventListener('change',e=>apply(s,'auto',e.target.checked));
- $('fire-'+id).addEventListener('click',()=>{fire(s);if(s.auto)s.nextRepeat=elapsed+repeatPeriod(s)});
- $('reset-'+id).addEventListener('click',()=>{copySettings(s,defaults[s.id-1]);updateUI(s);restartLane(s);updateHud()});
- $('clone-'+id).addEventListener('click',()=>{for(const target of lanes){if(target!==s){copySettings(target,s);updateUI(target);restartLane(target)}}updateHud()});
+ $('fire-'+id).addEventListener('click',()=>{fire(s);if(s.auto)s.nextRepeat=elapsed+repeatPeriod(s);emitRemote('fire',{string:s.id})});
+ $('reset-'+id).addEventListener('click',()=>{copySettings(s,defaults[s.id-1]);updateUI(s);restartLane(s);updateHud();const patch={};for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','mu','tension','shape','rightShape','cycles','polarity','auto'])patch['s'+id+'_'+k]=s[k];emitRemote('configure',patch)});
+ $('clone-'+id).addEventListener('click',()=>{const patch={};for(const target of lanes){if(target!==s){copySettings(target,s);updateUI(target);restartLane(target);for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','mu','tension','shape','rightShape','cycles','polarity','auto'])patch['s'+target.id+'_'+k]=target[k]}}updateHud();emitRemote('configure',patch)});
 }
 function restart(){elapsed=0;lastFrame=performance.now();for(const s of lanes)restartLane(s);render();updateHud()}
-$('playPause').addEventListener('click',()=>{running=!running;$('playPause').textContent=running?'⏸ Pause':'▶ Play';lastFrame=performance.now()});
-$('restart').addEventListener('click',restart);
+$('playPause').addEventListener('click',()=>{running=!running;$('playPause').textContent=running?'⏸ Pause':'▶ Play';lastFrame=performance.now();emitRemote(running?'play':'pause')});
+$('restart').addEventListener('click',()=>{restart();emitRemote('reset')});
 $('reset').addEventListener('click',()=>{for(let i=0;i<lanes.length;i++){copySettings(lanes[i],defaults[i]);updateUI(lanes[i])}timeScale=1;setStringCount(4);$('timeSpeed').value='1';updateHud();running=true;$('playPause').textContent='⏸ Pause';restart()});
-$('timeSpeed').addEventListener('change',e=>timeScale=Number(e.target.value));
+$('timeSpeed').addEventListener('change',e=>{timeScale=Number(e.target.value);emitRemote('configure',{timeScale})});
 function pulseValue(tau,e){
  const duration=e.cycles/e.freq;
  if(tau<=0||tau>=duration)return 0;
@@ -402,6 +414,23 @@ function configure(patch){if(!patch||typeof patch!=='object'||Array.isArray(patc
  }
  updateHud();return readState()}
 function command(action,args={}){
+ if(action==='hydrate'){
+  const c=args.checkpoint;
+  if(!c||!Array.isArray(c.lanes)||c.lanes.length!==4||!Number.isFinite(c.timeSeconds))throw Error('Invalid remote checkpoint');
+  clearTimeout(remotePatchTimer);remotePatch={};
+  elapsed=c.timeSeconds;timeScale=c.timeScale;
+  for(let i=0;i<4;i++){
+   const incoming=c.lanes[i];
+   if(!incoming||incoming.id!==i+1||!Array.isArray(incoming.events))throw Error('Invalid remote string');
+   Object.assign(lanes[i],incoming);
+   lanes[i].nextRepeat=incoming.nextRepeat===null?Infinity:incoming.nextRepeat;
+   updateUI(lanes[i]);
+  }
+  $('timeSpeed').value=String(timeScale);setStringCount(c.visibleCount);
+  running=false;$('playPause').textContent='▶ Play';lastFrame=performance.now();
+  window.esbikoRemoteAttached=true;updateHud(true);render();
+  return readState();
+ }
  if(action==='readState')return {...readState(),recording:getVideoStatus()};
  if(action==='startVideo')return startVideo(args);
  if(action==='stopVideo')return stopVideo();
