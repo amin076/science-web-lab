@@ -1,0 +1,58 @@
+name: HTML Standard Five-Gate Acceptance
+on:
+  pull_request:
+    paths:
+      - "src/esbiko-physics/mechanics/htmlReferenceProjectile.js"
+      - "examples/html-simulation/**"
+      - "src/platform/html-simulation/**"
+      - "functions/control/**"
+      - "functions/mcp/**"
+      - "scripts/test-html-standard-*"
+      - "scripts/pack-simulation-control-engine.cjs"
+      - "vite.config.js"
+      - ".github/workflows/html-standard-five-gates.yml"
+  workflow_dispatch:
+jobs:
+  html-five-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix functions
+      - name: Generate catalogs and bundle canonical science for Functions
+        run: npm run platform:catalog
+      - name: Standard browser runtime and API control contract
+        run: |
+          npm run test:html-standard
+          node scripts/test-html-standard-control.mjs
+          npm run test:control
+          node scripts/test-mcp-runtime.mjs
+      - name: Verify production HTML entrypoint
+        run: |
+          npm run build
+          test -f dist/examples/html-simulation/index.html
+          test -f functions/api/engine/htmlReferenceProjectile.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Real browser acceptance (responsive, video, remote session)
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/esbiko-html-preview.log 2>&1 &
+          for i in {1..45}; do
+            if curl -fsS http://127.0.0.1:4173/examples/html-simulation/index.html >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/test-html-standard-browser.mjs || { cat /tmp/esbiko-html-preview.log; exit 1; }
+      - name: Upload HTML standard artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-standard-five-gate-evidence
+          path: artifacts/html-standard-browser/**
+          if-no-files-found: warn
