@@ -186,7 +186,7 @@ for(const s of lanes){const id=s.id;updateUI(s);
 function restart(){elapsed=0;lastFrame=performance.now();for(const s of lanes)restartLane(s);render();updateHud()}
 $('playPause').addEventListener('click',()=>{running=!running;$('playPause').textContent=running?'⏸ Pause':'▶ Play';lastFrame=performance.now();emitRemote(running?'play':'pause')});
 $('restart').addEventListener('click',()=>{restart();emitRemote('reset')});
-$('reset').addEventListener('click',()=>{for(let i=0;i<lanes.length;i++){copySettings(lanes[i],defaults[i]);updateUI(lanes[i])}timeScale=1;setStringCount(4);$('timeSpeed').value='1';updateHud();running=true;$('playPause').textContent='⏸ Pause';restart()});
+$('reset').addEventListener('click',()=>{for(let i=0;i<lanes.length;i++){copySettings(lanes[i],defaults[i]);updateUI(lanes[i])}timeScale=1;setStringCount(4);$('timeSpeed').value='1';updateHud();running=true;$('playPause').textContent='⏸ Pause';restart();if(window.esbikoRemoteAttached){const patch={visibleCount:4,timeScale:1};for(const lane of lanes)for(const key of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','mu','tension','shape','rightShape','cycles','polarity','auto'])patch['s'+lane.id+'_'+key]=lane[key];emitRemote('configure',patch);setTimeout(()=>emitRemote('reset'),240)}});
 $('timeSpeed').addEventListener('change',e=>{timeScale=Number(e.target.value);emitRemote('configure',{timeScale})});
 function pulseValue(tau,e){
  const duration=e.cycles/e.freq;
