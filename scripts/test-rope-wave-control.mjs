@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {requireSimulationControlAdapter} from '../functions/control/adapterRegistry.mjs';
+const a=requireSimulationControlAdapter('physics.waves.rope-wave');
+let doc=a.create({boundary:'free'});doc=a.execute(doc,{action:'advance',seconds:1.7}).document;
+assert.ok(Math.abs(a.expose(doc).elapsedSeconds-1.7)<1e-10);
+assert.throws(()=>a.execute(doc,{action:'configure',parameters:{boundary:'invalid'}}));
+doc=a.execute(doc,{action:'configure',parameters:{boundary:'fixed'}}).document;
+assert.equal(a.expose(doc).elapsedSeconds,0);
+assert.equal(a.expose(doc).state.parameters.boundary,'fixed');
+assert.throws(()=>a.execute(doc,{action:'advance',seconds:Infinity}));
+console.log('PASS shared HTTP/MCP adapter: registry, advance, state, configure/reset, invalid values.');

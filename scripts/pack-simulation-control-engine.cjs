@@ -19,3 +19,5 @@ buildSync({entryPoints:[path.join(root,"src/esbiko-physics/mechanics/htmlReferen
  bundle:true,format:"esm",platform:"node",target:"node22",
  outfile:path.join(out,"htmlReferenceProjectile.mjs")});
 console.log("Packed HTML reference shared scientific model for HTTP/MCP.");
+
+buildSync({entryPoints:[path.join(root,"src/esbiko-physics/waves/ropeWave.js")],bundle:true,format:"esm",platform:"node",target:"node22",outfile:path.join(out,"ropeWave.mjs")});

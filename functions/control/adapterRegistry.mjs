@@ -10,7 +10,10 @@ import {
 import {HTML_REFERENCE_DESCRIPTOR,createHtmlReferenceDocument,exposeHtmlReferenceState,
  executeHtmlReferenceCommand} from "./htmlReferenceControl.mjs";
 
+import {ROPE_WAVE_DESCRIPTOR,createRopeWaveDocument,exposeRopeWaveState,executeRopeWaveCommand} from "./ropeWaveControl.mjs";
+
 const adapters=new Map([
+ [ROPE_WAVE_DESCRIPTOR.id,Object.freeze({id:ROPE_WAVE_DESCRIPTOR.id,descriptor:ROPE_WAVE_DESCRIPTOR,create:createRopeWaveDocument,expose:exposeRopeWaveState,execute:executeRopeWaveCommand})],
  [SIMULATION_CONTROL_ID,Object.freeze({
   id:SIMULATION_CONTROL_ID,descriptor:DESCRIPTOR,
   create:createControlDocument,expose:exposeControlState,

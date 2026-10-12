@@ -111,6 +111,7 @@ export default defineConfig({
 
   build: { rollupOptions: { input: {
     app: path.resolve(__dirname, "index.html"),
+    ropeWaves: path.resolve(__dirname, "examples/rope-waves/index.html"),
     htmlStandard: path.resolve(__dirname, "examples/html-simulation/index.html"),
   }}},
 

@@ -11,3 +11,5 @@ export * from './mechanics/projectile.js';
 export * from './optics/compoundInstruments.js';
 
 export * from './mechanics/compoundPendulum.js';
+
+export * from './waves/ropeWave.js';

@@ -1,0 +1,34 @@
+name: Rope Wave Beta
+on:
+  push:
+    branches: [preview/rope-waves]
+permissions:
+  contents: read
+  checks: write
+jobs:
+  beta:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --legacy-peer-deps
+      - run: node scripts/test-rope-wave.mjs && node scripts/build-rope-beta.mjs
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: deploy
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          projectId: sience-web-app
+          channelId: rope-wave-beta
+          expires: 7d
+          entryPoint: artifacts/rope-beta
+      - name: Record beta address
+        env:
+          DETAILS: '${{ steps.deploy.outputs.details_url }}'
+          URLS: '${{ steps.deploy.outputs.urls }}'
+        run: |
+          echo "$DETAILS" >> "$GITHUB_STEP_SUMMARY"
+          echo "$URLS" >> "$GITHUB_STEP_SUMMARY"

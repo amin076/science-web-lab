@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {build} from 'esbuild';
+const main=fs.readFileSync('examples/rope-waves/main.js','utf8').split('// MCP App bridges')[0];
+const result=await build({stdin:{contents:main,resolveDir:path.resolve('examples/rope-waves'),loader:'js'},bundle:true,format:'iife',write:false,minify:false});
+const html=fs.readFileSync('examples/rope-waves/index.html','utf8');
+const markup=html.split('<body>')[1].split('<script type="module"')[0];
+const css=fs.readFileSync('examples/rope-waves/style.css','utf8').replace(':root{color-scheme:light dark}body{margin:0}','#rope-lab{color-scheme:light dark}');
+const out=process.argv[2];if(!out)throw Error('Provide an output fragment path');
+fs.writeFileSync(out,'<style>\n'+css+'\n</style>\n'+markup+'\n<script>\n'+result.outputFiles[0].text.replaceAll('</script','<\\/script')+'\n</script>\n');
+console.log('Built review preview from canonical model, runtime and view: '+out);
