@@ -92,7 +92,7 @@ export function createHtmlReferenceProjectile(initial={}){
    timeSeconds=checkpoint.timeSeconds;return snapshot();
   },
   trajectory:({limit=150}={})=>{
-   if(!Number.isInteger(limit)||limit<1||limit>300)throw new RangeError("Invalid trajectory limit");
+   if(!Number.isInteger(limit)||limit<1||limit>18000)throw new RangeError("Invalid trajectory limit");
    return copy(trail.slice(-limit));
   },
   clearTrails:()=>{trail=[physical.position.slice(0,2)];return {cleared:true};},
