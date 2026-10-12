@@ -110,7 +110,7 @@ export default function StringWaveLab(){
    requests.current.clear();
   };
  },[control,onResponse]);
- const sharedPhysics=wavePhysicsSource.replace(/\\bexport\\s+/g,"")+"\nwindow.esbikoWavePhysics=Object.freeze({pulseValue,sourceValue,component,sample});";
+ const sharedPhysics=wavePhysicsSource.replace(/\bexport\s+/g,"")+"\nwindow.esbikoWavePhysics=Object.freeze({pulseValue,sourceValue,component,sample});";
  const embeddedHtml=pageHtml.replace("</head>","<script>"+sharedPhysics+"<\/script></head>");
  return <iframe ref={frame} onLoad={onLoad} srcDoc={embeddedHtml}
   title="Esbiko Wave Strings Lab — 1 to 4 strings with reflection and superposition"
