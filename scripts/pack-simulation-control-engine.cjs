@@ -19,3 +19,10 @@ buildSync({entryPoints:[path.join(root,"src/esbiko-physics/mechanics/htmlReferen
  bundle:true,format:"esm",platform:"node",target:"node22",
  outfile:path.join(out,"htmlReferenceProjectile.mjs")});
 console.log("Packed HTML reference shared scientific model for HTTP/MCP.");
+
+
+// Bundle exactly the canonical browser wave model for HTTP and MCP control.
+buildSync({entryPoints:[path.join(root,"src/esbiko-physics/waves/stringWaveModel.js")],
+ bundle:true,format:"esm",platform:"node",target:"node22",
+ outfile:path.join(out,"stringWaveModel.mjs")});
+console.log("Packed canonical Wave Strings physics model for HTTP/MCP.");
