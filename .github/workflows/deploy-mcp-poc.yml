@@ -53,6 +53,8 @@ jobs:
 
       - name: Verify shared Simulation Control API
         run: npm run test:control
+      - name: Verify Wave Strings shared HTTP and MCP control
+        run: node scripts/test-wave-control.mjs
 
       - name: Write Firebase service account
         env:
