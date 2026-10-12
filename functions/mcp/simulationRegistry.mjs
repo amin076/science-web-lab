@@ -1,6 +1,7 @@
 /* eslint-env node */
 
 import {createRequire} from "node:module";
+import {HTML_REFERENCE_DESCRIPTOR} from "../control/htmlReferenceControl.mjs";
 
 const require = createRequire(import.meta.url);
 const platformCatalog = require("../api/data/platformCatalog.generated.json");
@@ -14,7 +15,7 @@ const HTML_STANDARD_REFERENCE=Object.freeze({
  domain:"physics",topic:"mechanics",route:"/examples/html-simulation/index.html",
  runUrl:BASE_URL+"/examples/html-simulation/index.html",
  integrationLevel:"adapted",tools:["open_science_simulation","create_simulation_session","control_simulation_session","read_simulation_session"],
- stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:null,stateSchema:null,capabilityContract:null,
+ stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:HTML_REFERENCE_DESCRIPTOR.schema,stateSchema:null,capabilityContract:null,
 });
 // Temporarily excluded from MCP until its layout and scientific controls are repaired.
 const MCP_QUARANTINED_IDS = new Set(["physics.mechanics.gearbox-differential-3d"]);
@@ -40,7 +41,8 @@ export function validateSimulationParameters(id, parameters = null) {
     throw error;
   }
 
-  const manifest = agentManifest[id] || null;
+  const manifest = id===HTML_STANDARD_REFERENCE_ID?
+    {parameterSchema:HTML_REFERENCE_DESCRIPTOR.schema}:agentManifest[id] || null;
 
   if (!manifest) {
     if (Object.keys(parameters).length === 0) return {};
