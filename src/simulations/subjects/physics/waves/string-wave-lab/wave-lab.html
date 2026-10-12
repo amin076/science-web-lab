@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#091423">
+<meta name="description" content="Explore waves and superposition on one to four independently configurable strings in a single canvas.">
+<title>Wave Strings Lab | Esbiko Science Lab</title>
+<style>
+:root{color-scheme:dark;--bg:#07111e;--panel:#102039;--panel2:#132844;--border:#2c4260;--text:#edf5ff;--muted:#a5b9d2;--cyan:#59d7f2;--violet:#c09cff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 20% -20%,#203c64 0,transparent 53%),linear-gradient(145deg,#07111d,#0a1525);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+button,input,select{font:inherit}button,select{color:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.shell{max-width:1330px;margin:auto;padding:clamp(12px,2vw,27px)}header.top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;margin:8px 0 17px}.eyebrow{font-size:11px;font-weight:800;letter-spacing:.17em;color:var(--cyan)}h1{font-size:clamp(25px,3vw,36px);letter-spacing:-.04em;line-height:1.15;margin:6px 0 9px}header.top p{max-width:770px;color:var(--muted);margin:0}.chip{white-space:nowrap;border:1px solid #386384;padding:7px 13px;border-radius:100px;font-size:12px;color:#bdebf8;background:#142b43}
+.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px;border:1px solid var(--border);background:rgba(17,35,58,.88);border-radius:13px;margin-bottom:12px}.button{border:1px solid #3b5576;border-radius:9px;padding:9px 12px;background:#1c3552;min-height:40px;font-weight:550}.button:hover{background:#294566}.button.primary{color:#032135;border-color:#73e8fb;background:linear-gradient(120deg,#66e5f3,#6daef9);font-weight:750}.button:disabled{opacity:.45;cursor:not-allowed}.toolbar .grow{flex:1}.toolbar select{background:#152c49;border:1px solid #3b5576;border-radius:8px;padding:8px}.toolbar label{display:flex;align-items:center;gap:7px;color:#c3d5e9;font-size:12px}.clock{font-variant-numeric:tabular-nums;min-width:78px;color:#dbeafb;font-weight:650;text-align:right}
+.stage{border:1px solid #395272;background:linear-gradient(180deg,#102238,#091a2d);border-radius:16px;overflow:hidden;box-shadow:0 17px 40px #0004}.stage-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;padding:12px 16px;border-bottom:1px solid #304662}.stage-head strong{font-size:14px}.stage-head span{font-size:11px;color:#b2c7df}.canvas-wrap{padding:9px 10px 4px}canvas{display:block;width:100%;height:584px;background:#071729;border-radius:10px;max-width:100%;touch-action:pan-y}.stage-foot{display:flex;flex-wrap:wrap;gap:16px;align-items:center;padding:10px 14px 13px;color:#bacde3;font-size:11px}.key{display:inline-block;width:21px;height:0;border-top:2px solid currentColor;vertical-align:middle;margin-right:6px}.key.left{color:#63d9ff;border-style:dashed}.key.right{color:#ffcb76;border-style:dashed}.key.sum{color:#d3adff;border-width:3px}
+.section-heading{display:flex;align-items:baseline;gap:13px;justify-content:space-between;margin:22px 1px 11px;flex-wrap:wrap}.section-heading h2{font-size:18px;margin:0}.section-heading p{margin:0;color:var(--muted);font-size:12px}.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{--accent:#5fd7f4;border:1px solid var(--border);border-radius:13px;background:linear-gradient(160deg,#142742,#0e2035);padding:14px;min-width:0}.card-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}.card-title h3{margin:0;font-size:16px}.card-title h3:before{content:"";width:10px;height:10px;display:inline-block;margin-right:8px;border-radius:3px;background:var(--accent);box-shadow:0 0 13px color-mix(in srgb,var(--accent) 50%,transparent)}.card-title .status{font-size:11px;color:var(--accent);text-align:right}.primary-fields,.extra-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;min-width:0;gap:5px}.field label{font-size:12px;color:#bfd1e7;display:flex;align-items:center;justify-content:space-between;gap:5px}.field output{color:var(--accent);font-variant-numeric:tabular-nums;font-weight:750}select{background:#142a45;border:1px solid #3a587a;border-radius:8px;padding:9px 8px;width:100%;min-width:0}input[type=range]{width:100%;margin:4px 0;height:21px;cursor:pointer;accent-color:var(--accent)}.advanced{border-top:1px solid #2b4361;margin-top:12px;padding-top:9px}.advanced summary{color:#a9dfff;font-size:12px;font-weight:700;cursor:pointer;user-select:none}.extra-fields{margin-top:13px}.check-field{display:flex;align-items:center;gap:8px;color:#c4d4e9;font-size:12px}.check-field input{accent-color:var(--accent);width:15px;height:15px}.check-field label{cursor:pointer}.card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.card-actions .button{min-height:33px;font-size:12px;padding:5px 10px}.card-actions .fire{border-color:#567e9f;background:#25496b}.help{margin:12px 0 0;padding:11px 14px;background:#0f2238;border:1px solid #2a435d;border-radius:11px;color:#bfd1e8;font-size:12px}.help strong{color:#e7f4ff}.footer{color:#839fbc;text-align:center;margin-top:18px;font-size:11px}
+.dual-only[hidden],.pulse-only[hidden],.card[hidden]{display:none!important}
+@media(max-width:770px){.cards{grid-template-columns:1fr}.chip{display:none}canvas{height:510px}}
+@media(max-width:470px){.shell{padding:9px}.toolbar{gap:6px}.toolbar .grow{display:none}.toolbar .button{padding:7px 9px;font-size:12px;min-height:35px}.toolbar label{font-size:11px}.stage-head{padding:9px 12px}.stage-head span{font-size:10px}canvas{height:446px}.canvas-wrap{padding:5px}.stage-foot{gap:8px;padding:8px 10px}.card{padding:12px}.primary-fields,.extra-fields{gap:9px}.field label{font-size:11px}.section-heading{margin-top:18px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="top"><div><div class="eyebrow">ESBIKO SCIENCE LAB · INTERACTIVE PHYSICS</div><h1>Wave Strings Lab</h1><p>Choose one to four parallel strings on a single canvas. Configure each one independently to explore fixed-end reflection, free-end reflection, traveling waves, pulses and superposition.</p></div><span class="chip">ONE CANVAS · 1–4 STRINGS</span></header>
+<div class="toolbar" role="group" aria-label="Simulation playback controls">
+<button class="button primary" id="playPause" data-agent-action="playPause" type="button">⏸ Pause</button>
+<button class="button" id="restart" data-agent-action="reset" type="button">↺ Restart</button>
+<button class="button" id="reset" type="button">Restore defaults</button>
+<span class="grow"></span><label for="stringCount">Strings <select id="stringCount" data-agent-param="visibleCount" aria-label="Number of visible strings"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option></select></label><label for="timeSpeed">Time speed <select id="timeSpeed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+<span class="clock" id="clock" aria-live="off">0.00 s</span>
+</div>
+<section class="stage" aria-label="One to four waves on one shared canvas"><div class="stage-head"><strong>Live wave comparison</strong><span>String length 12 m · Ideal uniform string · Same timeline</span></div>
+<div class="canvas-wrap"><canvas id="waveCanvas" role="img" aria-label="One shared canvas displaying the selected number of parallel horizontal strings. Each string has independently configurable wave behavior.">Your browser does not support HTML Canvas.</canvas></div>
+<div class="stage-foot"><span><i class="key left"></i>Left-origin pulse</span><span><i class="key right"></i>Right-origin pulse</span><span><i class="key sum"></i>Resultant displacement (dual-pulse mode)</span></div></section>
+<div class="section-heading"><h2>Independent string settings</h2><p>Choose 1–4 visible strings. Each string supports every wave mode, and hidden string settings are preserved.</p></div>
+<section id="cards" class="cards" aria-label="Settings for each visible string"></section>
+<p class="help"><strong>Physics note:</strong> A fixed end reverses the reflected displacement; a free end preserves it; an absorbing end lets a wave exit. In <strong>Two-sided pulses</strong> mode, the blue and gold pulses approach from opposite ends, overlap according to <strong>y = y<sub>left</sub> + y<sub>right</sub></strong>, and continue through one another. Reverse the right pulse's polarity to demonstrate destructive interference. Dashed curves show the individual contributions; the solid curve shows their sum.</p>
+<footer class="footer">Esbiko Science Lab · Offline HTML / Canvas 2D · English base interface</footer>
+</main>
+<script>
+(()=>{
+'use strict';
+const L=12, TAU=2*Math.PI;
+const defaults=[
+ {name:'String 1',color:'#60d8f3',mode:'continuous',leftEnd:'absorbing',rightEnd:'fixed',amp:.78,rightAmp:.78,freq:1.35,speed:7.5,cycles:.5,polarity:1,auto:false},
+ {name:'String 2',color:'#6ce4b3',mode:'continuous',leftEnd:'absorbing',rightEnd:'free',amp:.78,rightAmp:.78,freq:1.35,speed:7.5,cycles:.5,polarity:1,auto:false},
+ {name:'String 3',color:'#f5be75',mode:'continuous',leftEnd:'absorbing',rightEnd:'absorbing',amp:.78,rightAmp:.78,freq:1.35,speed:7.5,cycles:.5,polarity:1,auto:false},
+ {name:'String 4',color:'#c7a8ff',mode:'dual',leftEnd:'absorbing',rightEnd:'absorbing',amp:.84,rightAmp:.84,freq:1.4,speed:7.5,cycles:.5,polarity:1,auto:true}
+];
+const boundaryNames={fixed:'Fixed',free:'Free',absorbing:'Absorbing'};
+const modeNames={continuous:'Continuous wave',pulse:'Single pulse',dual:'Two-sided pulses'};
+const boundaryOptions='<option value="absorbing">Absorbing (no reflection)</option><option value="fixed">Fixed (inverted reflection)</option><option value="free">Free (upright reflection)</option>';
+const $=id=>document.getElementById(id);const root=$('cards');const canvas=$('waveCanvas');const ctx=canvas.getContext('2d',{alpha:false});
+let elapsed=0,lastFrame=performance.now(),running=true,timeScale=1,canvasW=1000,canvasH=580,visibleCount=4;
+const lanes=defaults.map((p,i)=>({...p,id:i+1,events:[],continuousFrom:0,nextRepeat:Infinity}));
+function fmt(v,d=2){return Number(v).toFixed(d)}
+function template(s){const id=s.id;return `<article class="card" id="card-${id}" style="--accent:${s.color}">
+ <div class="card-title"><h3>${s.name}</h3><span class="status" id="status-${id}"></span></div>
+ <div class="primary-fields">
+  <div class="field"><label for="mode-${id}">Wave program</label><select id="mode-${id}"><option value="continuous">Continuous wave</option><option value="pulse">Single pulse (left)</option><option value="dual">Two-sided pulses</option></select></div>
+  <div class="field"><label for="rightEnd-${id}">Right end</label><select id="rightEnd-${id}">${boundaryOptions}</select></div>
+  <div class="field"><label for="amp-${id}">Left amplitude <output id="ampOut-${id}"></output></label><input id="amp-${id}" type="range" min="0.1" max="1.2" step="0.02"></div>
+  <div class="field"><label for="speed-${id}">Wave speed <output id="speedOut-${id}"></output></label><input id="speed-${id}" type="range" min="2" max="12" step="0.5"></div>
+ </div>
+ <details class="advanced" ${id===4?'open':''}><summary>Advanced wave and boundary settings</summary>
+  <div class="extra-fields">
+   <div class="field"><label for="freq-${id}">Frequency <output id="freqOut-${id}"></output></label><input id="freq-${id}" type="range" min="0.4" max="3" step="0.05"></div>
+   <div class="field"><label for="leftEnd-${id}">Left end (returning waves)</label><select id="leftEnd-${id}">${boundaryOptions}</select></div>
+   <div class="field pulse-only" id="pulseFields-${id}"><label for="cycles-${id}">Pulse duration</label><select id="cycles-${id}"><option value="0.5">Half cycle (½)</option><option value="0.75">Three-quarter cycle (¾)</option><option value="1">One full cycle (1)</option></select></div>
+   <div class="field dual-only" id="rightAmpField-${id}"><label for="rightAmp-${id}">Right amplitude <output id="rightAmpOut-${id}"></output></label><input id="rightAmp-${id}" type="range" min="0.1" max="1.2" step="0.02"></div>
+   <div class="field dual-only" id="polarityField-${id}"><label for="polarity-${id}">Right-pulse polarity</label><select id="polarity-${id}"><option value="1">Same (constructive)</option><option value="-1">Inverted (destructive)</option></select></div>
+   <div class="check-field pulse-only" id="autoField-${id}"><input id="auto-${id}" type="checkbox"><label for="auto-${id}">Automatically repeat pulses</label></div>
+  </div></details>
+ <div class="card-actions"><button type="button" class="button fire" id="fire-${id}">Send pulse</button><button type="button" class="button" id="clone-${id}">Copy to all</button><button type="button" class="button" id="reset-${id}">Reset string</button></div>
+ </article>`}
+for(const s of lanes)root.insertAdjacentHTML('beforeend',template(s));
+function setStringCount(value){const count=Number(value);if(!Number.isInteger(count)||count<1||count>4)return false;
+ visibleCount=count;$('stringCount').value=String(count);for(const lane of lanes)$('card-'+lane.id).hidden=lane.id>count;
+ // Retain each string's state and settings while changing the visible layout.
+ const mobile=window.matchMedia('(max-width:470px)').matches;const tablet=window.matchMedia('(max-width:770px)').matches;
+ canvas.style.height=(mobile?Math.max(205,count*125):tablet?Math.max(220,count*146):Math.max(240,count*146))+'px';
+ render();return true}
+$('stringCount').addEventListener('change',e=>setStringCount(e.target.value));
+function copySettings(target,source){for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','cycles','polarity','auto'])target[k]=source[k]}
+function updateUI(s){const id=s.id;
+ for(const field of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','cycles','polarity'])$(field+'-'+id).value=s[field];
+ $('auto-'+id).checked=s.auto;
+ $('ampOut-'+id).textContent=fmt(s.amp)+' m';$('rightAmpOut-'+id).textContent=fmt(s.rightAmp)+' m';$('freqOut-'+id).textContent=fmt(s.freq)+' Hz';$('speedOut-'+id).textContent=fmt(s.speed,1)+' m/s';
+ $('status-'+id).textContent=s.mode==='dual'?'Superposition':(s.mode==='pulse'?'Pulse · ':'Wave · ')+boundaryNames[s.rightEnd]+' end';
+ const pulse=s.mode!=='continuous',dual=s.mode==='dual';
+ $('pulseFields-'+id).hidden=!pulse;$('autoField-'+id).hidden=!pulse;$('rightAmpField-'+id).hidden=!dual;$('polarityField-'+id).hidden=!dual;
+ $('fire-'+id).disabled=!pulse;$('fire-'+id).textContent=dual?'Fire both pulses':'Send pulse';
+}
+function send(s,side,when=elapsed+.04){s.events.push({side,t0:when,amp:side==='right'?s.rightAmp*s.polarity:s.amp,speed:s.speed,freq:s.freq,cycles:s.cycles,mode:'pulse'});if(s.events.length>90)s.events.splice(0,s.events.length-90)}
+function fire(s,when=elapsed+.04){send(s,'left',when);if(s.mode==='dual')send(s,'right',when)}
+function repeatPeriod(s){return Math.max(2.75,2.65*L/s.speed+s.cycles/s.freq)}
+function restartLane(s,autoStart=true){s.events=[];s.continuousFrom=elapsed+.08;s.nextRepeat=Infinity;
+ if(s.mode!=='continuous'&&autoStart){fire(s,elapsed+.20);if(s.auto)s.nextRepeat=elapsed+.20+repeatPeriod(s)}}
+function apply(s,prop,value){s[prop]=value;updateUI(s);restartLane(s)}
+for(const s of lanes){const id=s.id;updateUI(s);
+ for(const field of ['mode','leftEnd','rightEnd','cycles','polarity'])$(field+'-'+id).addEventListener('change',e=>apply(s,field,field==='cycles'||field==='polarity'?Number(e.target.value):e.target.value));
+ for(const field of ['amp','rightAmp','freq','speed'])$(field+'-'+id).addEventListener('input',e=>apply(s,field,Number(e.target.value)));
+ $('auto-'+id).addEventListener('change',e=>apply(s,'auto',e.target.checked));
+ $('fire-'+id).addEventListener('click',()=>{fire(s);if(s.auto)s.nextRepeat=elapsed+repeatPeriod(s)});
+ $('reset-'+id).addEventListener('click',()=>{copySettings(s,defaults[s.id-1]);updateUI(s);restartLane(s)});
+ $('clone-'+id).addEventListener('click',()=>{for(const target of lanes){if(target!==s){copySettings(target,s);updateUI(target);restartLane(target)}}});
+}
+function restart(){elapsed=0;lastFrame=performance.now();for(const s of lanes)restartLane(s);render()}
+$('playPause').addEventListener('click',()=>{running=!running;$('playPause').textContent=running?'⏸ Pause':'▶ Play';lastFrame=performance.now()});
+$('restart').addEventListener('click',restart);
+$('reset').addEventListener('click',()=>{for(let i=0;i<lanes.length;i++){copySettings(lanes[i],defaults[i]);updateUI(lanes[i])}timeScale=1;setStringCount(4);$('timeSpeed').value='1';running=true;$('playPause').textContent='⏸ Pause';restart()});
+$('timeSpeed').addEventListener('change',e=>timeScale=Number(e.target.value));
+function pulseValue(tau,e){if(tau<=0)return 0;const duration=e.cycles/e.freq;if(tau>=duration)return 0;
+ const phase=tau/duration;let envelope=1;
+ if(e.cycles===.75){const edge=.09;if(phase>1-edge)envelope=(1-phase)/edge}
+ return e.amp*Math.sin(TAU*e.cycles*phase)*envelope;
+}
+function sourceValue(tau,e){if(tau<=0)return 0;
+ if(e.mode==='continuous')return e.amp*Math.sin(TAU*e.freq*tau)*Math.min(1,tau*4);
+ return pulseValue(tau,e);
+}
+// D'Alembert traveling-wave components plus exact sign-change on reflection.
+// Every term is a wave traveling a known path from its own origin; adding the
+// contributions therefore preserves linear superposition during overlap.
+function component(e,s,x,t){const age=t-e.t0;if(age<=0)return 0;
+ const rl=s.leftEnd==='fixed'?-1:s.leftEnd==='free'?1:0;
+ const rr=s.rightEnd==='fixed'?-1:s.rightEnd==='free'?1:0;
+ const limit=Math.min(24,Math.ceil(age*e.speed/L)+1);
+ let v=0;
+ for(let k=0;k<limit;k++){
+  const m=Math.floor(k/2),even=k%2===0;
+  let d,coef;
+  if(e.side==='left'){
+   if(even){d=2*m*L+x;coef=Math.pow(rr,m)*Math.pow(rl,m)}
+   else{d=(2*m+2)*L-x;coef=Math.pow(rr,m+1)*Math.pow(rl,m)}
+  }else{
+   if(even){d=2*m*L+(L-x);coef=Math.pow(rl,m)*Math.pow(rr,m)}
+   else{d=(2*m+1)*L+x;coef=Math.pow(rl,m+1)*Math.pow(rr,m)}
+  }
+  if(coef===0)continue;
+  v+=coef*sourceValue(age-d/e.speed,e);
+ }
+ return v;
+}
+function sample(s,x,t){let left=0,right=0;
+ if(s.mode==='continuous'){
+  left=component({side:'left',t0:s.continuousFrom,amp:s.amp,speed:s.speed,freq:s.freq,mode:'continuous'},s,x,t);
+ }else{
+  for(const e of s.events){const a=component(e,s,x,t);if(e.side==='left')left+=a;else right+=a}
+ }
+ return [left,right];
+}
+function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvasW=Math.max(1,rect.width);canvasH=Math.max(1,rect.height);
+ const realW=Math.round(canvasW*dpr),realH=Math.round(canvasH*dpr);if(canvas.width!==realW||canvas.height!==realH){canvas.width=realW;canvas.height=realH}ctx.setTransform(dpr,0,0,dpr,0,0)}
+function pathLine(arr,x0,dx,mid,vertical,color,width,dash=[],glow=0){ctx.beginPath();ctx.moveTo(x0,mid-arr[0]*vertical);for(let i=1;i<arr.length;i++)ctx.lineTo(x0+i*dx,mid-arr[i]*vertical);
+ ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin='round';ctx.lineCap='round';ctx.setLineDash(dash);if(glow){ctx.shadowColor=color;ctx.shadowBlur=glow}ctx.stroke();ctx.shadowBlur=0;ctx.setLineDash([])}
+function render(){resize();const w=canvasW,h=canvasH,row=h/visibleCount,small=w<520;
+ const left=small?Math.min(67,w*.19):95,right=w-(small?22:45),span=Math.max(70,right-left),samples=Math.max(130,Math.min(540,Math.round(span/2))),stepX=span/(samples-1);
+ ctx.fillStyle='#08192d';ctx.fillRect(0,0,w,h);
+ for(let j=0;j<visibleCount;j++){
+  const s=lanes[j],top=j*row,mid=top+row*.56;
+  ctx.fillStyle=j%2===0?'#0c2036':'#0a1b2f';ctx.fillRect(0,top,w,row);
+  if(j>0){ctx.strokeStyle='#34506b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(8,top);ctx.lineTo(w-8,top);ctx.stroke()}
+  const isDual=s.mode==='dual';
+  ctx.fillStyle=s.color;ctx.fillRect(0,top+10,3,row-20);
+  ctx.fillStyle='#eaf5ff';ctx.font=(small?'bold 11px':'bold 13px')+' system-ui, sans-serif';ctx.textAlign='left';ctx.fillText('STRING '+s.id,small?8:13,top+20);
+  ctx.font=(small?'10px':'11px')+' system-ui, sans-serif';ctx.fillStyle='#b1c4dd';
+  const descr=isDual?'TWO-SIDED':s.mode==='pulse'?'SINGLE PULSE':boundaryNames[s.rightEnd].toUpperCase()+' END';ctx.fillText(descr,small?8:13,top+34);
+  ctx.textAlign='right';ctx.fillStyle='#99afc9';ctx.font=(small?'10px':'11px')+' system-ui, sans-serif';ctx.fillText('λ '+fmt(s.speed/s.freq,1)+' m',right,top+20);
+  ctx.strokeStyle='#45607a';ctx.lineWidth=.7;for(let k=0;k<=4;k++){const xx=left+span*k/4;ctx.beginPath();ctx.moveTo(xx,top+39);ctx.lineTo(xx,top+row-12);ctx.stroke()}
+  ctx.strokeStyle='#879db988';ctx.setLineDash([4,5]);ctx.beginPath();ctx.moveTo(left,mid);ctx.lineTo(right,mid);ctx.stroke();ctx.setLineDash([]);
+  // Endpoint symbols: vertical bar for fixed, open ball for free, outward arrow for absorbing.
+  const end=(position,kind,rightSide)=>{
+   ctx.lineWidth=2;ctx.strokeStyle=kind==='fixed'?'#ff8c9e':kind==='free'?'#88eebd':'#a8bdd2';
+   if(kind==='fixed'){ctx.beginPath();ctx.moveTo(position,mid-row*.33);ctx.lineTo(position,mid+row*.33);ctx.stroke()}
+   else if(kind==='free'){ctx.beginPath();ctx.arc(position,mid,4.5,0,TAU);ctx.stroke()}
+   else{ctx.fillStyle='#809dbf';ctx.font='16px system-ui';ctx.textAlign='center';ctx.fillText(rightSide?'→':'←',position+(rightSide?11:-11),mid-11)}
+  };
+  end(left,s.leftEnd,false);end(right,s.rightEnd,true);
+  const values=[],leftValues=[],rightValues=[];
+  for(let i=0;i<samples;i++){const x=i*L/(samples-1),[a,b]=sample(s,x,elapsed);leftValues.push(a);rightValues.push(b);values.push(a+b)}
+  // A consistent vertical displacement calibration within each lane.
+  const range=Math.max(1.15,s.mode==='dual'?1.20*(s.amp+s.rightAmp):1.35*s.amp);const yScale=row*.39/range;
+  ctx.beginPath();ctx.moveTo(left,mid);for(let i=0;i<samples;i++)ctx.lineTo(left+i*stepX,mid-values[i]*yScale);ctx.lineTo(right,mid);ctx.closePath();ctx.fillStyle=isDual?'#bb9cff11':s.color+'13';ctx.fill();
+  pathLine(values,left,stepX,mid,yScale,s.color,isDual?3.25:2.8,[],isDual?12:6);
+  // Draw each contributor on top of the resultant so individual
+  // waves remain identifiable even when one exactly overlays the sum.
+  if(isDual){pathLine(leftValues,left,stepX,mid,yScale,'#65d9fa',1.65,[5,5]);pathLine(rightValues,left,stepX,mid,yScale,'#ffc778',1.65,[5,5]);}
+  // Source nodes show active excitation at either end.
+  ctx.fillStyle=s.color;ctx.beginPath();ctx.arc(left,mid-values[0]*yScale,small?3.2:4,0,TAU);ctx.fill();
+  if(isDual){ctx.fillStyle='#ffc778';ctx.beginPath();ctx.arc(right,mid-values[samples-1]*yScale,3.5,0,TAU);ctx.fill()}
+  ctx.fillStyle='#7190af';ctx.textAlign='center';ctx.font='9px system-ui';ctx.fillText('0 m',left,top+row-5);ctx.fillText('12 m',right,top+row-5);
+ }
+ $('clock').textContent=fmt(elapsed)+' s';
+}
+function loop(now){const frameDelta=Math.max(0,Math.min(.055,(now-lastFrame)/1000));lastFrame=now;
+ if(running){elapsed+=frameDelta*timeScale;
+  for(const s of lanes){if(s.mode==='continuous'||!s.auto)continue;
+   if(elapsed>=s.nextRepeat){fire(s,s.nextRepeat);s.nextRepeat+=repeatPeriod(s)}
+  }
+ }
+ render();requestAnimationFrame(loop)
+}
+window.addEventListener('resize',()=>setStringCount(visibleCount),{passive:true});document.addEventListener('visibilitychange',()=>{lastFrame=performance.now()});
+setStringCount(4);
+// Embedded-host control adapter. Messages only from the embedding parent are processed;
+// every command uses the same functions that power the visible controls.
+const editable=new Set(['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','cycles','polarity','auto']);
+const enums={mode:['continuous','pulse','dual'],leftEnd:['absorbing','fixed','free'],rightEnd:['absorbing','fixed','free'],cycles:[.5,.75,1],polarity:[-1,1]};
+const ranges={amp:[.1,1.2],rightAmp:[.1,1.2],freq:[.4,3],speed:[2,12]};
+function readState(){return {simulationId:'physics.waves.string-wave-lab',visibleCount,elapsedSeconds:elapsed,running,timeScale,
+ strings:lanes.map(s=>({id:s.id,visible:s.id<=visibleCount,mode:s.mode,leftEnd:s.leftEnd,rightEnd:s.rightEnd,
+ amp:s.amp,rightAmp:s.rightAmp,freq:s.freq,speed:s.speed,cycles:s.cycles,polarity:s.polarity,auto:s.auto}))}}
+function configure(patch){if(!patch||typeof patch!=='object'||Array.isArray(patch))throw Error('Expected an object');
+ // Validate the entire patch before committing any changes.
+ for(const [key,value] of Object.entries(patch)){
+  if(key==='visibleCount'||key==='stringCount'){if(!Number.isInteger(value)||value<1||value>4)throw Error('String count must be 1–4');continue}
+  if(key==='timeScale'){if(![.25,.5,1,2].includes(value))throw Error('Invalid time scale');continue}
+  const m=/^s([1-4])_(mode|leftEnd|rightEnd|amp|rightAmp|freq|speed|cycles|polarity|auto)$/.exec(key);
+  if(!m||!editable.has(m[2]))throw Error('Unknown parameter: '+key);
+  const field=m[2];if(enums[field]&&!enums[field].includes(value))throw Error('Invalid '+key);
+  if(ranges[field]&&(typeof value!=='number'||!Number.isFinite(value)||value<ranges[field][0]||value>ranges[field][1]))throw Error('Invalid '+key);
+  if(field==='auto'&&typeof value!=='boolean')throw Error('Invalid '+key);
+ }
+ for(const [key,value] of Object.entries(patch)){
+  if(key==='visibleCount'||key==='stringCount'){setStringCount(value);continue}
+  if(key==='timeScale'){timeScale=value;$('timeSpeed').value=String(value);continue}
+  const m=/^s([1-4])_(.+)$/.exec(key);apply(lanes[Number(m[1])-1],m[2],value);
+ }return readState()}
+function command(action,args={}){
+ if(action==='readState')return readState();
+ if(action==='configure')return configure(args);
+ if(action==='play'){running=true;$('playPause').textContent='⏸ Pause';lastFrame=performance.now();return readState()}
+ if(action==='pause'){running=false;$('playPause').textContent='▶ Play';return readState()}
+ if(action==='reset'){restart();return readState()}
+ if(action==='fire'){const index=Number(args.string);if(!Number.isInteger(index)||index<1||index>4)throw Error('String must be 1–4');fire(lanes[index-1]);return readState()}
+ throw Error('Unknown action: '+action)
+}
+window.esbikoWaveLab={command,configure,readState};
+window.addEventListener('message',ev=>{
+ if(ev.source!==window.parent||!ev.data||ev.data.type!=='esbiko-wave-control-v1')return;
+ const {requestId,action,args}=ev.data;try{const data=command(action,args);window.parent.postMessage({type:'esbiko-wave-response-v1',requestId,ok:true,data},'*')}
+ catch(e){window.parent.postMessage({type:'esbiko-wave-response-v1',requestId,ok:false,error:e.message},'*')}
+});
+
+restart();requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
