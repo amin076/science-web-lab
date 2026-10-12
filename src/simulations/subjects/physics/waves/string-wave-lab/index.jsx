@@ -55,6 +55,7 @@ export default function StringWaveLab(){
  const requests=useRef(new Map());
  const sequence=useRef(0);
  const ready=useRef(false);
+ const remoteDispatch=useRef(null);
  const onResponse=useCallback(event=>{
   if(event.source!==frame.current?.contentWindow||event.origin!==window.location.origin)return;
   const response=event.data;
@@ -65,14 +66,19 @@ export default function StringWaveLab(){
   if(response.ok)pending.resolve(response.data);
   else pending.reject(new Error(response.error||"Wave control failed"));
  },[]);
- const control=useCallback((action,args={})=>new Promise((resolve,reject)=>{
+ const control=useCallback((action,args={})=>{
+  if(action!=="hydrate" && remoteDispatch.current &&
+     ["readState","configure","play","pause","reset","fire"].includes(action))
+    return remoteDispatch.current(action,args);
+  return new Promise((resolve,reject)=>{
   if(!ready.current||!frame.current?.contentWindow){
    reject(new Error("Wave simulator is not ready"));return;
   }
   const requestId=++sequence.current;
   requests.current.set(requestId,{resolve,reject});
   frame.current.contentWindow.postMessage({type:"esbiko-wave-control-v1",action,args,requestId},window.location.origin);
- }),[]);
+ });
+ },[]);
  const onLoad=useCallback(()=>{
   ready.current=true;
   const patch=parseMcpQuery();
@@ -110,6 +116,79 @@ export default function StringWaveLab(){
    requests.current.clear();
   };
  },[control,onResponse]);
+
+ // The MCP shell sends the same private session token as the HTTP control API.
+ // Advance remains explicit; remote playback never secretly advances the clock.
+ useEffect(()=>{
+  const expected=new URLSearchParams(window.location.search).get("remoteSessionId");
+  if(!expected)return undefined;
+  let remote=null,lastRevision=-1,poller=null,active=true,serial=Promise.resolve();
+  const read=async()=>{
+   if(!remote)return null;
+   const response=await fetch("/api/v1/control/sessions/"+encodeURIComponent(remote.id)+"?checkpoint=1",{
+    headers:{"X-Esbiko-Control-Token":remote.token},cache:"no-store",
+   });
+   const data=await response.json();
+   if(!response.ok||!data.ok)throw new Error(data.error||"Remote session unavailable");
+   return data;
+  };
+  const sync=async(force=false)=>{
+   const state=await read();
+   if(!state||!active||!ready.current)return state;
+   if(force||state.revision!==lastRevision){
+    const snap=state.checkpoint;
+    if(!snap)throw new Error("Remote checkpoint unavailable");
+    await control("hydrate",{checkpoint:snap,serverRunning:state.running});
+    lastRevision=state.revision;
+   }
+   return state;
+  };
+  const dispatch=(action,args={})=>{
+   if(action==="readState")return read().then(result=>result?.state);
+   const run=async()=>{
+    if(!remote)throw new Error("No remote session");
+    const body={action};
+    if(action==="configure")body.parameters=args;
+    if(action==="fire")body.paneIndex=args.string;
+    const response=await fetch("/api/v1/control/sessions/"+encodeURIComponent(remote.id)+"/commands",{
+     method:"POST",headers:{"Content-Type":"application/json","X-Esbiko-Control-Token":remote.token},
+     body:JSON.stringify(body),cache:"no-store",
+    });
+    const output=await response.json();
+    if(!response.ok||!output.ok)throw new Error(output.error||"Remote command failed");
+    await sync(true);
+    return output.result;
+   };
+   serial=serial.catch(()=>null).then(run);
+   return serial;
+  };
+  const onRemoteMessage=event=>{
+   const msg=event.data;
+   if(event.source===window.parent&&msg?.type==="esbiko-control-session-v1"){
+    if(msg.sessionId!==expected||typeof msg.token!=="string"||!/^[a-f0-9]{64}$/.test(msg.token))return;
+    if(remote?.id===msg.sessionId)return;
+    remote={id:msg.sessionId,token:msg.token};
+    remoteDispatch.current=dispatch;
+    sync(true).then(()=>{
+     if(!active)return;
+     window.parent.postMessage({type:"esbiko-control-attached-v1",sessionId:remote.id},event.origin);
+     if(!poller)poller=setInterval(()=>sync().catch(error=>console.warn("Wave remote refresh:",error)),3500);
+    }).catch(error=>console.warn("Wave remote session:",error));
+   }else if(event.source===frame.current?.contentWindow &&
+      event.origin===window.location.origin&&msg?.type==="esbiko-wave-ui-command-v1"&&remote){
+    dispatch(msg.action,msg.args||{}).catch(error=>console.warn("Wave remote control:",error));
+   }
+  };
+  window.addEventListener("message",onRemoteMessage);
+  return ()=>{
+   active=false;
+   window.removeEventListener("message",onRemoteMessage);
+   if(poller)clearInterval(poller);
+   remoteDispatch.current=null;
+   remote=null;
+  };
+ },[control]);
+
  const sharedPhysics=wavePhysicsSource.replace(/\bexport\s+/g,"")+"\nwindow.esbikoWavePhysics=Object.freeze({pulseValue,sourceValue,component,sample});";
  const embeddedHtml=pageHtml.replace("</head>","<script>"+sharedPhysics+"<\/script></head>");
  return <iframe ref={frame} onLoad={onLoad} srcDoc={embeddedHtml}
