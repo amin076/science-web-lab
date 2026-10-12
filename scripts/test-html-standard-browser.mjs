@@ -15,6 +15,12 @@ try{
   const res=await page.goto(lab,{waitUntil:"networkidle",timeout:35000});
   assert.equal(res.status(),200);
   await page.locator("#simulation-canvas").waitFor();
+  if(width===600){
+   await page.goto(lab+"?embed=mcp-app&mcp.startYM=8&mcp.gravityMps2=5",{waitUntil:"networkidle"});
+   assert.equal(parseFloat(await page.locator("#y").innerText()),8);
+   assert.equal(await page.locator('[data-agent-param="gravityMps2"]').inputValue(),"5");
+  }
+
   const h=await page.locator("#sliders input").count();
   assert.equal(h,5);
   const dimensions=await page.evaluate(()=>({
