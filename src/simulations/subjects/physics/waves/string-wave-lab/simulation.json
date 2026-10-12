@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "esbiko-simulation-registration.v1",
+  "id": "physics.waves.string-wave-lab",
+  "domain": "physics",
+  "topic": "waves",
+  "name": "Wave Strings Lab",
+  "desc": "Explore and compare one to four parallel strings on a shared canvas. Independently control end conditions, traveling waves and pulses, and observe constructive or destructive interference when pulses pass through one another.",
+  "shortDesc": "Compare fixed-end reflection, free-end reflection, traveling waves and superposition across 1–4 strings.",
+  "engine": "canvas2d",
+  "uiStandard": "2d-v0.1",
+  "scientificEngine": "domain-specific",
+  "entry": "index.jsx",
+  "visibility": "public",
+  "gradient": "linear-gradient(135deg,#0e7490,#8b5cf6)",
+  "demo": true,
+  "tags": [
+    "waves",
+    "transverse waves",
+    "superposition",
+    "reflection",
+    "standing waves",
+    "pulses",
+    "string"
+  ],
+  "difficulty": "Intermediate",
+  "yearLevel": "Years 10–12 Physics",
+  "estimatedTime": "10–20 mins",
+  "estimatedDurationMinutes": 15,
+  "supportedDevices": "Desktop / Tablet / Mobile",
+  "learningObjectives": [
+    "Compare wave reflection at fixed, free and absorbing ends",
+    "Control and compare one to four independently configured strings",
+    "Observe constructive and destructive interference of two traveling pulses",
+    "Relate wave speed and frequency to wavelength"
+  ],
+  "curriculumLinks": [
+    "Wave motion",
+    "Superposition",
+    "Reflection",
+    "Oscillations"
+  ],
+  "modelAssumptions": [
+    "Ideal uniform string with constant propagation speed",
+    "Linear displacement superposition",
+    "Boundary reflection coefficients of −1, +1, or 0",
+    "Negligible dispersion and damping"
+  ]
+}
