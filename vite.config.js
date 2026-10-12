@@ -109,6 +109,11 @@ export default defineConfig({
     }),
   ],
 
+  build: { rollupOptions: { input: {
+    app: path.resolve(__dirname, "index.html"),
+    htmlStandard: path.resolve(__dirname, "examples/html-simulation/index.html"),
+  }}},
+
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),

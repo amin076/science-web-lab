@@ -430,30 +430,31 @@ export function createServer() {
 
   // Simulation Control API v1: transport-neutral headless scientific sessions.
   // The same Firestore-backed service also powers /api/v1/control/** HTTP routes.
-  const controlId = "physics.mechanics.compound-pendulum";
+  // Advanced session tools accept current registered control adapters, not a frozen ID.
+  const controlId = z.string().trim().min(1).max(160);
   const scalarParameters=z.record(z.string(),z.union([z.number(),z.boolean()])).optional();
   server.registerTool("get_simulation_control_schema",{
     title:"Read reusable Esbiko Simulation Control API schema",
-    description:"Read all verified commands, parameter schema, limits and units for the Compound Pendulum control API.",
-    inputSchema:z.object({simulationId:z.literal(controlId)}).strict(),
+    description:"Read verified commands, parameter schema and units for a registered advanced-control simulation.",
+    inputSchema:z.object({simulationId:controlId}).strict(),
     annotations:{readOnlyHint:true,openWorldHint:false},
-  },async()=>({structuredContent:{capabilities:getControlDescriptor()},
+  },async({simulationId})=>({structuredContent:{capabilities:getControlDescriptor(simulationId)},
     content:[{type:"text",text:"Esbiko Simulation Control API v1 capabilities and schema returned."}]}));
 
   server.registerTool("create_simulation_session",{
     title:"Create a controllable Esbiko science session",
     description:"Create a time-bounded private capability-token session that can be advanced, configured and read repeatedly via ChatGPT MCP or HTTP API. Returns a secret token needed for subsequent calls. The attached MCP App can follow this same session.",
     inputSchema:z.object({
-      simulationId:z.literal(controlId),parameters:scalarParameters,
+      simulationId:controlId,parameters:scalarParameters,
     }).strict(),
     _meta:{
       ui:{resourceUri:GENERIC_SIMULATION_WIDGET_URI},
       "openai/outputTemplate":GENERIC_SIMULATION_WIDGET_URI,
-      "openai/toolInvocation/invoking":"Creating a controllable compound pendulum session…",
+      "openai/toolInvocation/invoking":"Creating a controllable simulation session…",
       "openai/toolInvocation/invoked":"Simulation session ready.",
     },
   },async({simulationId,parameters})=>{
-    const created=await createControlSession(parameters||{});
+    const created=await createControlSession(parameters||{},simulationId);
     return {structuredContent:{
       simulation:requireSimulationProfile(simulationId),
       parameters:parameters||{},
@@ -465,7 +466,7 @@ export function createServer() {
   });
   server.registerTool("control_simulation_session",{
     title:"Control a running Esbiko scientific experiment",
-    description:"Run an advanced command on the same persistent, independently controllable compound-pendulum simulation. 'advance' moves exactly the requested number of simulated seconds; physics does not automatically advance with wall-clock time. All changes are validated by the same Control API used by HTTP clients.",
+    description:"Run an advanced command on the same persistent, independently controllable Esbiko simulation. 'advance' moves exactly the requested number of simulated seconds; physics does not automatically advance with wall-clock time. All changes are validated by the same Control API used by HTTP clients.",
     inputSchema:z.object({
       sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
       action:z.enum(["configure","advance","step","play","pause","reset",
@@ -502,7 +503,7 @@ export function createServer() {
   });
   server.registerTool("close_simulation_session",{
     title:"Close an Esbiko simulation control session",
-    description:"Immediately revoke access to a compound-pendulum control session and delete its stored state.",
+    description:"Immediately revoke access to an Esbiko control session and delete its stored state.",
     inputSchema:z.object({
       sessionId:z.string().uuid(),token:z.string().regex(/^[0-9a-f]{64}$/),
     }).strict(),

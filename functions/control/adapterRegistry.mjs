@@ -7,14 +7,21 @@ import {
  SIMULATION_CONTROL_ID,DESCRIPTOR,createControlDocument,
  exposeControlState,executeSimulationCommand,
 } from "./controlCore.mjs";
+import {HTML_REFERENCE_DESCRIPTOR,createHtmlReferenceDocument,exposeHtmlReferenceState,
+ executeHtmlReferenceCommand} from "./htmlReferenceControl.mjs";
 
-const adapters=new Map([[
- SIMULATION_CONTROL_ID,Object.freeze({
+const adapters=new Map([
+ [SIMULATION_CONTROL_ID,Object.freeze({
   id:SIMULATION_CONTROL_ID,descriptor:DESCRIPTOR,
   create:createControlDocument,expose:exposeControlState,
   execute:executeSimulationCommand,
- }),
-]]);
+ })],
+ [HTML_REFERENCE_DESCRIPTOR.id,Object.freeze({
+  id:HTML_REFERENCE_DESCRIPTOR.id,descriptor:HTML_REFERENCE_DESCRIPTOR,
+  create:createHtmlReferenceDocument,expose:exposeHtmlReferenceState,
+  execute:executeHtmlReferenceCommand,
+ })],
+]);
 export function listSimulationControlAdapters(){
  return [...adapters.values()].map(adapter=>adapter.descriptor);
 }

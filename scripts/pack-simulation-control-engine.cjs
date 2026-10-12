@@ -11,3 +11,11 @@ if(updated===b)throw Error("Shared physics adapter import not found");
 fs.writeFileSync(path.join(out,"compoundPendulum.mjs"),a);
 fs.writeFileSync(path.join(out,"compoundComparison.mjs"),updated);
 console.log("Packed simulation control engine from canonical Esbiko Physics source.");
+
+// Produce a self-contained ESM copy of the canonical HTML reference model for Cloud Functions.
+// Never fork physics equations or depend on Vite/runtime DOM globals server-side.
+const {buildSync}=require("esbuild");
+buildSync({entryPoints:[path.join(root,"src/esbiko-physics/mechanics/htmlReferenceProjectile.js")],
+ bundle:true,format:"esm",platform:"node",target:"node22",
+ outfile:path.join(out,"htmlReferenceProjectile.mjs")});
+console.log("Packed HTML reference shared scientific model for HTTP/MCP.");

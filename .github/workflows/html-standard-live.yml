@@ -1,0 +1,20 @@
+name: Live HTML Standard Acceptance
+on:
+  workflow_run:
+    workflows: [Deploy Esbiko Hosting]
+    types: [completed]
+  workflow_dispatch:
+jobs:
+  html-live:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify production HTML, MCP and independent HTTP control
+        run: node scripts/test-html-standard-live.mjs
