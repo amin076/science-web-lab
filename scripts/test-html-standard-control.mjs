@@ -21,6 +21,7 @@ const browser=createHtmlReferenceProjectile();
 const server=createHtmlReferenceProjectile();
 for(let i=0;i<240;i++){browser.step(1/240);server.step(1/240);}
 assert.deepEqual(browser.snapshot(),server.snapshot());
+assert.ok(browser.trajectory({limit:1200}).length>0,"Browser WebMCP default trajectory read works");
 const checkpoint=browser.checkpoint();
 const restored=createHtmlReferenceProjectile();
 restored.restore(checkpoint);
