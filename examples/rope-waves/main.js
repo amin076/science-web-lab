@@ -1,11 +1,14 @@
 import {createRopeWave,ROPE_WAVE_ID,ROPE_WAVE_DEFAULTS,ROPE_WAVE_SCHEMA,ROPE_WAVE_FORMULAS} from '../../src/esbiko-physics/waves/ropeWave.js';
 import {createHtmlSimulationRuntime} from '../../src/platform/html-simulation/createHtmlSimulationRuntime.js';
-const root=document.getElementById('rope-lab'),$=id=>root.querySelector('#'+id),canvas=$('simulation-canvas');
+export function mountRopeLab(root,initialParameters={}){
+for(const el of root.querySelectorAll('[id]')){el.dataset.ui=el.id;el.id=root.id+'-'+el.id;}
+const $=id=>root.querySelector('[data-ui="'+id+'"]'),canvas=$('simulation-canvas');
+const defaults={...ROPE_WAVE_DEFAULTS,...initialParameters};
 let components=true,lastUI=0;
 const names={lengthM:['Length',0.5],tensionN:['Tension',1],densityKgM:['Mass per length',0.01],amplitudeM:['Amplitude',0.01],frequencyHz:['Frequency',0.1],playbackRate:['Playback speed',0.1]};
 for(const [key,[label,step]] of Object.entries(names)){
  const s=ROPE_WAVE_SCHEMA.properties[key],field=document.createElement('label');field.className='field';
- field.innerHTML='<span>'+label+'<output id="out-'+key+'"></output></span>';
+ field.innerHTML='<span>'+label+'<output data-ui="out-'+key+'"></output></span>';
  const input=document.createElement('input');Object.assign(input,{type:'range',min:s.minimum,max:s.maximum,step,value:ROPE_WAVE_DEFAULTS[key]});input.dataset.agentParam=key;input.setAttribute('aria-label',label);field.append(input);$('sliders').append(field);
 }
 const explanations={traveling:'Matched termination: the wave leaves the rope without a reflection.',free:'Free end: the returning pulse keeps its sign. The end slides vertically; its slope is zero.',fixed:'Fixed end: the returning pulse is inverted. The end stays at zero displacement.'};
@@ -13,11 +16,16 @@ function update(s){
  if(performance.now()-lastUI<80&&s.running)return;lastUI=performance.now();
  if(!s.physics){$('status').textContent=s.error?.message||'Invalid state';return;}
  const p=s.parameters,m=s.physics.metrics;
+ root.querySelector('h2').textContent='Rope '+root.id.split('-').at(-1)+' · '+({free:'Free end',fixed:'Fixed end',traveling:'Traveling wave'}[p.boundary])+' · '+(p.excitation==='burst'?'Finite pulse':'Continuous wave');
  $('time').textContent=s.physics.timeSeconds.toFixed(2)+' s';$('speed').textContent=m.speedMps.toFixed(2)+' m/s';$('wavelength').textContent=m.wavelengthM.toFixed(2)+' m';$('travel').textContent=m.travelTimeS.toFixed(2)+' s';
  $('boundary-note').textContent=explanations[p.boundary];$('power').textContent='Mean incident sine-wave power: '+m.incidentMeanPowerW.toFixed(3)+' W';
  $('slope-warning').textContent=m.incidentSlopeScale>0.3?'Large slope setting: real ropes can depart from this linear approximation.':'';
  for(const key of Object.keys(names)){const input=root.querySelector('[data-agent-param="'+key+'"]');if(document.activeElement!==input)input.value=p[key];$('out-'+key).textContent=p[key]+' '+ROPE_WAVE_SCHEMA.properties[key].unit;}
  $('excitation').value=p.excitation;
+ $('pulse-cycles').value=String(p.pulseCycles);
+ $('pulse-cycles').disabled=p.excitation!=='burst';
+ $('send-pulse').disabled=p.excitation!=='burst';
+ $('pulse-state').textContent=p.excitation==='burst'?(s.physics.timeSeconds<p.pulseCycles/p.frequencyHz?'Source active':'Source stopped · pulse traveling / reflecting'):'';
  for(const b of root.querySelectorAll('[data-boundary]'))b.setAttribute('aria-pressed',String(b.dataset.boundary===p.boundary));
  $('play').disabled=s.running;$('pause').disabled=!s.running;$('step').disabled=s.running;
  $('status').textContent=s.error?.message||(s.running?'Running':'Paused');
@@ -56,10 +64,11 @@ function draw(ctx,s,{width:w,height:h,camera}){
  ctx.fillStyle=muted;ctx.textAlign='left';ctx.fillText('Rope →',left,25);ctx.textAlign='right';ctx.fillText(p.boundary==='fixed'?'Fixed':p.boundary==='free'?'Free':'Absorbing',right,25);
 }
 const probe=document.createElement('span');probe.hidden=true;root.append(probe);
-const runtime=createHtmlSimulationRuntime({id:ROPE_WAVE_ID,parameterSchema:ROPE_WAVE_SCHEMA,defaults:ROPE_WAVE_DEFAULTS,engine:createRopeWave(),canvas,draw,onStatus:update});
+const runtime=createHtmlSimulationRuntime({id:ROPE_WAVE_ID,parameterSchema:ROPE_WAVE_SCHEMA,defaults,engine:createRopeWave(defaults),canvas,draw,onStatus:update});
 const safe=fn=>{try{Promise.resolve(fn()).catch(e=>$('status').textContent=e.message);}catch(e){$('status').textContent=e.message;}};
-for(const input of root.querySelectorAll('[data-agent-param]'))input.addEventListener('input',()=>safe(()=>runtime.configure({[input.dataset.agentParam]:input.tagName==='SELECT'?input.value:Number(input.value)})));
+for(const input of root.querySelectorAll('[data-agent-param]'))input.addEventListener('input',()=>safe(()=>runtime.configure({[input.dataset.agentParam]:ROPE_WAVE_SCHEMA.properties[input.dataset.agentParam].type==='string'?input.value:Number(input.value)})));
 for(const b of root.querySelectorAll('[data-boundary]'))b.onclick=()=>safe(()=>runtime.configure({boundary:b.dataset.boundary}));
+$('send-pulse').onclick=()=>safe(()=>{runtime.reset();runtime.play();});
 $('components').onchange=e=>{components=e.target.checked;runtime.resize();};
 $('play').onclick=()=>safe(()=>runtime.play());$('pause').onclick=()=>safe(()=>runtime.pause());$('step').onclick=()=>safe(()=>runtime.stepOnce());$('reset').onclick=()=>safe(()=>{runtime.reset();runtime.play();});$('fit').onclick=()=>safe(()=>runtime.fitCamera());
 $('zoom-in').onclick=()=>safe(()=>runtime.setCamera({zoom:Math.min(8,runtime.getState().camera.zoom*1.2)}));$('zoom-out').onclick=()=>safe(()=>runtime.setCamera({zoom:Math.max(.2,runtime.getState().camera.zoom/1.2)}));
@@ -67,7 +76,7 @@ $('record-landscape').onclick=()=>safe(()=>runtime.startVideo({mode:'landscape'}
 for(const key of ['speed','wavelength','period','equation','solution','fixed','free']){const el=document.createElement('span');el.textContent=ROPE_WAVE_FORMULAS[key];$('formulas').append(el);}
 let drag=null;canvas.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse')return;drag={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId);});canvas.addEventListener('pointermove',e=>{if(!drag)return;const c=runtime.getState().camera;runtime.setCamera({x:c.x+e.clientX-drag.x,y:c.y+e.clientY-drag.y});drag={x:e.clientX,y:e.clientY};});for(const ev of ['pointerup','pointercancel'])canvas.addEventListener(ev,()=>drag=null);
 const query=new URLSearchParams(location.search),initial={};for(const [key,s] of Object.entries(ROPE_WAVE_SCHEMA.properties)){const raw=query.get('mcp.'+key);if(raw!==null)initial[key]=s.type==='string'?raw:Number(raw);}if(Object.keys(initial).length)safe(()=>runtime.configure(initial));
-runtime.registerWebMcp('esbiko_rope_wave').then(r=>{$('mcp-status').textContent=r.status==='ready'?'Browser WebMCP ready':'Browser WebMCP unavailable in this browser. Local controls remain available.';});
+runtime.registerWebMcp('esbiko_rope_wave_'+root.id.replaceAll('-','_')).then(r=>{$('mcp-status').textContent=r.status==='ready'?'Browser WebMCP ready':'Browser WebMCP unavailable in this browser. Local controls remain available.';});
 const timer=setInterval(()=>{const v=runtime.getVideoStatus();$('recording-status').textContent=v.status+(v.file?' · '+Math.round(v.file.bytes/1024)+' KB':'')+(v.error?' · '+v.error.message:'');$('stop-record').disabled=v.status!=='recording';$('download-record').disabled=v.status!=='ready';for(const id of ['record-landscape','record-shorts'])$(id).disabled=['recording','processing','unsupported'].includes(v.status);},250);
 // Narrow, immutable local SDK: the exact same controller used by UI and WebMCP.
 Object.defineProperty(root,'simulationApi',{value:Object.freeze({getState:runtime.getState,getCapabilities:runtime.getCapabilities,configure:runtime.configure,play:runtime.play,pause:runtime.pause,reset:runtime.reset,stepOnce:runtime.stepOnce,setCamera:runtime.setCamera}),configurable:true});
@@ -125,3 +134,6 @@ async function acceptRemote(event){
 window.addEventListener("message",acceptRemote);
 
 window.addEventListener("pagehide",()=>{if(remoteTimer)clearInterval(remoteTimer);window.removeEventListener("message",acceptRemote);},{once:true});
+
+return root.simulationApi;
+}

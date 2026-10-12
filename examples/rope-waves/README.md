@@ -30,3 +30,12 @@ Local verification (2026-10-12): physics, runtime contract, shared server adapte
 16:9 and 9:16 WebM files were recorded and downloaded in Chromium. No GitHub
 Actions workflows were run. The branch has not been pushed; production HTTP/MCP
 end-to-end deployment is still pending approval and release integration.
+
+## Four-rope beta upgrade
+Four independent rows, initially free / fixed / traveling / finite pulse. Each
+row has its own physical parameters, playback, camera and recorder. Shared
+buttons play, pause or restart all rows. Finite sine bursts last N/f seconds
+for N=0.5, 0.75 or 1; a 10% raised-cosine taper at each edge avoids source
+displacement discontinuities. Send pulse resets only its row, then launches
+one burst. The legacy rounded pulse remains available to existing API callers.
+Run `node scripts/build-rope-beta.mjs` then `node scripts/test-rope-comparison.mjs`.

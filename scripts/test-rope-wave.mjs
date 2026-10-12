@@ -26,3 +26,16 @@ console.log('PASS: wave speed scaling, travel time, reflection sign, both endpoi
 
 assert.equal(defaults.lengthM/ropeMetrics(defaults).wavelengthM,4);
 const driven=createRopeWave({boundary:'traveling'});driven.step(1.25);close(driven.snapshot().source.driveM,driven.snapshot().samples[0].yM);
+// Finite bursts terminate once, preserve endpoint physics, and support all requested lengths.
+for(const pulseCycles of [.5,.75,1]){
+ const p={...defaults,excitation:'burst',pulseCycles,frequencyHz:1};
+ close(ropeSample(0,.25,p).incidentM,p.amplitudeM);
+ close(ropeSample(0,pulseCycles,p).incidentM,0);
+ close(ropeSample(0,pulseCycles+.01,p).incidentM,0);
+ for(const boundary of ['fixed','free']){
+  const b={...p,boundary};
+  close(ropeSample(38,4.45,b).reflectedM,boundary==='fixed'?-p.amplitudeM:p.amplitudeM);
+  const atEnd=ropeSample(40,4.25,b);close(boundary==='fixed'?atEnd.yM:atEnd.slope,0);
+ }
+}
+console.log('PASS finite 1/2, 3/4 and 1-cycle bursts: source stops, reflected sign and endpoint constraints.');

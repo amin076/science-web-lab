@@ -4,9 +4,10 @@
  * Parameters in SI. Physics changes restart at t=0; playbackRate is view-clock only.
  */
 export const ROPE_WAVE_ID='physics.waves.rope-wave';
-export const ROPE_WAVE_DEFAULTS=Object.freeze({boundary:'fixed',excitation:'sine',lengthM:40,tensionN:20,densityKgM:0.2,amplitudeM:0.2,frequencyHz:1,playbackRate:0.5});
+export const ROPE_WAVE_DEFAULTS=Object.freeze({boundary:'fixed',excitation:'sine',lengthM:40,tensionN:20,densityKgM:0.2,amplitudeM:0.2,frequencyHz:1,playbackRate:0.5,pulseCycles:0.5});
 export const ROPE_WAVE_SCHEMA={type:'object',additionalProperties:false,properties:{
- boundary:{type:'string',enum:['traveling','free','fixed']},excitation:{type:'string',enum:['pulse','sine']},
+ boundary:{type:'string',enum:['traveling','free','fixed']},excitation:{type:'string',enum:['pulse','sine','burst']},
+ pulseCycles:{type:'number',enum:[0.5,0.75,1],unit:'cycles'},
  lengthM:{type:'number',minimum:4,maximum:100,unit:'m'},tensionN:{type:'number',minimum:5,maximum:100,unit:'N'},
  densityKgM:{type:'number',minimum:0.02,maximum:0.5,unit:'kg/m'},amplitudeM:{type:'number',minimum:0.01,maximum:0.3,unit:'m'},
  frequencyHz:{type:'number',minimum:0.2,maximum:3,unit:'Hz'},playbackRate:{type:'number',minimum:0.1,maximum:1,unit:'×'},
@@ -31,6 +32,17 @@ export function ropeMetrics(p){
 function source(t,p){
  if(t<=0)return [0,0];
  const a=p.amplitudeM,f=p.frequencyHz,w=2*Math.PI*f;
+ if(p.excitation==='burst'){
+  const duration=p.pulseCycles/f;
+  if(t>=duration)return [0,0];
+  // A sine burst limited to N periods. Smooth 10% edges avoid a displacement
+  // jump when a 3/4-period source would otherwise stop at its negative peak.
+  const edge=duration*0.1;
+  let envelope=1,derivative=0;
+  if(t<edge){envelope=(1-Math.cos(Math.PI*t/edge))/2;derivative=Math.PI*Math.sin(Math.PI*t/edge)/(2*edge);}
+  else if(t>duration-edge){const u=(duration-t)/edge;envelope=(1-Math.cos(Math.PI*u))/2;derivative=-Math.PI*Math.sin(Math.PI*u)/(2*edge);}
+  return [a*envelope*Math.sin(w*t),a*(derivative*Math.sin(w*t)+envelope*w*Math.cos(w*t))];
+ }
  if(p.excitation==='pulse')return t>=1/f?[0,0]:[a*Math.sin(Math.PI*f*t)**2,a*Math.PI*f*Math.sin(w*t)];
  const ramp=1/f,q=Math.min(1,t/ramp),e=(1-Math.cos(Math.PI*q))/2,de=t<ramp?Math.PI*Math.sin(Math.PI*q)/(2*ramp):0;
  return [a*e*Math.sin(w*t),a*(de*Math.sin(w*t)+e*w*Math.cos(w*t))];

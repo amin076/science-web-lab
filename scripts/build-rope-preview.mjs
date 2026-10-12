@@ -1,8 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {build} from 'esbuild';
-const main=fs.readFileSync('examples/rope-waves/main.js','utf8').split('// MCP App bridges')[0];
-const result=await build({stdin:{contents:main,resolveDir:path.resolve('examples/rope-waves'),loader:'js'},bundle:true,format:'iife',write:false,minify:false});
+const result=await build({entryPoints:['examples/rope-waves/comparison.js'],bundle:true,format:'iife',write:false,minify:false,plugins:[{name:'local-preview',setup(b){b.onLoad({filter:/rope-waves\/main\.js$/},args=>({contents:fs.readFileSync(args.path,'utf8').split('// MCP App bridges')[0]+'\nreturn root.simulationApi;\n}',loader:'js'}));}}]});
 const html=fs.readFileSync('examples/rope-waves/index.html','utf8');
 const markup=html.split('<body>')[1].split('<script type="module"')[0];
 const css=fs.readFileSync('examples/rope-waves/style.css','utf8').replace(':root{color-scheme:light dark}body{margin:0}','#rope-lab{color-scheme:light dark}');
