@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef} from "react";
 import pageHtml from "./wave-lab.html?raw";
+import wavePhysicsSource from "../../../../../esbiko-physics/waves/stringWaveModel.js?raw";
 import {getDocumentModelContext,registerWebMcpTools,createSafeToolExecutor} from "../../../../../webmcp/registerWebMcpTools.js";
 
 const ID="physics.waves.string-wave-lab";
@@ -109,7 +110,9 @@ export default function StringWaveLab(){
    requests.current.clear();
   };
  },[control,onResponse]);
- return <iframe ref={frame} onLoad={onLoad} srcDoc={pageHtml}
+ const sharedPhysics=wavePhysicsSource.replace(/\\bexport\\s+/g,"")+"\nwindow.esbikoWavePhysics=Object.freeze({pulseValue,sourceValue,component,sample});";
+ const embeddedHtml=pageHtml.replace("</head>","<script>"+sharedPhysics+"<\/script></head>");
+ return <iframe ref={frame} onLoad={onLoad} srcDoc={embeddedHtml}
   title="Esbiko Wave Strings Lab — 1 to 4 strings with reflection and superposition"
   style={{display:"block",width:"100%",height:"100%",minHeight:"100%",border:0,background:"#07111e"}}
   allow="fullscreen" />;
