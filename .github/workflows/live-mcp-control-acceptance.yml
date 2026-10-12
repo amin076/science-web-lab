@@ -19,4 +19,6 @@ jobs:
         with:
           node-version: "22"
       - name: Verify published MCP protocol tools and actual control session
-        run: node scripts/test-control-mcp-live.mjs
+        run: |
+          node scripts/test-control-mcp-live.mjs
+          node scripts/test-wave-control-live.mjs
