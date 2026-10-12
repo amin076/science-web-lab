@@ -195,8 +195,10 @@ export function createWaveStringModel(initial={}){
      !Number.isFinite(s.continuousFrom)||s.continuousFrom<0||
      (s.nextRepeat!==null&&(!Number.isFinite(s.nextRepeat)||s.nextRepeat<0)))
      throw err("INVALID_CHECKPOINT","Malformed string state");
-   const patch=Object.fromEntries(Object.keys(WAVE_FIELDS).filter(k=>!["mass","period"].includes(k)).map(k=>["s"+(i+1)+"_"+k,s[k]]));
+   const patch=Object.fromEntries(Object.keys(WAVE_FIELDS).filter(k=>!["mass","period","speed"].includes(k)).map(k=>["s"+(i+1)+"_"+k,s[k]]));
    validate(patch);
+   if(!Number.isFinite(s.speed)||Math.abs(s.speed-Math.sqrt(s.tension/s.mu))>1e-7)
+    throw err("INVALID_CHECKPOINT","Inconsistent wave speed");
    if(!s.events.every(e=>e&&["left","right"].includes(e.side)&&
       [e.t0,e.amp,e.speed,e.freq,e.cycles].every(Number.isFinite)&&
       e.t0>=0&&e.t0<=123&&e.mode==="pulse"&&waveShapes.includes(e.shape)))
