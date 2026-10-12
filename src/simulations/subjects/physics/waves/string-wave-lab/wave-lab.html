@@ -115,9 +115,9 @@ function setStringCount(value){const count=Number(value);if(!Number.isInteger(co
  canvas.style.height=(mobile?Math.max(205,count*125):tablet?Math.max(220,count*146):Math.max(240,count*146))+'px';
  render();updateHud();return true}
 $('stringCount').addEventListener('change',e=>setStringCount(e.target.value));
-function copySettings(target,source){for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','mass','shape','rightShape','cycles','polarity','auto'])target[k]=source[k]}
+function copySettings(target,source){for(const k of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','shape','rightShape','cycles','polarity','auto'])target[k]=source[k]}
 function updateUI(s){const id=s.id;
- for(const field of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','mass','shape','rightShape','cycles','polarity'])$(field+'-'+id).value=s[field];$('period-'+id).value=1/s.freq;$('mass-'+id).value=s.mu*L;
+ for(const field of ['mode','leftEnd','rightEnd','amp','rightAmp','freq','speed','mu','tension','shape','rightShape','cycles','polarity'])$(field+'-'+id).value=s[field];$('period-'+id).value=1/s.freq;$('mass-'+id).value=s.mu*L;
  $('auto-'+id).checked=s.auto;
  $('ampOut-'+id).textContent=fmt(s.amp)+' m';$('rightAmpOut-'+id).textContent=fmt(s.rightAmp)+' m';$('freqOut-'+id).textContent=fmt(s.freq)+' Hz';$('periodOut-'+id).textContent=fmt(1/s.freq)+' s';$('speedOut-'+id).textContent=fmt(s.speed,2)+' m/s';$('tensionOut-'+id).textContent=fmt(s.tension,1)+' N';$('muOut-'+id).textContent=fmt(s.mu,2)+' kg/m';$('lambdaOut-'+id).textContent=fmt(s.speed/s.freq,2)+' m';$('massOut-'+id).textContent=fmt(s.mu*L,2)+' kg';
  $('status-'+id).textContent=s.mode==='dual'?'Superposition':(s.mode==='pulse'?'Pulse · ':'Wave · ')+boundaryNames[s.rightEnd]+' end';
@@ -288,7 +288,7 @@ function configure(patch){if(!patch||typeof patch!=='object'||Array.isArray(patc
  for(const [key,value] of Object.entries(patch)){
   if(key==='visibleCount'||key==='stringCount'){if(!Number.isInteger(value)||value<1||value>4)throw Error('String count must be 1–4');continue}
   if(key==='timeScale'){if(![.25,.5,1,2].includes(value))throw Error('Invalid time scale');continue}
-  const m=/^s([1-4])_(mode|leftEnd|rightEnd|amp|rightAmp|freq|period|speed|mu|tension|shape|rightShape|cycles|polarity|auto)$/.exec(key);
+  const m=/^s([1-4])_(mode|leftEnd|rightEnd|amp|rightAmp|freq|period|speed|mu|tension|mass|shape|rightShape|cycles|polarity|auto)$/.exec(key);
   if(!m||!editable.has(m[2]))throw Error('Unknown parameter: '+key);
   const field=m[2];if(enums[field]&&!enums[field].includes(value))throw Error('Invalid '+key);
   if(ranges[field]&&(typeof value!=='number'||!Number.isFinite(value)||value<ranges[field][0]||value>ranges[field][1]))throw Error('Invalid '+key);
