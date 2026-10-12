@@ -222,7 +222,7 @@ function component(e,s,x,t){const age=t-e.t0;if(age<=0)return 0;
  }
  return v;
 }
-function sample(s,x,t){let left=0,right=0;
+function localSample(s,x,t){let left=0,right=0;
  if(s.mode==='continuous'){
   left=component({side:'left',t0:s.continuousFrom,amp:s.amp,speed:s.speed,freq:s.freq,mode:'continuous'},s,x,t);
  }else{
@@ -230,6 +230,9 @@ function sample(s,x,t){let left=0,right=0;
  }
  return [left,right];
 }
+// The deployed Esbiko page uses the exact canonical sampler bundled into HTTP/MCP.
+// The local mathematical fallback keeps downloaded HTML usable offline.
+function sample(s,x,t){return window.esbikoWavePhysics ? window.esbikoWavePhysics.sample(s,x,t) : localSample(s,x,t)}
 function resize(){const rect=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvasW=Math.max(1,rect.width);canvasH=Math.max(1,rect.height);
  const realW=Math.round(canvasW*dpr),realH=Math.round(canvasH*dpr);if(canvas.width!==realW||canvas.height!==realH){canvas.width=realW;canvas.height=realH}ctx.setTransform(dpr,0,0,dpr,0,0)}
 function pathLine(arr,x0,dx,mid,vertical,color,width,dash=[],glow=0){ctx.beginPath();ctx.moveTo(x0,mid-arr[0]*vertical);for(let i=1;i<arr.length;i++)ctx.lineTo(x0+i*dx,mid-arr[i]*vertical);
