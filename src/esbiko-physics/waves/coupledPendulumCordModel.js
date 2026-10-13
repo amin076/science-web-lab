@@ -244,9 +244,15 @@ function appendHistory(){const E=energyParts();history.push({t:elapsed,pend:[...
   selected=clamp(selected,0,nB()-1);driver=clamp(driver,0,nB()-1);
   for(let i=0;i<nB();i++){
    const b=bobs[i],prefix="p"+(i+1)+"_";
-   if(Object.hasOwn(patch,prefix+"lengthM")){b.L=patch[prefix+"lengthM"];lengthPreset="custom"}
+   if(Object.hasOwn(patch,prefix+"lengthM")){
+    b.L=patch[prefix+"lengthM"];
+    if(lengthPreset!=="custom"&&Math.abs(b.L-lengthFor(lengthPreset,i,nB()))>1e-7)lengthPreset="custom";
+   }
    if(Object.hasOwn(patch,prefix+"massKg"))b.m=patch[prefix+"massKg"];
-   if(Object.hasOwn(patch,prefix+"angleDeg")){b.startTheta=patch[prefix+"angleDeg"]*rad;initialPreset="custom"}
+   if(Object.hasOwn(patch,prefix+"angleDeg")){
+    b.startTheta=patch[prefix+"angleDeg"]*rad;
+    if(initialPreset!=="custom"&&Math.abs(b.startTheta-angleFor(initialPreset,i,nB())*rad)>1e-7)initialPreset="custom";
+   }
   }
   rebuildPhysics();return snapshot();
  };
