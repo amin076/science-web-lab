@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#071426" />
+<title>Esbiko | Coupled Pendulums & Elastic Cord Lab · Esbiko</title>
+<style>
+:root{color-scheme:dark;--bg:#071321;--panel:#11283f;--panel2:#0b2036;--line:#294965;--text:#e7f4ff;--muted:#9ab6d0;--cyan:#66e2f4;--gold:#ffd08e;--green:#83e7be;--violet:#cda9fb;--red:#ff8999;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(ellipse at 8% 2%,#123550 0,transparent 44%),radial-gradient(ellipse at 92% 5%,#222847 0,transparent 42%),var(--bg)}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.shell{max-width:1430px;margin:auto;padding:clamp(9px,1.6vw,24px)}.top{display:flex;align-items:start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin:4px 0 16px}.eyebrow{font-size:11px;color:var(--cyan);font-weight:800;letter-spacing:.14em}.top h1{font-size:clamp(26px,3.1vw,40px);letter-spacing:-.045em;margin:5px 0 6px;line-height:1.1}.subtitle{font-size:13px;color:var(--muted);line-height:1.55;max-width:850px;margin:0}.tag{border:1px solid #45738c;border-radius:100px;padding:7px 11px;font-size:11px;color:#c4e8f6;background:#142c42;white-space:nowrap}
+.preset-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}.preset{border:1px solid #30506c;border-radius:13px;background:#0d243a;color:var(--text);padding:13px;text-align:left;display:flex;gap:10px;align-items:center;min-width:0}.preset.active{border-color:#67def0;background:linear-gradient(130deg,#164057,#203452);box-shadow:inset 0 0 0 1px #4dd2ef44}.preset-icon{font-size:23px;color:#83e9f4}.preset strong{display:block;font-size:13px}.preset small{display:block;font-size:11px;line-height:1.4;color:#a9c6dd;margin-top:4px}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:12px}.metric{border:1px solid #2b4a66;background:#11273d;border-radius:12px;padding:10px 12px;min-width:0}.metric small{font-size:10px;letter-spacing:.06em;text-transform:uppercase;display:block;color:#9cbcd8}.metric strong{display:inline-block;font-size:clamp(16px,2.3vw,25px);font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums}.metric em{font-size:11px;color:#aac5dc;font-style:normal}.metric.good strong{color:#8eebc5}.metric.bad strong{color:#ffa6af}
+.stage{border:1px solid #375d7a;border-radius:17px;background:#081929;overflow:hidden;box-shadow:0 16px 50px #0005}.stage-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:11px 13px;background:#142b43;border-bottom:1px solid #2a4b67}.stage-top strong{font-size:13px}.stage-top p{font-size:11px;color:#a0c7e6;margin:4px 0 0}.actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.actions select{background:#1c405c;border:1px solid #426988;border-radius:9px;color:var(--text);font-size:11px;min-height:37px;padding:7px;max-width:180px}.btn{border:1px solid #436481;background:#1e405e;color:#edf7ff;border-radius:9px;min-height:37px;padding:7px 10px;font-size:12px;font-weight:650}.btn:hover{background:#2b5271}.btn.primary{background:linear-gradient(100deg,#5cdbed,#80b6ff);border-color:#91dff7;color:#09223b}.btn.warn{border-color:#76634b}.btn.small{min-height:32px;padding:6px 9px;font-size:11px}.btn.active{background:#2c626c;border-color:#6edfee}.canvas-wrap{position:relative;padding:9px;background:#0a1a2c}.stage canvas{display:block;width:100%;height:530px;background:#07192b;border-radius:11px;touch-action:pan-y}.under-canvas{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid #25435d;padding:9px 13px;font-size:11px;color:#a9c7dd}.hint-status{font-variant-numeric:tabular-nums}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#67e4ef;margin:0 4px 0 8px}
+.hud{position:absolute;z-index:4;top:16px;right:16px;width:min(344px,calc(100% - 32px));max-height:calc(100% - 32px);overflow:auto;padding:12px;border:1px solid #8bf0ff95;border-radius:13px;color:#ecfaff;background:rgba(3,19,33,.24);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);box-shadow:0 3px 18px #0003;text-shadow:0 1px 3px #04101a}.hud[hidden]{display:none!important}.hud-top{display:flex;justify-content:space-between;align-items:center}.hud-top strong{font-size:13px;letter-spacing:.05em;color:#89f5ff}.hud-line{font-size:11px;line-height:1.6;margin:9px 0;color:#e4f6ff}.hud table{border-collapse:collapse;font-size:11px;width:100%}.hud td{padding:4px;border-bottom:1px solid #6684a844}.hud td:last-child{text-align:right;color:#a7f3ef}.hud code{color:#bfefff;font-size:11px}.hud summary{cursor:pointer;color:#b8f2fa;font-size:11px}.hud details{padding:8px 0;border-top:1px solid #7ca7cd55;margin-top:8px}.hud .read{font-size:11px;border-radius:8px;padding:7px;margin:7px 0;background:#183f4a44}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:12px}.panel{min-width:0;border:1px solid #2d4c67;border-radius:14px;background:linear-gradient(154deg,#142c44,#0d2034);padding:14px}.panel h2{font-size:15px;margin:0 0 6px}.panel p{font-size:11px;color:var(--muted);line-height:1.55;margin:0 0 14px}.field{margin:12px 0;min-width:0}.field label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:#c8dced;margin-bottom:5px}.field output{color:#87e4f5;font-size:11px;font-weight:750;white-space:nowrap;font-variant-numeric:tabular-nums}.field input[type=range]{width:100%;accent-color:#6de0f0;min-height:19px}.field select{width:100%;border:1px solid #43627f;background:#102b45;color:var(--text);border-radius:8px;padding:8px;min-height:36px}.btnrow{display:flex;gap:7px;flex-wrap:wrap;margin:9px 0 14px}.mode{display:flex;border:1px solid #3b5e7a;border-radius:9px;overflow:hidden;margin:7px 0}.mode button{flex:1;border:0;background:#122d45;color:#b8d5e8;min-height:37px;font-size:12px}.mode button.active{background:#286174;color:#eeffff;font-weight:800}.box-note{color:#a9c4d9;background:#0b1f31;border:1px solid #29435e;border-radius:9px;font-size:11px;line-height:1.6;padding:9px}.selected-head{display:flex;justify-content:space-between;gap:8px}.selected-tag{font-size:10px;border:1px solid #4e98ae;color:#8bf0fa;border-radius:20px;padding:4px 7px;white-space:nowrap}.check{display:flex;align-items:center;gap:7px;font-size:12px;margin:12px 0;color:#c9dcec}.check input{accent-color:#69e0ef}.footer{font-size:11px;color:#8aa8c2;text-align:center;padding:16px 5px 6px}.divider{border:0;border-top:1px solid #2d4a62;margin:15px 0}.no-wrap{white-space:nowrap}.disclaimer{font-size:11px;color:#adc7dc;margin:9px 0 0}
+@media(max-width:1080px){.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:930px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.panel:last-child{grid-column:span 2}}@media(max-width:700px){.preset-grid,.controls{grid-template-columns:1fr}.panel:last-child{grid-column:auto}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.stage canvas{height:475px}.preset{padding:10px 12px}.hud{top:8px;right:8px;max-height:84%;width:min(314px,calc(100% - 16px))}.actions .btn{padding:7px 8px;font-size:11px}}@media(max-width:410px){.shell{padding:8px}.stage canvas{height:450px}.metric{padding:8px}.metric strong{font-size:20px}.stage-top{padding:10px}.panel{padding:12px}}@media(prefers-reduced-motion:reduce){.preset{transition:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top"><div><div class="eyebrow">ESBIKO SCIENCE LAB · EXPERIMENTAL PHYSICS · HTML STANDARD · V5</div><h1>Coupled Pendulums <span style="color:#6de7f3">& Elastic Cord</span></h1><p class="subtitle">A tied-knot pendulum array on a sagging, flexible support. Interact with 1–10 pendulums, explore resonance and energy transfer, and inspect the energy-conservation ledger.</p></div><span class="tag">Standard HTML · WebM Video Studio · WebMCP</span></header>
+<div class="preset-grid" aria-label="Experiment presets">
+ <button type="button" class="preset active" data-preset="chain"><span class="preset-icon">◉</span><span><strong>01 · Ten-pendulum transfer</strong><small>10 equal lengths · displace one bob · watch the excitation spread</small></span></button>
+ <button type="button" class="preset" data-preset="resonance"><span class="preset-icon">≋</span><span><strong>02 · Resonance comparison</strong><small>4 different lengths with a matched-length pair</small></span></button>
+ <button type="button" class="preset" data-preset="wave"><span class="preset-icon">∿</span><span><strong>03 · Pendulum wave</strong><small>10 progressively different periods · compare coupled and independent modes</small></span></button>
+</div>
+<div class="metrics">
+ <div class="metric"><small>Simulation time</small><strong id="timeMetric">0.00</strong> <em>s</em></div>
+ <div class="metric"><small>Selected frequency</small><strong id="freqMetric">0.50</strong> <em>Hz</em></div>
+ <div class="metric"><small>Energy in other bobs</small><strong id="transferMetric">0.0</strong> <em>%</em></div>
+ <div class="metric"><small>Mechanical excitation energy*</small><strong id="energyMetric">0.000</strong> <em>J</em></div>
+ <div class="metric good" id="auditPanel"><small>Energy ledger error</small><strong id="auditMetric">0.000</strong> <em>%</em></div>
+</div>
+<section class="stage">
+ <div class="stage-top"><div><strong id="stageTitle">Ten tied pendulums · energy transmission</strong><p id="stageSubtitle">One displaced bob, all others initially at rest. The cable moves at its tied material knots.</p></div><div class="actions"><select id="videoFormat" aria-label="Recording format"><option value="landscape">Video 16:9</option><option value="shorts">Video 9:16</option></select><button id="videoStart" class="btn primary" type="button">● Record</button><button id="videoStop" class="btn" type="button" disabled>■ Stop</button><button id="videoSave" class="btn" type="button" disabled>↓ WebM</button><span id="videoStatus" role="status" aria-live="polite" style="font-size:11px;color:#91eaf6">Ready</span><select id="chartMode" aria-label="Energy chart style"><option value="bars">Energy by bob</option><option value="history">Energy vs time</option></select><button id="hudToggle" class="btn">◫ Physics HUD</button><button id="playBtn" class="btn">⏸ Pause</button><button id="restartBtn" class="btn">↻ Restart</button><button id="exciteBtn" class="btn primary">↑ Excite selected</button></div></div>
+ <div class="canvas-wrap"><canvas id="scene" aria-label="Interactive elastic support with suspended coupled pendulums"></canvas>
+  <aside class="hud" id="hud" hidden><div class="hud-top"><strong>PHYSICS HUD · V4</strong><button id="hudClose" class="btn small">✕</button></div><div class="read" id="hudSummary"></div><table id="hudStats"></table><details open><summary>Physical model and units</summary><p class="hud-line">Bob: <code>X=x+L sin θ</code>, <code>Y=y+L cos θ</code>. Both knot and bob inertia enter a common Lagrangian model.</p><p class="hud-line">Cable segment tension: <code>F=k max(ℓ−ℓ₀,0)</code>. Its weight-dependent sag is solved as a static equilibrium before motion begins.</p><p class="hud-line">Gravity: <code>U_g=−(M+m)gy−mgL cos θ</code> (downward y). Cable: <code>U_c=Σ½k max(ℓ−ℓ₀,0)²</code>.</p><p class="hud-line">The cable is a chain of axial springs, with movable <em>material knots</em> — not sliding rings. Cable tension, inertia and pendulum inertia exchange energy.</p></details><details><summary>Energy ledger</summary><p class="hud-line">In a free, lossless run, <code>E(t)=E(0)</code>. With damping and a periodic external drive: <code>E(t)+Q_diss−W_drive=E(0)</code>.</p><p class="hud-line">Individual pendulum energies are shown separately from cable energy; the partition is not a claim that each part is conserved.</p></details><div class="read" id="hudLedger"></div></aside>
+ </div><div class="under-canvas"><div><span class="dot"></span> Selected <span class="dot" style="background:#ffd08e"></span> Other bobs <span class="dot" style="background:#9eebd3"></span> Moving knots <span class="dot" style="background:#b8a1f7"></span> Energy plot</div><span class="hint-status" id="status">Running · 10 pendulums · physically coupled</span></div>
+</section>
+<section class="controls">
+<div class="panel"><h2>System & elastic support</h2><p>Choose the number of bobs and edit the real cable's tension, knot mass, and damping.</p>
+ <div class="field"><label for="count">Number of pendulums <output id="countOut">10</output></label><select id="count"></select></div>
+ <div class="field"><label for="lengthPreset">Length arrangement</label><select id="lengthPreset"><option value="equal">Equal · 1.00 m each (default)</option><option value="ascending">Ascending · 1.00, 1.10, 1.20… m</option><option value="descending">Descending · 1.90, 1.80… m</option><option value="alternating">Alternating · 0.80 / 1.25 m</option><option value="symmetric">Symmetric · short ends, long center</option><option value="wave">Pendulum-wave period series</option><option value="custom">Custom lengths · individually edited</option></select></div>
+ <div class="btnrow"><button class="btn small" id="applyLengths">Apply length pattern</button><button class="btn small" id="equalLengths">Set all 1.00 m</button></div>
+ <div class="field"><label>Mechanical coupling</label><div class="mode"><button class="active" id="connected" aria-pressed="true">Connected cord</button><button id="independent" aria-pressed="false">Independent pivots</button></div></div>
+ <div class="field"><label for="tension">Upper cord tension <output id="tensionOut">55 N</output></label><input id="tension" type="range" min="20" max="180" step="1" value="55" /></div>
+ <div class="field"><label for="axialEA">Cord axial stiffness EA <output id="axialEAOut">280 N</output></label><input id="axialEA" type="range" min="220" max="1600" step="20" value="280" /></div>
+ <div class="field"><label for="supportMass">Knot support mass <output id="supportMassOut">0.080 kg</output></label><input id="supportMass" type="range" min="0.02" max="0.30" step="0.005" value="0.08" /></div>
+ <div class="field"><label for="supportDamping">Cord damping <output id="supportDampingOut">0.012 s⁻¹</output></label><input id="supportDamping" type="range" min="0" max="0.16" step="0.002" value="0.012" /></div>
+ <div class="field"><label for="vibration">Cord motion display <output id="vibrationOut">1.5×</output></label><input id="vibration" type="range" min="1" max="4" step="0.5" value="1.5" /></div>
+ <div class="box-note">Lower EA gives a more compliant elastic cord (and usually stronger coupling). Large EA behaves more like a stiff rope. Each knot is tied to its own fixed <em>material index</em> on the rope. It may move slightly with the rope in both directions; it cannot slide along it. The display multiplier exaggerates only support motion.</div>
+ <label class="check"><input type="checkbox" id="trails" checked /> Show pendulum traces</label>
+</div>
+<div class="panel"><div class="selected-head"><h2>Selected pendulum</h2><span class="selected-tag" id="selectedTag">PENDULUM A</span></div><p>Click a bob, drag and release it, or edit its length, mass, and initial angle independently.</p>
+ <div class="field"><label for="selected">Edit pendulum</label><select id="selected"></select></div>
+ <div class="field"><label for="length">Length <output id="lengthOut">1.00 m</output></label><input id="length" type="range" min="0.45" max="2.00" step="0.01" value="1" /></div>
+ <div class="field"><label for="mass">Bob mass <output id="massOut">0.18 kg</output></label><input id="mass" type="range" min="0.05" max="0.8" step="0.01" value="0.18" /></div>
+ <div class="field"><label for="angle">Initial / current angle <output id="angleOut">0°</output></label><input id="angle" type="range" min="-65" max="65" step="1" value="0" /></div>
+ <div class="field"><label for="initialPreset">Initial-angle arrangement</label><select id="initialPreset"><option value="middle">Middle bob 30° · all others rest</option><option value="first">First bob 30° · all others rest</option><option value="last">Last bob 30° · all others rest</option><option value="alternate">Alternating +15° / −15°</option><option value="all">All 15° in phase</option><option value="zero">All at rest</option><option value="custom">Custom angles</option></select></div>
+ <div class="btnrow"><button class="btn small" id="applyInitial">Apply initial angles</button><button class="btn small" id="resetMotion">Reset motion</button></div>
+ <div class="btnrow"><button class="btn small primary" id="exciteSelected">↑ Excite selected only</button><button class="btn small" id="restAll">◯ All at rest</button></div>
+ <div class="box-note"><span id="selectedInfo">Natural frequency ≈ 0.498 Hz</span>. Changes to masses or lengths rebuild the hanging equilibrium. This prototype resets the motion after structural edits.</div>
+</div>
+<div class="panel"><h2>Excitation & conservation</h2><p>Compare free oscillations with driven resonance. The energy ledger includes dissipation and external work.</p>
+ <div class="field"><label for="driveMode">External excitation</label><select id="driveMode"><option value="off">Off · freely moving system</option><option value="periodic">Sinusoidal angular drive</option></select></div>
+ <div class="field"><label for="driver">Driven pendulum</label><select id="driver"></select></div>
+ <div class="field"><label for="driveFreq">Driving frequency <output id="driveFreqOut">0.50 Hz</output></label><input id="driveFreq" type="range" min="0.10" max="1.50" step="0.01" value="0.50" /></div>
+ <div class="field"><label for="driveStrength">Driving angular acceleration <output id="driveStrengthOut">0.34 rad/s²</output></label><input id="driveStrength" type="range" min="0" max="1.50" step="0.01" value="0.34" /></div>
+ <div class="field"><label for="damping">Pendulum damping <output id="dampingOut">0.012 s⁻¹</output></label><input id="damping" type="range" min="0" max="0.20" step="0.002" value="0.012" /></div>
+ <div class="field"><label for="gravity">Gravity <output id="gravityOut">9.81 m/s²</output></label><input id="gravity" type="range" min="1" max="20" step="0.01" value="9.81" /></div>
+ <div class="field"><label for="speed">Playback speed <output id="speedOut">1×</output></label><input id="speed" type="range" min="0.25" max="4" step="0.25" value="1" /></div>
+ <div class="btnrow"><button class="btn small" id="step">Step 0.02 s</button><button class="btn small warn" id="stopDrive">Stop drive</button></div>
+ <hr class="divider" /><h2>Energy audit</h2><p id="energyHint">Mechanical energy should stay constant if both damping controls and the drive are off.</p><div class="box-note" id="energyAudit">E(t) + dissipated − drive work = E(0)</div>
+ </div>
+</section>
+<p class="disclaimer">* Mechanical excitation energy is measured above the equilibrium of the hanging cable and bobs; the energy ledger is measured relative to the start of each experiment. The model uses a finite-mass, tension-only elastic cable chain and an RK4 integrator, not a fully continuous textile-rope solver. WebM video recording, browser WebMCP and headless advanced HTTP/MCP control are supported on the deployed Esbiko platform. The downloadable HTML also runs independently offline.</p>
+<footer class="footer">ESBIKO · Full-standard HTML · Coupled pendulum V5 · For interactive physics exploration and validation</footer>
+</div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('scene'),ctx=canvas.getContext('2d');
+const PI=Math.PI,TAU=2*PI,rad=PI/180,deg=180/PI;
+const palette=['#69e8f7','#ffcb82','#bd9bfa','#81e8bd','#f99cc0','#88afff','#efe894','#f6b78b','#8dd7da','#d5b9ef'];
+const SPAN=4.2,STEP=1/720;
+let bobs=[],node=[],equilibrium=[],selected=4,driver=4,showTraces=true,connected=true,tension=55,axialEA=280,supportMass=.08,supportDamping=.012,damping=.012,gravity=9.81,vibration=1.5,speed=1,driveMode='off',driveFreq=.50,driveStrength=.34,elapsed=0,running=true;
+let preset='chain',lengthPreset='equal',initialPreset='middle',chartMode='bars',hudOpen=false,referenceEnergy=0,dissipated=0,driveWork=0,history=[],lastHistory=0,layout=null,frameStart=0,accumulator=0,dragIndex=-1,dragStarted=false,lastError='',pendingDraw=false;
+const fmt=(n,d=2)=>Number(n).toFixed(d),clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const label=i=>String.fromCharCode(65+i);
+const naturalF=b=>Math.sqrt(gravity/b.L)/TAU;
+function makeBob(L=1,m=.18,theta=0){return {L,m,theta,omega:0,startTheta:theta,trail:[]};}
+const nB=()=>bobs.length, spacing=()=>SPAN/(nB()+1),nodeMass=()=>supportMass;
+const stiffness=()=>Math.max(axialEA,1.15*tension)/spacing(),restSeg=()=>spacing()*(1-tension/Math.max(axialEA,1.15*tension));
+const points=(positions=node)=>[{x:0,y:0},...positions.map(p=>({x:p.x,y:p.y})),{x:SPAN,y:0}];
+function cordForces(pos){
+ const F=pos.map(()=>({x:0,y:0})),pts=points(pos),k=stiffness(),r=restSeg();let elastic=0;
+ for(let s=0;s<pts.length-1;s++){
+  const a=pts[s],b=pts[s+1],dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1e-9,stretch=Math.max(0,d-r);
+  const force=k*stretch/d,fx=force*dx,fy=force*dy;
+  elastic+=.5*k*stretch*stretch;
+  if(s>0){F[s-1].x+=fx;F[s-1].y+=fy}
+  if(s<pos.length){F[s].x-=fx;F[s].y-=fy}
+ }
+ return {F,elastic};
+}
+function potentialAt(pos){
+ const {elastic}=cordForces(pos);
+ return elastic-pos.reduce((sum,q,i)=>sum+(supportMass+bobs[i].m)*gravity*q.y,0);
+}
+function solveLinear(matrix,rhs){
+ const n=rhs.length,A=matrix.map((r,i)=>[...r,rhs[i]]);
+ for(let i=0;i<n;i++){
+  let pivot=i;for(let k=i+1;k<n;k++)if(Math.abs(A[k][i])>Math.abs(A[pivot][i]))pivot=k;
+  if(Math.abs(A[pivot][i])<1e-12)return null;
+  [A[i],A[pivot]]=[A[pivot],A[i]];
+  const divisor=A[i][i];for(let j=i;j<=n;j++)A[i][j]/=divisor;
+  for(let k=0;k<n;k++)if(k!==i){const factor=A[k][i];if(factor)for(let j=i;j<=n;j++)A[k][j]-=factor*A[i][j]}
+ }
+ return A.map(row=>row[n]);
+}
+// Compute the true static cable equilibrium for the current hanging weights.
+// The knots are indexed MATERIAL points; there is no sliding coordinate.
+function solveStatic(){
+ const n=nB(),dx=spacing(),load=bobs.map(b=>(supportMass+b.m)*gravity);
+ let guess=Array.from({length:n},(_,i)=>({x:dx*(i+1),y:0}));
+ // Small-sag linear tension solution, for a robust initial guess.
+ const y=Array(n).fill(0);for(let it=0;it<600;it++){
+  let change=0;for(let i=0;i<n;i++){
+   const target=((i?y[i-1]:0)+(i+1<n?y[i+1]:0)+load[i]*dx/tension)/2;
+   change=Math.max(change,Math.abs(target-y[i]));y[i]=target;
+  }if(change<1e-12)break;
+ }
+ for(let i=0;i<n;i++)guess[i].y=y[i];
+ const zSize=2*n,k=stiffness(),r=restSeg();
+ for(let iter=0;iter<32;iter++){
+  const pts=points(guess),forces=cordForces(guess).F;
+  const rhs=Array(zSize).fill(0),H=Array.from({length:zSize},()=>Array(zSize).fill(0));
+  for(let i=0;i<n;i++){rhs[2*i]=forces[i].x;rhs[2*i+1]=forces[i].y+load[i]}
+  const maxF=Math.max(...rhs.map(Math.abs));if(maxF<1e-9)break;
+  for(let s=0;s<n+1;s++){
+   const a=pts[s],b=pts[s+1],dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1e-10,Math.hypot(dx,dy)),stretch=d-r;
+   if(stretch<=0)continue;
+   const u=[dx/d,dy/d],aa=k*stretch/d,bb=k*r/d;
+   const block=[[aa+bb*u[0]*u[0],bb*u[0]*u[1]],[bb*u[1]*u[0],aa+bb*u[1]*u[1]]];
+   const left=s-1,right=s;
+   for(const [index,sign] of [[left,1],[right,-1]]){
+    if(index<0||index>=n)continue;
+    for(let x=0;x<2;x++)for(let z=0;z<2;z++)H[index*2+x][index*2+z]+=block[x][z];
+    const other=index===left?right:left;
+    if(other>=0&&other<n)for(let x=0;x<2;x++)for(let z=0;z<2;z++)H[index*2+x][other*2+z]-=block[x][z];
+   }
+  }
+  for(let i=0;i<zSize;i++)H[i][i]+=1e-7;
+  const delta=solveLinear(H,rhs);if(!delta)break;
+  const startV=potentialAt(guess);let accepted=false;
+  for(let alpha=1;alpha>=1/4096;alpha/=2){
+   const candidate=guess.map((v,i)=>({x:v.x+alpha*clamp(delta[i*2],-0.25,0.25),y:v.y+alpha*clamp(delta[i*2+1],-0.25,0.25)}));
+   if(potentialAt(candidate)<startV){guess=candidate;accepted=true;break}
+  }if(!accepted)break;
+ }
+ return guess;
+}
+function initializeNodes(){
+ equilibrium=solveStatic();node=equilibrium.map(q=>({x:q.x,y:q.y,vx:0,vy:0}));
+ for(const b of bobs)b.omega=0;
+}
+function stateVector(){
+ const y=[];for(let i=0;i<nB();i++)y.push(node[i].x,node[i].y,node[i].vx,node[i].vy,bobs[i].theta,bobs[i].omega);
+ return y;
+}
+function writeState(y){for(let i=0;i<nB();i++){
+ const o=6*i;node[i].x=y[o];node[i].y=y[o+1];node[i].vx=y[o+2];node[i].vy=y[o+3];bobs[i].theta=y[o+4];bobs[i].omega=y[o+5];
+}}
+function driveAt(i,t){return driveMode==='periodic'&&driver===i?driveStrength*Math.sin(TAU*driveFreq*t):0;}
+// 3 generalized coordinates per moving knot: x, y and theta.
+// Eliminating theta_dd from the 3x3 Lagrange mass matrix leaves a 2x2 solve.
+// Importantly, horizontal support acceleration excites a vertical pendulum.
+function derivatives(y,t){
+ const n=nB(),ans=Array(y.length).fill(0);
+ const q=Array.from({length:n},(_,i)=>({x:y[6*i],y:y[6*i+1]}));
+ const {F}=connected?cordForces(q):{F:Array.from({length:n},()=>({x:0,y:0}))};
+ for(let i=0;i<n;i++){
+  const o=i*6,b=bobs[i],m=b.m,L=b.L,th=y[o+4],omega=y[o+5],c=Math.cos(th),s=Math.sin(th);
+  const M=supportMass,drive=driveAt(i,t),applied=drive-damping*omega;
+  let ax=0,ay=0,ang=0;
+  if(connected){
+   const Fx=F[i].x-M*supportDamping*y[o+2],Fy=F[i].y-M*supportDamping*y[o+3];
+   const A=M+m*s*s,B=m*c*s,D=M+m*c*c;
+   const bx=Fx+m*L*s*omega*omega+m*gravity*c*s-m*L*c*applied;
+   const by=Fy+(M+m)*gravity+m*L*c*omega*omega-m*gravity*s*s+m*L*s*applied;
+   const det=A*D-B*B;
+   ax=(D*bx-B*by)/det;ay=(A*by-B*bx)/det;
+   ang=applied-(gravity*s+c*ax-s*ay)/L;
+  }else{ang=applied-gravity*s/L}
+  ans[o]=connected?y[o+2]:0;ans[o+1]=connected?y[o+3]:0;
+  ans[o+2]=ax;ans[o+3]=ay;ans[o+4]=omega;ans[o+5]=ang;
+ }
+ return ans;
+}
+function addScaled(a,b,s){return a.map((v,i)=>v+s*b[i]);}
+function powerAt(y,t){
+ let dampingPower=0,drivePower=0;
+ for(let i=0;i<nB();i++){
+  const o=i*6,b=bobs[i],w=y[o+5];
+  dampingPower+=b.m*b.L*b.L*damping*w*w;
+  drivePower+=b.m*b.L*b.L*driveAt(i,t)*w;
+  if(connected)dampingPower+=supportMass*supportDamping*(y[o+2]**2+y[o+3]**2);
+ }return {loss:dampingPower,work:drivePower};
+}
+function integrate(dt){
+ const y=stateVector(),t=elapsed;
+ const k1=derivatives(y,t),y2=addScaled(y,k1,dt/2),k2=derivatives(y2,t+dt/2),y3=addScaled(y,k2,dt/2),k3=derivatives(y3,t+dt/2),y4=addScaled(y,k3,dt),k4=derivatives(y4,t+dt);
+ const next=y.map((v,i)=>v+dt*(k1[i]+2*k2[i]+2*k3[i]+k4[i])/6);
+ if(next.some(v=>!Number.isFinite(v)||Math.abs(v)>1e7)){running=false;lastError='Numerical instability. Try higher tension or a smaller mass.';updateStatus();return}
+ const p1=powerAt(y,t),p2=powerAt(y2,t+dt/2),p3=powerAt(y3,t+dt/2),p4=powerAt(y4,t+dt);
+ dissipated+=dt*(p1.loss+2*p2.loss+2*p3.loss+p4.loss)/6;
+ driveWork+=dt*(p1.work+2*p2.work+2*p3.work+p4.work)/6;
+ writeState(next);elapsed+=dt;
+ if(elapsed-lastHistory>=.075){appendHistory();lastHistory=elapsed}
+}
+function energyParts(){
+ const at=node.map(q=>({x:q.x,y:q.y}));
+ const cable=connected?cordForces(at).elastic:0;
+ const pend=[],knot=[];
+ for(let i=0;i<nB();i++){
+  const b=bobs[i],q=node[i],s=Math.sin(b.theta),c=Math.cos(b.theta),vx=(connected?q.vx:0)+b.L*c*b.omega,vy=(connected?q.vy:0)-b.L*s*b.omega;
+  // Angles measured from downward vertical; reference is a suspended static bob.
+  pend.push(.5*b.m*(vx*vx+vy*vy)+b.m*gravity*b.L*(1-c));
+  knot.push(connected?.5*supportMass*(q.vx*q.vx+q.vy*q.vy):0);
+ }
+ const gravCord=connected?-node.reduce((a,q,i)=>a+(supportMass+bobs[i].m)*gravity*q.y,0):0;
+ const total=pend.reduce((a,v)=>a+v,0)+knot.reduce((a,v)=>a+v,0)+cable+gravCord;
+ const supportExcess=cable+gravCord+knot.reduce((a,v)=>a+v,0)-equilibriumPotential;
+ return {pend,knot,cable,gravCord,total,supportExcess,excitation:total-equilibriumPotential,corrected:total-referenceEnergy,ledger:total+dissipated-driveWork-referenceEnergy};
+}
+function auditError(E){return Math.abs(E.ledger)/Math.max(.01,Math.abs(energyStartScale))}
+let energyStartScale=1,equilibriumPotential=0;
+function updateEnergyReference(){
+ equilibriumPotential=connected?potentialAt(equilibrium):0;
+ const E=energyParts();referenceEnergy=E.total;energyStartScale=Math.max(.01,Math.abs(E.excitation));
+ dissipated=0;driveWork=0;history=[];elapsed=0;lastHistory=0;appendHistory();
+}
+function appendHistory(){const E=energyParts();history.push({t:elapsed,pend:[...E.pend],cord:E.supportExcess,total:E.excitation,ledger:E.ledger});if(history.length>1200)history.shift()}
+function setInitial(presetName='middle'){
+ initialPreset=presetName;const n=nB();
+ for(let i=0;i<n;i++){
+  const b=bobs[i];const a=presetName==='first'?(i===0?30:0):presetName==='middle'?(i===Math.floor((n-1)/2)?30:0):presetName==='last'?(i===n-1?30:0):presetName==='alternate'?(i%2?-15:15):presetName==='all'?15:0;
+  b.startTheta=a*rad;b.theta=b.startTheta;b.omega=0;b.trail=[];
+ }
+ if(initialPreset!=='custom')$('initialPreset').value=initialPreset;
+}
+function lengthFor(type,i,n){
+ switch(type){
+  case 'ascending':return 1+.1*i;
+  case 'descending':return 1+.1*(n-1-i);
+  case 'alternating':return i%2?1.25:.8;
+  case 'symmetric':return .8+.12*Math.min(i,n-1-i);
+  case 'wave':{const f=(14+i)/28;return clamp(gravity/(TAU*f)**2,.45,2)}
+  default:return 1;
+ }
+}
+function applyLengths(type){lengthPreset=type;
+ for(let i=0;i<nB();i++)bobs[i].L=lengthFor(type,i,nB());
+ $('lengthPreset').value=type;rebuild();
+}
+function resetDynamics(restoreAngles=true){
+ for(const b of bobs){b.theta=restoreAngles?b.startTheta:b.theta;b.omega=0;b.trail=[]}
+ node=equilibrium.map(q=>({x:q.x,y:q.y,vx:0,vy:0}));
+ updateEnergyReference();running=true;frameStart=performance.now();syncUI();
+}
+function rebuild(){initializeNodes();resetDynamics(true)}
+function select(i){selected=clamp(i,0,nB()-1);syncSelected();draw()}
+function rebuildCount(n){
+ n=clamp(n,1,10);const old=bobs.slice();bobs=Array.from({length:n},(_,i)=>old[i]||makeBob(lengthFor(lengthPreset,i,n),.18));
+ selected=clamp(selected,0,n-1);driver=clamp(driver,0,n-1);
+ if(lengthPreset!=='custom')for(let i=0;i<n;i++)bobs[i].L=lengthFor(lengthPreset,i,n);
+ if(initialPreset!=='custom')setInitial(initialPreset);
+ rebuild();
+}
+function applyPreset(name){
+ preset=name;connected=true;gravity=9.81;supportMass=.08;supportDamping=.012;damping=.012;tension=55;axialEA=280;vibration=1.5;speed=1;driveMode='off';driveStrength=.34;driveFreq=.5;selected=0;driver=0;
+ if(name==='resonance'){
+  bobs=[makeBob(1,.18,30*rad),makeBob(.7,.18),makeBob(1,.18),makeBob(1.3,.18)];lengthPreset='custom';initialPreset='custom';
+ }else if(name==='wave'){
+  bobs=Array.from({length:10},(_,i)=>makeBob(lengthFor('wave',i,10),.16,12*rad));lengthPreset='wave';initialPreset='custom';
+ }else{
+  bobs=Array.from({length:10},(_,i)=>makeBob(1,.18,i===4?30*rad:0));lengthPreset='equal';initialPreset='middle';selected=4;driver=4;
+ }
+ for(const b of bobs)b.startTheta=b.theta;
+ initializeNodes();resetDynamics(true);syncUI();
+}
+function setConnected(value){
+ connected=Boolean(value);initializeNodes();resetDynamics(true);syncUI();
+}
+function exciteSelected(i=selected){
+ driver=i;driveMode='off';for(let j=0;j<nB();j++){const a=bobs[j];a.startTheta=(j===i?30:0)*rad;a.theta=a.startTheta;a.omega=0}
+ initialPreset='custom';resetDynamics(true);syncUI();
+}
+function updateStatus(){
+ $('playBtn').textContent=running?'⏸ Pause':'▶ Play';
+ $('status').textContent=(lastError?'⚠ '+lastError:running?'Running':'Paused')+' · '+nB()+' pendulum'+(nB()===1?'':'s')+' · '+(connected?'elastic cord':'independent supports');
+}
+function syncSelected(){const b=bobs[selected];if(!b)return;
+ $('selected').value=String(selected);$('selectedTag').textContent='PENDULUM '+label(selected);
+ $('length').value=b.L;$('lengthOut').textContent=fmt(b.L)+' m';
+ $('mass').value=b.m;$('massOut').textContent=fmt(b.m)+' kg';
+ $('angle').value=Math.round(b.startTheta*deg);$('angleOut').textContent=fmt(b.startTheta*deg,0)+'°';
+ $('selectedInfo').textContent='Natural frequency ≈ '+fmt(naturalF(b),3)+' Hz';
+}
+function syncSelectors(){for(const id of ['selected','driver']){
+  const control=$(id);control.replaceChildren();bobs.forEach((_,i)=>{const opt=document.createElement('option');opt.value=i;opt.textContent='Pendulum '+label(i);control.appendChild(opt)})
+ }$('selected').value=selected;$('driver').value=driver}
+function syncUI(){
+ $('count').replaceChildren();for(let i=1;i<=10;i++){const o=document.createElement('option');o.value=i;o.textContent=i+' pendulum'+(i===1?'':'s');$('count').appendChild(o)}
+ $('count').value=nB();$('countOut').textContent=nB();
+ $('lengthPreset').value=lengthPreset;$('initialPreset').value=initialPreset;
+ $('tension').value=tension;$('tensionOut').textContent=tension.toFixed(0)+' N';
+ $('axialEA').value=axialEA;$('axialEAOut').textContent=fmt(axialEA,0)+' N';
+ $('supportMass').value=supportMass;$('supportMassOut').textContent=fmt(supportMass,3)+' kg';
+ $('supportDamping').value=supportDamping;$('supportDampingOut').textContent=fmt(supportDamping,3)+' s⁻¹';
+ $('vibration').value=vibration;$('vibrationOut').textContent=fmt(vibration,1)+'×';
+ $('damping').value=damping;$('dampingOut').textContent=fmt(damping,3)+' s⁻¹';
+ $('gravity').value=gravity;$('gravityOut').textContent=fmt(gravity)+' m/s²';
+ $('speed').value=speed;$('speedOut').textContent=fmt(speed,2)+'×';
+ $('driveMode').value=driveMode;$('driveFreq').value=driveFreq;$('driveFreqOut').textContent=fmt(driveFreq)+' Hz';
+ $('driveStrength').value=driveStrength;$('driveStrengthOut').textContent=fmt(driveStrength)+' rad/s²';
+ $('chartMode').value=chartMode;$('trails').checked=showTraces;
+ $('connected').classList.toggle('active',connected);$('independent').classList.toggle('active',!connected);
+ $('connected').setAttribute('aria-pressed',connected);$('independent').setAttribute('aria-pressed',!connected);
+ document.querySelectorAll('.preset').forEach(v=>{v.classList.toggle('active',v.dataset.preset===preset)});
+ syncSelectors();syncSelected();
+ $('stageTitle').textContent=preset==='resonance'?'Resonance · matched and unmatched pendulums':preset==='wave'?'Variable-length pendulum array':'Ten-pendulum chain · tied elastic support';
+ $('stageSubtitle').textContent=connected?'Material knots move with the same deformable cord; energy travels through cord forces.':'Rigid independent pivots; each pendulum oscillates without energy transmission.';
+ updateStatus();draw();
+}
+function draw(){if(!ctx||!canvas.width||!nB())return;
+ const w=canvas.clientWidth,h=canvas.clientHeight,dpr=canvas.width/w;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const grad=ctx.createLinearGradient(0,0,0,h);grad.addColorStop(0,'#071d31');grad.addColorStop(1,'#061727');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+ ctx.strokeStyle='#28476255';ctx.lineWidth=1;for(let y=35;y<h;y+=45){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}
+ for(let x=20;x<w;x+=52){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}
+ const pad=clamp(w*.045,22,74),left=pad,right=w-pad;const unitX=(right-left)/SPAN;
+ const maxL=Math.max(1,...bobs.map(b=>b.L));
+ const reservedChart=w<650?140:138,available=h-reservedChart-28;
+ const unitY=Math.min(unitX*.98,Math.max(88,(available-110)/(maxL+.20)));
+ const top=clamp(available*.20,55,100);
+ const physToCanvas=(x,y)=>({x:left+x*unitX,y:top+y*unitY});
+ const vPosition=i=>{
+  if(!connected){const x=equilibrium[i]?.x??(i+1)*spacing();return {x,y:0}}
+  const staticQ=equilibrium[i],q=node[i];return {x:staticQ.x+vibration*(q.x-staticQ.x),y:staticQ.y+vibration*(q.y-staticQ.y)};
+ };
+ layout={left,right,top,unitX,unitY,physToCanvas,canvasKnots:bobs.map((_,i)=>physToCanvas(vPosition(i).x,vPosition(i).y)),bobLocations:[],chartStart:h-reservedChart};
+ const base={x:left,y:top},last={x:right,y:top},all=[base,...layout.canvasKnots,last];
+ const cable=()=>{ctx.beginPath();ctx.moveTo(all[0].x,all[0].y);for(let i=1;i<all.length;i++)ctx.lineTo(all[i].x,all[i].y)};
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ cable();ctx.strokeStyle='#1d5570';ctx.lineWidth=11;ctx.stroke();cable();ctx.strokeStyle='#6db5ce';ctx.lineWidth=5;ctx.stroke();cable();ctx.strokeStyle='#b5e3e6a8';ctx.lineWidth=1.2;ctx.stroke();
+ // Short twisted threads show a rope instead of a perfectly rigid rod.
+ for(let s=0;s<all.length-1;s++){
+  const a=all[s],b=all[s+1],dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),nx=-dy/(len||1),ny=dx/(len||1);
+  for(let z=1;z<len/12;z++){const tt=z*12/len,px=a.x+tt*dx,py=a.y+tt*dy,offs=(z%2?.8:-.8);
+   ctx.strokeStyle='#e5fbff38';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px+nx*offs-3,py+ny*offs-3);ctx.lineTo(px-nx*offs+3,py-ny*offs+3);ctx.stroke();
+  }
+ }
+ function mount(x){ctx.lineWidth=2;ctx.strokeStyle='#aac2d5';ctx.beginPath();ctx.moveTo(x,top-22);ctx.lineTo(x,top+24);ctx.stroke();for(let k=-16;k<=17;k+=8){ctx.beginPath();ctx.moveTo(x-9,top+k+7);ctx.lineTo(x,top+k-2);ctx.stroke()}}
+ mount(base.x);mount(last.x);
+ const bobLoc=[];
+ for(let i=0;i<nB();i++){
+  const b=bobs[i],pivot=layout.canvasKnots[i];
+  const x=pivot.x+b.L*unitY*Math.sin(b.theta),y=pivot.y+b.L*unitY*Math.cos(b.theta);
+  bobLoc.push({x,y,pivot});layout.bobLocations.push({x,y});
+  if(showTraces){
+   b.trail.push({x,y});if(b.trail.length>90)b.trail.shift();
+   ctx.beginPath();b.trail.forEach((point,index)=>index?ctx.lineTo(point.x,point.y):ctx.moveTo(point.x,point.y));ctx.strokeStyle=palette[i%palette.length]+'68';ctx.lineWidth=2;ctx.stroke();
+  }
+  ctx.strokeStyle=i===selected?'#d9f7ff':'#c9d9e9';ctx.lineWidth=i===selected?3.3:2.2;
+  ctx.beginPath();ctx.moveTo(pivot.x,pivot.y);ctx.lineTo(x,y);ctx.stroke();
+  // A small tied loop/knot belongs to one specific material point.
+  ctx.beginPath();ctx.arc(pivot.x,pivot.y,4,0,TAU);ctx.fillStyle='#a2f5dc';ctx.fill();ctx.strokeStyle='#205d60';ctx.lineWidth=1;ctx.stroke();
+  ctx.beginPath();ctx.moveTo(pivot.x-4,pivot.y-3);ctx.lineTo(pivot.x+4,pivot.y+3);ctx.moveTo(pivot.x-4,pivot.y+3);ctx.lineTo(pivot.x+4,pivot.y-3);ctx.strokeStyle='#d8f7f0';ctx.lineWidth=.9;ctx.stroke();
+  const color=palette[i%palette.length],radius=clamp(9+b.m*13,9,18);
+  ctx.shadowColor=color;ctx.shadowBlur=17;const glow=ctx.createRadialGradient(x-4,y-5,1,x,y,radius);glow.addColorStop(0,'#f7ffff');glow.addColorStop(.33,color);glow.addColorStop(1,color+'aa');ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y,radius,0,TAU);ctx.fill();ctx.shadowBlur=0;
+  if(i===selected){ctx.beginPath();ctx.arc(x,y,radius+7,0,TAU);ctx.lineWidth=1.6;ctx.strokeStyle='#7fe7f5bd';ctx.stroke()}
+  ctx.textAlign='center';ctx.font='11px system-ui';ctx.fillStyle='#d8f3ff';ctx.fillText(label(i),pivot.x,top-30);
+  if(i===selected){ctx.font='10px system-ui';ctx.fillStyle='#9cddeb';ctx.fillText(fmt(b.L)+' m',pivot.x,top-16)}
+ }
+ ctx.restore();
+ // Current knot geometry and bob length use the same moving anchor.
+ drawChart(w,h,layout.chartStart);
+}
+function drawChart(w,h,y0){
+ ctx.save();const x=13,iw=w-26,hh=h-y0-8;
+ ctx.fillStyle='#0a2137';ctx.beginPath();ctx.roundRect(x,y0,iw,hh,11);ctx.fill();
+ ctx.textAlign='left';ctx.fillStyle='#e0f1ff';ctx.font='bold 11px system-ui';ctx.fillText(chartMode==='bars'?'INSTANTANEOUS ENERGY · each bob and the cord':'ENERGY HISTORY · pendulums + elastic cable',x+12,y0+18);
+ if(chartMode==='bars'){
+  const E=energyParts(),energies=[...E.pend,E.supportExcess];
+  const maxE=Math.max(.01,...energies.map(v=>Math.abs(v)))*1.10;
+  const names=bobs.map((_,i)=>label(i)).concat(['CORD']);
+  const x0=x+19,ww=iw-38,gy=y0+38,ground=gy+hh-55;
+  const stride=ww/energies.length,barW=Math.max(5,Math.min(40,stride*.60));
+  ctx.strokeStyle='#3a5e7a';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,ground);ctx.lineTo(x0+ww,ground);ctx.stroke();
+  for(let i=0;i<energies.length;i++){
+   const val=energies[i],xx=x0+(i+.5)*stride,barH=(Math.abs(val)/maxE)*Math.max(22,hh-67);
+   ctx.fillStyle=i===energies.length-1?'#85e9bf':palette[i%palette.length];
+   ctx.globalAlpha=i===selected?1:.83;ctx.fillRect(xx-barW/2,ground-(val>=0?barH:0),barW,Math.max(2,barH));ctx.globalAlpha=1;
+   ctx.font=names[i]==='CORD'?'bold 9px system-ui':'11px system-ui';ctx.fillStyle='#c5e0f4';ctx.textAlign='center';ctx.fillText(names[i],xx,ground+13);
+  }
+  ctx.textAlign='right';ctx.fillStyle='#adc9dc';ctx.font='10px system-ui';ctx.fillText('Total ≈ '+fmt(E.excitation,3)+' J · cord shown separately',x+iw-12,y0+29);
+  ctx.restore();return;
+ }
+ ctx.textAlign=w<650?'left':'right';ctx.font='10px system-ui';ctx.fillStyle='#94bdd8';ctx.fillText(w<650?'Solid: bobs | dashed: cable | dotted: total':'Solid = pendulums · dashed = cable · dotted = conserved total',w<650?x+12:x+iw-10,w<650?y0+34:y0+18);
+ const graphX=x+12,graphY=y0+(w<650?45:29),graphW=iw-24,graphH=Math.max(12,hh-(w<650?57:43));
+ for(let i=0;i<4;i++){const gy=graphY+graphH*i/3;ctx.strokeStyle='#31597966';ctx.beginPath();ctx.moveTo(graphX,gy);ctx.lineTo(graphX+graphW,gy);ctx.stroke()}
+ if(history.length>1){
+  const lastT=history[history.length-1].t,firstT=Math.max(0,lastT-25);
+  const filtered=history.filter(e=>e.t>=firstT);
+  let maxVal=1e-4;for(const v of filtered){for(const E of v.pend)maxVal=Math.max(maxVal,E);maxVal=Math.max(maxVal,Math.abs(v.cord),Math.abs(v.total));}
+  const maxPlot=maxVal*1.08;
+  const line=(get,color,dash=[])=>{ctx.beginPath();ctx.setLineDash(dash);let valid=0;for(const entry of filtered){const px=graphX+graphW*(entry.t-firstT)/Math.max(1e-6,lastT-firstT),py=graphY+graphH*(.5-get(entry)/(2*maxPlot));if(!Number.isFinite(py))continue;valid++===0?ctx.moveTo(px,py):ctx.lineTo(px,py)}ctx.strokeStyle=color;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([])};
+  bobs.forEach((_,i)=>line(v=>v.pend[i],palette[i%palette.length]+'bd'));
+  line(v=>v.cord,'#83e8bc',[5,4]);
+  line(v=>v.total,'#edf8ff',[2,4]);
+ }
+ ctx.restore();
+}
+function updateMetrics(){
+ if(!nB())return;
+ const E=energyParts(),error=auditError(E),free=driveMode==='off'&&damping===0&&supportDamping===0;
+ const energyOther=Math.max(0,E.pend.reduce((sum,p,i)=>sum+(i!==selected?p:0),0));
+ const otherPercent=E.pend.reduce((sum,p)=>sum+p,0)>1e-12?100*energyOther/(E.pend.reduce((sum,p)=>sum+p,0)):0;
+ $('timeMetric').textContent=fmt(elapsed);
+ $('freqMetric').textContent=fmt(naturalF(bobs[selected]),3);
+ $('transferMetric').textContent=fmt(otherPercent,1);
+ $('energyMetric').textContent=fmt(E.excitation,4);
+ $('auditMetric').textContent=fmt(error*100,4);
+ $('auditPanel').classList.toggle('bad',error>0.005);$('auditPanel').classList.toggle('good',error<=0.005);
+ $('energyAudit').textContent=`E(t) − E(0): ${fmt(E.corrected,5)} J · Dissipated: ${fmt(dissipated,5)} J · External work: ${fmt(driveWork,5)} J · Residual: ${fmt(E.ledger,6)} J`;
+ $('energyHint').textContent=free?'Lossless free experiment: energy should stay constant except for small numerical integration error.':'Energy audit compensates for damping and external drive work. Structural edits restart the energy reference.';
+ if(hudOpen)updateHud(E,error);
+ updateStatus();
+}
+function updateHud(E=energyParts(),error=auditError(E)){
+ if(!hudOpen)return;
+ const b=bobs[selected],s=equilibrium[selected],q=node[selected],knotDisp=Math.hypot(q.x-s.x,q.y-s.y);
+ $('hudSummary').textContent=(connected?'CONNECTED CORD':'INDEPENDENT PIVOTS')+' · '+nB()+' pendulum'+(nB()===1?'':'s')+' · T = '+fmt(tension,0)+' N';
+ const entries=[['Selected bob',label(selected)],['Bob length',fmt(b.L)+' m'],['Bob mass',fmt(b.m,3)+' kg'],['Angle',fmt(b.theta*deg,1)+'°'],['Angular speed',fmt(b.omega,3)+' rad/s'],['Natural frequency',fmt(naturalF(b),3)+' Hz'],['Tied knot shift',fmt(knotDisp*1000,2)+' mm'],['Static sag',fmt(s.y*1000,1)+' mm'],['Axial stiffness',fmt(axialEA,0)+' N'],['Cable energy above rest',fmt(E.supportExcess,5)+' J'],['Pendulum energy',fmt(E.pend[selected],5)+' J'],['Excitation energy',fmt(E.excitation,5)+' J'],['Ledger residual',fmt(E.ledger,7)+' J']];
+ $('hudStats').replaceChildren();for(const [key,value] of entries){const tr=document.createElement('tr'),a=document.createElement('td'),b=document.createElement('td');a.textContent=key;b.textContent=value;tr.append(a,b);$('hudStats').appendChild(tr)}
+ $('hudLedger').textContent='Energy conservation error: '+fmt(error*100,5)+'%. '+(error>.005?'Inspect numerical stability and current parameter change.':'Energy bookkeeping within display tolerance.');
+}
+function setHud(open){hudOpen=!!open;$('hud').hidden=!hudOpen;$('hudToggle').classList.toggle('active',hudOpen);if(hudOpen)updateHud()}
+function resize(){const r=canvas.getBoundingClientRect(),dpr=clamp(devicePixelRatio||1,1,2);canvas.width=Math.max(1,Math.round(r.width*dpr));canvas.height=Math.max(1,Math.round(r.height*dpr));draw()}
+function stepOnce(dt=STEP){integrate(dt);updateMetrics();draw()}
+function animate(now){if(!frameStart)frameStart=now;const delta=Math.min(.045,(now-frameStart)/1000);frameStart=now;
+ if(running&&dragIndex<0){accumulator+=delta*speed;let loops=0;while(accumulator>=STEP&&loops++<180){integrate(STEP);accumulator-=STEP}if(loops>=180)accumulator=0}
+ if(!pendingDraw||running){draw();pendingDraw=false}
+ if(Math.floor(now/140)!==Math.floor((now-delta*1000)/140))updateMetrics();
+ requestAnimationFrame(animate);
+}
+function bindRange(id,setter){$(id).addEventListener('input',e=>{setter(Number(e.target.value));syncUI();pendingDraw=true})}
+function wire(){
+ document.querySelectorAll('.preset').forEach(b=>b.addEventListener('click',()=>applyPreset(b.dataset.preset)));
+ $('count').addEventListener('change',e=>rebuildCount(Number(e.target.value)));
+ $('lengthPreset').addEventListener('change',e=>{const v=e.target.value;if(v!=='custom')applyLengths(v);else lengthPreset='custom';syncUI()});
+ $('applyLengths').addEventListener('click',()=>applyLengths($('lengthPreset').value==='custom'?'equal':$('lengthPreset').value));
+ $('equalLengths').addEventListener('click',()=>applyLengths('equal'));
+ $('connected').addEventListener('click',()=>setConnected(true));$('independent').addEventListener('click',()=>setConnected(false));
+ bindRange('tension',v=>{tension=v;rebuild()});
+ bindRange('axialEA',v=>{axialEA=v;rebuild()});
+ bindRange('supportMass',v=>{supportMass=v;rebuild()});
+ bindRange('supportDamping',v=>{supportDamping=v;updateEnergyReference()});
+ bindRange('vibration',v=>{vibration=v});
+ bindRange('damping',v=>{damping=v;updateEnergyReference()});
+ bindRange('gravity',v=>{gravity=v;rebuild()});
+ bindRange('speed',v=>{speed=v});
+ $('chartMode').addEventListener('change',e=>{chartMode=e.target.value;draw()});
+ $('trails').addEventListener('change',e=>{showTraces=e.target.checked;for(const b of bobs)b.trail=[];pendingDraw=true});
+ $('selected').addEventListener('change',e=>select(Number(e.target.value)));
+ $('driver').addEventListener('change',e=>{driver=Number(e.target.value);syncUI()});
+ bindRange('length',v=>{bobs[selected].L=v;lengthPreset='custom';rebuild()});
+ bindRange('mass',v=>{bobs[selected].m=v;rebuild()});
+ bindRange('angle',v=>{bobs[selected].startTheta=v*rad;initialPreset='custom';resetDynamics(true)});
+ $('initialPreset').addEventListener('change',e=>{if(e.target.value!=='custom'){setInitial(e.target.value);resetDynamics(true)}else initialPreset='custom'});
+ $('applyInitial').addEventListener('click',()=>{setInitial($('initialPreset').value==='custom'?'middle':$('initialPreset').value);resetDynamics(true)});
+ $('resetMotion').addEventListener('click',()=>resetDynamics(true));
+ $('exciteSelected').addEventListener('click',()=>exciteSelected());$('exciteBtn').addEventListener('click',()=>exciteSelected());
+ $('restAll').addEventListener('click',()=>{setInitial('zero');resetDynamics(true)});
+ $('driveMode').addEventListener('change',e=>{driveMode=e.target.value;updateEnergyReference();syncUI()});
+ bindRange('driveFreq',v=>{driveFreq=v;updateEnergyReference()});
+ bindRange('driveStrength',v=>{driveStrength=v;updateEnergyReference()});
+ $('stopDrive').addEventListener('click',()=>{driveMode='off';updateEnergyReference();syncUI()});
+ $('step').addEventListener('click',()=>{running=false;for(let k=0;k<12;k++)integrate(.02/12);syncUI();updateMetrics()});
+ $('playBtn').addEventListener('click',()=>{running=!running;frameStart=performance.now();updateStatus()});
+ $('restartBtn').addEventListener('click',()=>resetDynamics(true));
+ $('hudToggle').addEventListener('click',()=>setHud(!hudOpen));$('hudClose').addEventListener('click',()=>setHud(false));
+ const getXY=e=>{const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}};
+ canvas.addEventListener('pointerdown',e=>{
+  const {x,y}=getXY(e);if(!layout)return;
+  let chosen=-1,d=32;
+  layout.bobLocations.forEach((b,i)=>{const dist=Math.hypot(b.x-x,b.y-y);if(dist<d){d=dist;chosen=i}});
+  if(chosen>=0){select(chosen);dragIndex=chosen;dragStarted=true;running=false;canvas.setPointerCapture(e.pointerId);e.preventDefault()}
+ });
+ canvas.addEventListener('pointermove',e=>{
+  if(dragIndex<0||!layout)return;
+  const {x,y}=getXY(e),base=layout.canvasKnots[dragIndex];
+  const angle=clamp(Math.atan2(x-base.x,y-base.y),-65*rad,65*rad),b=bobs[dragIndex];
+  b.theta=angle;b.startTheta=angle;b.omega=0;initialPreset='custom';b.trail=[];syncSelected();pendingDraw=true;
+ });
+ const release=()=>{if(dragIndex<0)return;dragIndex=-1;if(dragStarted){initializeNodes();resetDynamics(true)}dragStarted=false};
+ canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);
+ window.addEventListener('resize',resize);
+}
+// Debug-only readback, not an HTTP API or an MCP adapter.
+window.esbikoPrototypeV4={getState:()=>({time:elapsed,count:nB(),connected,selected,pendulums:bobs.map(b=>({L:b.L,m:b.m,theta:b.theta,omega:b.omega})),nodes:node.map(q=>({...q})),equilibrium:equilibrium.map(q=>({...q})),energy:energyParts(),dissipated,driveWork}),setCount:rebuildCount,setConnected,applyLengths,setInitial:(x)=>{setInitial(x);resetDynamics(true)},exciteSelected,advance:(secs)=>{const n=Math.ceil(secs/STEP);for(let i=0;i<n;i++)integrate(secs/n);updateMetrics();draw()},setDamping:(x,y)=>{damping=x;supportDamping=y;updateEnergyReference();syncUI()}};
+
+// Five-gate browser API: the V4 Lagrangian solver remains unchanged.
+const coupledId="physics.waves.coupled-pendulums-cord";
+const copyJson=x=>JSON.parse(JSON.stringify(x));
+function getCoupledParameters(){
+ const p={count:nB(),connected,tension,axialEA,supportMass,supportDamping,damping,gravity,vibration,speed,
+  driveMode,driveFreq,driveStrength,selected:selected+1,driver:driver+1,lengthPreset,initialPreset};
+ bobs.forEach((b,i)=>{const x="p"+(i+1)+"_";p[x+"lengthM"]=b.L;p[x+"massKg"]=b.m;p[x+"angleDeg"]=b.startTheta*deg});
+ return p;
+}
+function coupledState(){const E=energyParts();return {
+ simulationId:coupledId,elapsedSeconds:elapsed,parameters:getCoupledParameters(),
+ running,pendulums:bobs.map((b,i)=>({index:i+1,lengthM:b.L,massKg:b.m,
+  angleRad:b.theta,angleDeg:b.theta*deg,omegaRadps:b.omega,energyJ:E.pend[i]})),
+ knots:node.map((p,i)=>({...p,staticX:equilibrium[i].x,staticY:equilibrium[i].y})),
+ energy:{totalJ:E.total,excitationJ:E.excitation,ledgerErrorJ:E.ledger,
+  dissipatedJ:dissipated,driveWorkJ:driveWork},video:videoStatus()};
+}
+function configureCoupled(patch){
+ if(!patch||typeof patch!=="object"||Array.isArray(patch))throw Error("Invalid configuration");
+ const allowed=["count","connected","tension","axialEA","supportMass","supportDamping","damping","gravity",
+ "vibration","speed","driveMode","driveFreq","driveStrength","selected","driver","lengthPreset","initialPreset"];
+ const validateScalar=(key,v)=>{
+  const enums={driveMode:["off","periodic"],lengthPreset:["equal","ascending","descending","alternating","symmetric","wave","custom"],
+   initialPreset:["first","middle","last","alternate","all","zero","custom"]};
+  const ranges={count:[1,10],tension:[8,160],axialEA:[80,700],supportMass:[.015,.3],
+  supportDamping:[0,.2],damping:[0,.2],gravity:[1,20],vibration:[1,9],speed:[.25,4],
+  driveFreq:[.1,1.5],driveStrength:[0,1.5],selected:[1,10],driver:[1,10]};
+  if(key==="connected"){if(typeof v!=="boolean")throw Error("Invalid "+key);return;}
+  if(enums[key]){if(!enums[key].includes(v))throw Error("Invalid "+key);return}
+  if(ranges[key]&&(!Number.isFinite(v)||v<ranges[key][0]||v>ranges[key][1]||
+   ["count","selected","driver"].includes(key)&&!Number.isInteger(v)))throw Error("Invalid "+key);
+ };
+ for(const [key,value] of Object.entries(patch)){
+  if(allowed.includes(key)){validateScalar(key,value);continue}
+  const match=/^p(10|[1-9])_(lengthM|massKg|angleDeg)$/.exec(key);
+  if(!match)throw Error("Unsupported parameter "+key);
+  const limits=match[2]==="lengthM"?[.45,2]:match[2]==="massKg"?[.04,.6]:[-65,65];
+  if(!Number.isFinite(value)||value<limits[0]||value>limits[1])throw Error("Invalid parameter "+key);
+ }
+ if(patch.count!==undefined){
+  const old=bobs.slice();bobs=Array.from({length:patch.count},(_,i)=>old[i]||makeBob(1,.18));
+  selected=clamp(selected,0,nB()-1);driver=clamp(driver,0,nB()-1);
+ }
+ if(patch.lengthPreset!==undefined){
+  lengthPreset=patch.lengthPreset;
+  if(lengthPreset!=="custom")bobs.forEach((b,i)=>{b.L=lengthFor(lengthPreset,i,nB())});
+ }
+ if(patch.initialPreset!==undefined){
+  initialPreset=patch.initialPreset;
+  if(initialPreset!=="custom")bobs.forEach((b,i)=>{
+   const angle=initialPreset==="first"?(i===0?30:0):initialPreset==="middle"?(i===Math.floor((nB()-1)/2)?30:0):
+    initialPreset==="last"?(i===nB()-1?30:0):initialPreset==="alternate"?(i%2?-15:15):
+    initialPreset==="all"?15:0; b.startTheta=angle*rad
+  });
+ }
+ for(const key of allowed){
+  if(patch[key]===undefined||["count","lengthPreset","initialPreset"].includes(key))continue;
+  const v=patch[key];
+  switch(key){
+   case "connected":connected=v;break;case "tension":tension=v;break;
+   case "axialEA":axialEA=v;break;case "supportMass":supportMass=v;break;
+   case "supportDamping":supportDamping=v;break;case "damping":damping=v;break;
+   case "gravity":gravity=v;break;case "vibration":vibration=v;break;
+   case "speed":speed=v;break;case "driveMode":driveMode=v;break;
+   case "driveFreq":driveFreq=v;break;case "driveStrength":driveStrength=v;break;
+   case "selected":selected=clamp(v-1,0,nB()-1);break;
+   case "driver":driver=clamp(v-1,0,nB()-1);break;
+  }
+ }
+ for(const [key,v] of Object.entries(patch)){
+  const match=/^p(10|[1-9])_(lengthM|massKg|angleDeg)$/.exec(key);
+  if(!match||Number(match[1])>nB())continue;
+  const b=bobs[Number(match[1])-1];
+  if(match[2]==="lengthM"){b.L=v;lengthPreset="custom"}
+  if(match[2]==="massKg")b.m=v;
+  if(match[2]==="angleDeg"){b.startTheta=v*rad;initialPreset="custom"}
+ }
+ initializeNodes();resetDynamics(true);syncUI();return coupledState();
+}
+function hydrateCoupled(checkpoint){
+ if(!checkpoint||!Array.isArray(checkpoint.bobs)||!Array.isArray(checkpoint.node)||
+  checkpoint.bobs.length<1||checkpoint.bobs.length>10||checkpoint.node.length!==checkpoint.bobs.length||
+  !Array.isArray(checkpoint.equilibrium)||checkpoint.equilibrium.length!==checkpoint.bobs.length)
+  throw Error("Invalid coupled checkpoint");
+ const params=checkpoint.params;
+ configureCoupled(params);
+ bobs=checkpoint.bobs.map(b=>({...b,trail:[]}));
+ node=copyJson(checkpoint.node);equilibrium=copyJson(checkpoint.equilibrium);
+ elapsed=checkpoint.elapsed;dissipated=checkpoint.dissipated;driveWork=checkpoint.driveWork;
+ equilibriumPotential=checkpoint.equilibriumPotential;referenceEnergy=checkpoint.referenceEnergy;
+ energyStartScale=checkpoint.energyStartScale;history=copyJson(checkpoint.history||[]);
+ lastHistory=checkpoint.lastHistory;running=false;frameStart=performance.now();
+ syncUI();updateMetrics();draw();return coupledState();
+}
+let recorder=null,videoStream=null,videoOutput=null,videoMime="",videoTimer=0,videoRaf=0,videoTarget=null;
+let videoMode="landscape",videoState="idle",videoUrl=null;
+function videoStatus(){return {status:videoState,mode:videoMode,mimeType:videoMime,
+ file:videoOutput?{size:videoOutput.size,type:videoOutput.type}:null,
+ supported:!!window.MediaRecorder&&typeof canvas.captureStream==="function"}}
+function updateVideoButtons(){
+ $('videoStart').disabled=videoState==="recording"||videoState==="processing";
+ $('videoStop').disabled=videoState!=="recording";
+ $('videoSave').disabled=videoState!=="ready";
+ $('videoStatus').textContent=videoState==="recording"?"● Recording":videoState==="processing"?"Processing…":
+  videoState==="ready"?"Video ready":videoState==="error"?"Recording unsupported":"Ready";
+}
+function startVideo(mode=$('videoFormat').value){
+ if(videoState==="recording"||videoState==="processing")throw Error("Already recording");
+ if(!["landscape","shorts"].includes(mode))throw Error("Invalid video format");
+ if(!window.MediaRecorder||!canvas.captureStream)throw Error("WebM recording is unsupported in this browser");
+ const mime=["video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"]
+  .find(x=>MediaRecorder.isTypeSupported(x));
+ if(!mime)throw Error("No WebM encoder available");
+ videoMode=mode;videoMime=mime;videoOutput=null;
+ if(videoUrl){URL.revokeObjectURL(videoUrl);videoUrl=null}
+ videoTarget=document.createElement("canvas");
+ videoTarget.width=mode==="shorts"?720:1280;videoTarget.height=mode==="shorts"?1280:720;
+ const output=videoTarget.getContext("2d"),W=videoTarget.width,H=videoTarget.height;
+ const paint=()=>{
+  if(videoState!=="recording")return;
+  output.fillStyle="#081929";output.fillRect(0,0,W,H);
+  const scale=Math.min(W/canvas.width,H/canvas.height);
+  const w=canvas.width*scale,h=canvas.height*scale;
+  output.drawImage(canvas,(W-w)/2,(H-h)/2,w,h);
+  videoRaf=requestAnimationFrame(paint);
+ };
+ videoStream=videoTarget.captureStream(30);
+ recorder=new MediaRecorder(videoStream,{mimeType:mime,videoBitsPerSecond:4000000});
+ const chunks=[];
+ recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data)};
+ recorder.onerror=()=>{videoState="error";videoStream?.getTracks().forEach(x=>x.stop());cancelAnimationFrame(videoRaf);updateVideoButtons()};
+ recorder.onstop=()=>{
+  videoOutput=new Blob(chunks,{type:mime});
+  videoStream?.getTracks().forEach(x=>x.stop());videoState=videoOutput.size?"ready":"error";
+  cancelAnimationFrame(videoRaf);updateVideoButtons()
+ };
+ videoState="recording";recorder.start(500);paint();updateVideoButtons();return videoStatus();
+}
+function stopVideo(){
+ if(videoState!=="recording")throw Error("Video is not recording");
+ videoState="processing";cancelAnimationFrame(videoRaf);recorder.stop();updateVideoButtons();return videoStatus();
+}
+function downloadVideo(){
+ if(videoState!=="ready"||!videoOutput)throw Error("No finished video");
+ videoUrl=URL.createObjectURL(videoOutput);
+ const link=document.createElement("a");link.href=videoUrl;
+ link.download="esbiko-coupled-pendulums-"+videoMode+".webm";
+ document.body.appendChild(link);link.click();link.remove();
+ return {fileName:link.download,bytes:videoOutput.size,downloadRequested:true};
+}
+$('videoStart').addEventListener('click',()=>{try{startVideo()}catch(e){videoState="error";updateVideoButtons();alert(e.message)}});
+$('videoStop').addEventListener('click',()=>{try{stopVideo()}catch(e){console.warn(e)}});
+$('videoSave').addEventListener('click',()=>{try{downloadVideo()}catch(e){console.warn(e)}});
+function runCoupledCommand(action,args={}){
+ switch(action){
+  case "readState":return coupledState();
+  case "configure":return configureCoupled(args);
+  case "hydrate":return hydrateCoupled(args.checkpoint);
+  case "play":running=true;updateStatus();return coupledState();
+  case "pause":running=false;updateStatus();return coupledState();
+  case "reset":resetDynamics(true);return coupledState();
+  case "fire":{const index=Number(args.paneIndex??args.string??selected+1),angle=Number(args.angleDeg??30);
+   if(!Number.isInteger(index)||index<1||index>nB()||!Number.isFinite(angle)||Math.abs(angle)>65)throw Error("Invalid impulse");
+   selected=index-1;exciteSelected(selected);bobs[selected].theta=angle*rad;bobs[selected].startTheta=angle*rad;
+   resetDynamics(true);return coupledState()}
+  case "advance":{const sec=Number(args.seconds);
+   if(!Number.isFinite(sec)||sec<=0||sec>2)throw Error("Advance must be 0–2 s");
+   const steps=Math.ceil(sec/STEP),dt=sec/steps;
+   for(let i=0;i<steps;i++)integrate(dt);updateMetrics();draw();return coupledState()}
+  case "videoCapabilities":return {supported:videoStatus().supported,modes:["landscape","shorts"],
+   formats:["video/webm"],audio:false};
+  case "startVideo":return startVideo(args.mode||"landscape");
+  case "stopVideo":return stopVideo();
+  case "videoStatus":return videoStatus();
+  case "downloadVideo":return downloadVideo();
+  default:throw Error("Unknown coupled-pendulum command "+action);
+ }
+}
+window.esbikoCoupledLab={readState:coupledState,configure:configureCoupled,command:runCoupledCommand,
+ loadCheckpoint:hydrateCoupled};
+window.addEventListener("message",event=>{
+ if(event.source!==window.parent||event.origin!==window.location.origin)return;
+ const message=event.data;
+ if(message?.type!=="esbiko-coupled-control-v1")return;
+ try{
+  const data=runCoupledCommand(message.action,message.args||{});
+  window.parent.postMessage({type:"esbiko-coupled-response-v1",requestId:message.requestId,ok:true,data},event.origin);
+ }catch(e){
+  window.parent.postMessage({type:"esbiko-coupled-response-v1",requestId:message.requestId,ok:false,error:e.message},event.origin);
+ }
+});
+
+applyPreset('chain');wire();resize();requestAnimationFrame(animate);updateVideoButtons();
+</script>
+</body></html>
