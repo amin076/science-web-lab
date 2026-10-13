@@ -1,7 +1,21 @@
+import {COUPLED_SCHEMA} from "../../esbiko-physics/waves/coupledPendulumCordModel.js";
 import { instrumentParameters } from '../../simulations/subjects/physics/optics/microscope-telescope/instrumentModel.js';
 import { projectileParameters } from '../../simulations/subjects/physics/mechanics/simple-projectile/simpleProjectileModel.js';
 import {COMPARISON_PARAMETER_SCHEMA} from "../../simulations/subjects/physics/mechanics/compound-pendulum/comparisonModel.js";
 export const simulationAgentManifest = Object.freeze({
+  "physics.waves.coupled-pendulums-cord": Object.freeze({
+    adapterVersion:"coupled-pendulums-cord.v1",
+    actions:["open","configure","readState","advance","step","play","pause","reset","fire","record","export"],
+    tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session",
+      "control_simulation_session","read_simulation_session","close_simulation_session"],
+    video:true,exportable:true,
+    parameterSchema:COUPLED_SCHEMA,
+    stateSchema:{type:"object",properties:{
+      simulationId:{type:"string"},timeSeconds:{type:"number"},
+      pendulums:{type:"array"},knots:{type:"array"},energy:{type:"object"}
+    }},
+  }),
+
   "physics.waves.string-wave-lab": Object.freeze({
     adapterVersion:"string-wave-lab.browser-v3-video",
     actions:["open","configure","readState","play","pause","reset","record","export"],
