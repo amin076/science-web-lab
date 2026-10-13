@@ -5,7 +5,7 @@ import {COMPARISON_PARAMETER_SCHEMA} from "../../simulations/subjects/physics/me
 export const simulationAgentManifest = Object.freeze({
   "physics.waves.coupled-pendulums-cord": Object.freeze({
     adapterVersion:"coupled-pendulums-cord.v1",
-    actions:["open","configure","readState","advance","step","play","pause","reset","fire","record","export"],
+    actions:["open","configure","readState","play","pause","reset","record","export"],
     tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session",
       "control_simulation_session","read_simulation_session","close_simulation_session"],
     video:true,exportable:true,
