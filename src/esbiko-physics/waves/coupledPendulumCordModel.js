@@ -306,6 +306,7 @@ function appendHistory(){const E=energyParts();history.push({t:elapsed,pend:[...
   driveMode="off";bobs.forEach((b,i)=>{b.startTheta=i===index-1?angleDeg*rad:0});
   rebuildPhysics();return snapshot();
  };
+ const clearHistory=()=>{history=[];lastHistory=elapsed;appendHistory();return snapshot()};
  const getTrajectory=(index=selected+1,limit=120)=>{
   if(!Number.isInteger(index)||index<1||index>nB()||!Number.isInteger(limit)||limit<1||limit>300)throw new RangeError("Invalid trajectory request");
   return history.slice(-limit).map(entry=>({timeSeconds:entry.t,angleRad:entry.angles[index-1],
@@ -316,6 +317,6 @@ function appendHistory(){const E=energyParts();history.push({t:elapsed,pend:[...
  initializeNodes();updateEnergyReference();running=false;
  if(Object.keys(initial).length)configure(initial);
  return {configure,snapshot,checkpoint,restore,advance,fire,getTrajectory,
-  reset:()=>{rebuildPhysics();return snapshot()},getParameters,
+  reset:()=>{rebuildPhysics();return snapshot()},clearHistory,getParameters,
   setRunning:x=>{running=!!x;return snapshot()}};
 }
