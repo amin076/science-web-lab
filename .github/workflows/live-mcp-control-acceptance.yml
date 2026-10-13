@@ -22,3 +22,4 @@ jobs:
         run: |
           node scripts/test-control-mcp-live.mjs
           node scripts/test-wave-control-live.mjs
+          node scripts/test-coupled-pendulum-live.mjs
