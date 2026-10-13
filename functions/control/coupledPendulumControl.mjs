@@ -49,8 +49,7 @@ export function executeCoupledControlCommand(doc,request){
    return {document:doc,mutation:false,result:{paneIndex,points:model.getTrajectory(paneIndex,limit)}};
   }
   case "clear_trails":
-   // The physics checkpoint contains only bounded analytical history.
-   model.reset();detail={cleared:true};next.running=false;break;
+   model.clearHistory();detail={cleared:true};break;
   case "set_camera":{
    if(!plain(request.camera)||Object.keys(request.camera).some(k=>!["x","y","zoom"].includes(k)))
     throw error("INVALID_CAMERA","Invalid camera");
