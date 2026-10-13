@@ -12,7 +12,12 @@ import {HTML_REFERENCE_DESCRIPTOR,createHtmlReferenceDocument,exposeHtmlReferenc
 
 import {WAVE_DESCRIPTOR,createWaveControlDocument,exposeWaveControlState,executeWaveControlCommand} from "./waveStringControl.mjs";
 
+import {COUPLED_DESCRIPTOR,createCoupledControlDocument,exposeCoupledControlState,executeCoupledControlCommand}
+ from "./coupledPendulumControl.mjs";
+
 const adapters=new Map([
+ [COUPLED_DESCRIPTOR.id,Object.freeze({id:COUPLED_DESCRIPTOR.id,descriptor:COUPLED_DESCRIPTOR,
+  create:createCoupledControlDocument,expose:exposeCoupledControlState,execute:executeCoupledControlCommand})],
  [WAVE_DESCRIPTOR.id,Object.freeze({id:WAVE_DESCRIPTOR.id,descriptor:WAVE_DESCRIPTOR,
   create:createWaveControlDocument,expose:exposeWaveControlState,execute:executeWaveControlCommand})],
  [SIMULATION_CONTROL_ID,Object.freeze({
