@@ -597,6 +597,7 @@ function hydrateCoupled(checkpoint){
  const params=checkpoint.params;
  configureCoupled(params);
  bobs=checkpoint.bobs.map(b=>({...b,trail:[]}));
+ lengthPreset=params.lengthPreset;initialPreset=params.initialPreset;
  node=copyJson(checkpoint.node);equilibrium=copyJson(checkpoint.equilibrium);
  elapsed=checkpoint.elapsed;dissipated=checkpoint.dissipated;driveWork=checkpoint.driveWork;
  equilibriumPotential=checkpoint.equilibriumPotential;referenceEnergy=checkpoint.referenceEnergy;
