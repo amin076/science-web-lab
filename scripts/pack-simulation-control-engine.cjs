@@ -26,3 +26,9 @@ buildSync({entryPoints:[path.join(root,"src/esbiko-physics/waves/stringWaveModel
  bundle:true,format:"esm",platform:"node",target:"node22",
  outfile:path.join(out,"stringWaveModel.mjs")});
 console.log("Packed canonical Wave Strings physics model for HTTP/MCP.");
+
+// Shared coupled-pendulum V4 model is also the source of truth for MCP/HTTP.
+buildSync({entryPoints:[path.join(root,"src/esbiko-physics/waves/coupledPendulumCordModel.js")],
+ bundle:true,format:"esm",platform:"node",target:"node22",
+ outfile:path.join(out,"coupledPendulumCordModel.mjs")});
+console.log("Packed Coupled Pendulum Cord canonical engine.");
