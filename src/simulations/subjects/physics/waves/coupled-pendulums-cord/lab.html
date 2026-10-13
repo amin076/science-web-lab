@@ -602,7 +602,7 @@ function hydrateCoupled(checkpoint){
  equilibriumPotential=checkpoint.equilibriumPotential;referenceEnergy=checkpoint.referenceEnergy;
  energyStartScale=checkpoint.energyStartScale;history=copyJson(checkpoint.history||[]);
  lastHistory=checkpoint.lastHistory;running=false;frameStart=performance.now();
- syncUI();updateMetrics();draw();return coupledState();
+ syncUI();updateMetrics();draw();window.__coupledRemoteBound=true;return coupledState();
 }
 let recorder=null,videoStream=null,videoOutput=null,videoMime="",videoTimer=0,videoRaf=0,videoTarget=null;
 let videoMode="landscape",videoState="idle",videoUrl=null;
@@ -688,6 +688,41 @@ function runCoupledCommand(action,args={}){
   default:throw Error("Unknown coupled-pendulum command "+action);
  }
 }
+// Forward hands-on edits to the *same* MCP-created private HTTP session.
+// No secret or token is ever available inside the simulation iframe.
+let remoteUiTimer=null;
+function postRemoteAction(action,args={}){
+ if(!window.__coupledRemoteBound||window.parent===window)return;
+ window.parent.postMessage({type:"esbiko-coupled-ui-v1",action,args},window.location.origin);
+}
+function queueRemoteConfig(){
+ if(!window.__coupledRemoteBound)return;
+ clearTimeout(remoteUiTimer);
+ remoteUiTimer=setTimeout(()=>postRemoteAction("configure",getCoupledParameters()),250);
+}
+document.addEventListener("change",event=>{
+ if(!window.__coupledRemoteBound)return;
+ if(event.target?.id==="chartMode"||event.target?.id==="videoFormat")return;
+ queueRemoteConfig();
+});
+document.addEventListener("pointerup",event=>{
+ if(!window.__coupledRemoteBound)return;
+ if(event.target===canvas||event.target?.matches?.('input[type="range"]'))queueRemoteConfig();
+});
+document.addEventListener("click",event=>{
+ if(!window.__coupledRemoteBound)return;
+ const btn=event.target?.closest?.("button");
+ if(!btn)return;
+ if(btn.id==="playBtn")postRemoteAction(running?"play":"pause");
+ else if(btn.id==="restartBtn"||btn.id==="resetMotion")postRemoteAction("reset");
+ else if(btn.id==="exciteSelected"||btn.id==="exciteBtn")
+  postRemoteAction("fire",{paneIndex:selected+1,angleDeg:bobs[selected].startTheta*deg});
+ else if(["step"].includes(btn.id))postRemoteAction("advance",{seconds:.02});
+ else if(btn.classList.contains("preset")||
+  ["connected","independent","applyLengths","equalLengths","restAll","applyInitial","stopDrive"].includes(btn.id))
+  setTimeout(queueRemoteConfig,40);
+});
+
 window.esbikoCoupledLab={readState:coupledState,configure:configureCoupled,command:runCoupledCommand,
  loadCheckpoint:hydrateCoupled};
 window.addEventListener("message",event=>{
