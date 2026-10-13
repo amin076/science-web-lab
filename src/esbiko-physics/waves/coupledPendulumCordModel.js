@@ -288,6 +288,7 @@ function appendHistory(){const E=energyParts();history.push({t:elapsed,pend:[...
   finiteTree(value);
   configure(value.params);
   bobs=value.bobs.map(b=>({...b,trail:[]}));
+  lengthPreset=value.params.lengthPreset;initialPreset=value.params.initialPreset;
   node=clone(value.node);equilibrium=clone(value.equilibrium);
   elapsed=value.elapsed;referenceEnergy=value.referenceEnergy;energyStartScale=value.energyStartScale;
   equilibriumPotential=value.equilibriumPotential;dissipated=value.dissipated;driveWork=value.driveWork;
