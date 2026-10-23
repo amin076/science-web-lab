@@ -1,11 +1,7 @@
 name: Live Simulation Control API Smoke
 
+# Automatic production checks run inside deploy-mcp-poc.yml after deployment.
 on:
-  workflow_run:
-    workflows:
-      - Deploy Esbiko Hosting
-      - Deploy Esbiko MCP PoC
-    types: [completed]
   workflow_dispatch:
 
 jobs:

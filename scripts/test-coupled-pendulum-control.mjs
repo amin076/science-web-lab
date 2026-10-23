@@ -76,7 +76,7 @@ assert.deepEqual(executeCoupledControlCommand(cp,{action:"advance",seconds:.12})
 
 const html=fs.readFileSync("src/simulations/subjects/physics/waves/coupled-pendulums-cord/lab.html","utf8");
 const react=fs.readFileSync("src/simulations/subjects/physics/waves/coupled-pendulums-cord/index.jsx","utf8");
-const transport=fs.readFileSync("functions/mcp/transport.mjs","utf8");
+const transport=fs.readFileSync("functions/mcp/sessionTools.mjs","utf8");
 for(const v of ["videoStart","videoStop","videoSave","function startVideo","hydrateCoupled","esbiko-coupled-control-v1"])
  assert.ok(html.includes(v),"Missing browser feature "+v);
 assert.ok(react.includes("registerWebMcpTools"));

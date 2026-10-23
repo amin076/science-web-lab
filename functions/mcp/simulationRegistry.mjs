@@ -1,6 +1,7 @@
 /* eslint-env node */
 
 import {createRequire} from "node:module";
+import {SESSION_OPERATION_TOOLS} from "./sessionToolContract.mjs";
 import {HTML_REFERENCE_DESCRIPTOR} from "../control/htmlReferenceControl.mjs";
 
 const require = createRequire(import.meta.url);
@@ -14,7 +15,7 @@ const HTML_STANDARD_REFERENCE=Object.freeze({
  description:"Portable HTML scientific simulation reference with standalone API, MCP sessions, browser video, and responsive layout.",
  domain:"physics",topic:"mechanics",route:"/examples/html-simulation/index.html",
  runUrl:BASE_URL+"/examples/html-simulation/index.html",
- integrationLevel:"adapted",tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"],
+ integrationLevel:"adapted",tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session",...SESSION_OPERATION_TOOLS,"read_simulation_session","close_simulation_session"],
  stateSync:true,video:true,exportable:true,adapterVersion:"esbiko-html-control.v1",actions:["open","configure","readState","play","pause","reset","record","export"],parameterSchema:HTML_REFERENCE_DESCRIPTOR.schema,
  stateSchema:{type:"object",properties:{
   position:{type:"array",items:{type:"number"},minItems:3,maxItems:3},
@@ -141,7 +142,8 @@ export function getSimulationProfile(id) {
     route,
     runUrl: new URL(route, BASE_URL).toString(),
     integrationLevel: manifest ? "adapted" : "universal",
-    tools: manifest?.tools || ["open_science_simulation"],
+    tools: [...new Set((manifest?.tools || ["open_science_simulation"]).flatMap(name =>
+      name === "control_simulation_session" ? SESSION_OPERATION_TOOLS : [name]))],
     stateSync: manifest ? manifest.actions?.includes("configure") === true : false,
     video: manifest?.video === true,
     exportable: manifest?.exportable === true,

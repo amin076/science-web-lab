@@ -39,7 +39,7 @@ const handshake=await rpc("initialize",{protocolVersion:protocol,capabilities:{}
 protocol=handshake.protocolVersion||protocol;
 const catalog=await rpc("tools/list",{});
 for(const tool of ["open_science_simulation","get_simulation_control_schema","create_simulation_session",
- "control_simulation_session","read_simulation_session","close_simulation_session"])
+ "configure_simulation_session","advance_simulation_session","read_simulation_session","close_simulation_session"])
  assert.ok(catalog.tools.some(entry=>entry.name===tool),"Missing "+tool);
 const opened=await call("open_science_simulation",{simulationId:id,parameters:{
  visibleCount:4,s4_mode:"dual",s4_shape:"composite",s4_rightShape:"ricker"}});
@@ -47,7 +47,7 @@ assert.equal(opened.simulation.id,id);
 assert.equal(opened.simulation.video,true);
 const schema=await call("get_simulation_control_schema",{simulationId:id});
 assert.equal(schema.capabilities.id,id);
-assert.ok(schema.capabilities.commands.includes("fire"));
+assert.ok(schema.capabilities.tools.includes("excite_simulation_session"));
 const httpSchema=await http("/api/v1/control/schema?simulationId="+id);
 assert.ok(httpSchema.availableAdapters.includes(id));
 let creds;
@@ -72,16 +72,16 @@ try{
  assert.equal(fromMcp.state.strings[3].rightShape,"gaussian");
  assert.ok(Math.abs(fromMcp.state.strings[3].speed-6)<1e-10);
  // MCP advances deterministic physical time; HTTP sees the identical clock.
- const advance=await call("control_simulation_session",{...keys,action:"advance",seconds:.65,expectedRevision:1});
+ const advance=await call("advance_simulation_session",{...keys,seconds:.65,expectedRevision:1});
  assert.equal(advance.revision,2);
  const state=await http("/api/v1/control/sessions/"+keys.sessionId+"?checkpoint=1",{
   headers:{"X-Esbiko-Control-Token":keys.token}});
  assert.equal(state.revision,2);
  assert.ok(Math.abs(state.elapsedSeconds-.65)<1e-9);
  assert.equal(state.checkpoint.lanes.length,4);
- const pulse=await call("control_simulation_session",{...keys,action:"fire",paneIndex:4,expectedRevision:2});
+ const pulse=await call("excite_simulation_session",{...keys,paneIndex:4,expectedRevision:2});
  assert.equal(pulse.revision,3);
- const waveform=await call("control_simulation_session",{...keys,action:"get_trajectory",paneIndex:4,limit:65});
+ const waveform=await call("get_simulation_trajectory",{...keys,paneIndex:4,limit:65});
  assert.equal(waveform.result.pointsM.length,65);
  assert.equal(waveform.revision,3);
  // Unauthorized HTTP reads must not reveal the session.

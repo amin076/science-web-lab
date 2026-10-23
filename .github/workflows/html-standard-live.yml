@@ -1,9 +1,8 @@
 name: Live HTML Standard Acceptance
+# Automatic production checks run inside deploy-mcp-poc.yml after deployment.
 on:
-  workflow_run:
-    workflows: [Deploy Esbiko Hosting]
-    types: [completed]
   workflow_dispatch:
+
 jobs:
   html-live:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}

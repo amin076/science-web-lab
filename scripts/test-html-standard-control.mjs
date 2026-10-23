@@ -73,7 +73,7 @@ const html=fs.readFileSync("examples/html-simulation/main.js","utf8");
 assert.ok(html.includes("createHtmlReferenceProjectile"),"UI must use canonical physics model");
 assert.ok(html.includes("loadCheckpoint"),"UI must attach remote checkpoint");
 assert.ok(html.includes("setCommandHandler"),"UI actions must forward to same remote session");
-const transport=fs.readFileSync("functions/mcp/transport.mjs","utf8");
+const transport=fs.readFileSync("functions/mcp/sessionTools.mjs","utf8");
 assert.ok(transport.includes("createControlSession(parameters||{},simulationId)"),
  "MCP session creation must route the requested ID");
 console.log("HTML FIVE-GATE ENGINE / HTTP / MCP CONTRACT PASS");

@@ -42,7 +42,7 @@ console.log("MCP initialize",protocolVersion);
 const catalog=await rpc("tools/list",{});
 const names=(catalog?.tools||[]).map(x=>x.name);
 for(const name of ["get_simulation_control_schema","create_simulation_session",
- "control_simulation_session","read_simulation_session","close_simulation_session"])
+ "configure_simulation_session","advance_simulation_session","read_simulation_session","close_simulation_session"])
  assert.ok(names.includes(name),"Missing public MCP tool "+name);
 const openTool=catalog.tools.find(x=>x.name==="open_science_simulation");
 assert(openTool,"Missing open_science_simulation");
@@ -84,12 +84,12 @@ try {
  const before=await call("read_simulation_session",credentials);
  assert.equal(before.elapsedSeconds,0);
  assert.equal(before.state.pendulums.length,2);
- const update=await call("control_simulation_session",{
-  ...credentials,action:"configure",parameters:{p2_initialAngleDeg1:155.2},
+ const update=await call("configure_simulation_session",{
+  ...credentials,parameters:{p2_initialAngleDeg1:155.2},
  });
  assert.ok(update.revision>0);
- const moved=await call("control_simulation_session",{
-  ...credentials,action:"advance",seconds:.2,
+ const moved=await call("advance_simulation_session",{
+  ...credentials,seconds:.2,
  });
  assert.ok(Math.abs(moved.result.elapsedSeconds-.2)<1e-7);
  const after=await call("read_simulation_session",credentials);

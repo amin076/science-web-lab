@@ -70,7 +70,7 @@ assert.deepEqual(e1.result.state,e2.result.state);
 
 const browser=fs.readFileSync("src/simulations/subjects/physics/waves/string-wave-lab/index.jsx","utf8");
 const html=fs.readFileSync("src/simulations/subjects/physics/waves/string-wave-lab/wave-lab.html","utf8");
-const transport=fs.readFileSync("functions/mcp/transport.mjs","utf8");
+const transport=fs.readFileSync("functions/mcp/sessionTools.mjs","utf8");
 assert.ok(browser.includes("wavePhysicsSource"),"Browser must load canonical physics");
 assert.ok(browser.includes("remoteSessionId"),"Embedded MCP session bridge missing");
 assert.ok(html.includes("window.esbikoWavePhysics.sample"),"Canvas sampler not shared");
@@ -78,5 +78,5 @@ assert.ok(html.includes("action==='hydrate'"),"Browser checkpoint restore missin
 assert.ok(html.includes("function startVideo"),"WebM recorder missing");
 assert.ok(transport.includes('z.union([z.number(),z.boolean(),z.string()])'),
  "MCP session tool must accept string-valued physics parameters");
-assert.ok(transport.includes('"get_trajectory","fire"'),"MCP needs pulse firing action");
+assert.ok(transport.includes('action:"fire"')&&transport.includes('action:"get_trajectory"'),"MCP needs pulse firing action");
 console.log("WAVE STRINGS HEADLESS SCIENCE + HTTP/MCP ADAPTER CONTRACT PASS");

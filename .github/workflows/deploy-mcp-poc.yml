@@ -62,6 +62,9 @@ jobs:
       - name: Verify persistent control storage and legacy sessions
         run: node scripts/test-control-storage.mjs
 
+      - name: Verify individual MCP operations and review annotations
+        run: node scripts/test-session-tools.mjs
+
       - name: Write Firebase service account
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -74,4 +77,10 @@ jobs:
         run: npx firebase-tools@latest deploy --only functions:mcp,functions:platformApi,functions:simulationControlApi --project sience-web-app --non-interactive
 
       - name: Verify all four live MCP and HTTP session adapters
-        run: node scripts/test-control-storage-live.mjs
+        run: |
+          node scripts/test-control-storage-live.mjs
+          node scripts/test-control-api-live.mjs
+          node scripts/test-control-mcp-live.mjs
+          node scripts/test-wave-control-live.mjs
+          node scripts/test-coupled-pendulum-live.mjs
+          node scripts/test-html-standard-live.mjs

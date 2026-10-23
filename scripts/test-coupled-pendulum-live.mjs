@@ -39,7 +39,7 @@ const handshake=await rpc("initialize",{protocolVersion:version,capabilities:{},
 version=handshake.protocolVersion||version;
 const list=await rpc("tools/list",{});
 for(const name of ["open_science_simulation","get_simulation_control_schema",
- "create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"])
+ "create_simulation_session","configure_simulation_session","advance_simulation_session","read_simulation_session","close_simulation_session"])
  assert.ok(list.tools.some(t=>t.name===name),"Missing MCP tool "+name);
 const opened=await tool("open_science_simulation",{simulationId:id,parameters:{
  count:10,connected:true,lengthPreset:"equal",initialPreset:"middle"}});
@@ -71,16 +71,16 @@ try{
  assert.equal(s1.revision,1);
  assert.equal(s1.state.pendulums[5].lengthM,1.1);
  assert.equal(s1.state.pendulums[5].massKg,.23);
- const advance=await tool("control_simulation_session",{...auth,action:"advance",seconds:.3,expectedRevision:1});
+ const advance=await tool("advance_simulation_session",{...auth,seconds:.3,expectedRevision:1});
  assert.equal(advance.revision,2);
  const s2=await http(url+"?checkpoint=1",{headers:{"X-Esbiko-Control-Token":credential.token}});
  assert.equal(s2.revision,2);assert.ok(Math.abs(s2.elapsedSeconds-.3)<1e-8);
  assert.equal(s2.checkpoint.node.length,10);
  assert.ok(Number.isFinite(s2.state.energy.ledgerErrorJ));
- const fired=await tool("control_simulation_session",{...auth,action:"fire",paneIndex:5,angleDeg:25,
+ const fired=await tool("excite_simulation_session",{...auth,paneIndex:5,angleDeg:25,
   expectedRevision:2});
  assert.equal(fired.revision,3);
- const traj=await tool("control_simulation_session",{...auth,action:"get_trajectory",paneIndex:5,limit:80});
+ const traj=await tool("get_simulation_trajectory",{...auth,paneIndex:5,limit:80});
  assert.equal(traj.revision,3);
  assert.ok(Array.isArray(traj.result.points));
  const invalid=await fetch(base+url,{headers:{"X-Esbiko-Control-Token":"f".repeat(64)},

@@ -1,16 +1,8 @@
 name: Live Esbiko MCP Smoke Test
 
+# Automatic production checks run inside deploy-mcp-poc.yml after deployment.
 on:
-  push:
-    branches:
-      - main
-      - "feature/esbiko-*"
-    paths:
-      - "functions/mcp/**"
-      - "functions/index.js"
-      - "src/platform/agent/**"
-      - "scripts/generate-platform-catalog.cjs"
-      - ".github/workflows/mcp-live-smoke.yml"
+  workflow_dispatch:
 
 concurrency:
   group: esbiko-mcp-live-smoke

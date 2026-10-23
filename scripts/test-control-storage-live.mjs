@@ -22,10 +22,16 @@ async function call(name,args){
   return result.structuredContent;
 }
 const tools=(await rpc("tools/list")).tools;
+assert.ok(!tools.some(tool=>tool.name==="control_simulation_session"),"Generic executor must not be exposed");
+for(const tool of tools){
+  for(const key of ["readOnlyHint","destructiveHint","openWorldHint"])
+    assert.equal(typeof tool.annotations?.[key],"boolean",tool.name+" missing "+key);
+  assert.equal(tool.inputSchema.properties.action,undefined,"Operations must be separate tools");
+}
 const open=tools.find(tool=>tool.name==="open_science_simulation");
 assert.equal(open.inputSchema.properties.simulationId.enum,undefined);
 for(const name of ["get_simulation_control_schema","create_simulation_session",
-  "control_simulation_session","read_simulation_session","close_simulation_session"])
+  "configure_simulation_session","advance_simulation_session","read_simulation_session","close_simulation_session"])
   assert.ok(tools.some(tool=>tool.name===name),"Missing "+name);
 
 const cases=[
@@ -41,8 +47,8 @@ for(const [simulationId,parameters] of cases){
     credentials={sessionId:created.remoteSession.sessionId,token:created.remoteSession.token};
     const before=await call("read_simulation_session",credentials);
     assert.equal(before.elapsedSeconds,0);
-    await call("control_simulation_session",{...credentials,action:"configure",parameters});
-    await call("control_simulation_session",{...credentials,action:"advance",seconds:0.2});
+    await call("configure_simulation_session",{...credentials,parameters});
+    await call("advance_simulation_session",{...credentials,seconds:0.2});
     const after=await call("read_simulation_session",credentials);
     assert.ok(Math.abs(after.elapsedSeconds-0.2)<1e-7);
     assert.equal(after.revision,2);

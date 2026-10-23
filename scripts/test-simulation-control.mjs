@@ -79,7 +79,7 @@ const a=executeSimulationCommand(current,{action:"advance",seconds:0.15}).result
 const b=executeSimulationCommand(current,{action:"advance",seconds:0.15}).result;
 assert.deepEqual(a.state,b.state);
 const apiText=fs.readFileSync("functions/control/http.mjs","utf8");
-const mcpText=fs.readFileSync("functions/mcp/transport.mjs","utf8");
+const mcpText=fs.readFileSync("functions/mcp/sessionTools.mjs","utf8");
 for(const name of ["createControlSession","commandControlSession","readControlSession"])
   assert.ok(apiText.includes(name)&&mcpText.includes(name),name+" must serve both transports");
 console.log("Simulation Control API scientific + checkpoint + validation + state readback + commands + shared HTTP/MCP service PASS");

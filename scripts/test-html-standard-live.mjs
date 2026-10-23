@@ -43,7 +43,7 @@ const hello=await rpc("initialize",{protocolVersion:proto,capabilities:{},
 proto=hello.protocolVersion||proto;
 const catalog=await rpc("tools/list",{});
 for(const toolName of ["open_science_simulation","get_simulation_control_schema",
- "create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"]){
+ "create_simulation_session","configure_simulation_session","advance_simulation_session","read_simulation_session","close_simulation_session"]){
  assert.ok(catalog.tools.some(t=>t.name===toolName),"Missing MCP tool "+toolName);
 }
 const createTool=catalog.tools.find(x=>x.name==="create_simulation_session");
@@ -67,7 +67,7 @@ try {
  const first=await call("read_simulation_session",keys);
  assert.equal(first.elapsedSeconds,0);assert.equal(first.state.position[1],5);
  assert.equal(first.state.parameters.startYM,5);
- const moved=await call("control_simulation_session",{...keys,action:"advance",seconds:1,expectedRevision:first.revision});
+ const moved=await call("advance_simulation_session",{...keys,seconds:1,expectedRevision:first.revision});
  assert.equal(moved.revision,1);
  const second=await http("/api/v1/control/sessions/"+keys.sessionId+"?checkpoint=1",{
   headers:{"X-Esbiko-Control-Token":keys.token}});

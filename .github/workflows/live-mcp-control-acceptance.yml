@@ -1,9 +1,7 @@
 name: Live MCP Control Acceptance
 
+# Automatic production checks run inside deploy-mcp-poc.yml after deployment.
 on:
-  workflow_run:
-    workflows: [Deploy Esbiko MCP PoC]
-    types: [completed]
   workflow_dispatch:
 
 jobs:
