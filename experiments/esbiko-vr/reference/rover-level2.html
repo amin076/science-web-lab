@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#071523">
+<title>آزمایشگاه روباتیک اسبیکو | روبات چهارچرخ با فیزیک Rapier</title>
+<style>
+:root{color-scheme:dark;--ink:#e8f3fa;--muted:#9bb1c0;--soft:#7993a8;--accent:#50d8c5;--blue:#5aa8ff;--line:#254157;--panel:#102738eb;--bg:#081824}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",Arial,sans-serif;font-size:14px}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #62e8d1;outline-offset:3px}.shell{max-width:1700px;margin:auto;padding:18px clamp(10px,2.4vw,35px) 32px}.top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:17px}.brand{display:flex;align-items:center;gap:14px}.logo{display:grid;place-items:center;width:48px;height:48px;flex:none;border-radius:16px;background:linear-gradient(140deg,#4ee9d5,#3e86ca);color:#072a3b;font-size:26px;font-weight:900;box-shadow:0 5px 30px #36e7cb20}.eyebrow{font-size:10px;letter-spacing:1.7px;color:var(--accent);font-weight:700}.brand h1{font-size:clamp(19px,2vw,26px);margin:3px 0 1px;letter-spacing:-.7px}.brand p{margin:0;font-size:11px;color:var(--muted)}.tag{border:1px solid #2c6b68;border-radius:99px;padding:9px 13px;font-size:12px;color:#9debdc;background:#113535c9}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start;direction:ltr}.main,.side{direction:rtl;min-width:0}.scene-card{border:1px solid #2c5064;border-radius:22px;overflow:hidden;background:#081c2e;box-shadow:0 22px 50px #020b144d}.scene-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 17px;background:#0e2c3b;border-bottom:1px solid #27485b;flex-wrap:wrap}.scene-top strong{font-size:13px}.pill{font-size:11px;border-radius:9px;color:#b9d3e1;padding:5px 9px;background:#17394a}.pill.good{color:#8af2ce;background:#16493d}.pill.warn{color:#ffd8a4;background:#503c25}.viewport{width:100%;height:clamp(360px,58vh,710px);position:relative;overflow:hidden;touch-action:none;background:radial-gradient(ellipse at 50% 36%,#143b4b,#051423 76%)}canvas#stage{display:block;width:100%;height:100%;touch-action:none}.overlay{position:absolute;inset-block-start:16px;inset-inline-start:17px;pointer-events:none;background:#081e2cbf;border:1px solid #315366;border-radius:12px;padding:11px 13px;max-width:235px;backdrop-filter:blur(9px)}.overlay h3{font-size:12px;color:#8ae8d7;margin:0 0 6px}.overlay p{font-size:11px;color:#bfd5df;margin:4px 0;line-height:1.6}.tiny{font-size:11px;color:#8daab8}.legend{position:absolute;bottom:15px;left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;pointer-events:none}.legend span{font-size:11px;padding:7px 10px;border-radius:10px;background:#092333c7;border:1px solid #234a60}.startup{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#09202de9;z-index:5;text-align:center;padding:20px}.startup[hidden]{display:none}.start-content{max-width:410px}.loader{width:35px;height:35px;margin:auto auto 18px;border-radius:50%;border:3px solid #34717b;border-top-color:#5ff4d8;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.startup h2{font-size:18px}.startup p{line-height:1.9;color:#b5cbd6;font-size:12px}.startup button{background:#165967;color:#fff;padding:10px;border:1px solid #419eaa;border-radius:10px;margin-top:8px}.toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:13px 14px;background:#102e3e;border-top:1px solid #28485b}.btn{border-radius:10px;padding:11px 15px;border:1px solid #3c6277;color:#cce8f1;background:#15374b;font-weight:700;font-size:12px}.btn.primary{background:linear-gradient(130deg,#55e6c8,#39acc6);color:#042538;border:0}.btn:hover{filter:brightness(1.11)}.btn:disabled{opacity:.45;cursor:not-allowed}.toolbar .spacer{flex:1}.resetview{font-size:12px}.card{background:linear-gradient(145deg,#112e40,#0d2432);border:1px solid #28495f;border-radius:17px;padding:16px;margin-bottom:12px;box-shadow:0 9px 20px #03101938}.card h2{font-size:14px;letter-spacing:-.4px;margin:0 0 6px;display:flex;align-items:center;gap:8px}.card small{font-size:11px;color:var(--muted);line-height:1.65;display:block;margin-bottom:17px}.field{margin:15px 0}.field-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;margin-bottom:8px}.field-head label{color:#c4dbe3}.val{direction:ltr;unicode-bidi:isolate;color:#70e4d1;font-size:12px;font-weight:bold}.range{appearance:none;display:block;width:100%;height:6px;border-radius:9px;background:linear-gradient(to left,#1a4554,#389b9d);accent-color:#66ddcd;cursor:pointer}.range::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;border:3px solid #164558;background:#65eacb;box-shadow:0 1px 8px #46e6cc60}.scale{display:flex;justify-content:space-between;margin-top:7px;color:#7494a8;font-size:10px;direction:ltr}.presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.preset{border:1px solid #315566;background:#173b4b;border-radius:9px;padding:9px 3px;color:#c7d9e2;font-size:11px}.preset:focus,.preset:hover{border-color:#59c8ba}.dashboard{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin:13px 0}.metric{padding:14px 16px;border-radius:15px;border:1px solid #285061;background:#102a39}.metric .t{font-size:11px;color:#9fb8c5}.metric .n{display:block;direction:ltr;text-align:right;font-size:clamp(19px,2vw,26px);font-weight:750;color:#f1fdff;margin:7px 0 3px}.metric .unit{font-size:10px;color:#83a0b2}.section-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.info-card{border:1px solid #274758;background:#0d2635;border-radius:16px;padding:16px;min-width:0}.info-card h3{font-size:13px;margin:0 0 11px}.eq{direction:ltr;text-align:center;padding:11px 5px;border-radius:10px;background:#091e2c;font-family:Consolas,monospace;color:#9be8e0;font-size:clamp(11px,1.3vw,14px);margin:11px 0}.stat{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dashed #274354;font-size:12px;color:#b2cbd4}.stat b{color:#e5fafa;direction:ltr;unicode-bidi:isolate}.note{color:#91aebb;font-size:11px;line-height:1.9;margin:8px 0 0}.chart{width:100%;height:135px;display:block}.foot{margin-top:12px;border:1px solid #214250;border-radius:12px;padding:12px 15px;color:#a4bac7;font-size:11px;line-height:1.95;background:#0b2330}.foot a{color:#6be7d4;text-decoration:none}kbd{display:inline-block;padding:1px 5px;background:#244252;border:1px solid #345f74;border-radius:4px;color:#dcebf3}.status-msg{margin:9px 0 0;color:#e4d4b1;font-size:11px;min-height:18px;line-height:1.7}
+@media(max-width:1030px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{margin:0}.viewport{height:clamp(350px,52vh,630px)}}@media(max-width:650px){.layout{display:flex;flex-direction:column}.main{display:contents}.scene-card{order:1;width:100%}.side{order:2;width:100%}.dashboard{order:3;width:100%}.section-grid{order:4;width:100%}.foot{order:5;width:100%}.shell{padding:12px 9px 24px}.brand h1{font-size:18px}.tag{font-size:10px}.layout,.side,.section-grid{display:block}.side .card{margin:12px 0}.dashboard{grid-template-columns:1fr 1fr;gap:8px}.metric{padding:12px}.viewport{height:420px}.overlay{max-width:170px;padding:9px;top:10px;right:10px}.overlay p{font-size:10px}.legend{bottom:10px;left:10px;right:10px}.legend span{font-size:10px}.info-card{margin:10px 0}.btn{padding:11px 12px}.toolbar .spacer{display:none}}
+
+/* Level 2: visible controller and sensor blocks */
+.controller-panel{margin:14px 0;padding:18px;border:1px solid #31596a;border-radius:18px;background:linear-gradient(145deg,#102f3e,#0c2432)}
+.controller-panel h2{font-size:15px;margin:0 0 6px}.controller-panel p{font-size:12px;color:#b0c8d2;line-height:1.9}
+.sensor-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:14px 0}
+.sensor-tile{min-width:0;border-radius:12px;padding:12px;background:#071e2e;border:1px solid #264859}
+.sensor-tile .sensor-name{font-size:11px;color:#9dbac5;line-height:1.6}
+.sensor-tile strong{display:block;direction:ltr;text-align:right;color:#e9f9fb;font-size:18px;margin:5px 0;white-space:nowrap}
+.sensor-tile .sensor-unit{font-size:10px;color:#7e9cae}
+.controller-state{border-inline-start:3px solid #4fdcc5;padding:10px 13px;border-radius:8px;background:#0a2735;color:#caf4ea;font-size:12px;line-height:1.8}
+.program-output{padding:12px 14px;margin:12px 0;border:1px solid #24495b;border-radius:10px;background:#071a28;direction:rtl;white-space:pre-wrap;line-height:2;font-size:12px;color:#a9e4d5;font-family:Tahoma,"Segoe UI",Arial,sans-serif}
+.event-log{margin:8px 0 0;padding:9px 15px;list-style:none;border-radius:11px;background:#0b2431;border:1px solid #294758;max-height:144px;overflow:auto}
+.event-log li{font-size:11px;color:#adcbd8;border-bottom:1px solid #254253;padding:7px 0;line-height:1.6}.event-log li:last-child{border:0}
+.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.mode-btn{border:1px solid #426377;background:#153747;border-radius:10px;min-height:45px;padding:10px 7px;color:#deeff3;font-size:12px}
+.mode-btn[aria-pressed=true]{border-color:#7aedd7;background:#1d5b58;color:#edfffb;box-shadow:inset 0 0 0 1px #3dbfa5}
+.rule-card{border:1px solid #315467;border-radius:12px;padding:12px;margin:11px 0;background:#0b2939}
+.rule-card .rule-title{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:7px;font-size:12px;color:#d7f0ee}
+.rule-card .rule-sub{font-size:11px;color:#9eb8c4;line-height:1.85;margin:0 0 7px}
+.rule-card input[type=checkbox]{width:18px;height:18px;accent-color:#51d5b9;vertical-align:middle}
+.rule-card .field{margin:10px 0}.rule-card .field-head{font-size:11px}
+.controller-note{font-size:11px;line-height:1.95;color:#9fbec9;margin-top:12px}
+.kpi-legend{display:inline-flex;align-items:center;gap:12px;font-size:11px;color:#a9c3d1;flex-wrap:wrap}
+.kpi-legend i{display:inline-block;width:16px;height:3px;vertical-align:middle;margin-left:4px}
+@media(max-width:1100px){.sensor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.sensor-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.sensor-tile{padding:10px}.sensor-tile strong{font-size:17px}.controller-panel{order:4;width:100%;margin:10px 0;padding:14px}.section-grid{order:5}.foot{order:6}}
+/* Engineering feedback: hardware -> controller -> physics */
+.chain{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:14px 0}
+.chain-box{padding:13px 12px;border:1px solid #325969;background:#0d2b3a;border-radius:13px;min-width:0}
+.chain-box em{font-style:normal;font-size:10px;letter-spacing:0;color:#67decf}
+.chain-box b{display:block;font-size:12px;margin:7px 0;line-height:1.6}
+.chain-box span{font-size:11px;color:#a4c2cb;line-height:1.7;display:block;overflow-wrap:anywhere}
+.motor-table{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:14px 0}
+.motor-tile{border:1px solid #285469;background:#091f2f;border-radius:11px;padding:11px 12px;min-width:0}
+.motor-tile .label{font-size:11px;color:#adcad4;line-height:1.6}
+.motor-tile strong{display:block;font-size:19px;direction:ltr;text-align:right;color:#f0fbff;margin-top:8px;overflow-wrap:anywhere}
+.motor-tile small{display:block;font-size:10px;color:#8bb0c0;line-height:1.7;margin:4px 0 0}
+.motor-tile.highlight{border-color:#40b9a7;background:#103c40}
+.drive-selector{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.drive-btn{background:#133849;border:1px solid #41677a;color:#d3eaee;border-radius:12px;padding:12px 8px;font-size:12px;line-height:1.7}
+.drive-btn[aria-pressed=true]{background:#17665d;border-color:#62e2c9;color:white;box-shadow:inset 0 0 0 1px #44bba9}
+.mode-detail{font-size:11px;color:#b3d2de;line-height:1.85;background:#081f2d;border-radius:9px;padding:11px 12px;border:1px solid #294c5c}
+.field[hidden],.motor-mode-field[hidden]{display:none!important}
+.lesson{border:1px solid #3b6870;border-radius:14px;padding:14px;margin:14px 0;background:#0c3038}
+.lesson h3{margin:0 0 8px;font-size:13px;color:#aaf5e4}.lesson p{margin:5px 0;color:#c2dce3;font-size:12px;line-height:1.9}
+@media(max-width:1050px){.motor-table{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.chain{grid-template-columns:1fr}.chain-box{padding:11px}.motor-table{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<!-- Visual upgrade: coil-over springs and tire tread are decorative; original Rapier physics retained. -->
+<!-- Fixed: Rapier 0.21.0 exports dist/rapier.mjs, not rapier.es.js at package root. -->
+</head>
+<body>
+<div class="shell">
+<header class="top"><div class="brand"><div class="logo">E</div><div><div class="eyebrow">ESBIKO · ROBOTICS ENGINEERING LAB</div><h1>آزمایشگاه مهندسی روبات چهارچرخ</h1><p>نسخهٔ بهبودیافتهٔ بصری · پیوند سخت‌افزار، کنترل‌کننده و حرکت واقعی با «Rapier»</p></div></div><div class="tag">سطح دوم · فرمان سرعت و گشتاور</div></header><p class="note" style="margin-bottom:14px">نسخهٔ بصری جدید: لاستیک آج‌دار، بدنهٔ جزئیات‌دار و نورپردازی کارگاهی. کمک‌فنرها نمایشی‌اند؛ مدل فیزیکی تعلیق اضافه نشده است.</p>
+<div class="layout">
+<main class="main">
+<div class="scene-card">
+<div class="scene-top"><strong>محیط آزمایش فیزیکی سه‌بعدی</strong><span id="engine-badge" class="pill">در حال بارگذاری موتور فیزیک…</span></div>
+<div class="viewport" id="viewport"><canvas id="stage" aria-label="نمای سه‌بعدی روبات چهارچرخ روی سطح شیب‌دار"></canvas>
+<div class="overlay"><h3>● طراحی مکانیکی + کنترل برنامه‌ریزی‌شده</h3><p>چهار چرخ و مفصل واقعی فیزیکی؛ اکنون می‌توانی بین کنترل سرعت و اعمال گشتاور به چرخ‌ها جابه‌جا شوی. حد گشتاور موتور همیشه پابرجاست.</p><p>برای تغییر زاویهٔ دوربین، با ماوس یا انگشت تصویر را بچرخانید.</p></div>
+<div class="legend"><span>● سبز: شاسی و مدار کنترل</span><span>● آبی: مسیر صعود ↗</span><span>🖱️ چرخاندن / اسکرول: بزرگ‌نمایی</span></div>
+<div class="startup" id="startup"><div class="start-content"><div class="loader" id="loader"></div><h2 id="startup-title">راه‌اندازی موتورهای سه‌بعدی و فیزیک</h2><p id="startup-desc">در حال دریافت کتابخانه‌های «Rapier» و «Three.js» هستیم. اینترنت برای بارگذاری اولیه لازم است؛ محاسبات پس از آن روی دستگاه شما انجام می‌شود.</p><button id="retry" hidden type="button">تلاش دوباره</button></div></div>
+</div>
+<div class="toolbar"><button type="button" class="btn primary" id="play" disabled>▶ شروع آزمایش</button><button type="button" class="btn" id="pause" disabled>Ⅱ مکث</button><button type="button" class="btn" id="reset" disabled>↻ آزمایش مجدد</button><span class="spacer"></span><button type="button" class="btn resetview" id="view">◉ بازنشانی دوربین</button></div>
+</div>
+<div class="dashboard" aria-live="polite"><div class="metric"><div class="t">پیشروی به‌سمت بالای شیب</div><span id="distance" class="n">۰٫۰۰</span><span class="unit">متر (نسبت به نقطهٔ شروع)</span></div><div class="metric"><div class="t">سرعت واقعی روبات</div><span id="speed-read" class="n">۰٫۰۰</span><span class="unit">متر بر ثانیه</span></div><div class="metric"><div class="t">زمان آزمایش</div><span id="time" class="n">۰٫۰</span><span class="unit">ثانیه</span></div><div class="metric"><div class="t">وضعیت حرکت</div><span id="motion" class="n" style="font-size:17px">آماده</span><span class="unit">بر مبنای حرکت شاسی</span></div></div>
+
+<section class="controller-panel" aria-labelledby="chain-heading">
+ <h2 id="chain-heading">🔌 روبات واقعی چگونه فرمان می‌گیرد؟</h2>
+ <p>در هر آزمایش، مشخصات مکانیکی با فرمان لحظه‌ای برنامه متفاوت‌اند. فرمان به مفصل‌ها یا بدنهٔ چرخ اعمال می‌شود و موتور فیزیک حرکت حاصل را محاسبه می‌کند.</p>
+ <div class="chain">
+  <div class="chain-box"><em>۱ · سخت‌افزار</em><b>موتور و سازه</b><span id="hardware-summary">جرم، شعاع چرخ، سقف گشتاور</span></div>
+  <div class="chain-box"><em>۲ · کنترل‌کننده</em><b>دستور به موتور</b><span id="drive-summary">انتخاب بین فرمان سرعت و گشتاور</span></div>
+  <div class="chain-box"><em>۳ · واقعیت فیزیکی</em><b>حسگرها و حرکت</b><span id="outcome-summary">سرعت واقعی، لغزش و میزان صعود</span></div>
+ </div>
+ <div class="motor-table" aria-live="off">
+  <div class="motor-tile"><span class="label">حد گشتاور موتور (سخت‌افزار)</span><strong id="cap-read">—</strong><small>نیوتن‌متر برای هر موتور</small></div>
+  <div class="motor-tile highlight"><span class="label">فرمان نهایی کنترل‌کننده</span><strong id="actuation-read">—</strong><small id="actuation-unit">فرمان سرعت محیطی چرخ</small></div>
+  <div class="motor-tile"><span class="label">اعمال گشتاور در حالت گشتاور</span><strong id="torque-applied-read">—</strong><small id="torque-explain">نیوتن‌متر به هر چرخ؛ در حالت سرعت قابل استخراج نیست</small></div>
+  <div class="motor-tile"><span class="label">محدودیت سخت‌افزار</span><strong id="limit-read">—</strong><small>فرمان گشتاور به محدودهٔ موتور محدود می‌شود</small></div>
+ </div>
+ <div class="lesson"><h3>🧪 تمرین: تفاوت فرمان با توان واقعی</h3>
+ <p>با جرم و شیب یکسان، ابتدا «فرمان سرعت» را روی ۱٫۲ متر بر ثانیه امتحان کن. سپس روی «فرمان گشتاور» برو، گشتاور را تغییر بده و سرعت واقعی را مقایسه کن. گشتاور ناکافی یا اصطکاک کم با تغییر عدد هدف ناپدید نمی‌شود.</p></div>
+</section>
+<section class="controller-panel" id="controller-panel" aria-labelledby="controller-title">
+  <h2 id="controller-title">🧠 سطح دوم: حسگر، برنامه و فرمان موتور</h2>
+  <p>این پنج مقدار، <b>حسگرهای مجازی ایده‌آل</b> هستند و مستقیم از وضعیت فیزیکی روبات در «Rapier» محاسبه می‌شوند؛ هنوز شبیه‌ساز مدار، حسگر الکترونیکی یا نویز اندازه‌گیری نیستند.</p>
+  <div class="sensor-grid" aria-live="off">
+   <div class="sensor-tile"><div class="sensor-name">حسگر شیب بدنه</div><strong id="imu-read">۰٫۰°</strong><div class="sensor-unit">درجه نسبت به افق</div></div>
+   <div class="sensor-tile"><div class="sensor-name">سرعت از حرکت شاسی</div><strong id="body-sensor">۰٫۰۰</strong><div class="sensor-unit">متر/ثانیه، رو به بالا مثبت</div></div>
+   <div class="sensor-tile"><div class="sensor-name">سرعت محیطی چرخ‌ها</div><strong id="encoder-read">۰٫۰۰</strong><div class="sensor-unit">متر/ثانیه، تخمین انکودر</div></div>
+   <div class="sensor-tile"><div class="sensor-name">شاخص تقریبی لغزش</div><strong id="slip-read">۰٪</strong><div class="sensor-unit">بر اساس اختلاف دو سرعت</div></div>
+   <div class="sensor-tile"><div class="sensor-name">سرعت هدف مرجع</div><strong id="cmd-read">۰٫۰۰</strong><div class="sensor-unit">متر/ثانیه؛ لزوماً سرعت واقعی نیست</div></div>
+  </div>
+  <div class="controller-state" id="controller-state" aria-live="polite">کنترل آماده است؛ برای مقایسه، حالت دستی و برنامه‌ای را جداگانه آزمایش کن.</div>
+  <h3 style="font-size:13px;margin:16px 0 7px">شبه‌کد اجرایی کنترل‌کننده</h3>
+  <div class="program-output" id="program-output">در حال آماده‌سازی قانون‌ها…</div>
+  <h3 style="font-size:13px;margin:14px 0 7px">رویدادهای کنترل‌کننده</h3>
+  <ul class="event-log" id="event-log" aria-label="رویدادهای برنامه"><li>هنوز آزمایشی اجرا نشده است.</li></ul>
+</section>
+<div class="section-grid">
+<section class="info-card"><h3>تحلیل نظری ساده‌شده</h3><div class="eq">F = m g sin(θ) &nbsp; | &nbsp; τ = F r / 4</div><div class="stat"><span>نیروی لازم برای غلبه بر گرانش</span><b id="force-need">— N</b></div><div class="stat"><span>گشتاور نظری لازم برای هر چرخ محرک</span><b id="torque-need">— N·m</b></div><div class="stat"><span>حداکثر نیروی کشش ناشی از اصطکاک (تقریبی)</span><b id="traction">— N</b></div><div class="stat"><span>پیش‌بینی ایده‌آلِ شروع صعود</span><b id="prediction">—</b></div><p class="note">این محاسبه فرض می‌کند بار چهار چرخ برابر است، هر چهار چرخ محرک‌اند، مقاومت غلتش و تلفات موتور ناچیز است و تماس چرخ‌ها با سطح برقرار می‌ماند. پاسخ شبیه‌سازی ممکن است به‌علت برخورد، لغزش و دینامیک بدنه فرق کند.</p></section>
+<section class="info-card"><h3>نمودار سرعت واقعی و سرعت مرجع</h3><canvas class="chart" id="chart" width="620" height="170" aria-label="نمودار تغییرات سرعت حرکت روبات در زمان"></canvas><div class="kpi-legend"><span><i style="background:#68e7d1"></i>سرعت واقعی</span><span><i style="background:#86aaff"></i>سرعت مرجع</span></div><div class="stat"><span>محور افقی</span><b>زمان (s)</b></div><div class="stat"><span>محور عمودی</span><b>سرعت (m/s)</b></div><p class="note">تغییر جرم، شعاع چرخ و زاویهٔ شیب، محیط فیزیکی را بازسازی می‌کند. سرعت موتور و محدودیت گشتاور هنگام اجرای آزمایش قابل تنظیم هستند.</p></section>
+</div>
+<div class="foot"><b>محدودهٔ اعتبار نمونه:</b> این مدل دارای شاسی صلب، چهار چرخ استوانه‌ایِ برخوردپذیر و چهار مفصل دورانی محرک با محدودیت گشتاور است. مدل الکتریکی دقیق موتور، باتری، گیربکس و تعلیق واقعی در آن وجود ندارد. حسگرها مجازی و بدون نویز هستند؛ شاخص لغزش یک تقریب آموزشی است، نه سنجش دقیق تماس تایر با زمین. در حالت سرعت، محدودیت گشتاور برای موتور مفصل تعیین می‌شود ولی گشتاور لحظه‌ای محاسبه‌شده توسط حلگر در این نسخه از مفصل خوانده نمی‌شود. در حالت گشتاور، گشتاور درخواستی محدودشده مستقیماً به بدنهٔ چرخ و واکنش برابر و مخالف آن به شاسی اعمال می‌شود؛ این مدل هنوز موتور الکتریکی، باتری یا گیربکس واقعی نیست. <br>منابع: <a href="https://rapier.rs/docs/user_guides/javascript/joints/" target="_blank" rel="noopener">مفصل و موتورهای «Rapier»</a> · <a href="https://rapier.rs/docs/user_guides/javascript/colliders/" target="_blank" rel="noopener">برخورد و اصطکاک</a>. هیچ تغییری در مخزن اصلی اسبیکو ایجاد نشده است.</div>
+</main>
+<aside class="side">
+<section class="card"><h2>⚙️ ویژگی‌های روبات</h2><small>این‌ها مشخصات فیزیکی روبات‌اند، نه فرمان‌هایی که برنامه در لحظه تغییر دهد. تغییرشان آزمایش را از ابتدا بازنشانی می‌کند.</small>
+<div class="field"><div class="field-head"><label for="mass">جرم کل روبات</label><output class="val" id="mass-val">5.0 kg</output></div><input id="mass" class="range" type="range" min="2" max="15" step="0.5" value="3"><div class="scale"><span>2 kg</span><span>15 kg</span></div></div>
+<div class="field"><div class="field-head"><label for="radius">شعاع چرخ</label><output class="val" id="radius-val">0.22 m</output></div><input id="radius" class="range" type="range" min="0.16" max="0.32" step="0.01" value="0.22"><div class="scale"><span>0.16 m</span><span>0.32 m</span></div></div>
+<div class="field"><div class="field-head"><label for="torque">حداکثر گشتاور قابل‌دسترس هر موتور</label><output class="val" id="torque-val">1.50 N·m</output></div><input id="torque" class="range" type="range" min="0.05" max="4" step="0.05" value="2.5"><div class="scale"><span>0.05 N·m</span><span>4.0 N·m</span></div></div>
+
+</section>
+<section class="card" id="motor-command-card"><h2>🎛️ فرمان موتور</h2><small>این‌ها دستورهای قابل‌تغییر در حال حرکت‌اند و جزو مشخصات سخت‌افزار نیستند.</small>
+ <div class="drive-selector" role="group" aria-label="نوع فرمان موتور">
+  <button class="drive-btn" type="button" data-drive="speed" aria-pressed="true">فرمان سرعت</button>
+  <button class="drive-btn" type="button" data-drive="torque" aria-pressed="false">فرمان گشتاور</button>
+ </div>
+ <div id="drive-explanation" class="mode-detail">موتور مفصل برای رسیدن به سرعت هدف تلاش می‌کند، ولی گشتاورش از سقف سخت‌افزار بالاتر نمی‌رود.</div>
+ <div class="field motor-mode-field" id="speed-control-field"><div class="field-head"><label for="target-speed">سرعت هدف محیطی چرخ</label><output class="val" id="target-speed-val">1.20 m/s</output></div><input id="target-speed" class="range" type="range" min="-1.2" max="2.4" step="0.1" value="1.2"><div class="scale"><span>−1.2 m/s</span><span>2.4 m/s</span></div></div>
+ <div class="field motor-mode-field" id="torque-control-field" hidden><div class="field-head"><label for="requested-torque">گشتاور درخواستی هر چرخ</label><output class="val" id="requested-torque-val">1.20 N·m</output></div><input id="requested-torque" class="range" type="range" min="-4" max="4" step="0.1" value="1.2"><div class="scale"><span>−4 N·m</span><span>+4 N·m</span></div></div>
+ <p class="controller-note">سرعت هدف حتی در حالت گشتاور برای قانون بازخورد و نمودار مرجع استفاده می‌شود؛ اما مستقیماً به مفصل فرمان داده نمی‌شود.</p>
+</section>
+<section class="card"><h2>⛰️ ویژگی‌های محیط</h2><small>تفاوت عملکرد روبات را در شیب‌ها و سطوح مختلف امتحان کن.</small>
+<div class="field"><div class="field-head"><label for="angle">زاویهٔ سطح شیب‌دار</label><output class="val" id="angle-val">12°</output></div><input id="angle" class="range" type="range" min="0" max="28" step="1" value="11"><div class="scale"><span>0°</span><span>28°</span></div></div>
+<div class="field"><div class="field-head"><label for="friction">ضریب اصطکاک سطح و چرخ</label><output class="val" id="friction-val">0.80</output></div><input id="friction" class="range" type="range" min="0.10" max="1.50" step="0.05" value="1.0"><div class="scale"><span>0.10</span><span>1.50</span></div></div>
+<h2 style="margin-top:22px">🧪 آزمایش‌های پیشنهادی</h2><small>با هر انتخاب، روبات و محیط بازنشانی می‌شوند.</small><div class="presets"><button type="button" class="preset" data-preset="normal">صعود استاندارد</button><button type="button" class="preset" data-preset="weak">موتور ضعیف</button><button type="button" class="preset" data-preset="slip">سطح لغزنده</button></div><p id="control-note" class="status-msg">حالت کنترل را انتخاب کن و «شروع آزمایش» را بزن.</p></section>
+
+<section class="card" id="rules-card"><h2>👩‍💻 برنامه‌نویسی رفتار روبات</h2><small>کافی است قانون‌ها را تنظیم کنی؛ این برنامه هر ۵۰ میلی‌ثانیه حسگرهای مجازی را می‌خواند و فرمان جدیدی به مفصل‌های چرخ می‌دهد.</small>
+ <div class="choice-row" role="group" aria-label="حالت کنترل">
+  <button type="button" class="mode-btn" data-mode="manual" aria-pressed="false">🎮 کنترل دستی</button>
+  <button type="button" class="mode-btn" data-mode="auto" aria-pressed="true">🧠 کنترل برنامه‌ای</button>
+ </div>
+ <div id="rules-wrap">
+  <div class="rule-card">
+   <label class="rule-title"><span>قانون ۱ — واکنش به شیب</span><input id="rule-incline" type="checkbox" checked aria-label="فعال‌سازی قانون شیب"></label>
+   <p class="rule-sub">اگر زاویهٔ اندازه‌گیری‌شده از حد انتخابی بیشتر باشد، بسته به حالت موتور، سرعت کاهش یا گشتاور درخواستی افزایش می‌یابد؛ سقف موتور ثابت است.</p>
+   <div class="field"><div class="field-head"><label for="incline-threshold">اگر شیب حداقل</label><output class="val" id="incline-threshold-val">۱۰°</output></div><input class="range" id="incline-threshold" type="range" min="0" max="28" value="10" step="1"></div>
+   <div class="field" id="incline-speed-field"><div class="field-head"><label for="incline-speed">فرمان سرعت روی شیب</label><output class="val" id="incline-speed-val">۰٫۸۰ m/s</output></div><input class="range" id="incline-speed" type="range" min="0" max="2.4" value="0.8" step="0.1"></div>
+   <div class="field" id="incline-torque-field" hidden><div class="field-head"><label for="incline-torque-add">افزایش گشتاور روی شیب</label><output class="val" id="incline-torque-add-val">۰٫۵ N·m</output></div><input class="range" id="incline-torque-add" type="range" min="0" max="2" value="0.5" step="0.1"></div>
+  </div>
+  <div class="rule-card">
+   <label class="rule-title"><span>قانون ۲ — کاهش سرعت هنگام لغزش</span><input id="rule-slip" type="checkbox" aria-label="فعال‌سازی قانون لغزش"></label>
+   <p class="rule-sub">اگر اختلاف سرعت چرخ و بدنه زیاد شد، اندازهٔ فرمان سرعت یا گشتاور را کاهش می‌دهیم؛ این کار لزوماً روی هر سطحی مانع لغزش نمی‌شود.</p>
+   <div class="field"><div class="field-head"><label for="slip-threshold">اگر شاخص لغزش بیشتر از</label><output class="val" id="slip-threshold-val">۳۵٪</output></div><input class="range" id="slip-threshold" type="range" min="10" max="95" value="35" step="5"></div>
+   <div class="field"><div class="field-head"><label for="slip-percent">فرمان را به این درصد برسان</label><output class="val" id="slip-percent-val">۶۰٪</output></div><input class="range" id="slip-percent" type="range" min="20" max="95" value="60" step="5"></div>
+  </div>
+  <div class="rule-card">
+   <label class="rule-title"><span>قانون ۳ — بازخورد تناسبی سرعت</span><input id="rule-feedback" type="checkbox" aria-label="فعال‌سازی کنترل بازخوردی"></label>
+   <p class="rule-sub">اگر سرعت واقعی از هدف کمتر شد، فرمان سرعت یا گشتاور را با بازخورد تناسبی اصلاح کن؛ سقف سخت‌افزاری تغییری نمی‌کند.</p>
+   <div class="field"><div class="field-head"><label for="feedback-kp">ضریب بازخورد (Kp)</label><output class="val" id="feedback-kp-val">۰٫۶۰</output></div><input class="range" id="feedback-kp" type="range" min="0" max="2" value="0.6" step="0.1"></div>
+  </div>
+ </div>
+ <div class="presets"><button class="preset" data-program="incline" type="button">فقط شیب</button><button class="preset" data-program="slip" type="button">فقط لغزش</button><button class="preset" data-program="feedback" type="button">بازخورد سرعت</button></div>
+ <p class="controller-note">⚠️ این «برنامه‌نویسی تصویری قانون‌محور» است، نه کد قابل انتقال مستقیم به برد روبات. برای مقایسهٔ منصفانه، پارامترهای مکانیکی را ثابت بگذار و با «آزمایش مجدد» حالت کنترل را عوض کن.</p>
+</section>
+</aside>
+</div>
+</div>
+<script type="module">
+const $ = id => document.getElementById(id);
+const hardwareIds=['mass','radius','torque','angle','friction'];
+const controlIds=[...hardwareIds,'target-speed','requested-torque'];
+const ui={mass:$('mass'),radius:$('radius'),torque:$('torque'),speed:$('target-speed'),requestTorque:$('requested-torque'),angle:$('angle'),friction:$('friction')};
+let THREE,RAPIER,renderer,scene,camera,world,robot,vehicleMeshes=[],robotVisuals=[],rampGroup,rampCollider,groundCollider,frameId;
+let playing=false,ready=false,simTime=0,history=[],elapsed=0,prevFrame=0,startPoint=null,lastChart=0;
+let controllerMode='auto',driveMode='speed',controlAccumulator=0,lastControlFlags='',lastDisplayUpdate=-1, commandedSpeed=0,commandedTorque=0,torqueClamped=false, latestSensors={pitch:0,bodySpeed:0,wheelSpeed:0,slip:0}, eventLog=[];
+const safeClamp=(x,min,max)=>Math.max(min,Math.min(max,x));
+let orbit={yaw:0.88,pitch:0.43,zoom:13.5,drag:false,x:0,y:0};
+const geom={},materials={},rampLength=8.8,rampStartX=-4.4,rampStartY=0.18,rampHalfThickness=0.11,rampWidth=3.4;
+const f=(v,n=2)=>Number(v).toFixed(n);
+function values(){return {mass:+ui.mass.value,radius:+ui.radius.value,torque:+ui.torque.value,speed:+ui.speed.value,angle:+ui.angle.value,friction:+ui.friction.value};}
+function refreshLabels(){const p=values();$('mass-val').textContent=f(p.mass,1)+' kg';$('radius-val').textContent=f(p.radius,2)+' m';$('torque-val').textContent=f(p.torque,2)+' N·m';$('target-speed-val').textContent=f(p.speed,2)+' m/s';$('requested-torque-val').textContent=f(ui.requestTorque.value,2)+' N·m';$('cap-read').textContent=f(p.torque,2);$('angle-val').textContent=p.angle+'°';$('friction-val').textContent=f(p.friction,2);const t=p.angle*Math.PI/180,force=p.mass*9.81*Math.sin(t),traction=p.friction*p.mass*9.81*Math.cos(t),torque=force*p.radius/4,forceByMotor=4*p.torque/p.radius;$('force-need').textContent=f(force,2)+' N';$('torque-need').textContent=f(torque,3)+' N·m';$('traction').textContent=f(traction,2)+' N';$('prediction').textContent=(!p.speed)?'فرمان حرکت صفر است':p.speed<0?'فرمان حرکت رو به عقب است':Math.min(forceByMotor,traction)>force+.01?'از نظر ایده‌آل ممکن است':'محدودیت نیرو / اصطکاک';}
+function positionRamp(s,p){const t=p.angle*Math.PI/180;return {x:rampStartX+s*Math.cos(t),y:rampStartY+s*Math.sin(t),z:0};}
+function setupThree(){THREE=window.__THREE;const vp=$('viewport');scene=new THREE.Scene();scene.background=new THREE.Color(0x071b2a);scene.fog=new THREE.FogExp2(0x071b2a,0.017);camera=new THREE.PerspectiveCamera(45,1,0.08,120);renderer=new THREE.WebGLRenderer({canvas:$('stage'),antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;scene.add(new THREE.HemisphereLight(0xb9e3f5,0x2f4855,2.0));const sun=new THREE.DirectionalLight(0xf9f3df,2.7);sun.position.set(-3,12,7);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-13;sun.shadow.camera.right=13;sun.shadow.camera.top=14;sun.shadow.camera.bottom=-14;sun.shadow.normalBias=0.025;scene.add(sun);const rim=new THREE.PointLight(0x36d4ca,30,16);rim.position.set(-5,3,-5);scene.add(rim);materials.body=new THREE.MeshStandardMaterial({color:0x35c5b8,metalness:.75,roughness:.26});materials.armor=new THREE.MeshStandardMaterial({color:0x183849,metalness:.66,roughness:.4});materials.tire=new THREE.MeshStandardMaterial({color:0x131e27,metalness:.1,roughness:.85});materials.hub=new THREE.MeshStandardMaterial({color:0xe6f2f8,metalness:.85,roughness:.28});materials.light=new THREE.MeshStandardMaterial({color:0x6fffd8,emissive:0x24dcb2,emissiveIntensity:1.65});materials.ramp=new THREE.MeshStandardMaterial({color:0x546979,metalness:.15,roughness:.91});materials.ground=new THREE.MeshStandardMaterial({color:0x132f3e,roughness:1});materials.stripe=new THREE.MeshStandardMaterial({color:0x73c8e6,emissive:0x194a60,emissiveIntensity:.4});const groundMesh=new THREE.Mesh(new THREE.BoxGeometry(75,.1,75),materials.ground);groundMesh.position.y=-.22;groundMesh.receiveShadow=true;scene.add(groundMesh);const grid=new THREE.GridHelper(75,75,0x345669,0x234050);grid.position.y=-.164;grid.material.transparent=true;grid.material.opacity=.36;scene.add(grid);const sz=new ResizeObserver(resize);sz.observe(vp);buildWorkshop();resize();initInput();updateCamera();}
+// Visual upgrade: decorative geometry only; no additional colliders or forces.
+function rod(parent,a,b,r,mat){const delta=b.clone().sub(a);const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,delta.length(),10),mat);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());m.castShadow=true;parent.add(m);return m;}
+function buildWorkshop(){
+ materials.rubberDetail=new THREE.MeshStandardMaterial({color:0x283037,roughness:.95});
+ materials.copper=new THREE.MeshStandardMaterial({color:0xf5a63e,metalness:.65,roughness:.32});
+ materials.glass=new THREE.MeshStandardMaterial({color:0x092b3c,metalness:.65,roughness:.18});
+ const fill=new THREE.DirectionalLight(0x87caff,1.6);fill.position.set(5,5,-7);scene.add(fill);
+ const back=new THREE.DirectionalLight(0x65ffe0,1.1);back.position.set(-7,4,-3);scene.add(back);
+ const lab=new THREE.Group();scene.add(lab);
+ meshBox(lab,24,7,.18,materials.armor,0,3.3,-7);
+ for(const x of [-10,-5,0,5,10]){meshBox(lab,.12,7,.14,materials.ramp,x,3.3,-6.85);meshBox(lab,3.8,.035,.04,materials.light,x,5.5,-6.72);}
+ for(const x of [-7,0,7]){meshBox(lab,4,.12,1.2,materials.ramp,x,.85,-5.8);for(const dx of [-1.7,1.7])meshBox(lab,.12,1.05,.9,materials.armor,x+dx,.3,-5.8);for(let j=0;j<3;j++){meshBox(lab,.8,.3,.65,materials.body,x-1.25+j*1.25,.28,-5.7);meshBox(lab,.30,.025,.025,materials.hub,x-1.25+j*1.25,.30,-5.36);}}
+ // Workshop floor inlay around the experiment, outside the collision surface.
+ for(const z of [-3,3])meshBox(lab,13,.012,.035,materials.stripe,0,-.158,z);
+}
+function detailChassis(parent){
+ meshBox(parent,.90,.035,.57,materials.body,-.06,.285,0);
+ meshBox(parent,.34,.11,.45,materials.glass,.18,.22,0);
+ for(const z of [-.39,.39]){meshBox(parent,.94,.06,.035,materials.copper,0,.01,z);for(let k=0;k<5;k++)meshBox(parent,.065,.045,.016,materials.armor,-.40+k*.13,.11,z*1.02);}
+ for(const x of [-.63,.63]){meshBox(parent,.055,.085,.90,materials.armor,x,-.07,0);for(const z of [-.34,.34])rod(parent,new THREE.Vector3(x,-.05,z),new THREE.Vector3(x*.73,.03,z),.016,materials.hub);}
+ // Fixed visual coil-over units: suspension is decorative, not a spring model.
+ for(const x of [-.41,.41])for(const z of [-.50,.50]){
+ const a=new THREE.Vector3(x*.80,.13,z*.55),b=new THREE.Vector3(x,-.15,z);
+ rod(parent,a,b,.025,materials.hub);
+ const d=b.clone().sub(a),axis=d.clone().normalize(),u=new THREE.Vector3(1,0,0),v=new THREE.Vector3().crossVectors(axis,u).normalize();const pts=[];
+ for(let k=0;k<=100;k++){const t=k/100,ang=t*Math.PI*12;pts.push(a.clone().addScaledVector(d,t).addScaledVector(u,.044*Math.cos(ang)).addScaledVector(v,.044*Math.sin(ang)));}
+ const spring=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),90,.008,5,false),materials.copper);spring.castShadow=true;parent.add(spring);
+ }
+}
+function detailWheel(parent,r){
+ // Tread outer radius matches the original physics cylinder radius.
+ const g=new THREE.BoxGeometry(r*.18,r*.075,.078);const inst=new THREE.InstancedMesh(g,materials.rubberDetail,56);const dummy=new THREE.Object3D();let n=0;
+ for(let k=0;k<28;k++)for(const side of [-1,1]){const a=k*Math.PI*2/28+(side>0?.045:0);dummy.position.set(Math.cos(a)*r*.961,Math.sin(a)*r*.961,side*.046);dummy.rotation.set(0,0,a-Math.PI/2);dummy.updateMatrix();inst.setMatrixAt(n++,dummy.matrix);}
+ inst.castShadow=true;inst.receiveShadow=true;parent.add(inst);
+ for(const side of [-1,1]){
+ const rim=new THREE.Mesh(new THREE.TorusGeometry(r*.62,r*.035,8,32),materials.copper);rim.position.z=side*.098;parent.add(rim);
+ for(let k=0;k<6;k++){const a=k*Math.PI/3;const bolt=new THREE.Mesh(new THREE.CylinderGeometry(r*.035,r*.035,.012,6),materials.hub);bolt.rotation.x=Math.PI/2;bolt.position.set(r*.29*Math.cos(a),r*.29*Math.sin(a),side*.104);parent.add(bolt);}
+ }
+}
+function meshBox(parent,w,h,d,mat,x=0,y=0,z=0){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+function buildRamp(p){if(rampGroup)scene.remove(rampGroup);rampGroup=new THREE.Group();scene.add(rampGroup);const t=p.angle*Math.PI/180;const center={x:rampStartX+rampLength*.5*Math.cos(t)+rampHalfThickness*Math.sin(t),y:rampStartY+rampLength*.5*Math.sin(t)-rampHalfThickness*Math.cos(t)};rampGroup.position.set(center.x,center.y,0);rampGroup.rotation.z=t;meshBox(rampGroup,rampLength,rampHalfThickness*2,rampWidth,materials.ramp);for(let i=-4;i<=4;i++){const stripe=meshBox(rampGroup,.04,.008,rampWidth-.5,materials.stripe,i*.9,rampHalfThickness+.008,0);stripe.castShadow=false;}for(const z of [-rampWidth/2+.055,rampWidth/2-.055]){const rail=meshBox(rampGroup,rampLength,.08,.065,materials.armor,0,rampHalfThickness+.055,z);rail.castShadow=false;}for(let i=0;i<7;i++){const xx=-rampLength/2+i*1.45;const m=meshBox(rampGroup,.075,.008,.35,materials.light,xx,rampHalfThickness+.016,0);m.castShadow=false;}const pillarGeo=new THREE.CylinderGeometry(.09,.11,1,8);for(const s of [2,5.8,8]){const point=positionRamp(s,p),height=Math.max(.04,point.y+.17);const pillar=new THREE.Mesh(pillarGeo,materials.armor);pillar.position.set(point.x,height*.5-.16,-1.1);pillar.scale.y=height;pillar.castShadow=true;scene.add(pillar);robotVisuals.push(pillar);}}
+function createStaticPhysics(p){const ground=world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0,-.22,0));groundCollider=world.createCollider(RAPIER.ColliderDesc.cuboid(37.5,.05,37.5).setFriction(.8),ground);const t=p.angle*Math.PI/180,center={x:rampStartX+rampLength*.5*Math.cos(t)+rampHalfThickness*Math.sin(t),y:rampStartY+rampLength*.5*Math.sin(t)-rampHalfThickness*Math.cos(t)};const rot={x:0,y:0,z:Math.sin(t/2),w:Math.cos(t/2)};const body=world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(center.x,center.y,0).setRotation(rot));rampCollider=world.createCollider(RAPIER.ColliderDesc.cuboid(rampLength/2,rampHalfThickness,rampWidth/2).setFriction(p.friction),body);}
+function buildRobot(p){const theta=p.angle*Math.PI/180;const normalH=p.radius+.15+.012;const along=1.65;const foot=positionRamp(along,p);const rot={x:0,y:0,z:Math.sin(theta/2),w:Math.cos(theta/2)};const center={x:foot.x-normalH*Math.sin(theta),y:foot.y+normalH*Math.cos(theta),z:0};const chassis=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(center.x,center.y,0).setRotation(rot).setLinearDamping(.04).setAngularDamping(.22).setCanSleep(false));world.createCollider(RAPIER.ColliderDesc.cuboid(.58,.145,.38).setMass(Math.max(.5,p.mass-1)).setFriction(p.friction*.75),chassis);const chassisVis=new THREE.Group();const chassisMesh=meshBox(chassisVis,1.16,.29,.76,materials.body);meshBox(chassisVis,.8,.13,.60,materials.armor,-.05,.20,0);meshBox(chassisVis,.52,.02,.38,materials.light,-.16,.277,0);for(const z of [-.32,.32]){meshBox(chassisVis,.42,.08,.08,materials.hub,.35,.07,z);}for(const z of [-.22,.22]){const lamp=meshBox(chassisVis,.045,.085,.10,materials.light,.59,.055,z);lamp.castShadow=false;}const sensor=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.18,18),materials.hub);sensor.position.set(.22,.36,0);chassisVis.add(sensor);const sensorTop=new THREE.Mesh(new THREE.SphereGeometry(.09,15,10),materials.light);sensorTop.position.set(.22,.47,0);chassisVis.add(sensorTop);detailChassis(chassisVis);scene.add(chassisVis);robotVisuals.push(chassisVis);
+const wheels=[],jointList=[],wheelVisuals=[],wheelX=[-.41,.41],wheelZ=[-.50,.50];const cylRot={x:Math.sin(Math.PI/4),y:0,z:0,w:Math.cos(Math.PI/4)};for(const x of wheelX)for(const z of wheelZ){const local=new THREE.Vector3(x,-.15,z).applyQuaternion(new THREE.Quaternion(rot.x,rot.y,rot.z,rot.w));const wheel=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(center.x+local.x,center.y+local.y,local.z).setRotation(rot).setLinearDamping(.03).setAngularDamping(.04).setCanSleep(false));const c=RAPIER.ColliderDesc.cylinder(.09,p.radius).setRotation(cylRot).setMass(.25).setFriction(p.friction).setRestitution(0);world.createCollider(c,wheel);const jd=RAPIER.JointData.revolute({x,y:-.15,z},{x:0,y:0,z:0},{x:0,y:0,z:1});const joint=world.createImpulseJoint(jd,chassis,wheel,true);joint.configureMotorModel(RAPIER.MotorModel.ForceBased);joint.configureMotorVelocity(-p.speed/p.radius,13);joint.setMotorMaxForce(p.torque);wheels.push(wheel);jointList.push(joint);
+const wrap=new THREE.Group();const tire=new THREE.Mesh(new THREE.CylinderGeometry(p.radius*.925,p.radius*.925,.18,40),materials.tire);tire.rotation.x=Math.PI/2;tire.castShadow=true;tire.receiveShadow=true;wrap.add(tire);const hub=new THREE.Mesh(new THREE.CylinderGeometry(p.radius*.48,p.radius*.48,.19,24),materials.hub);hub.rotation.x=Math.PI/2;hub.castShadow=true;wrap.add(hub);for(let k=0;k<6;k++){const a=k*Math.PI/3;const s=meshBox(wrap,p.radius*.65,.017,.19,materials.armor,p.radius*.35*Math.cos(a),p.radius*.35*Math.sin(a),0);s.rotation.z=a;}detailWheel(wrap,p.radius);scene.add(wrap);wheelVisuals.push(wrap);robotVisuals.push(wrap);}
+robot={chassis,chassisVis,wheels,wheelVisuals,joints:jointList};startPoint={...center};}
+
+// Level 2: a rule-based controller; the physics engine remains the sole solver.
+// The sensor values come from Rapier rigid bodies, not directly from the sliders.
+function controllerSettings(){
+  return {
+    incline:$('rule-incline').checked,
+    slip:$('rule-slip').checked,
+    feedback:$('rule-feedback').checked,
+    angle:+$('incline-threshold').value,
+    inclineSpeed:+$('incline-speed').value,
+    slipThreshold:+$('slip-threshold').value/100,
+    slipFactor:+$('slip-percent').value/100,
+    kp:+$('feedback-kp').value,
+    inclineTorqueAdd:+$('incline-torque-add').value
+  };
+}
+function readSensors(){
+  if(!robot)return {pitch:0,bodySpeed:0,wheelSpeed:0,slip:0};
+  const p=values(),q=robot.chassis.rotation(),v=robot.chassis.linvel();
+  // The forward axis of the chassis is +X. Project it onto the world XY plane.
+  const front=new THREE.Vector3(1,0,0).applyQuaternion(new THREE.Quaternion(q.x,q.y,q.z,q.w));
+  const pitch=Math.atan2(front.y,front.x)*180/Math.PI;
+  const theta=p.angle*Math.PI/180;
+  const bodySpeed=v.x*Math.cos(theta)+v.y*Math.sin(theta);
+  const chassisAngZ=robot.chassis.angvel().z;
+  // Encoder-like estimate: relative angular velocity of four wheels * radius.
+  const wheelSpeed=-robot.wheels.reduce((sum,w)=>sum+(w.angvel().z-chassisAngZ),0)*p.radius/robot.wheels.length;
+  // Slip is an informative speed-mismatch proxy, not an exact contact slip ratio.
+  const slip=Math.abs(wheelSpeed)>=.20 ? safeClamp(Math.abs(wheelSpeed-bodySpeed)/Math.max(.25,Math.abs(wheelSpeed)),0,1) : 0;
+  return {pitch,bodySpeed,wheelSpeed,slip};
+}
+// Pure controller logic, independent of Rapier. The values() object describes HARDWARE.
+// Commands are signed: positive means driving uphill, negative downhill.
+function controllerAlgorithm(baseSpeed,sensors,s,p,mode=driveMode){
+  let desired=mode==='speed'?baseSpeed:+ui.requestTorque.value;
+  const flags=[];
+  if(s.incline && sensors.pitch>=s.angle){
+    desired=mode==='speed'?Math.min(desired,s.inclineSpeed):desired+s.inclineTorqueAdd;
+    flags.push('incline');
+  }
+  let raw=desired;
+  if(s.feedback){raw+=s.kp*((mode==='speed'?desired:baseSpeed)-sensors.bodySpeed);flags.push('feedback');}
+  if(s.slip && sensors.slip>=s.slipThreshold){raw*=s.slipFactor;flags.push('slip');}
+  const max=mode==='speed'?2.4:p.torque, min=mode==='speed'?-1.2:-p.torque;
+  const command=safeClamp(raw,min,max);
+  const saturated=Math.abs(raw-command)>1e-6;
+  if(saturated)flags.push('saturated');
+  return {command,desired,flags,saturated};
+}
+function logControl(text){
+  eventLog.unshift('t = '+f(simTime,1)+' ثانیه — '+text);
+  if(eventLog.length>7)eventLog.length=7;
+  const list=$('event-log');list.replaceChildren();
+  for(const line of eventLog){const li=document.createElement('li');li.textContent=line;list.appendChild(li);}
+}
+function setControlMode(mode){
+  controllerMode=mode==='manual'?'manual':'auto';
+  for(const button of document.querySelectorAll('[data-mode]'))button.setAttribute('aria-pressed',String(button.dataset.mode===controllerMode));
+  $('rules-wrap').style.opacity=controllerMode==='auto'?'1':'.58';
+  refreshProgram();
+  if(ready && robot){runController();syncControlReadouts(true);}
+}
+function refreshProgram(){
+  const s=controllerSettings(),p=values();
+  const isTorque=driveMode==='torque', unit=isTorque?'نیوتن‌متر':'متر/ثانیه';
+  const lines=['هر ۵۰ میلی‌ثانیه:', '  شیب، سرعت واقعی و سرعت چرخ را از حسگرها بخوان.'];
+  lines.push(isTorque?'  درخواست گشتاور هر چرخ = '+f(ui.requestTorque.value,2)+' N·m':'  درخواست سرعت هدف = '+f(p.speed,2)+' m/s');
+  if(controllerMode==='manual')lines.push('  حالت دستی: درخواست بدون قوانین هوشمند به موتور می‌رسد.');
+  else{
+    if(s.incline)lines.push(isTorque?'  اگر شیب ≥ '+s.angle+'°: گشتاور درخواستی += '+f(s.inclineTorqueAdd,2)+' N·m':'  اگر شیب ≥ '+s.angle+'°: سرعت هدف = کمینه(هدف، '+f(s.inclineSpeed,2)+')');
+    if(s.feedback)lines.push('  فرمان += '+f(s.kp,2)+' × (سرعت هدف − سرعت واقعی)');
+    if(s.slip)lines.push('  اگر شاخص لغزش ≥ '+Math.round(s.slipThreshold*100)+'٪: فرمان × '+Math.round(s.slipFactor*100)+'٪');
+    if(!s.incline&&!s.slip&&!s.feedback)lines.push('  هیچ قانون اضافی فعال نیست.');
+  }
+  lines.push(isTorque?'  گشتاور را در بازهٔ [−'+f(p.torque,2)+'، +'+f(p.torque,2)+'] N·m محدود کن.':'  سرعت هدف با موتور مفصل و سقف گشتاور '+f(p.torque,2)+' N·m اعمال می‌شود.');
+  if(isTorque)lines.push('  در هر گام فیزیک: گشتاور به چرخ و گشتاور عکس به شاسی وارد کن.');
+  lines.push('  حرکت و تماس را Rapier حل می‌کند؛ خروجی حسگر الزاماً با فرمان برابر نیست.');
+  $('program-output').textContent=lines.join('\n');
+  $('incline-threshold-val').textContent=s.angle+'°';
+  $('incline-speed-val').textContent=f(s.inclineSpeed,2)+' m/s';
+  $('incline-torque-add-val').textContent=f(s.inclineTorqueAdd,2)+' N·m';
+  $('slip-threshold-val').textContent=Math.round(s.slipThreshold*100)+'٪';
+  $('slip-percent-val').textContent=Math.round(s.slipFactor*100)+'٪';
+  $('feedback-kp-val').textContent=f(s.kp,2);
+  $('incline-speed-field').hidden=isTorque;
+  $('incline-torque-field').hidden=!isTorque;
+  $('torque-control-field').hidden=!isTorque;
+  $('drive-explanation').textContent=isTorque?'گشتاور به هر چرخ (و واکنش برابرِ مخالف به شاسی) اعمال می‌شود. حتی اگر ۴ نیوتن‌متر بخواهی، موتور از سقف انتخاب‌شده بیشتر اعمال نمی‌کند.':'موتور مفصل برای رسیدن به سرعت هدف تلاش می‌کند؛ سقف گشتاور سخت‌افزاری پابرجاست. گشتاور واقعی لحظه‌ای در این حالت جداگانه اندازه‌گیری نشده است.';
+}
+function setDriveMode(mode){
+  driveMode=mode==='torque'?'torque':'speed';
+  document.querySelectorAll('[data-drive]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.drive===driveMode)));
+  lastControlFlags='';refreshProgram();
+  if(ready)resetPhysics();
+  else syncEngineeringReadouts();
+}
+function syncEngineeringReadouts(){
+  const p=values(),limit=p.torque;
+  $('hardware-summary').textContent='جرم '+f(p.mass,1)+' kg · شعاع '+f(p.radius,2)+' m · سقف گشتاور '+f(limit,2)+' N·m';
+  $('cap-read').textContent=f(limit,2);
+  $('drive-summary').textContent=driveMode==='speed'?'کنترل سرعت با محدودیت گشتاور':'اعمال مستقیم گشتاور محدودشده';
+  $('outcome-summary').textContent=robot?'سرعت '+f(latestSensors.bodySpeed,2)+' m/s · لغزش تقریبی '+Math.round(latestSensors.slip*100)+'٪':'پس از شروع، سرعت، پیشروی و لغزش ثبت می‌شوند.';
+  $('actuation-read').textContent=driveMode==='speed'?f(commandedSpeed,2):f(commandedTorque,2);
+  $('actuation-unit').textContent=driveMode==='speed'?'m/s · سرعت هدف محیطی چرخ':'N·m · گشتاور هر چرخ';
+  $('torque-applied-read').textContent=driveMode==='torque'?f(commandedTorque,2):'—';
+  $('torque-explain').textContent=driveMode==='torque'?'N·m · گشتاور اعمال‌شده (مدل ساده)':'در حالت سرعت، گشتاور واقعی مفصل اندازه‌گیری نشده است.';
+  $('limit-read').textContent=driveMode==='torque'?(torqueClamped?'محدود شد':'در محدوده'):'سقف ثابت';
+  $('cmd-read').textContent=f(p.speed,2);
+}
+function syncControlReadouts(force=false){
+  if(!robot)return;
+  if(!force&&simTime-lastDisplayUpdate<.08)return;
+  lastDisplayUpdate=simTime;latestSensors=readSensors();
+  $('imu-read').textContent=f(latestSensors.pitch,1)+'°';
+  $('body-sensor').textContent=f(latestSensors.bodySpeed,2);
+  $('encoder-read').textContent=f(latestSensors.wheelSpeed,2);
+  $('slip-read').textContent=Math.round(latestSensors.slip*100)+'٪';
+  syncEngineeringReadouts();
+}
+function runController(){
+  if(!robot)return;
+  const p=values();latestSensors=readSensors();
+  const s=controllerSettings(),isTorque=driveMode==='torque';
+  const result=controllerMode==='auto' ? controllerAlgorithm(p.speed,latestSensors,s,p) : (function(){
+    const raw=isTorque?+ui.requestTorque.value:p.speed;
+    const command=isTorque?safeClamp(raw,-p.torque,p.torque):raw;
+    return {command,desired:raw,flags:[],saturated:isTorque&&Math.abs(command-raw)>1e-6};
+  })();
+  commandedSpeed=isTorque?0:result.command;
+  commandedTorque=isTorque?result.command:0;
+  torqueClamped=isTorque&&result.saturated;
+  applyMotors();syncEngineeringReadouts();
+  const flagKey=controllerMode+':'+driveMode+':'+result.flags.join(',')+':'+torqueClamped;
+  if(lastControlFlags!==flagKey){
+    const messages=[];
+    if(controllerMode==='manual')messages.push('دستور مستقیم دانش‌آموز فعال است.');
+    else{
+      if(result.flags.includes('incline'))messages.push('قانون شیب فعال شد.');
+      if(result.flags.includes('slip'))messages.push('قانون کاهش لغزش اجرا شد.');
+      if(result.flags.includes('feedback'))messages.push('بازخورد سرعت فعال است.');
+      if(!messages.length)messages.push('برنامه مقدار پایه را می‌فرستد.');
+    }
+    if(torqueClamped)messages.push('درخواست گشتاور به سقف موتور محدود شد.');
+    const command=isTorque?commandedTorque:commandedSpeed;
+    $('controller-state').textContent=messages.join(' ')+' دستور نهایی: '+f(command,2)+' '+(isTorque?'N·m':'m/s')+'.';
+    if(simTime>.05)logControl(messages.join(' '));
+    lastControlFlags=flagKey;
+  }
+}
+function clearPhysics(){if(world){try{world.free()}catch(e){console.debug(e)}world=undefined;}for(const v of robotVisuals)scene.remove(v);robotVisuals=[];robot=undefined;}
+function resetPhysics(){
+  if(!ready)return;
+  playing=false;const p=values();simTime=0;elapsed=0;lastChart=0;history=[];
+  controlAccumulator=0;commandedSpeed=0;commandedTorque=0;torqueClamped=false;lastDisplayUpdate=-1;lastControlFlags='';eventLog=[];
+  $('event-log').innerHTML='<li>پس از شروع آزمایش، تغییر وضعیت قانون‌ها اینجا ثبت می‌شود.</li>';
+  clearPhysics();world=new RAPIER.World({x:0,y:-9.81,z:0});world.timestep=1/120;
+  buildRamp(p);createStaticPhysics(p);buildRobot(p);syncMeshes();
+  runController();syncControlReadouts(true);
+  $('motion').textContent='آماده';
+  $('control-note').textContent='برای اجرای آزمایش روی «شروع آزمایش» بزن.';
+  $('play').textContent='▶ شروع آزمایش';refreshButtons();updateStats();drawChart();
+}
+function syncMeshes(){if(!robot)return;const setPose=(m,b)=>{const t=b.translation(),q=b.rotation();m.position.set(t.x,t.y,t.z);m.quaternion.set(q.x,q.y,q.z,q.w)};setPose(robot.chassisVis,robot.chassis);for(let i=0;i<robot.wheels.length;i++)setPose(robot.wheelVisuals[i],robot.wheels[i]);}
+// ForceBased motor: gain 13 converts angular velocity error to torque; max torque stays hardware-limited.
+// Explicit model avoids the default acceleration-based gain scaling with wheel inertia.
+// Direct torque mode: equal/opposite applied torques on wheel and chassis.
+// For the incline (rotation about world z), +signed torque command -> negative Z wheel torque.
+function applyMotors(){
+  if(!robot)return;
+  const p=values();
+  for(const joint of robot.joints){
+    if(driveMode==='speed'){
+      joint.configureMotorModel(RAPIER.MotorModel.ForceBased);
+      joint.configureMotorVelocity(-commandedSpeed/p.radius,13);
+      joint.setMotorMaxForce(p.torque);
+    }else{
+      joint.configureMotorVelocity(0,0);
+      joint.setMotorMaxForce(0);
+    }
+  }
+  robot.chassis.wakeUp();for(const w of robot.wheels)w.wakeUp();
+}
+function applyTorqueEveryPhysicsStep(){
+  if(!robot)return;
+  robot.chassis.resetTorques(true);
+  for(const w of robot.wheels)w.resetTorques(true);
+  if(driveMode==='torque'){
+    for(const wheel of robot.wheels)wheel.addTorque({x:0,y:0,z:-commandedTorque},true);
+    robot.chassis.addTorque({x:0,y:0,z:commandedTorque*robot.wheels.length},true);
+  }
+}
+function updateStats(){if(!robot)return;const p=values(),theta=p.angle*Math.PI/180,v=robot.chassis.linvel(),pos=robot.chassis.translation();const climb=(pos.x-startPoint.x)*Math.cos(theta)+(pos.y-startPoint.y)*Math.sin(theta);const speed=v.x*Math.cos(theta)+v.y*Math.sin(theta);const q=robot.chassis.rotation();const chassisNormal=new THREE.Vector3(0,1,0).applyQuaternion(new THREE.Quaternion(q.x,q.y,q.z,q.w));const desiredNormal=new THREE.Vector3(-Math.sin(theta),Math.cos(theta),0);const tipping=chassisNormal.dot(desiredNormal)<.55;$('distance').textContent=f(climb,2);$('speed-read').textContent=f(speed,2);$('time').textContent=f(simTime,1);let title=playing?(speed>.15?'در حال صعود':speed<-.15?'عقب‌رفتن':'تقریباً ساکن'):'متوقف';if(tipping)title='واژگونی / انحراف';if(pos.y < -1)title='خروج از مسیر';$('motion').textContent=title;}
+function drawChart(){
+  const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
+  ctx.clearRect(0,0,w,h);ctx.fillStyle='#0a2230';ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#2c4a5a';ctx.lineWidth=1;
+  for(let n=0;n<=4;n++){
+    const y=15+(h-35)*n/4;ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(w-12,y);ctx.stroke();
+  }
+  const pts=history.slice(-320);
+  const range=Math.max(1,...pts.map(x=>Math.max(Math.abs(x.v),Math.abs(x.command))));
+  const X=i=>40+(w-55)*i/Math.max(1,pts.length-1);
+  const Y=v=>15+(h-35)*(.5-v/(2*range));
+  ctx.strokeStyle='#ffcc79';ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(40,Y(0));ctx.lineTo(w-12,Y(0));ctx.stroke();ctx.setLineDash([]);
+  for(const [key,color,dash] of [['command','#86aaff',[5,4]],['v','#68e7d1',[]]]){
+    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.setLineDash(dash);ctx.beginPath();
+    pts.forEach((p,i)=>i?ctx.lineTo(X(i),Y(p[key])):ctx.moveTo(X(i),Y(p[key])));ctx.stroke();
+  }
+  ctx.setLineDash([]);ctx.fillStyle='#91afbf';ctx.font='12px Arial';ctx.textAlign='left';
+  ctx.fillText(range.toFixed(1),5,21);ctx.fillText('0',20,Y(0)+4);ctx.fillText((-range).toFixed(1),3,h-16);ctx.fillText('0 s',45,h-5);
+  if(pts.length>1)ctx.fillText(pts[pts.length-1].t.toFixed(1)+' s',w-65,h-5);
+}
+function refreshButtons(){['play','pause','reset'].forEach(id=>$(id).disabled=!ready);$('pause').disabled=!ready||!playing;}
+function step(dt){
+  if(!playing||!robot)return;
+  elapsed+=Math.min(dt,.15);let n=0;
+  while(elapsed>=world.timestep&&n<12){
+    controlAccumulator+=world.timestep;
+    if(controlAccumulator>=.05){controlAccumulator-=.05;runController();}
+    applyTorqueEveryPhysicsStep();
+    world.step();elapsed-=world.timestep;simTime+=world.timestep;n++;
+  }
+  if(n===12)elapsed=0;
+  syncMeshes();syncControlReadouts();
+  if(simTime-lastChart>.09){
+    history.push({t:simTime,v:latestSensors.bodySpeed,command:driveMode==='speed'?commandedSpeed:values().speed});
+    if(history.length>900)history.shift();lastChart=simTime;drawChart();
+  }
+  updateStats();const pNow=values(),sNow=1.65+(robot.chassis.translation().x-startPoint.x)*Math.cos(pNow.angle*Math.PI/180)+(robot.chassis.translation().y-startPoint.y)*Math.sin(pNow.angle*Math.PI/180);
+  if(playing&&sNow>=rampLength-.88){
+    playing=false;refreshButtons();$('motion').textContent='✓ صعود موفق';
+    $('control-note').textContent='روبات پیش از لبهٔ مسیر ایستاد؛ صعود کامل است.';
+    logControl('صعود موفق؛ آزمایش متوقف شد.');
+  }
+  if(simTime>180){playing=false;refreshButtons();$('control-note').textContent='زمان آزمایش به ۱۸۰ ثانیه رسید؛ می‌توانی دوباره آزمایش کنی.';}
+}
+// The solver moves the robot. Positive user command maps to negative wheel angular velocity (+X uphill rolling).
+function applyMotorOnFirstTick(){}
+function updateCamera(){if(!camera)return;const center=new THREE.Vector3(-.25,1.05,0),c=orbit;const cosP=Math.cos(c.pitch);camera.position.set(center.x+orbit.zoom*cosP*Math.cos(c.yaw),center.y+orbit.zoom*Math.sin(c.pitch),center.z+orbit.zoom*cosP*Math.sin(c.yaw));camera.lookAt(center);}
+function resize(){if(!renderer)return;const rect=$('viewport').getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();}
+function initInput(){const canvas=$('stage');canvas.addEventListener('pointerdown',e=>{orbit.drag=true;orbit.x=e.clientX;orbit.y=e.clientY;canvas.setPointerCapture(e.pointerId)});canvas.addEventListener('pointermove',e=>{if(!orbit.drag)return;orbit.yaw-=(e.clientX-orbit.x)*.006;orbit.pitch=Math.max(.11,Math.min(1.36,orbit.pitch+(e.clientY-orbit.y)*.006));orbit.x=e.clientX;orbit.y=e.clientY;updateCamera();});const release=()=>orbit.drag=false;canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);canvas.addEventListener('wheel',e=>{e.preventDefault();orbit.zoom=Math.max(5,Math.min(29,orbit.zoom*(e.deltaY>0?1.09:.91)));updateCamera();},{passive:false});}
+function loop(now){if(!ready)return;frameId=requestAnimationFrame(loop);let dt=prevFrame?(now-prevFrame)/1000:1/60;prevFrame=now;step(dt);renderer.render(scene,camera);}
+function start(){
+  if(!ready)return;
+  playing=true;controlAccumulator=0;runController();
+  $('play').textContent='▶ ادامهٔ حرکت';
+  $('control-note').textContent=controllerMode==='auto'?'کنترل خودکار فعال است؛ برنامه هر ۵۰ میلی‌ثانیه حسگرها را می‌خواند.':'کنترل دستی فعال است؛ فرمان سرعت یا گشتاور مستقیماً به موتور فرستاده می‌شود.';
+  logControl('شروع آزمایش با '+(controllerMode==='auto'?'برنامهٔ خودکار':'کنترل دستی')+'.');refreshButtons();
+}
+function pause(){playing=false;$('control-note').textContent='آزمایش در حالت مکث است.';refreshButtons();}
+function preset(name){const p={normal:{mass:3,radius:.22,torque:2.5,speed:1.2,angle:11,friction:1},weak:{mass:11,radius:.25,torque:.2,speed:1.2,angle:25,friction:.9},slip:{mass:5,radius:.22,torque:2.5,speed:1.4,angle:24,friction:.12}}[name];if(!p)return;for(const [k,v] of Object.entries(p))ui[k].value=v;refreshLabels();resetPhysics();}
+for(const id of controlIds){
+  const el=$(id);
+  el.addEventListener('input',()=>{
+    refreshLabels();refreshProgram();syncEngineeringReadouts();
+    if((id==='target-speed'||id==='requested-torque')&&ready)runController();
+  });
+  el.addEventListener('change',()=>{
+    if(hardwareIds.includes(id))resetPhysics();
+    else if(ready)runController();
+  });
+}
+for(const b of document.querySelectorAll('[data-drive]'))b.addEventListener('click',()=>setDriveMode(b.dataset.drive));
+for(const b of document.querySelectorAll('[data-mode]'))b.addEventListener('click',()=>setControlMode(b.dataset.mode));
+for(const id of ['rule-incline','incline-threshold','incline-speed','rule-slip','slip-threshold','slip-percent','rule-feedback','feedback-kp','incline-torque-add']){
+  $(id).addEventListener('input',()=>{refreshProgram();if(ready)runController();});
+  $(id).addEventListener('change',()=>{refreshProgram();if(ready)runController();});
+}
+for(const b of document.querySelectorAll('[data-program]'))b.addEventListener('click',()=>{
+  const id=b.dataset.program;
+  $('rule-incline').checked=id==='incline';
+  $('rule-slip').checked=id==='slip';
+  $('rule-feedback').checked=id==='feedback';
+  if(id==='incline'){$('incline-threshold').value=9;$('incline-speed').value=.9;}
+  if(id==='slip'){$('slip-threshold').value=25;$('slip-percent').value=45;}
+  if(id==='feedback')$('feedback-kp').value=.7;
+  setControlMode('auto');refreshProgram();if(ready)runController();
+});
+setControlMode('auto');setDriveMode('speed');
+$('play').onclick=start;$('pause').onclick=pause;$('reset').onclick=resetPhysics;$('view').onclick=()=>{orbit={yaw:.88,pitch:.43,zoom:13.5,drag:false,x:0,y:0};updateCamera();};document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>preset(b.dataset.preset));$('retry').onclick=()=>location.reload();refreshLabels();drawChart();
+// Both libraries are ES modules; each has a secondary, independently hosted URL.
+// Rapier >=0.20 changed its published ESM entry to dist/rapier.mjs.
+const librarySources={
+  three:[
+    'https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js',
+    'https://unpkg.com/three@0.180.0/build/three.module.js',
+    'https://esm.sh/three@0.180.0'
+  ],
+  rapier:[
+    'https://cdn.jsdelivr.net/npm/@dimforge/rapier3d-compat@0.21.0/dist/rapier.mjs',
+    'https://unpkg.com/@dimforge/rapier3d-compat@0.21.0/dist/rapier.mjs',
+    'https://esm.sh/@dimforge/rapier3d-compat@0.21.0'
+  ]
+};
+async function loadLibrary(label, urls){
+  const diagnostics=[];
+  for(let index=0;index<urls.length;index++){
+    const url=urls[index];
+    $('startup-desc').textContent='بارگذاری '+label+' (مسیر '+(index+1)+' از '+urls.length+')…';
+    try{return await import(url)}
+    catch(error){diagnostics.push(url+': '+(error?.message||error));console.warn('Failed loading '+label+' from '+url,error)}
+  }
+  throw new Error('بارگذاری '+label+' از همهٔ منابع ناموفق بود. '+diagnostics.join(' | '));
+}
+async function launch(){
+  try{
+    const T=await loadLibrary('Three.js',librarySources.three);
+    const R=await loadLibrary('Rapier',librarySources.rapier);
+    window.__THREE=T;
+    RAPIER=R.default||R;
+    if(typeof RAPIER.init!=='function')throw new Error('تابع راه‌اندازی Rapier در کتابخانه پیدا نشد.');
+    $('startup-desc').textContent='آماده‌سازی موتور فیزیک…';
+    await RAPIER.init();
+    setupThree();ready=true;resetPhysics();$('startup').hidden=true;
+    $('engine-badge').textContent='● موتور Rapier فعال · محاسبه در مرورگر';
+    $('engine-badge').classList.add('good');loop(performance.now());
+  }catch(error){
+    console.error('ESBIKO prototype startup error:',error);
+    $('loader').hidden=true;
+    $('startup-title').textContent='راه‌اندازی شبیه‌سازی انجام نشد';
+    $('startup-desc').textContent='نسخهٔ اصلاح‌شده سه مسیر جداگانه برای دریافت کتابخانه‌ها را امتحان کرد. اگر همه ناموفق بودند، اتصال مرورگر به سرویس‌های توزیع کتابخانه را بررسی کن. جزئیات: '+String(error?.message||error);
+    $('retry').hidden=false;
+    $('engine-badge').textContent='موتور فیزیک فعال نشد';
+    $('engine-badge').classList.add('warn');
+  }
+}
+launch();
+</script>
+</body>
+</html>

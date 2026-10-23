@@ -1,0 +1,26 @@
+{
+  "name": "Esbiko VR",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-24-bookworm",
+  "forwardPorts": [
+    8081,
+    5173
+  ],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite fallback",
+      "onAutoForward": "notify"
+    },
+    "8081": {
+      "label": "IWSDK runtime",
+      "protocol": "https",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

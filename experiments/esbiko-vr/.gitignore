@@ -1,0 +1,4 @@
+app/node_modules/
+app/dist/
+app/.iwsdk/
+app/.vite/
