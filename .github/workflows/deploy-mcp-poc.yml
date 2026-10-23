@@ -59,6 +59,9 @@ jobs:
       - name: Verify Coupled Pendulums shared physics, advanced API, and MCP
         run: node scripts/test-coupled-pendulum-control.mjs
 
+      - name: Verify persistent control storage and legacy sessions
+        run: node scripts/test-control-storage.mjs
+
       - name: Write Firebase service account
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
@@ -69,3 +72,6 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
         run: npx firebase-tools@latest deploy --only functions:mcp,functions:platformApi,functions:simulationControlApi --project sience-web-app --non-interactive
+
+      - name: Verify all four live MCP and HTTP session adapters
+        run: node scripts/test-control-storage-live.mjs

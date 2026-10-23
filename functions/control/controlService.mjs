@@ -3,6 +3,7 @@ import admin from "firebase-admin";
 import {createHash,randomBytes,randomUUID,timingSafeEqual} from "node:crypto";
 import {SIMULATION_CONTROL_ID} from "./controlCore.mjs";
 import {requireSimulationControlAdapter,listSimulationControlAdapters} from "./adapterRegistry.mjs";
+import {encodeControlCheckpoint,decodeControlCheckpoint} from "./checkpointStorage.mjs";
 
 if(!admin.apps.length)admin.initializeApp();
 const db=admin.firestore();
@@ -39,7 +40,7 @@ export async function createControlSession(parameters={},simulationId=SIMULATION
   const current=rateDoc.exists?rateDoc.data()?.count||0:0;
   if(current>=MAX_CREATES_PER_HOUR)throw failure(429,"RATE_LIMIT","Session creation quota reached; retry later");
   tx.set(quotaRef,{count:current+1,expiresAt:admin.firestore.Timestamp.fromMillis(now+7200e3)});
-  tx.create(ref,{...doc,tokenHash:hash(token).toString("hex"),
+  tx.create(ref,{...encodeControlCheckpoint(doc),tokenHash:hash(token).toString("hex"),
    createdAt:admin.firestore.Timestamp.fromMillis(now),
    expiresAt:admin.firestore.Timestamp.fromMillis(now+SESSION_MINUTES*60000)});
  });
@@ -53,7 +54,7 @@ async function authorizedSnapshot(id,token){
  const data=doc.data();
  if(!validToken(data.tokenHash,token))throw failure(403,"INVALID_SESSION_TOKEN","Invalid session token");
  expireCheck(data);
- return data;
+ return decodeControlCheckpoint(data);
 }
 function publicDoc(data,includeCheckpoint=false){
  return {...requireSimulationControlAdapter(data.simulationId).expose(data),expiresAt:data.expiresAt.toDate().toISOString(),
@@ -73,9 +74,10 @@ export async function commandControlSession({sessionId,token,request,expectedRev
  return db.runTransaction(async tx=>{
   const [snapshot,actionLimit]=await Promise.all([tx.get(ref),tx.get(actionLimitRef)]);
   if(!snapshot.exists)throw failure(404,"SESSION_NOT_FOUND","Session not found");
-  const data=snapshot.data();
+  let data=snapshot.data();
   if(!validToken(data.tokenHash,token))throw failure(403,"INVALID_SESSION_TOKEN","Invalid session token");
   expireCheck(data);
+  data=decodeControlCheckpoint(data);
   if(expectedRevision!==undefined&&(!Number.isInteger(expectedRevision)||expectedRevision!==data.revision))
    throw failure(409,"REVISION_CONFLICT","Session revision changed; read state and retry");
   const {document:next,result,mutation}=requireSimulationControlAdapter(data.simulationId).execute(data,request);
@@ -86,7 +88,7 @@ export async function commandControlSession({sessionId,token,request,expectedRev
    tx.set(actionLimitRef,{count:spent+1,
      expiresAt:admin.firestore.Timestamp.fromMillis(Date.now()+7200e3)});
    const newExpiry=admin.firestore.Timestamp.fromMillis(Date.now()+SESSION_MINUTES*60000);
-   tx.update(ref,{checkpoint:next.checkpoint,revision:next.revision,running:next.running,
+   tx.update(ref,{checkpoint:encodeControlCheckpoint(next).checkpoint,revision:next.revision,running:next.running,
     camera:next.camera,commandCount:next.commandCount,simulatedSeconds:next.simulatedSeconds,
     expiresAt:newExpiry});
   }
