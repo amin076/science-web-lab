@@ -15,7 +15,7 @@ if (existsSync(target)) {
 }
 const args = ['--yes', '@iwsdk/create@latest', 'app', '--yes',
   '--target', 'vr', '--language', 'ts', '--no-git', '--no-install',
-  '--no-physics', '--no-locomotion', '--grabbing', '--ai-tools', 'none'];
+  '--no-physics', '--no-locomotion', '--grabbing'];
 console.log('Creating official stationary VR starter; Rapier integration is a separate next step.');
 const result = spawnSync(process.platform === 'win32' ? 'npx.cmd' : 'npx',
   args, { cwd: root, stdio: 'inherit', shell: false });
