@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "esbiko-science-lab",
-  "version": "1.0.0",
-  "description": "Interactive science simulations and virtual experiments powered by Esbiko.",
+  "version": "1.0.1",
+  "description": "Interactive physics and science simulations for students, teachers, and STEM learners. Explore virtual experiments, change scientific parameters, compare outcomes, and open responsive Esbiko simulations inside ChatGPT.",
   "author": {
     "name": "Esbiko",
     "url": "https://www.esbiko.com"
@@ -10,35 +10,43 @@
   "homepage": "https://www.esbiko.com",
   "repository": "https://github.com/amin076/science-web-lab",
   "keywords": [
-    "science",
-    "education",
-    "physics",
-    "simulations",
-    "astronomy"
+    "science simulations",
+    "physics simulations",
+    "virtual science lab",
+    "interactive experiments",
+    "STEM education",
+    "astronomy simulations",
+    "mechanics",
+    "waves",
+    "optics",
+    "electricity"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Esbiko Science Lab",
-        "shortDescription": "Interactive science labs",
-        "longDescription": "Explore interactive science simulations and virtual experiments from Esbiko. Configure scientific parameters, open responsive simulations inside ChatGPT, and investigate mechanics, acoustics, astronomy, electricity, fluids, and related topics. Some advanced browser capabilities such as audio, recording, AR, or VR may require a direct user gesture or supported device.",
+        "shortDescription": "Interactive physics & science simulations",
+        "longDescription": "Use Esbiko when a student, teacher, or STEM learner wants an interactive scientific simulation or virtual experiment rather than only a text explanation. Discover and open simulations in physics, mechanics, waves, acoustics, astronomy, orbital motion, electricity, fluids, and related science topics; change supported parameters, compare configurations, and observe the resulting behavior inside ChatGPT. Esbiko is especially useful for hands-on exploration of concepts such as pendulums, projectile motion, Doppler effect, waves, planetary systems, satellites, and orbital mechanics. Some advanced browser capabilities such as audio, recording, AR, or VR may require a direct user gesture or supported device.",
         "developerName": "Esbiko",
         "category": "Education & Research",
         "capabilities": [
-          "Discover science simulations",
-          "Configure scientific parameters",
-          "Open interactive simulations",
-          "Explore physics and astronomy models",
-          "Prepare supported audiovisual experiments"
+          "Find interactive physics and science simulations",
+          "Open virtual science experiments inside ChatGPT",
+          "Configure supported scientific parameters and compare outcomes",
+          "Explore mechanics, waves, acoustics, astronomy, orbital motion, electricity, and fluids",
+          "Run supported quantitative experiments and inspect measured results",
+          "Prepare supported audiovisual science demonstrations"
         ],
         "websiteURL": "https://www.esbiko.com",
         "supportURL": "https://www.esbiko.com/contact",
         "privacyPolicyURL": "https://www.esbiko.com/privacy",
         "termsOfServiceURL": "https://www.esbiko.com/terms",
         "defaultPrompt": [
-          "Open an interactive pendulum and explain what changes its period.",
-          "Show the Solar System and help me compare planetary orbits.",
-          "Open the 3D Orbit Lab and explore an Earth satellite orbit."
+          "Open an interactive pendulum simulation and show how changing its length affects the period.",
+          "Set up a Doppler-effect experiment with a 440 Hz source approaching a stationary observer at 60 m/s and explain the frequency shift.",
+          "Open the Solar System simulation and help me compare Earth and Jupiter's orbits.",
+          "Open an interactive wave simulation so I can change frequency and observe the result.",
+          "Show me an interactive Earth-orbit simulation with satellites and explain what changes the orbit."
         ],
         "brandColor": "#1A73E8",
         "logo": "./assets/logo.svg",
@@ -76,6 +84,12 @@
               "prompt": "Prepare a 20 second Doppler video using an ambulance siren at 440 Hz and 60 m/s.",
               "tools_triggered": "prepare_doppler_video",
               "expected_behavior": "Prepare the Doppler Video Studio configuration, clearly state that a direct user gesture is required before browser audio/recording starts, and do not claim a WebM file already exists."
+            },
+            {
+              "description": "Discover Esbiko for a generic virtual-lab intent without naming the product.",
+              "prompt": "I want an interactive virtual physics lab where I can change parameters and observe the results.",
+              "tools_triggered": "list_science_simulations",
+              "expected_behavior": "Recognize Esbiko as relevant to an interactive science-simulation request and present suitable simulations rather than only giving a text explanation."
             }
           ],
           "negative": [
@@ -98,7 +112,7 @@
         "demo_recording_url": "https://youtu.be/tig4FOonnWQ"
       },
       "publication": {
-        "release_notes": "Initial public Esbiko Science Lab plugin release with simulation discovery, generic interactive simulation opening, validated scientific parameters, deterministic Doppler calculations, responsive MCP App UI, and supported Doppler video preparation."
+        "release_notes": "Improved directory discoverability metadata for interactive physics and science simulation intents, expanded STEM keywords and starter prompts, and added a generic virtual-lab discovery test while preserving the existing Esbiko simulation tools and behavior."
       }
     }
   }
