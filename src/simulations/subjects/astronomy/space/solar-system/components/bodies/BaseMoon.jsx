@@ -4,6 +4,9 @@ import { TextureLoader } from "three";
 import { Billboard, Text, Line } from "@react-three/drei";
 import * as THREE from "three";
 
+import {solarMoonPosition} from "@/esbiko-physics/astronomy/solarSessionModel.js";
+import {useSolarSessionClock} from "../../physics/SolarSessionClock.jsx";
+
 function getStableLabelAngle(name) {
   const seed = Array.from(name).reduce((sum, char) => sum + char.charCodeAt(0), 0);
   return ((seed % 360) * Math.PI) / 180;
@@ -19,6 +22,7 @@ export default function BaseMoon({
   showLabels = true,
   onPositionUpdate,
 }) {
+  const sessionClock=useSolarSessionClock();
   const groupRef = useRef();
   const spinRef = useRef();
   // Create a reusable vector to prevent memory leaks
@@ -33,14 +37,8 @@ export default function BaseMoon({
   useFrame(({ clock }) => {
     if (!data) return;
 
-    const t = clock.getElapsedTime() * speed;
-
-    // 1. Calculate Local Position
-    const period = data.period || 1;
-    const orbitProgress = (t / period) * 2 * Math.PI;
-
-    const x = data.orbitRadius * Math.cos(orbitProgress);
-    const z = data.orbitRadius * Math.sin(orbitProgress);
+    const phase=sessionClock?sessionClock.current.phaseSeconds:clock.getElapsedTime()*speed;
+    const [x,,z]=solarMoonPosition(data,phase);
 
     if (groupRef.current) {
       // Set local position

@@ -108,17 +108,15 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
       if (remote?.sessionId && remote?.token && /^[a-f0-9]{64}$/.test(remote.token)) {
         url.searchParams.set("remoteSessionId", remote.sessionId);
         const targetOrigin = new URL(simulation.runUrl).origin;
-        frame.addEventListener("load", () => {
-          const message = {type:"esbiko-control-session-v1",
-            sessionId:remote.sessionId,token:remote.token};
-          const deliver = () => frame.contentWindow?.postMessage(message,targetOrigin);
+        const message = {type:"esbiko-control-session-v1",sessionId:remote.sessionId,token:remote.token};
+        const deliver = () => frame.contentWindow?.postMessage(message,targetOrigin);
+        frame.addEventListener("load",deliver,{once:true});
+        let retries=0;
+        window.esbikoRemoteRetry=setInterval(()=>{
+          if(++retries>60){clearInterval(window.esbikoRemoteRetry);return;}
           deliver();
-          let retries = 0;
-          window.esbikoRemoteRetry = setInterval(() => {
-            if (++retries > 25) {clearInterval(window.esbikoRemoteRetry);return;}
-            deliver();
-          },500);
-        }, {once:true});
+        },500);
+
       }
       frame.src = url.toString();
     }

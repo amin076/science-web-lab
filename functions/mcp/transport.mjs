@@ -108,10 +108,10 @@ export function createServer(controlService) {
       // Keep discovery compact: full profiles include large schemas and capability
       // contracts, which can cause clients to truncate the list after a few items.
       const simulations = listSimulationProfiles()
-        .map(({id, name, domain, topic, description, integrationLevel, stateSync, video}) => ({
+        .map(({id, name, domain, topic, description, integrationLevel, stateSync, video, tools}) => ({
           id, name, domain, topic,
           description: description.slice(0, 180),
-          integrationLevel, stateSync, video,
+          integrationLevel, stateSync, video, persistentControl:tools.includes("create_simulation_session"),
         }))
         .sort((a, b) =>
           Number(b.integrationLevel === "adapted") -
@@ -123,6 +123,7 @@ export function createServer(controlService) {
         structuredContent: {
           count: simulations.length,
           adaptedCount: adapted.length,
+          persistentControlCount:simulations.filter(s=>s.persistentControl).length,
           universalCount: simulations.length - adapted.length,
           simulations,
         },
@@ -130,7 +131,7 @@ export function createServer(controlService) {
           {
             type: "text",
             text:
-              `Esbiko has ${simulations.length} discoverable simulations, including ${adapted.length} with deeper agent controls. ` +
+              `Esbiko has ${simulations.length} discoverable simulations, including ${adapted.length} with launch parameter definitions and ${simulations.filter(s=>s.persistentControl).length} with persistent session control. ` +
               "All simulation IDs and names are returned in structuredContent.simulations. " +
               "Do not describe the list as limited to three simulations. " +
               `Agent-adapted simulations: ${adapted.map((item) => item.name).join(", ")}.`,

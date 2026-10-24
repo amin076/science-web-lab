@@ -2,6 +2,8 @@
 
 import {createRequire} from "node:module";
 import {SESSION_OPERATION_TOOLS} from "./sessionToolContract.mjs";
+import {listSimulationControlAdapters} from "../control/adapterRegistry.mjs";
+import {publicControlDescriptor} from "./sessionToolContract.mjs";
 import {HTML_REFERENCE_DESCRIPTOR} from "../control/htmlReferenceControl.mjs";
 
 const require = createRequire(import.meta.url);
@@ -60,7 +62,7 @@ export function validateSimulationParameters(id, parameters = null) {
     throw error;
   }
 
-  const schema = manifest.parameterSchema || {};
+  const schema = listSimulationControlAdapters().find(a=>a.id===id)?.schema || manifest.parameterSchema || {};
   const properties = schema.properties || {};
   const required = new Set(schema.required || []);
 
@@ -132,6 +134,7 @@ export function getSimulationProfile(id) {
 
   const manifest = agentManifest[id] || null;
   const route = normalizeRoute(simulation);
+  const sessionAdapter=listSimulationControlAdapters().find(adapter=>adapter.id===id);
 
   return {
     id: simulation.id,
@@ -142,14 +145,15 @@ export function getSimulationProfile(id) {
     route,
     runUrl: new URL(route, BASE_URL).toString(),
     integrationLevel: manifest ? "adapted" : "universal",
-    tools: [...new Set((manifest?.tools || ["open_science_simulation"]).flatMap(name =>
+    tools: sessionAdapter ? [...new Set(["open_science_simulation","create_simulation_session","close_simulation_session",
+      ...publicControlDescriptor(sessionAdapter).tools])] : [...new Set((manifest?.tools || ["open_science_simulation"]).flatMap(name =>
       name === "control_simulation_session" ? SESSION_OPERATION_TOOLS : [name]))],
     stateSync: manifest ? manifest.actions?.includes("configure") === true : false,
     video: manifest?.video === true,
     exportable: manifest?.exportable === true,
     adapterVersion: manifest?.adapterVersion || null,
     actions: manifest?.actions || ["open"],
-    parameterSchema: manifest?.parameterSchema || null,
+    parameterSchema: sessionAdapter?.schema || manifest?.parameterSchema || null,
     stateSchema: manifest?.stateSchema || null,
     capabilityContract: simulation.capabilityContract || null,
   };

@@ -15,7 +15,15 @@ import {WAVE_DESCRIPTOR,createWaveControlDocument,exposeWaveControlState,execute
 import {COUPLED_DESCRIPTOR,createCoupledControlDocument,exposeCoupledControlState,executeCoupledControlCommand}
  from "./coupledPendulumControl.mjs";
 
+import {createModelSessionAdapter} from "./modelSessionAdapter.mjs";
+import {createSimplePendulumModel,PENDULUM_SCHEMA,PENDULUM_DEFAULTS} from "../api/engine/simplePendulumModel.mjs";
+import {createSolarSessionModel,SOLAR_SCHEMA,SOLAR_DEFAULTS} from "../api/engine/solarSessionModel.mjs";
+const modelAdapters=[
+ createModelSessionAdapter({id:"physics.mechanics.simple-pendulum",model:createSimplePendulumModel,schema:PENDULUM_SCHEMA,defaults:PENDULUM_DEFAULTS,units:"SI"}),
+ createModelSessionAdapter({id:"astronomy.space.solar-system",model:createSolarSessionModel,schema:SOLAR_SCHEMA,defaults:SOLAR_DEFAULTS,units:"seconds; display scene units"}),
+];
 const adapters=new Map([
+ ...modelAdapters.map(adapter=>[adapter.id,Object.freeze(adapter)]),
  [COUPLED_DESCRIPTOR.id,Object.freeze({id:COUPLED_DESCRIPTOR.id,descriptor:COUPLED_DESCRIPTOR,
   create:createCoupledControlDocument,expose:exposeCoupledControlState,execute:executeCoupledControlCommand})],
  [WAVE_DESCRIPTOR.id,Object.freeze({id:WAVE_DESCRIPTOR.id,descriptor:WAVE_DESCRIPTOR,

@@ -47,13 +47,14 @@ export default function CoupledPendulumsCord(){
  const onFrameLoad=useCallback(()=>{
   ready.current=true;
   const preset=getPresetFromQuery();
-  if(Object.keys(preset).length)callFrame("configure",preset)
+  if(!new URLSearchParams(window.location.search).has("remoteSessionId")&&Object.keys(preset).length)callFrame("configure",preset)
    .catch(error=>console.warn("Coupled MCP preset:",error));
  },[callFrame]);
  useEffect(()=>{
   const receive=event=>{
    if(event.source!==frame.current?.contentWindow||event.origin!==window.location.origin)return;
    const msg=event.data;
+   if(msg?.type==="esbiko-coupled-ready-v1")onFrameLoad();
    if(msg?.type==="esbiko-coupled-response-v1"){
     const p=pending.current.get(msg.requestId);if(!p)return;
     pending.current.delete(msg.requestId);
@@ -92,7 +93,7 @@ export default function CoupledPendulumsCord(){
    for(const p of pending.current.values())p.reject(new Error("Lab unmounted"));
    pending.current.clear();
   };
- },[send]);
+ },[send,onFrameLoad]);
  useEffect(()=>{
   const expected=new URLSearchParams(window.location.search).get("remoteSessionId");
   if(!expected)return;
@@ -150,7 +151,7 @@ export default function CoupledPendulumsCord(){
    remoteRef.current=null;remoteDispatch.current=null;
   };
  },[callFrame]);
- return <iframe ref={frame} onLoad={onFrameLoad} srcDoc={html}
+ return <iframe ref={frame} onLoad={onFrameLoad} srcDoc={html.replace("</body>",'<script>window.parent.postMessage({type:"esbiko-coupled-ready-v1"},window.origin);</script></body>')}
   title="Esbiko Coupled Pendulums & Elastic Cord — ten pendulums with physics, energy and Video Studio"
   allow="fullscreen" style={{display:"block",width:"100%",height:"100%",minHeight:"100%",border:0,background:"#071426"}} />;
 }

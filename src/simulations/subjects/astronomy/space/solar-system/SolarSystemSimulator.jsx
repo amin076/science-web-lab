@@ -13,6 +13,9 @@ import * as THREE from "three";
 import PlanetMoonComparison3D from "./components/panels/PlanetMoonComparison3D";
 import { readEmbeddedMcpParameters } from "@/platform/agent";
 
+import {useRemoteSimulationSession} from "@/platform/control/useRemoteSimulationSession.js";
+import {SolarSessionClock,SolarClockDriver} from "./physics/SolarSessionClock.jsx";
+
 // ✅ XR (ONLY mounted after user clicks Enter AR/VR)
 import { XR, XROrigin, useXR, createXRStore } from "@react-three/xr";
 import ARRoomPlacement from "./components/xr/ARRoomPlacement";
@@ -502,6 +505,7 @@ function SolarSystemBodies({
       <Sun
         speed={effectiveSpeed}
         radius={scale.sun?.radius ?? 10}
+        showLabels={showLabels}
         rotationPeriod={scale.sun?.rotation ?? 27}
         showAxis={showAxis}
       />
@@ -688,7 +692,8 @@ function SolarSystemSceneXR({
             <Sun
               speed={effectiveSpeed}
               radius={scale.sun?.radius ?? 10}
-              rotationPeriod={scale.sun?.rotation ?? 27}
+              showLabels={showLabels}
+        rotationPeriod={scale.sun?.rotation ?? 27}
               showAxis={showAxis}
             />
 
@@ -802,6 +807,7 @@ export default function SolarSystemSimulator() {
   const threeCanvasRef = useRef(null);
   const videoRecorderRef = useRef(null);
   const runtimeStateRef = useRef(null);
+  const solarClock=useRef({elapsedSeconds:0,phaseSeconds:0});
 
   if (!initialMcpRef.current) {
     initialMcpRef.current = readEmbeddedMcpParameters(
@@ -859,6 +865,17 @@ export default function SolarSystemSimulator() {
     downloadReady: false,
     error: null,
   });
+
+  const remote=useRemoteSimulationSession(snapshot=>{
+    const p=snapshot.parameters;
+    const setters={speed:setSpeed,scaleMode:setScaleMode,focusTarget:setFocusTarget,showTrails:setShowTrails,
+      showOrbits:setShowOrbits,showAxis:setShowAxis,showStars:setShowStars,showLabels:setShowLabels};
+    Object.entries(p).forEach(([key,value])=>setters[key]?.(value));
+    solarClock.current={elapsedSeconds:snapshot.state.elapsedSeconds,phaseSeconds:snapshot.state.phaseSeconds};
+    setIsSimulating(snapshot.running);setIsTouring(false);setFocusRequestId(v=>v+1);
+  });
+  const remoteSet=(key,setter)=>value=>remote.requested
+    ? remote.command("configure",{parameters:{[key]:value}}).catch(e=>console.warn(e.message)):setter(value);
 
   // XR stays mounted so its store remains connected to Three.js before session entry
   const [xrEnabled, setXrEnabled] = useState(false);
@@ -941,6 +958,7 @@ export default function SolarSystemSimulator() {
     isTouring,
     tourInfo,
     video: videoStatus,
+    elapsedSeconds:solarClock.current.elapsedSeconds,phaseSeconds:solarClock.current.phaseSeconds,positions:planetPositions,
   };
 
   const getSolarState = useCallback(
@@ -951,7 +969,7 @@ export default function SolarSystemSimulator() {
     [videoStatus],
   );
 
-  const configureSolarSystem = useCallback(
+  const applySolarParameters = useCallback(
     (input = {}) => {
       if (input.speed !== undefined) setSpeed(input.speed);
       if (input.scaleMode !== undefined) setScaleMode(input.scaleMode);
@@ -975,7 +993,10 @@ export default function SolarSystemSimulator() {
     [handleFocusTarget],
   );
 
-  const effectiveSpeed = isTouring
+  const configureSolarSystem=useCallback(input=>remote.requested
+    ? remote.command("configure",{parameters:input}):applySolarParameters(input),[remote.requested,remote.command,applySolarParameters]);
+
+  const effectiveSpeed = remote.requested ? 0 : isTouring
     ? Math.max(speed, 1)
     : isSimulating
       ? speed
@@ -986,24 +1007,28 @@ export default function SolarSystemSimulator() {
   }, []);
 
   const handleStart = useCallback(() => {
+    if(remote.requested)return remote.command("play");
     setIsSimulating(true);
     runtimeStateRef.current = {
       ...runtimeStateRef.current,
       running: true,
     };
     return getSolarState();
-  }, [getSolarState]);
+  }, [getSolarState,remote.requested,remote.command]);
 
   const handlePause = useCallback(() => {
+    if(remote.requested)return remote.command("pause");
     setIsSimulating(false);
     runtimeStateRef.current = {
       ...runtimeStateRef.current,
       running: false,
     };
     return getSolarState();
-  }, [getSolarState]);
+  }, [getSolarState,remote.requested,remote.command]);
 
   const handleReset = useCallback(() => {
+    if(remote.requested)return remote.command("reset");
+    solarClock.current={elapsedSeconds:0,phaseSeconds:0};
     setIsSimulating(false);
     setSpeed(1);
     setScaleMode("educational");
@@ -1030,7 +1055,7 @@ export default function SolarSystemSimulator() {
       isTouring: false,
     };
     return getSolarState();
-  }, [getSolarState]);
+  }, [getSolarState,remote.requested,remote.command]);
 
   const setTourAction = useCallback(
     (action) => {
@@ -1153,7 +1178,7 @@ export default function SolarSystemSimulator() {
       throw error;
     }
     return getSolarState();
-  }, [getSolarState]);
+  }, [getSolarState,remote.requested,remote.command]);
 
   const downloadSolarVideo = useCallback(() => {
     const result = videoRecorderRef.current?.downloadRecording?.();
@@ -1170,10 +1195,10 @@ export default function SolarSystemSimulator() {
       fileName: result.fileName,
       bytes: result.bytes,
     };
-  }, [getSolarState]);
+  }, [getSolarState,remote.requested,remote.command]);
 
   const webMcpStatus = useSolarSystemWebMcp({
-    enabled: !initialMcp.embeddedMcpApp,
+    enabled: true,
     getState: getSolarState,
     configure: configureSolarSystem,
     setPlayback: (action) =>
@@ -1247,6 +1272,7 @@ export default function SolarSystemSimulator() {
       {initialMcp.embeddedMcpApp && (
         <div className="absolute right-3 top-16 sm:top-20 z-20 rounded-full border border-cyan-400/30 bg-black/70 px-3 py-1.5 text-[11px] font-semibold text-cyan-100 backdrop-blur">
           <span className="sm:hidden">MCP · Solar</span>
+          <span data-remote-status={remote.status} data-session-time={solarClock.current.elapsedSeconds}>{remote.requested?remote.status:""}</span>
           <span className="hidden sm:inline">MCP configured · Solar System</span>
         </div>
       )}
@@ -1261,7 +1287,9 @@ export default function SolarSystemSimulator() {
           }}
           camera={{ position: [0, 60, 200], fov: 60, far: 50_000_000 }}
         >
-          <Suspense fallback={<Html center>Loading...</Html>}>
+          <SolarSessionClock.Provider value={solarClock}>
+          <SolarClockDriver clock={solarClock} remote={remote.requested} running={isSimulating} speed={effectiveSpeed}/>
+          <Suspense fallback={null}>
             <color attach="background" args={["#050510"]} />
             <ambientLight intensity={0.05} />
             <pointLight
@@ -1313,6 +1341,7 @@ export default function SolarSystemSimulator() {
               )}
             </XR>}
           </Suspense>
+          </SolarSessionClock.Provider>
         </Canvas>
       </div>
 
@@ -1421,21 +1450,21 @@ export default function SolarSystemSimulator() {
         <div className="absolute bottom-4 right-4 top-24 z-30 w-80 pointer-events-auto">
           <SolarSystemControlPanel
             speed={speed}
-            setSpeed={setSpeed}
+            setSpeed={remoteSet("speed",setSpeed)}
             showTrails={showTrails}
-            setShowTrails={setShowTrails}
+            setShowTrails={remoteSet("showTrails",setShowTrails)}
             showOrbits={showOrbits}
-            setShowOrbits={setShowOrbits}
+            setShowOrbits={remoteSet("showOrbits",setShowOrbits)}
             showAxis={showAxis}
             showStars={showStars}
-            setShowStars={setShowStars}
-            setShowAxis={setShowAxis}
+            setShowStars={remoteSet("showStars",setShowStars)}
+            setShowAxis={remoteSet("showAxis",setShowAxis)}
             showLabels={showLabels}
-            setShowLabels={setShowLabels}
+            setShowLabels={remoteSet("showLabels",setShowLabels)}
             focusTarget={focusTarget}
-            setFocusTarget={handleFocusTarget}
+            setFocusTarget={remoteSet("focusTarget",handleFocusTarget)}
             scaleMode={scaleMode}
-            setScaleMode={setScaleMode}
+            setScaleMode={remoteSet("scaleMode",setScaleMode)}
             setShowComparison3D={setShowComparison3D}
             setShowPlanetMoonComparison={setShowPlanetMoonComparison}
           />
@@ -1504,21 +1533,21 @@ export default function SolarSystemSimulator() {
 
                 <SolarSystemControlPanel
                   speed={speed}
-                  setSpeed={setSpeed}
+                  setSpeed={remoteSet("speed",setSpeed)}
                   showTrails={showTrails}
-                  setShowTrails={setShowTrails}
+                  setShowTrails={remoteSet("showTrails",setShowTrails)}
                   showOrbits={showOrbits}
-                  setShowOrbits={setShowOrbits}
+                  setShowOrbits={remoteSet("showOrbits",setShowOrbits)}
                   showAxis={showAxis}
                   showStars={showStars}
-                  setShowStars={setShowStars}
-                  setShowAxis={setShowAxis}
+                  setShowStars={remoteSet("showStars",setShowStars)}
+                  setShowAxis={remoteSet("showAxis",setShowAxis)}
                   showLabels={showLabels}
-                  setShowLabels={setShowLabels}
+                  setShowLabels={remoteSet("showLabels",setShowLabels)}
                   focusTarget={focusTarget}
-                  setFocusTarget={handleFocusTarget}
+                  setFocusTarget={remoteSet("focusTarget",handleFocusTarget)}
                   scaleMode={scaleMode}
-                  setScaleMode={setScaleMode}
+                  setScaleMode={remoteSet("scaleMode",setScaleMode)}
                   setShowComparison3D={setShowComparison3D}
                   setShowPlanetMoonComparison={setShowPlanetMoonComparison}
                 />

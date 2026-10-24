@@ -12,18 +12,6 @@ on:
       - "scripts/test-mechanics-agent-browser.mjs"
       - "scripts/audit-all-simulation-readiness.mjs"
       - ".github/workflows/mechanics-agent.yml"
-  push:
-    branches: [main]
-    paths:
-      - "src/simulations/subjects/physics/mechanics/pendulum/**"
-      - "src/simulations/subjects/physics/mechanics/spring-mass/**"
-      - "src/components/shared/video/**"
-      - "src/webmcp/**"
-      - "src/platform/agent/**"
-      - "scripts/test-simulation-agent-contract.mjs"
-      - "scripts/test-mechanics-agent-browser.mjs"
-      - "scripts/audit-all-simulation-readiness.mjs"
-      - ".github/workflows/mechanics-agent.yml"
   workflow_dispatch:
 
 jobs:

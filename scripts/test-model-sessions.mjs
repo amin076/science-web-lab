@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {requireSimulationControlAdapter} from '../functions/control/adapterRegistry.mjs';
+const pendulum=requireSimulationControlAdapter('physics.mechanics.simple-pendulum');
+const solar=requireSimulationControlAdapter('astronomy.space.solar-system');
+for(const adapter of [pendulum,solar]){
+ let doc=adapter.create();
+ assert.throws(()=>adapter.execute(doc,{action:'advance',seconds:3}));
+ assert.throws(()=>adapter.execute(doc,{action:'configure',parameters:{unknown:1}}));
+ const before=adapter.expose(doc);
+ doc=adapter.execute(doc,{action:'play'}).document;
+ assert.equal(adapter.expose(doc).elapsedSeconds,before.elapsedSeconds);
+ doc=adapter.execute(doc,{action:'advance',seconds:0.5}).document;
+ const rehydrated=JSON.parse(JSON.stringify(doc));
+ assert.deepEqual(adapter.expose(rehydrated),adapter.expose(doc));
+ const a=adapter.execute(doc,{action:'advance',seconds:0.5}).document;
+ const b=adapter.execute(rehydrated,{action:'advance',seconds:0.5}).document;
+ assert.deepEqual(adapter.expose(a),adapter.expose(b));
+ assert.equal(adapter.execute(a,{action:'get_trajectory'}).mutation,false);
+ doc=adapter.execute(a,{action:'reset'}).document;
+ assert.equal(adapter.expose(doc).elapsedSeconds,0);
+ assert.equal(adapter.expose(doc).running,false);
+}
+let p=pendulum.create({lengthM:1,entryAngle:1,elasticity:1});
+const initialEnergy=pendulum.expose(p).state.total;
+for(let i=0;i<4;i++)p=pendulum.execute(p,{action:'advance',seconds:0.5}).document;
+const state=pendulum.expose(p).state;
+assert.ok(Math.abs(state.theta-Math.PI/180)<0.0001,'Small angle period is approximately 2 seconds at 1m');
+assert.ok(Math.abs(state.total/initialEnergy-1)<0.01,'Undamped energy bounded within numerical tolerance');
+let s=solar.create({speed:2});s=solar.execute(s,{action:'advance',seconds:1}).document;
+const positions=solar.expose(s).state.positions;
+s=solar.execute(s,{action:'configure',parameters:{speed:0,focusTarget:'jupiter'}}).document;
+assert.deepEqual(solar.expose(s).state.positions,positions,'Changing speed/focus must not jump orbital phase');
+s=solar.execute(s,{action:'advance',seconds:1}).document;
+assert.deepEqual(solar.expose(s).state.positions,positions,'Zero speed freezes all orbital positions');
+console.log('Two model adapters: deterministic checkpoint/replay, time limits, pendulum physics and solar phase continuity PASS');

@@ -35,6 +35,8 @@ for(const name of ["get_simulation_control_schema","create_simulation_session",
   assert.ok(tools.some(tool=>tool.name===name),"Missing "+name);
 
 const cases=[
+  ["physics.mechanics.simple-pendulum",{lengthM:1.5}],
+  ["astronomy.space.solar-system",{focusTarget:"jupiter"}],
   ["physics.mechanics.compound-pendulum",{p2_initialAngleDeg1:155.2}],
   ["physics.waves.coupled-pendulums-cord",{tension:60}],
   ["physics.mechanics.html-reference-projectile",{velocityXMps:12}],
@@ -66,4 +68,4 @@ for(const [simulationId,parameters] of cases){
     if(credentials)await call("close_simulation_session",credentials);
   }
 }
-console.log("All four live simulation sessions and dynamic tool discovery PASS");
+console.log("All six live simulation sessions and dynamic tool discovery PASS");

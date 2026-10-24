@@ -10,6 +10,7 @@ export default function Sun({
   radius = 2,
   rotationPeriod = 27,
   showAxis = true,
+  showLabels = true,
 }) {
   const meshRef = useRef();
 
@@ -97,7 +98,7 @@ export default function Sun({
         <meshBasicMaterial color="#FFD700" transparent opacity={0.1} />
       </mesh>
 
-      <Text
+      {showLabels && <Text
         position={[0, -radius * 1.4, 0]}
         fontSize={Math.max(radius * 0.15, 0.1)}
         color="white"
@@ -105,7 +106,7 @@ export default function Sun({
         anchorY="middle"
       >
         Sun
-      </Text>
+      </Text>}
     </group>
   );
 }

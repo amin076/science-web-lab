@@ -12,6 +12,8 @@ import { readEmbeddedMcpParameters } from "@/platform/agent";
 import { useAgentSimulationTools } from "@/webmcp/useAgentSimulationTools.js";
 import AgentCanvasRecorder from "@/components/shared/video/AgentCanvasRecorder.jsx";
 
+import {useRemoteSimulationSession} from "@/platform/control/useRemoteSimulationSession.js";
+import {stepPendulumState,pendulumMeasurements} from "@/esbiko-physics/mechanics/simplePendulumModel.js";
 const PENDULUM_AGENT_PARAMETERS = Object.freeze({
   lengthM: { type: "number", minimum: 0.5, maximum: 3 },
   massKg: { type: "number", minimum: 0.1, maximum: 10 },
@@ -82,13 +84,29 @@ export default function Pendulum() {
     flashIntensity: 0,
   });
 
+  const drawFrameRef=useRef(null);
+  const remote=useRemoteSimulationSession(snapshot=>{
+    const p=snapshot.parameters;
+    const setters={lengthM:setLengthM,massKg:setMassKg,entryAngle:setEntryAngle,elasticity:setElasticity,
+      pxPerMeter:setPxPerMeter,bobRadius:setBobRadius,trailLen:setTrailLen,showVectors:setShowVectors,showTrail:setShowTrail,showGraph:setShowGraph};
+    for(const [key,value] of Object.entries(p))setters[key]?.(value);
+    if(snapshot.state.tSec<engine.current.tSec){engine.current.trail=[];engine.current.history=[];}
+    Object.assign(engine.current,snapshot.state);setRunning(snapshot.running);
+    requestAnimationFrame(()=>drawFrameRef.current?.());
+  });
+  const changeParameter=(key,setter)=>value=>remote.requested
+    ? remote.command("configure",{parameters:{[key]:value}}).catch(e=>console.warn(e.message)):setter(value);
+  const togglePlayback=()=>remote.requested?remote.command(running?"pause":"play").catch(e=>console.warn(e.message)):setRunning(v=>!v);
+  const resetExperiment=()=>remote.requested?remote.command("reset").catch(e=>console.warn(e.message)):(setRunning(false),resetPhysics());
   const drawFrame = (s = engine.current, physics = null) => {
     if (!physics)
-      physics = { ke: 0, pe: 0, total: 0, speed: 0, posX: 0, posY: 0 };
+      physics = pendulumMeasurements(s,{lengthM,massKg});
     canvasRef.current?.draw(s, showVectors, showTrail);
     hudRef.current?.update(s, physics);
     if (showGraph) graphRef.current?.update(s.history);
   };
+
+  drawFrameRef.current=()=>drawFrame(engine.current);
 
   const resetPhysics = () => {
     const s = engine.current;
@@ -104,12 +122,12 @@ export default function Pendulum() {
   };
 
   useEffect(() => {
-    if (!running) resetPhysics();
+    if (!running && !remote.requested) resetPhysics();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entryAngle]);
 
   useEffect(() => {
-    if (running) {
+    if (running && !remote.requested) {
       engine.current.lastT = performance.now();
       rafRef.current = requestAnimationFrame(loop);
     } else {
@@ -127,17 +145,7 @@ export default function Pendulum() {
     s.lastT = tNow;
     if (dt <= 0 || dt > 0.05) dt = 0.016;
 
-    // ✅ accumulate seconds
-    s.tSec += dt;
-
-    const g = 9.81;
-    const L = Math.max(0.1, lengthM);
-
-    // physics
-    s.alpha = -(g / L) * Math.sin(s.theta);
-    s.omega += s.alpha * dt;
-    s.omega *= Math.pow(elasticity, dt * 60);
-    s.theta += s.omega * dt;
+    stepPendulumState(s,{lengthM,massKg,elasticity},dt);
 
     // flash
     if (
@@ -149,18 +157,7 @@ export default function Pendulum() {
     s.lastTheta = s.theta;
     s.flashIntensity = Math.max(0, s.flashIntensity - 3 * dt);
 
-    // derived
-    const px = L * Math.sin(s.theta);
-    const py = L * Math.cos(s.theta);
-
-    const vx = L * s.omega * Math.cos(s.theta);
-    const vy = -L * s.omega * Math.sin(s.theta);
-    const speed = Math.abs(L * s.omega);
-
-    const h = L - L * Math.cos(s.theta);
-    const pe = massKg * g * h;
-    const ke = 0.5 * massKg * speed * speed;
-    const total = ke + pe;
+    const {posX:px,posY:py,velX:vx,velY:vy,speed,pe,ke,total}=pendulumMeasurements(s,{lengthM,massKg});
 
     // ✅ history uses seconds now
     s.history.push({
@@ -217,6 +214,7 @@ export default function Pendulum() {
         recording: videoRef.current?.getVideoStatus() || null,
       }),
       configure: (values) => {
+        if(remote.requested)return remote.command("configure",{parameters:values});
         if ("entryAngle" in values && agentStateRef.current.running) {
           throw new Error("Pause the pendulum before changing its initial angle.");
         }
@@ -230,10 +228,11 @@ export default function Pendulum() {
       },
       setPlayback: ({ running: next }) => {
         if (typeof next !== "boolean") throw new Error("running must be a boolean.");
+        if(remote.requested)return remote.command(next?"play":"pause");
         setRunning(next);
         return { running: next };
       },
-      reset: () => { setRunning(false); resetPhysics(); return { running: false, reset: true }; },
+      reset: () => { if(remote.requested)return remote.command("reset"); setRunning(false); resetPhysics(); return { running: false, reset: true }; },
       startVideo: ({ mode } = {}) => videoRef.current?.startVideo({ mode }),
       getVideoStatus: () => videoRef.current?.getVideoStatus(),
       stopVideo: () => videoRef.current?.stopVideo(),
@@ -248,7 +247,7 @@ export default function Pendulum() {
   }, []);
 
   return (
-    <div className="flex h-full w-full min-w-0 flex-col lg:flex-row bg-[#020617] text-white overflow-y-auto lg:overflow-hidden">
+    <div data-remote-status={remote.status} data-session-time={engine.current.tSec} className="flex h-full w-full min-w-0 flex-col lg:flex-row bg-[#020617] text-white overflow-y-auto lg:overflow-hidden">
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
@@ -293,29 +292,26 @@ export default function Pendulum() {
         running={running}
         recordingControls={<AgentCanvasRecorder ref={videoRef} canvasSelector=".pendulum-record-canvas" filePrefix="esbiko-pendulum" />}
         webMcpStatus={webMcpStatus}
-        toggleRun={() => setRunning((v) => !v)}
-        onReset={() => {
-          setRunning(false);
-          resetPhysics();
-        }}
+        toggleRun={togglePlayback}
+        onReset={resetExperiment}
         lengthM={lengthM}
-        setLengthM={setLengthM}
+        setLengthM={changeParameter("lengthM",setLengthM)}
         massKg={massKg}
-        setMassKg={setMassKg}
+        setMassKg={changeParameter("massKg",setMassKg)}
         entryAngle={entryAngle}
-        setEntryAngle={setEntryAngle}
+        setEntryAngle={changeParameter("entryAngle",setEntryAngle)}
         elasticity={elasticity}
-        setElasticity={setElasticity}
+        setElasticity={changeParameter("elasticity",setElasticity)}
         pxPerMeter={pxPerMeter}
-        setPxPerMeter={setPxPerMeter}
+        setPxPerMeter={changeParameter("pxPerMeter",setPxPerMeter)}
         bobRadius={bobRadius}
-        setBobRadius={setBobRadius}
+        setBobRadius={changeParameter("bobRadius",setBobRadius)}
         trailLen={trailLen}
-        setTrailLen={setTrailLen}
+        setTrailLen={changeParameter("trailLen",setTrailLen)}
         showVectors={showVectors}
-        setShowVectors={setShowVectors}
+        setShowVectors={changeParameter("showVectors",setShowVectors)}
         showTrail={showTrail}
-        setShowTrail={setShowTrail}
+        setShowTrail={changeParameter("showTrail",setShowTrail)}
       />
 
     </div>

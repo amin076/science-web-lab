@@ -1,6 +1,7 @@
 // src/simulations/subjects/astronomy/space/solar-system/components/bodies/BasePlanet.jsx
 import React, { useRef, useState, useEffect } from "react";
-import { getOrbitPosition } from "../../physics/orbitalPhysics";
+import {solarPlanetPosition} from "@/esbiko-physics/astronomy/solarSessionModel.js";
+import {useSolarSessionClock} from "../../physics/SolarSessionClock.jsx";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { TextureLoader } from "three";
 import { Line } from "@react-three/drei";
@@ -21,6 +22,7 @@ export default function BasePlanet({
   overridePosition,
   children,
 }) {
+  const sessionClock=useSolarSessionClock();
   const groupRef = useRef(null);
   const spinRef = useRef(null);
 
@@ -58,18 +60,8 @@ export default function BasePlanet({
       return;
     }
 
-    // --- Orbit time ---
-    // Using year as period, default to 1 to avoid NaN
-    const period = data.year || 1;
-    const t = clock.getElapsedTime() * speed * 0.1;
-    const orbitProgress = (t / period) * (2 * Math.PI);
-
-    const { x, z } = getOrbitPosition(
-      orbitProgress,
-      data.orbitMajor,
-      data.orbitMinor,
-      data.focusOffset,
-    );
+    const phase=sessionClock?sessionClock.current.phaseSeconds:clock.getElapsedTime()*speed;
+    const [x,,z]=solarPlanetPosition(data,phase);
 
     groupRef.current.position.set(x, 0, z);
 

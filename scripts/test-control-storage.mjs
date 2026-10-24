@@ -52,6 +52,8 @@ const service=await import("../functions/control/controlService.mjs");
 hooks.deregister();delete globalThis[Symbol.for(key)];
 
 const patches={
+  "physics.mechanics.simple-pendulum":{lengthM:1.5},
+  "astronomy.space.solar-system":{focusTarget:"jupiter"},
   "physics.mechanics.compound-pendulum":{p2_initialAngleDeg1:155.2},
   "physics.mechanics.html-reference-projectile":{velocityXMps:12},
   "physics.waves.coupled-pendulums-cord":{tension:60},
@@ -98,4 +100,4 @@ for(const {id} of listSimulationControlAdapters()){
   console.log(id+": create/configure/advance/read/checkpoint/close PASS");
 }
 assert.equal(reproduced,3,"Reproduce all three original nested-array persistence failures");
-console.log("All four persistent adapters, legacy sessions and token/revision checks PASS");
+console.log("All persistent adapters, legacy sessions and token/revision checks PASS");
