@@ -2,6 +2,7 @@
 import React, { Suspense, useEffect } from "react";
 import {useRemoteSimulationSession} from "@/platform/control/useRemoteSimulationSession.js";
 import {publishCameraSnapshot,clearCameraSnapshot} from "@/platform/agent/cameraSessionBus.js";
+import threeCameraIds from "../../../functions/control/data/threeCameraIds.generated.json";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography } from "@mui/material";
 import SimulationLayout from "@/components/layout/SimulationLayout";
@@ -48,7 +49,7 @@ export default function RunSimulation() {
       edges={[]}
       sx={{ height: "100dvh", overflow: "hidden" }}
     >
-      {id !== "astronomy.space.solar-system" && <RemoteCameraRouteBridge key={id}/>}
+      {threeCameraIds.includes(id) && <RemoteCameraRouteBridge key={id}/>}
       <SimulationLayout
         onBack={handleBack}
         fullHeight
