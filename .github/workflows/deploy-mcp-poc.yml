@@ -20,6 +20,7 @@ on:
       - "functions/index.js"
       - "functions/api/**"
       - "src/platform/agent/**"
+      - "scripts/test-camera-session-transition.mjs"
       - "src/simulations/subjects/**/simulation.json"
       - "src/simulations/definitions/generated.js"
       - "scripts/generate-platform-catalog.cjs"
@@ -56,6 +57,9 @@ jobs:
 
       - name: Verify regenerated MCP discovery catalog
         run: node scripts/test-mcp-runtime.mjs
+
+      - name: Verify shared camera tween contract
+        run: node scripts/test-camera-session-transition.mjs
 
       - name: Verify shared Simulation Control API
         run: npm run test:control

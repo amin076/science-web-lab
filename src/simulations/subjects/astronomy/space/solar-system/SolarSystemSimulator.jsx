@@ -27,6 +27,7 @@ import BaseMoon from "./components/bodies/BaseMoon";
 import EllipticalOrbitPath from "./components/orbits/EllipticalOrbitPath";
 import CinematicTour from "./components/camera/CinematicTour";
 import { createCameraCommandController } from "@/platform/agent/cameraCommandContract.js";
+import { interpolateCameraState } from "@/platform/agent/cameraSessionTransition.js";
 import { createThreeOrbitCameraAdapter } from "@/platform/agent/threeOrbitCameraAdapter.js";
 import TourHudPanel from "./components/panels/TourHudPanel";
 import SizeComparison3D from "./components/panels/SizeComparison3D";
@@ -282,6 +283,7 @@ function ManualCameraController({
   const controlsRef = useRef(null);
   const cameraAdapterRef = useRef(null);
   const appliedRemoteCameraRef = useRef(null);
+  const remoteCameraTweenRef = useRef(null);
   const tempTarget = useMemo(() => new THREE.Vector3(), []);
   const lastControlTarget = useMemo(() => new THREE.Vector3(), []);
   const targetDelta = useMemo(() => new THREE.Vector3(), []);
@@ -374,6 +376,7 @@ function ManualCameraController({
       shouldSnapToFocus = scaleMode === "realistic";
       previousFocusKey.current = focusKey;
       appliedRemoteCameraRef.current = null;
+      remoteCameraTweenRef.current = null;
     }
 
     lastControlTarget.copy(controls.target);
@@ -403,29 +406,42 @@ function ManualCameraController({
       camera.position.add(targetDelta);
     }
 
-    // Apply the authenticated server session's absolute camera settings once per change.
-    // Defer until camera focus has settled so the focus animation cannot overwrite them.
+    // Authenticated server camera settings: interpolate locally without repeated MCP calls.
     if (remoteCamera && focusTransitionRef.current <= 0.001) {
-      const previous = appliedRemoteCameraRef.current || {
-        x: 0, y: 0, zoom: 1, yawDegrees: 0, pitchDegrees: 0,
-      };
-      const current = { x: remoteCamera.x ?? 0, y: remoteCamera.y ?? 0,
+      const baseline = { x: 0, y: 0, zoom: 1, yawDegrees: 0, pitchDegrees: 0 };
+      const target = { x: remoteCamera.x ?? 0, y: remoteCamera.y ?? 0,
         zoom: remoteCamera.zoom ?? 1, yawDegrees: remoteCamera.yawDegrees ?? 0,
         pitchDegrees: remoteCamera.pitchDegrees ?? 0 };
+      const previous = appliedRemoteCameraRef.current || baseline;
+      let tween = remoteCameraTweenRef.current;
+      const hasNewTarget = !tween || Object.keys(target).some(key => tween.target[key] !== target[key])
+        || tween.durationSeconds !== (remoteCamera.durationSeconds ?? 0)
+        || tween.easing !== (remoteCamera.easing ?? "easeInOut");
+      if (hasNewTarget) {
+        tween = { start: previous, target, elapsedSeconds: 0,
+          durationSeconds: remoteCamera.durationSeconds ?? 0,
+          easing: remoteCamera.easing ?? "easeInOut" };
+        remoteCameraTweenRef.current = tween;
+      }
+      tween.elapsedSeconds = Math.min(tween.durationSeconds, tween.elapsedSeconds + delta);
+      const next = interpolateCameraState(tween.start, target,
+        tween.durationSeconds > 0 ? tween.elapsedSeconds / tween.durationSeconds : 1, tween.easing);
       const adapter = cameraAdapterRef.current;
-      if (current.zoom !== previous.zoom) adapter.zoom({ factor: current.zoom / previous.zoom });
-      if (current.yawDegrees !== previous.yawDegrees || current.pitchDegrees !== previous.pitchDegrees)
-        adapter.orbit({ yawDegrees: current.yawDegrees - previous.yawDegrees,
-          pitchDegrees: current.pitchDegrees - previous.pitchDegrees });
-      if (current.x !== previous.x || current.y !== previous.y)
-        adapter.pan({ horizontal: current.x - previous.x, vertical: current.y - previous.y });
-      appliedRemoteCameraRef.current = current;
+      if (next.zoom !== previous.zoom) adapter.zoom({ factor: next.zoom / previous.zoom });
+      if (next.yawDegrees !== previous.yawDegrees || next.pitchDegrees !== previous.pitchDegrees)
+        adapter.orbit({ yawDegrees: next.yawDegrees - previous.yawDegrees,
+          pitchDegrees: next.pitchDegrees - previous.pitchDegrees });
+      if (next.x !== previous.x || next.y !== previous.y)
+        adapter.pan({ horizontal: next.x - previous.x, vertical: next.y - previous.y });
+      appliedRemoteCameraRef.current = next;
     }
     controls.update();
   });
 
   const maxDist = scaleMode === "realistic" ? 50_000_000 : 50_000;
-  const minDist = scaleMode === "realistic" ? 1.5 : 2;
+  // Prevent large MCP zoom factors from placing the camera inside the focused planet.
+  const minDist = Math.max(scaleMode === "realistic" ? 1.5 : 2,
+    (scale?.[focusTarget]?.radius ?? 0) * 1.2);
 
   return (
     <OrbitControls

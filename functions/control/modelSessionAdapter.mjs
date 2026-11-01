@@ -25,11 +25,12 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
           const patch=request.camera;
           if(!patch || typeof patch!=="object" || Array.isArray(patch)) throw failure("Camera patch required");
           for(const [key,val] of Object.entries(patch)){
-            const range={x:[-1,1],y:[-1,1],zoom:[0.2,8],yawDegrees:[-180,180],pitchDegrees:[-89,89]}[key];
+            const range={x:[-1,1],y:[-1,1],zoom:[0.2,8],yawDegrees:[-360,360],pitchDegrees:[-89,89],durationSeconds:[0,30]}[key];
+            if(key==="easing" && (val==="linear" || val==="easeInOut")) continue;
             if(!range || typeof val!=="number" || !Number.isFinite(val) || val<range[0] || val>range[1])
               throw failure("Invalid camera "+key);
           }
-          next.camera={...next.camera,...patch};break;
+          next.camera={...next.camera,...patch,durationSeconds:patch.durationSeconds??0,easing:patch.easing??"easeInOut"};break;
         }
         case "advance":case "step":{
           const seconds=request.action==="step"?1/240:request.seconds;
