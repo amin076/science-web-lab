@@ -26,6 +26,8 @@ import BasePlanet from "./components/bodies/BasePlanet";
 import BaseMoon from "./components/bodies/BaseMoon";
 import EllipticalOrbitPath from "./components/orbits/EllipticalOrbitPath";
 import CinematicTour from "./components/camera/CinematicTour";
+import { createCameraCommandController } from "@/platform/agent/cameraCommandContract.js";
+import { createThreeOrbitCameraAdapter } from "@/platform/agent/threeOrbitCameraAdapter.js";
 import TourHudPanel from "./components/panels/TourHudPanel";
 import SizeComparison3D from "./components/panels/SizeComparison3D";
 import SolarSystemControlPanel from "./components/panels/EntireSolarControlPanel";
@@ -270,12 +272,14 @@ function VideoStudioControls({
 function ManualCameraController({
   focusTarget,
   focusRequestId,
+  cameraApiRef,
   targets,
   scale,
   scaleMode,
   isTouring,
 }) {
   const controlsRef = useRef(null);
+  const cameraAdapterRef = useRef(null);
   const tempTarget = useMemo(() => new THREE.Vector3(), []);
   const lastControlTarget = useMemo(() => new THREE.Vector3(), []);
   const targetDelta = useMemo(() => new THREE.Vector3(), []);
@@ -329,6 +333,10 @@ function ManualCameraController({
     if (!controlsRef.current) return;
     if (isTouring) return;
     const controls = controlsRef.current;
+    if (!cameraAdapterRef.current) {
+      cameraAdapterRef.current = createCameraCommandController(createThreeOrbitCameraAdapter({camera, controls}));
+    }
+    if (cameraApiRef) cameraApiRef.current = cameraAdapterRef.current;
 
     let targetIsReady = focusTarget === "sun" || focusTarget === "system";
 
@@ -601,6 +609,7 @@ function SolarSystemSceneNonXR({
   scaleMode,
   focusTarget,
   focusRequestId,
+  cameraApiRef,
   isTouring,
   setTourInfo,
   showStars,
@@ -624,6 +633,7 @@ function SolarSystemSceneNonXR({
       <ManualCameraController
         focusTarget={focusTarget}
         focusRequestId={focusRequestId}
+        cameraApiRef={cameraApiRef}
         targets={planetPositions}
         scale={scale}
         scaleMode={scaleMode}
@@ -660,6 +670,7 @@ function SolarSystemSceneXR({
   scaleMode,
   focusTarget,
   focusRequestId,
+  cameraApiRef,
   isTouring,
   setTourInfo,
   setIsTouring,
@@ -785,6 +796,7 @@ function SolarSystemSceneXR({
         <ManualCameraController
           focusTarget={focusTarget}
           focusRequestId={focusRequestId}
+          cameraApiRef={cameraApiRef}
           targets={planetPositions}
           scale={scale}
           scaleMode={scaleMode}
@@ -805,6 +817,7 @@ export default function SolarSystemSimulator() {
   const initialMcpRef = useRef(null);
   const initialVideoRequestRef = useRef(null);
   const threeCanvasRef = useRef(null);
+  const cameraApiRef = useRef(null);
   const videoRecorderRef = useRef(null);
   const runtimeStateRef = useRef(null);
   const solarClock=useRef({elapsedSeconds:0,phaseSeconds:0});
@@ -1198,6 +1211,11 @@ export default function SolarSystemSimulator() {
   }, [getSolarState,remote.requested,remote.command]);
 
   const webMcpStatus = useSolarSystemWebMcp({
+    cameraCommand: (command) => {
+      if (!cameraApiRef.current) throw new Error("Camera controller is not ready");
+      if (runtimeStateRef.current?.isTouring) throw new Error("Stop cinematic tour before controlling camera");
+      return cameraApiRef.current(command);
+    },
     enabled: true,
     getState: getSolarState,
     configure: configureSolarSystem,
@@ -1315,6 +1333,7 @@ export default function SolarSystemSimulator() {
                 scaleMode={scaleMode}
                 focusTarget={focusTarget}
                 focusRequestId={focusRequestId}
+                cameraApiRef={cameraApiRef}
                 isTouring={isTouring}
                 setTourInfo={setTourInfo}
                 setIsTouring={setIsTouring}
@@ -1334,6 +1353,7 @@ export default function SolarSystemSimulator() {
                   scaleMode={scaleMode}
                   focusTarget={focusTarget}
                   focusRequestId={focusRequestId}
+                  cameraApiRef={cameraApiRef}
                   isTouring={isTouring}
                   setTourInfo={setTourInfo}
                   setIsTouring={setIsTouring}
