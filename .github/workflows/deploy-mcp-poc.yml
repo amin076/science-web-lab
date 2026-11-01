@@ -21,6 +21,10 @@ on:
       - "functions/api/**"
       - "src/platform/agent/**"
       - "scripts/test-camera-session-transition.mjs"
+      - "scripts/test-automatic-three-camera.mjs"
+      - "scripts/discover-three-camera-simulations.cjs"
+      - "scripts/auto-orbit-controls-transform.cjs"
+      - "functions/control/data/**"
       - "src/simulations/subjects/**/simulation.json"
       - "src/simulations/definitions/generated.js"
       - "scripts/generate-platform-catalog.cjs"
@@ -57,6 +61,9 @@ jobs:
 
       - name: Verify regenerated MCP discovery catalog
         run: node scripts/test-mcp-runtime.mjs
+
+      - name: Verify automatically discovered Three.js camera adapters
+        run: node scripts/test-automatic-three-camera.mjs
 
       - name: Verify shared camera tween contract
         run: node scripts/test-camera-session-transition.mjs
