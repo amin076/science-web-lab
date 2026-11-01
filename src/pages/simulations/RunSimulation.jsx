@@ -1,5 +1,7 @@
 // src/pages/simulations/RunSimulation.jsx
 import React, { Suspense, useEffect } from "react";
+import {useRemoteSimulationSession} from "@/platform/control/useRemoteSimulationSession.js";
+import {publishCameraSnapshot,clearCameraSnapshot} from "@/platform/agent/cameraSessionBus.js";
 import { useParams, useNavigate } from "react-router-dom";
 import { Box, Paper, Typography } from "@mui/material";
 import SimulationLayout from "@/components/layout/SimulationLayout";
@@ -7,6 +9,13 @@ import { SafeAreaContainer } from "@/components/mobile";
 import { simulationRegistry } from "@/simulations/registry";
 import { unlockScroll } from "@/utils/scrollLock";
 import { trackExperimentView } from "@/services/experimentStats";
+
+function RemoteCameraRouteBridge() {
+  // This hook attaches only when an authenticated MCP widget provides a session.
+  useRemoteSimulationSession(snapshot => publishCameraSnapshot(snapshot));
+  useEffect(() => () => clearCameraSnapshot(), []);
+  return null;
+}
 
 export default function RunSimulation() {
   const { id } = useParams();
@@ -39,6 +48,7 @@ export default function RunSimulation() {
       edges={[]}
       sx={{ height: "100dvh", overflow: "hidden" }}
     >
+      {id !== "astronomy.space.solar-system" && <RemoteCameraRouteBridge key={id}/>}
       <SimulationLayout
         onBack={handleBack}
         fullHeight
