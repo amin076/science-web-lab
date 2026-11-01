@@ -60,7 +60,10 @@ const patches={
   "physics.waves.string-wave-lab":{s1_freq:2},
 };
 let reproduced=0;
-for(const {id} of listSimulationControlAdapters()){
+for(const {id,commands} of listSimulationControlAdapters()){
+  // Camera-only visual sessions deliberately do not implement physics configure/advance.
+  // Their revision and input-validation contract has its own generic camera test.
+  if(!commands.includes('configure'))continue;
   const adapter=requireSimulationControlAdapter(id);
   try{validateStoredValue(adapter.create({}));}catch{reproduced++;}
   const created=await service.createControlSession({},id);
