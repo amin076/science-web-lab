@@ -1,6 +1,6 @@
 export function createModelSessionAdapter({id,model,schema,defaults,units}){
   const descriptor={id,schema,defaults,units,adapterVersion:"esbiko-model-session.v1",clock:"explicit-simulation-time",
-    commands:["get_state","get_capabilities","configure","advance","step","play","pause","reset","get_trajectory"],
+    commands:["get_state","get_capabilities","configure","advance","step","play","pause","reset","set_camera","get_trajectory"],
     transport:["http","mcp"],supportedMedia:{browserCanvasWebM:true,serverVideoCapture:false},
     limits:{maxSimulationSeconds:120,maxAdvanceSeconds:2,maxCommands:80}};
   const failure=message=>Object.assign(new Error(message),{status:400,code:"INVALID_CONTROL_INPUT"});
@@ -21,6 +21,16 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
       if(doc.commandCount>=80)throw failure("Session command limit reached");
       switch(request.action){
         case "configure":m.configure(request.parameters);next.running=false;break;
+        case "set_camera": {
+          const patch=request.camera;
+          if(!patch || typeof patch!=="object" || Array.isArray(patch)) throw failure("Camera patch required");
+          for(const [key,val] of Object.entries(patch)){
+            const range={x:[-1,1],y:[-1,1],zoom:[0.2,8],yawDegrees:[-180,180],pitchDegrees:[-89,89]}[key];
+            if(!range || typeof val!=="number" || !Number.isFinite(val) || val<range[0] || val>range[1])
+              throw failure("Invalid camera "+key);
+          }
+          next.camera={...next.camera,...patch};break;
+        }
         case "advance":case "step":{
           const seconds=request.action==="step"?1/240:request.seconds;
           if(!Number.isFinite(seconds)||seconds<=0||seconds>2||m.snapshot().elapsedSeconds+seconds>120)throw failure("Invalid simulation duration");
