@@ -8,6 +8,7 @@ on:
       - "src/platform/agent/**"
       - "functions/mcp/**"
       - "scripts/test-solar-system-complete.mjs"
+      - "scripts/test-camera-command-contract.mjs"
       - ".github/workflows/solar-system-complete.yml"
       - "package.json"
       - "package-lock.json"
@@ -38,6 +39,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Verify shared 2D/3D camera command contract
+        run: node scripts/test-camera-command-contract.mjs
 
       - name: Install Playwright Chromium
         run: |

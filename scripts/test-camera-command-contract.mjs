@@ -1,0 +1,56 @@
+import assert from "node:assert/strict";
+import { PerspectiveCamera, Vector3 } from "three";
+import { createCameraCommandController, createCanvas2DCameraAdapter, validateCameraCommand } from "../src/platform/agent/cameraCommandContract.js";
+import { createThreeOrbitCameraAdapter } from "../src/platform/agent/threeOrbitCameraAdapter.js";
+
+assert.throws(() => validateCameraCommand({action:"zoom",factor:0}), /Invalid/);
+assert.throws(() => validateCameraCommand({action:"pan"}), /required/);
+const view={x:0,y:0,scale:1,rotation:0};
+let updates=0;
+const canvas=createCameraCommandController(createCanvas2DCameraAdapter(view,()=>updates++));
+await canvas({action:"zoom",factor:2});
+await canvas({action:"pan",horizontal:0.2,vertical:-0.1});
+await canvas({action:"orbit",yawDegrees:90});
+assert.equal(view.scale,2);assert.equal(view.x,0.2);assert.equal(view.y,-0.1);
+assert.ok(Math.abs(view.rotation-Math.PI/2)<1e-10);
+await canvas({action:"reset"});assert.deepEqual(view,{x:0,y:0,scale:1,rotation:0});
+assert.equal(updates,4);
+const camera=new PerspectiveCamera(60,1.6,0.1,1000);
+camera.position.set(0,0,12);
+const controls={target:new Vector3(),minDistance:1,maxDistance:100,update(){}};
+const three=createCameraCommandController(createThreeOrbitCameraAdapter({camera,controls}));
+assert.ok(Math.abs((await three({action:"read"})).distance-12)<1e-9);
+await three({action:"zoom",factor:2});
+assert.ok(Math.abs(camera.position.distanceTo(controls.target)-6)<1e-9);
+await three({action:"orbit",yawDegrees:45,pitchDegrees:20});
+assert.ok(Math.abs(camera.position.distanceTo(controls.target)-6)<1e-9);
+await three({action:"pan",horizontal:0.1,vertical:0.05});
+assert.ok(controls.target.length()>0);
+await three({action:"reset"});
+assert.ok(camera.position.distanceTo(new Vector3(0,0,12))<1e-9);
+assert.ok(controls.target.length()<1e-9);
+// Assert that the private MCP/HTTP session model persists camera changes
+// without advancing physics or overwriting configuration.
+const { createModelSessionAdapter } = await import("../functions/control/modelSessionAdapter.mjs");
+const model = () => {
+  let steps=0;
+  return {checkpoint:()=>({steps}),restore:(cp)=>{steps=cp.steps;},
+    snapshot:()=>({elapsedSeconds:steps,parameters:{speed:1}}),
+    configure:()=>{},advance:()=>{},reset:()=>{},trajectory:()=>[]};
+};
+const session = createModelSessionAdapter({id:"test.camera",model,schema:{type:"object",properties:{}},
+  defaults:{},units:"simulation units"});
+const original = session.create();
+assert.ok(session.descriptor.commands.includes("set_camera"));
+const result = session.execute(original,{action:"set_camera",
+  camera:{zoom:2,x:0.1,y:-0.2,yawDegrees:45,pitchDegrees:10}});
+assert.equal(result.mutation,true);
+assert.equal(result.document.camera.zoom,2);
+assert.equal(result.document.camera.yawDegrees,45);
+assert.equal(result.document.camera.pitchDegrees,10);
+assert.equal(result.document.camera.x,0.1);
+assert.equal(result.document.revision,1);
+assert.equal(result.document.checkpoint.steps,0);
+assert.equal(original.camera.zoom,1);
+assert.throws(()=>session.execute(original,{action:"set_camera",camera:{zoom:100}}),/Invalid camera/);
+console.log("Shared 2D/3D camera and private-session adapter tests passed.");

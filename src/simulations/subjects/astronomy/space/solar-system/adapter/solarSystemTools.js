@@ -1,4 +1,5 @@
 import { createSafeToolExecutor } from "../../../../../../webmcp/registerWebMcpTools.js";
+import { CAMERA_COMMAND_SCHEMA } from "../../../../../../platform/agent/cameraCommandContract.js";
 
 export const SOLAR_FOCUS_TARGETS = Object.freeze([
   "system",
@@ -69,6 +70,14 @@ export function createSolarSystemWebMcpTools(actions) {
       execute: createSafeToolExecutor("configure_solar_system", async (input) =>
         actions.configure(input),
       ),
+    },
+    {
+      name: "control_solar_system_camera",
+      description: "Control the live Solar System 3D camera: zoom closer/out, pan horizontally/vertically, orbit left/right/up/down, reset or read the camera. Stop cinematic touring first.",
+      inputSchema: CAMERA_COMMAND_SCHEMA,
+      annotations: { readOnlyHint: false, untrustedContentHint: false },
+      execute: createSafeToolExecutor("control_solar_system_camera", async input =>
+        actions.cameraCommand(input)),
     },
     {
       name: "set_solar_system_playback",

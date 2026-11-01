@@ -29,6 +29,7 @@ export function useSolarSystemWebMcp(actions) {
       setPlayback: (...args) => actionsRef.current.setPlayback(...args),
       reset: (...args) => actionsRef.current.reset(...args),
       setTour: (...args) => actionsRef.current.setTour(...args),
+      cameraCommand: (...args) => actionsRef.current.cameraCommand(...args),
       startVideo: (...args) => actionsRef.current.startVideo(...args),
       getVideoStatus: (...args) => actionsRef.current.getVideoStatus(...args),
       stopVideo: (...args) => actionsRef.current.stopVideo(...args),

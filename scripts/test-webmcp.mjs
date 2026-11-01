@@ -410,6 +410,7 @@ const solarTools = createSolarSystemWebMcpTools({
     };
     return solarRuntimeState;
   },
+  cameraCommand: (command) => ({ action: command.action, distance: command.factor ? 12 / command.factor : 12 }),
   setTour: (action) => {
     solarRuntimeState = {
       ...solarRuntimeState,
@@ -447,6 +448,7 @@ assert.deepEqual(
   [
     "get_solar_system_state",
     "configure_solar_system",
+    "control_solar_system_camera",
     "set_solar_system_playback",
     "reset_solar_system",
     "set_solar_system_tour",
@@ -459,7 +461,7 @@ assert.deepEqual(
 assert.equal(solarTools[0].annotations.readOnlyHint, true);
 assert.equal(solarTools[1].annotations.readOnlyHint, false);
 assert.deepEqual(
-  solarTools[5].inputSchema.properties.aspectRatio.enum,
+  solarTools.find(t => t.name === "create_solar_system_video").inputSchema.properties.aspectRatio.enum,
   ["16:9", "9:16"],
 );
 
@@ -475,8 +477,12 @@ assert.equal(solarConfigureResult.data.speed, 5);
 assert.equal(solarConfigureResult.data.focusTarget, "earth");
 assert.equal(solarConfigureResult.data.showAxis, false);
 
+const solarCameraResult = JSON.parse(await solarTools.find(t => t.name === "control_solar_system_camera").execute({ action: "zoom", factor: 2 }));
+assert.equal(solarCameraResult.ok, true);
+assert.equal(solarCameraResult.data.distance, 6);
+
 const solarVideoResult = JSON.parse(
-  await solarTools[5].execute({
+  await solarTools.find(t => t.name === "create_solar_system_video").execute({
     storyMode: "cinematic_tour",
     durationSeconds: 20,
     aspectRatio: "16:9",
