@@ -16,6 +16,8 @@ import {COUPLED_DESCRIPTOR,createCoupledControlDocument,exposeCoupledControlStat
  from "./coupledPendulumControl.mjs";
 
 import {createModelSessionAdapter} from "./modelSessionAdapter.mjs";
+import {createThreeCameraSessionAdapter} from "./threeCameraSessionAdapter.mjs";
+import cameraIds from "./data/threeCameraIds.generated.json" with {type:"json"};
 import {createSimplePendulumModel,PENDULUM_SCHEMA,PENDULUM_DEFAULTS} from "../api/engine/simplePendulumModel.mjs";
 import {createSolarSessionModel,SOLAR_SCHEMA,SOLAR_DEFAULTS} from "../api/engine/solarSessionModel.mjs";
 const modelAdapters=[
@@ -23,6 +25,7 @@ const modelAdapters=[
  createModelSessionAdapter({id:"astronomy.space.solar-system",model:createSolarSessionModel,schema:SOLAR_SCHEMA,defaults:SOLAR_DEFAULTS,units:"seconds; display scene units"}),
 ];
 const adapters=new Map([
+ ...cameraIds.map(id=>[id,Object.freeze(createThreeCameraSessionAdapter(id))]),
  ...modelAdapters.map(adapter=>[adapter.id,Object.freeze(adapter)]),
  [COUPLED_DESCRIPTOR.id,Object.freeze({id:COUPLED_DESCRIPTOR.id,descriptor:COUPLED_DESCRIPTOR,
   create:createCoupledControlDocument,expose:exposeCoupledControlState,execute:executeCoupledControlCommand})],
