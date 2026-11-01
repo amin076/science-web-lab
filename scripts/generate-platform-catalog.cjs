@@ -255,7 +255,7 @@ async function main() {
   const threeCameraIds = discoverThreeCameraIds(catalogWithAgentCapabilities);
   const cameraCatalog = path.join(projectRoot,"functions","control","data","threeCameraIds.generated.json");
   fs.mkdirSync(path.dirname(cameraCatalog),{recursive:true});
-  fs.writeFileSync(cameraCatalog,JSON.stringify(threeCameraIds,null,2)+"\\n","utf8");
+  fs.writeFileSync(cameraCatalog,JSON.stringify(threeCameraIds,null,2)+"\n","utf8");
   console.log("Discovered "+threeCameraIds.length+" additional Three.js camera session adapters");
 
 
