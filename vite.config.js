@@ -3,6 +3,9 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { transformOrbitControls } = require("./scripts/auto-orbit-controls-transform.cjs");
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,6 +13,9 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [
+    {name:"esbiko-universal-three-camera",enforce:"pre",transform(code,id){
+      return transformOrbitControls(code,id);
+    }},
     react(),
 
     VitePWA({

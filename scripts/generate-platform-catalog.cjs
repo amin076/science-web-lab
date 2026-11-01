@@ -1,6 +1,7 @@
 /* eslint-env node */
 const fs = require("fs");
 const path = require("path");
+const {discoverThreeCameraIds} = require("./discover-three-camera-simulations.cjs");
 
 const projectRoot = path.resolve(__dirname, "..");
 const outputPath = path.join(
@@ -251,6 +252,12 @@ async function main() {
 
   assertJsonSafeCatalog(catalogWithAgentCapabilities);
   assertJsonSafeAgentManifest(agentManifest);
+  const threeCameraIds = discoverThreeCameraIds(catalogWithAgentCapabilities);
+  const cameraCatalog = path.join(projectRoot,"functions","control","data","threeCameraIds.generated.json");
+  fs.mkdirSync(path.dirname(cameraCatalog),{recursive:true});
+  fs.writeFileSync(cameraCatalog,JSON.stringify(threeCameraIds,null,2)+"\n","utf8");
+  console.log("Discovered "+threeCameraIds.length+" additional Three.js camera session adapters");
+
 
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(
