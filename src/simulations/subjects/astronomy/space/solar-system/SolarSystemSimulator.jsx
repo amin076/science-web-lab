@@ -273,6 +273,7 @@ function ManualCameraController({
   focusTarget,
   focusRequestId,
   cameraApiRef,
+  remoteCamera,
   targets,
   scale,
   scaleMode,
@@ -280,6 +281,7 @@ function ManualCameraController({
 }) {
   const controlsRef = useRef(null);
   const cameraAdapterRef = useRef(null);
+  const appliedRemoteCameraRef = useRef(null);
   const tempTarget = useMemo(() => new THREE.Vector3(), []);
   const lastControlTarget = useMemo(() => new THREE.Vector3(), []);
   const targetDelta = useMemo(() => new THREE.Vector3(), []);
@@ -334,9 +336,9 @@ function ManualCameraController({
     if (isTouring) return;
     const controls = controlsRef.current;
     if (!cameraAdapterRef.current) {
-      cameraAdapterRef.current = createCameraCommandController(createThreeOrbitCameraAdapter({camera, controls}));
+      cameraAdapterRef.current = createThreeOrbitCameraAdapter({camera, controls});
+      if (cameraApiRef) cameraApiRef.current = createCameraCommandController(cameraAdapterRef.current);
     }
-    if (cameraApiRef) cameraApiRef.current = cameraAdapterRef.current;
 
     let targetIsReady = focusTarget === "sun" || focusTarget === "system";
 
@@ -371,6 +373,7 @@ function ManualCameraController({
       focusTransitionRef.current = 2.2;
       shouldSnapToFocus = scaleMode === "realistic";
       previousFocusKey.current = focusKey;
+      appliedRemoteCameraRef.current = null;
     }
 
     lastControlTarget.copy(controls.target);
@@ -400,6 +403,24 @@ function ManualCameraController({
       camera.position.add(targetDelta);
     }
 
+    // Apply the authenticated server session's absolute camera settings once per change.
+    // Defer until camera focus has settled so the focus animation cannot overwrite them.
+    if (remoteCamera && focusTransitionRef.current <= 0.001) {
+      const previous = appliedRemoteCameraRef.current || {
+        x: 0, y: 0, zoom: 1, yawDegrees: 0, pitchDegrees: 0,
+      };
+      const current = { x: remoteCamera.x ?? 0, y: remoteCamera.y ?? 0,
+        zoom: remoteCamera.zoom ?? 1, yawDegrees: remoteCamera.yawDegrees ?? 0,
+        pitchDegrees: remoteCamera.pitchDegrees ?? 0 };
+      const adapter = cameraAdapterRef.current;
+      if (current.zoom !== previous.zoom) adapter.zoom({ factor: current.zoom / previous.zoom });
+      if (current.yawDegrees !== previous.yawDegrees || current.pitchDegrees !== previous.pitchDegrees)
+        adapter.orbit({ yawDegrees: current.yawDegrees - previous.yawDegrees,
+          pitchDegrees: current.pitchDegrees - previous.pitchDegrees });
+      if (current.x !== previous.x || current.y !== previous.y)
+        adapter.pan({ horizontal: current.x - previous.x, vertical: current.y - previous.y });
+      appliedRemoteCameraRef.current = current;
+    }
     controls.update();
   });
 
@@ -610,6 +631,7 @@ function SolarSystemSceneNonXR({
   focusTarget,
   focusRequestId,
   cameraApiRef,
+  remoteCamera,
   isTouring,
   setTourInfo,
   showStars,
@@ -634,6 +656,7 @@ function SolarSystemSceneNonXR({
         focusTarget={focusTarget}
         focusRequestId={focusRequestId}
         cameraApiRef={cameraApiRef}
+        remoteCamera={remoteCamera}
         targets={planetPositions}
         scale={scale}
         scaleMode={scaleMode}
@@ -671,6 +694,7 @@ function SolarSystemSceneXR({
   focusTarget,
   focusRequestId,
   cameraApiRef,
+  remoteCamera,
   isTouring,
   setTourInfo,
   setIsTouring,
@@ -797,6 +821,7 @@ function SolarSystemSceneXR({
           focusTarget={focusTarget}
           focusRequestId={focusRequestId}
           cameraApiRef={cameraApiRef}
+          remoteCamera={remoteCamera}
           targets={planetPositions}
           scale={scale}
           scaleMode={scaleMode}
@@ -818,6 +843,8 @@ export default function SolarSystemSimulator() {
   const initialVideoRequestRef = useRef(null);
   const threeCanvasRef = useRef(null);
   const cameraApiRef = useRef(null);
+  const remoteFocusKeyRef = useRef(null);
+  const [remoteCamera, setRemoteCamera] = useState(null);
   const videoRecorderRef = useRef(null);
   const runtimeStateRef = useRef(null);
   const solarClock=useRef({elapsedSeconds:0,phaseSeconds:0});
@@ -885,7 +912,13 @@ export default function SolarSystemSimulator() {
       showOrbits:setShowOrbits,showAxis:setShowAxis,showStars:setShowStars,showLabels:setShowLabels};
     Object.entries(p).forEach(([key,value])=>setters[key]?.(value));
     solarClock.current={elapsedSeconds:snapshot.state.elapsedSeconds,phaseSeconds:snapshot.state.phaseSeconds};
-    setIsSimulating(snapshot.running);setIsTouring(false);setFocusRequestId(v=>v+1);
+    setIsSimulating(snapshot.running);setIsTouring(false);
+    setRemoteCamera(snapshot.camera || null);
+    const focusKey = p.scaleMode + ":" + p.focusTarget;
+    if (remoteFocusKeyRef.current !== focusKey) {
+      remoteFocusKeyRef.current = focusKey;
+      setFocusRequestId(v=>v+1);
+    }
   });
   const remoteSet=(key,setter)=>value=>remote.requested
     ? remote.command("configure",{parameters:{[key]:value}}).catch(e=>console.warn(e.message)):setter(value);
@@ -1334,6 +1367,7 @@ export default function SolarSystemSimulator() {
                 focusTarget={focusTarget}
                 focusRequestId={focusRequestId}
                 cameraApiRef={cameraApiRef}
+                remoteCamera={remoteCamera}
                 isTouring={isTouring}
                 setTourInfo={setTourInfo}
                 setIsTouring={setIsTouring}
@@ -1354,6 +1388,7 @@ export default function SolarSystemSimulator() {
                   focusTarget={focusTarget}
                   focusRequestId={focusRequestId}
                   cameraApiRef={cameraApiRef}
+                  remoteCamera={remoteCamera}
                   isTouring={isTouring}
                   setTourInfo={setTourInfo}
                   setIsTouring={setIsTouring}
