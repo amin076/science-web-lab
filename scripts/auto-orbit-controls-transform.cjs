@@ -4,7 +4,8 @@
  */
 const CAMERA_BRIDGE_IMPORT = "@/platform/agent/AutoOrbitControls.jsx";
 function transformOrbitControls(source, id = "") {
-  if (!id.replaceAll("\\", "/").includes("/src/simulations/subjects/") ||
+  if (!(id.replaceAll("\\", "/").includes("/src/simulations/subjects/") ||
+        id.replaceAll("\\", "/").endsWith("/src/components/shared/ThreeDCanvas.jsx")) ||
       id.includes("/solar-system/") || !source.includes("OrbitControls") ||
       !source.includes("@react-three/drei")) return null;
   const pattern = /import\s*\{([^}]+)\}\s*from\s*(['"])@react-three\/drei\2\s*;?/g;
