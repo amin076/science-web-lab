@@ -29,4 +29,28 @@ assert.ok(controls.target.length()>0);
 await three({action:"reset"});
 assert.ok(camera.position.distanceTo(new Vector3(0,0,12))<1e-9);
 assert.ok(controls.target.length()<1e-9);
-console.log("Shared 2D/3D camera adapter commands passed.");
+// Assert that the private MCP/HTTP session model persists camera changes
+// without advancing physics or overwriting configuration.
+const { createModelSessionAdapter } = await import("../functions/control/modelSessionAdapter.mjs");
+const model = () => {
+  let steps=0;
+  return {checkpoint:()=>({steps}),restore:(cp)=>{steps=cp.steps;},
+    snapshot:()=>({elapsedSeconds:steps,parameters:{speed:1}}),
+    configure:()=>{},advance:()=>{},reset:()=>{},trajectory:()=>[]};
+};
+const session = createModelSessionAdapter({id:"test.camera",model,schema:{type:"object",properties:{}},
+  defaults:{},units:"simulation units"});
+const original = session.create();
+assert.ok(session.descriptor.commands.includes("set_camera"));
+const result = session.execute(original,{action:"set_camera",
+  camera:{zoom:2,x:0.1,y:-0.2,yawDegrees:45,pitchDegrees:10}});
+assert.equal(result.mutation,true);
+assert.equal(result.document.camera.zoom,2);
+assert.equal(result.document.camera.yawDegrees,45);
+assert.equal(result.document.camera.pitchDegrees,10);
+assert.equal(result.document.camera.x,0.1);
+assert.equal(result.document.revision,1);
+assert.equal(result.document.checkpoint.steps,0);
+assert.equal(original.camera.zoom,1);
+assert.throws(()=>session.execute(original,{action:"set_camera",camera:{zoom:100}}),/Invalid camera/);
+console.log("Shared 2D/3D camera and private-session adapter tests passed.");
