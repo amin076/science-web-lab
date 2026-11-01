@@ -61,6 +61,7 @@ export function createSolarSystemWebMcpTools(actions) {
           speed: { type: "number", minimum: 0, maximum: 30 },
           scaleMode: { type: "string", enum: SOLAR_SCALE_MODES },
           focusTarget: { type: "string", enum: SOLAR_FOCUS_TARGETS },
+          zoomFactor: { type: "number", minimum: 0.5, maximum: 4, description: "Relative camera closeness to the focused object. 1 is normal; 2 is twice as close." },
           ...visualProperties,
         },
         additionalProperties: false,

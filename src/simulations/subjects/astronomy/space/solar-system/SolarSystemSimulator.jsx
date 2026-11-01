@@ -270,6 +270,7 @@ function VideoStudioControls({
 function ManualCameraController({
   focusTarget,
   focusRequestId,
+  zoomFactor,
   targets,
   scale,
   scaleMode,
@@ -285,7 +286,7 @@ function ManualCameraController({
   );
   const desiredCameraPosition = useMemo(() => new THREE.Vector3(), []);
   const previousFocusKey = useRef(
-    `${scaleMode}:${focusTarget}:${focusRequestId}`,
+    `${scaleMode}:${focusTarget}:${focusRequestId}:${zoomFactor}`,
   );
   const focusTransitionRef = useRef(0);
 
@@ -351,7 +352,7 @@ function ManualCameraController({
       return;
     }
 
-    const focusKey = `${scaleMode}:${focusTarget}:${focusRequestId}`;
+    const focusKey = `${scaleMode}:${focusTarget}:${focusRequestId}:${zoomFactor}`;
     let shouldSnapToFocus = false;
     if (previousFocusKey.current !== focusKey) {
       focusOffset.copy(camera.position).sub(controls.target);
@@ -373,7 +374,7 @@ function ManualCameraController({
       controls.target.copy(tempTarget);
       desiredCameraPosition
         .copy(tempTarget)
-        .addScaledVector(focusOffset, getFocusDistance(focusTarget));
+        .addScaledVector(focusOffset, Math.max(minDist, getFocusDistance(focusTarget) / zoomFactor));
 
       if (shouldSnapToFocus) {
         camera.position.copy(desiredCameraPosition);
@@ -601,6 +602,7 @@ function SolarSystemSceneNonXR({
   scaleMode,
   focusTarget,
   focusRequestId,
+  zoomFactor,
   isTouring,
   setTourInfo,
   showStars,
@@ -624,6 +626,7 @@ function SolarSystemSceneNonXR({
       <ManualCameraController
         focusTarget={focusTarget}
         focusRequestId={focusRequestId}
+        zoomFactor={zoomFactor}
         targets={planetPositions}
         scale={scale}
         scaleMode={scaleMode}
@@ -660,6 +663,7 @@ function SolarSystemSceneXR({
   scaleMode,
   focusTarget,
   focusRequestId,
+  zoomFactor,
   isTouring,
   setTourInfo,
   setIsTouring,
@@ -785,6 +789,7 @@ function SolarSystemSceneXR({
         <ManualCameraController
           focusTarget={focusTarget}
           focusRequestId={focusRequestId}
+          zoomFactor={zoomFactor}
           targets={planetPositions}
           scale={scale}
           scaleMode={scaleMode}
@@ -841,6 +846,7 @@ export default function SolarSystemSimulator() {
   const [showLabels, setShowLabels] = useState(initialMcp.values.showLabels);
   const [focusTarget, setFocusTarget] = useState(initialMcp.values.focusTarget);
   const [focusRequestId, setFocusRequestId] = useState(0);
+  const [zoomFactor, setZoomFactor] = useState(1);
   const [scaleMode, setScaleMode] = useState(initialMcp.values.scaleMode);
 
   const [planetPositions, setPlanetPositions] = useState({});
@@ -950,6 +956,7 @@ export default function SolarSystemSimulator() {
     speed,
     scaleMode,
     focusTarget,
+    zoomFactor,
     showTrails,
     showOrbits,
     showAxis,
@@ -974,6 +981,7 @@ export default function SolarSystemSimulator() {
       if (input.speed !== undefined) setSpeed(input.speed);
       if (input.scaleMode !== undefined) setScaleMode(input.scaleMode);
       if (input.focusTarget !== undefined) handleFocusTarget(input.focusTarget);
+      if (input.zoomFactor !== undefined) setZoomFactor(input.zoomFactor);
       if (input.showTrails !== undefined) setShowTrails(input.showTrails);
       if (input.showOrbits !== undefined) setShowOrbits(input.showOrbits);
       if (input.showAxis !== undefined) setShowAxis(input.showAxis);
@@ -1315,6 +1323,7 @@ export default function SolarSystemSimulator() {
                 scaleMode={scaleMode}
                 focusTarget={focusTarget}
                 focusRequestId={focusRequestId}
+                zoomFactor={zoomFactor}
                 isTouring={isTouring}
                 setTourInfo={setTourInfo}
                 setIsTouring={setIsTouring}
@@ -1334,6 +1343,7 @@ export default function SolarSystemSimulator() {
                   scaleMode={scaleMode}
                   focusTarget={focusTarget}
                   focusRequestId={focusRequestId}
+                  zoomFactor={zoomFactor}
                   isTouring={isTouring}
                   setTourInfo={setTourInfo}
                   setIsTouring={setIsTouring}
