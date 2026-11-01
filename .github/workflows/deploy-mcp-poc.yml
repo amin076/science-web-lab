@@ -12,6 +12,7 @@ on:
       - "src/platform/control/**"
       - "scripts/test-session-bridges.mjs"
       - "scripts/test-model-sessions.mjs"
+      - "scripts/test-control-storage.mjs"
       - "src/simulations/subjects/physics/mechanics/pendulum/**"
       - "src/simulations/subjects/physics/waves/coupled-pendulums-cord/**"
       - "src/simulations/subjects/astronomy/space/solar-system/**"
