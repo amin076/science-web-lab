@@ -149,6 +149,37 @@ try {
     await page.close();
   }
 
+  // Exercise the real mounted R3F camera through its registered browser WebMCP tool.
+  const cameraPage = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+  await cameraPage.addInitScript(() => {
+    window.__esbikoCameraTools = {};
+    Object.defineProperty(document, "modelContext", {
+      configurable: true,
+      value: { registerTool(tool) { window.__esbikoCameraTools[tool.name] = tool; return Promise.resolve(); } },
+    });
+  });
+  await cameraPage.goto(baseUrl + embeddedPath, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  await cameraPage.waitForFunction(() => !!window.__esbikoCameraTools?.control_solar_system_camera,
+    { timeout: 30_000 });
+  await cameraPage.waitForTimeout(3000);
+  const cameraResult = await cameraPage.evaluate(async () => {
+    const tool = window.__esbikoCameraTools.control_solar_system_camera;
+    const run = async input => JSON.parse(await tool.execute(input));
+    const before = await run({ action: "read" });
+    const zoom = await run({ action: "zoom", factor: 2 });
+    const after = await run({ action: "read" });
+    return { before, zoom, after };
+  });
+  assert.equal(cameraResult.before.ok, true);
+  assert.equal(cameraResult.zoom.ok, true);
+  assert.equal(cameraResult.after.ok, true);
+  const firstDistance = cameraResult.before.data.distance;
+  const lastDistance = cameraResult.after.data.distance;
+  assert.ok(firstDistance > 0 && Math.abs(lastDistance / firstDistance - 0.5) < 0.05,
+    "WebMCP zoom must halve actual 3D camera distance");
+  await cameraPage.screenshot({ path: path.join(screenshotDir, "agent-camera-zoom.png") });
+  await cameraPage.close();
+
   const portraitPage = await browser.newPage({
     viewport: { width: 390, height: 844 },
   });
