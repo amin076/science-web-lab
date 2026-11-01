@@ -30,7 +30,7 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
             if(!range || typeof val!=="number" || !Number.isFinite(val) || val<range[0] || val>range[1])
               throw failure("Invalid camera "+key);
           }
-          next.camera={...next.camera,...patch};break;
+          next.camera={...next.camera,...patch,durationSeconds:patch.durationSeconds??0,easing:patch.easing??"easeInOut"};break;
         }
         case "advance":case "step":{
           const seconds=request.action==="step"?1/240:request.seconds;
