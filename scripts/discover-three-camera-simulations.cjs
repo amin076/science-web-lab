@@ -15,7 +15,8 @@ function discoverThreeCameraIds(catalog) {
   const base=path.join(ROOT,"src","simulations","subjects");
   const sources=walk(base).filter(file => {
     const code=fs.readFileSync(file,"utf8");
-    return /import\s*\{[^}]*\bOrbitControls\b[^}]*\}\s*from\s*['"]@react-three\/drei['"]/.test(code);
+    return /import\s*\{[^}]*\bOrbitControls\b[^}]*\}\s*from\s*['"]@react-three\/drei['"]/.test(code) ||
+      code.includes('from "@/components/shared/ThreeDCanvas"') || code.includes("from '@/components/shared/ThreeDCanvas'");
   }).map(file=>file.replaceAll("\\","/"));
   const registry=fs.readFileSync(path.join(ROOT,"src/simulations/registry/index.js"),"utf8");
   const refs=new Map();
