@@ -83,3 +83,19 @@
  .rp-video-select{width:100%;justify-content:space-between}
 }
 @media(prefers-reduced-motion:reduce){.rp-lab *{scroll-behavior:auto!important}}
+
+/* EVPS v1 presentation-specific UI */
+.rp-mode-label{display:inline-flex;align-items:center;border-radius:100px;padding:6px 10px;font-size:10px;white-space:normal}
+.rp-mode-exact{background:#e8f5ee;color:#16694b}
+.rp-mode-visual{background:#fff0d5;color:#885107}
+.rp-illustrative-note{background:#fff6e5;border:1px solid #f4d9a9;padding:9px 11px;color:#7f520e;border-radius:9px;font-size:11px;margin:9px 0;line-height:1.55}
+.rp-presentation{background:#f7faff;border:1px solid #d7e5f5;padding:12px;border-radius:12px;margin:14px 0}
+.rp-presentation h3{font-size:14px;margin:0 0 10px}
+.rp-presentation label{font-size:11px;font-weight:700}
+.rp-presentation-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;margin:9px 0}
+.rp-presentation select,.rp-presentation input[type=number]{background:#fff;border:1px solid #bfcfe1;border-radius:8px;padding:7px;min-width:0;max-width:100%;min-height:38px;color:#193650}
+.rp-presentation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:11px 0}
+.rp-presentation-grid label{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rp-visual-progress{display:block;width:100%;height:9px;accent-color:#247bb0}
+.rp-start-presentation{background:#176cb5!important;color:white!important;border-color:#176cb5!important}
+@media(max-width:400px){.rp-presentation-grid{grid-template-columns:1fr}}

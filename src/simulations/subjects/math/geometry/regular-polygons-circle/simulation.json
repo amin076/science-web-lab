@@ -46,5 +46,23 @@
     "A fixed shared circle centered at the origin",
     "The circumcircle of the inner polygon and incircle of the outer polygon are identical",
     "Height is measured vertically from the horizontal bottom edge in canonical orientation"
-  ]
+  ],
+  "visualPresentation": {
+    "standard": "esbiko-visual-presentation.v1",
+    "defaultMode": "exact",
+    "supportedModes": [
+      "exact",
+      "illustrative"
+    ],
+    "disclaimer": "Intermediate morph frames are illustrative; numerical geometry always uses an integer number of sides.",
+    "target": {
+      "key": "sides",
+      "minimum": 3,
+      "maximum": 100
+    },
+    "durationSeconds": {
+      "minimum": 0.5,
+      "maximum": 60
+    }
+  }
 }
