@@ -1,0 +1,24 @@
+import assert from "node:assert/strict";
+import {createVisualPresentationTimeline,easeVisualProgress} from "../src/platform/visual-presentation/createVisualPresentationTimeline.js";
+import {resampleClosedOutline,interpolateOutlines} from "../src/platform/visual-presentation/shapeMorph.js";
+const a=createVisualPresentationTimeline();
+assert.equal(a.snapshot().mode,"exact");
+a.start({from:3,to:10,durationSeconds:10,easing:"easeInOut"});
+a.advance(2);
+assert.ok(a.snapshot().value>3&&a.snapshot().value<10);
+const b=createVisualPresentationTimeline();
+b.restore(JSON.parse(JSON.stringify(a.checkpoint())));
+assert.deepEqual(a.snapshot(),b.snapshot());
+for(let i=0;i<4;i++){a.advance(2);b.advance(2);}
+assert.deepEqual(a.snapshot(),b.snapshot());
+assert.equal(a.snapshot().status,"completed");
+assert.equal(a.snapshot().value,10);
+assert.equal(easeVisualProgress(.5),.5);
+for(const bad of [{from:3,to:3,durationSeconds:10},{from:3,to:10,durationSeconds:0.01},{from:3,to:10,durationSeconds:10,easing:"bad"}])assert.throws(()=>a.start(bad));
+const t=resampleClosedOutline([[0,0],[2,0],[1,2]],120);
+const q=resampleClosedOutline([[0,0],[2,0],[2,2],[0,2]],120);
+assert.deepEqual(interpolateOutlines(t,q,0),t);
+assert.deepEqual(interpolateOutlines(t,q,1),q);
+assert.equal(interpolateOutlines(t,q,.5).length,120);
+assert.throws(()=>interpolateOutlines(t,q,-1));
+console.log("EVPS v1 deterministic timeline and morph helpers PASS");
