@@ -12,6 +12,9 @@ export const SESSION_ACTION_TO_TOOL=Object.freeze({
   clear_trails:"clear_simulation_trails",
   get_trajectory:"get_simulation_trajectory",
   fire:"excite_simulation_session",
+  start_presentation:"start_visual_presentation_session",
+  stop_presentation:"stop_visual_presentation_session",
+  finish_presentation:"finish_visual_presentation_session",
 });
 export const SESSION_OPERATION_TOOLS=Object.freeze(Object.values(SESSION_ACTION_TO_TOOL));
 export function publicControlDescriptor(descriptor){

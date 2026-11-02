@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run sim:register && node scripts/generate-platform-catalog.cjs && npm run control:prepare && node scripts/test-regular-polygons.mjs && vite build",
+    "build": "npm run sim:register && node scripts/generate-platform-catalog.cjs && npm run control:prepare && node scripts/test-visual-presentation.mjs && node scripts/test-regular-polygons.mjs && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "gen": "plop --plopfile plopfile.cjs",
@@ -16,6 +16,7 @@
     "pack:app": "node scripts/pack-app-json.cjs",
     "platform:catalog": "npm run sim:register && node scripts/generate-platform-catalog.cjs && npm run control:prepare",
     "test:regular-polygons": "node scripts/test-regular-polygons.mjs",
+    "test:visual-presentation": "node scripts/test-visual-presentation.mjs",
     "test:platform-api": "node scripts/test-platform-api.mjs",
     "test:webmcp": "node scripts/test-webmcp.mjs",
     "test:mcp-doppler": "node scripts/test-mcp-doppler.cjs",

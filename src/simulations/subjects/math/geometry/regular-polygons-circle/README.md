@@ -29,7 +29,7 @@ No renderer implements its own area/side/angle formula.
 - Parameters: `sides`, `radius`, `showGuides`, `showTangencies`, `showAngles`, `animationSpeed`.
 - Advanced session operations: configure, state, capabilities, advance, step, playback, reset, bounded camera and trajectory query. Geometry is not a motion system; trajectory is always empty.
 - A remote session receives its token via the existing verified-origin MCP App iframe bridge. Credentials are never serialized into the page query string.
-- Playback animates a reference ray only; polygon geometry remains exact.
+- Playback animates a reference ray. Optional **Visual presentation** mode smoothly interpolates illustrative outlines between whole-side regular polygons; scientific area/side/angle measurements remain exact at integer side counts. Reusable EVPS v1 timeline and outline morph tools are in `src/platform/visual-presentation/`. Remote MCP uses `start_visual_presentation_session` and `finish_visual_presentation_session` on the same private session. See `docs/ESBIKO_VISUAL_PRESENTATION_STANDARD.md`.
 
 ## Video and display
 

@@ -33,11 +33,18 @@ function ControlField({label,value,onChange,min,max,step,disabled,parameter,inpu
 }
 export default function RegularPolygonsLab(){
  const canvas=useRef(null),api=useRef(null),pending=useRef(null);
+ const presentationFinishSent=useRef(false);
+ const [targetSides,setTargetSides]=useState(10);
+ const [presentationDuration,setPresentationDuration]=useState(10);
+ const [presentationEasing,setPresentationEasing]=useState("easeInOut");
+ const [presentationMode,setPresentationMode]=useState("exact");
  const [state,setState]=useState(null),[notice,setNotice]=useState(""),[videoMode,setVideoMode]=useState("landscape");
  const [sessionStatus,setSessionStatus]=useState("Local simulation");
  const onRemote=useCallback(async data=>{
    if(!api.current||!data?.checkpoint)return;
-   api.current.loadCheckpoint({checkpoint:data.checkpoint,camera:data.camera||data.checkpoint.camera,serverRunning:false});
+   const active=data.checkpoint.presentation?.status==="playing";
+   api.current.loadCheckpoint({checkpoint:data.checkpoint,camera:data.camera||data.checkpoint.camera,serverRunning:active});
+   if(active)setPresentationMode("illustrative");
  },[]);
  const remote=useRemoteSimulationSession(onRemote);
  const remoteCommand=useRef(remote.command);remoteCommand.current=remote.command;
@@ -47,7 +54,16 @@ export default function RegularPolygonsLab(){
    const controller=createHtmlSimulationRuntime({
      id:POLYGON_ID,parameterSchema:POLYGON_SCHEMA,defaults:POLYGON_DEFAULTS,
      engine,canvas:canvas.current,draw:drawPolygonCanvas,
-     onStatus:snapshot=>setState(snapshot),
+     onStatus:snapshot=>{
+       setState(snapshot);
+       const visual=snapshot.physics?.presentation;
+       if(visual?.status==="playing")presentationFinishSent.current=false;
+       if(remote.requested&&visual?.status==="completed"&&!presentationFinishSent.current){
+         presentationFinishSent.current=true;
+         // Finalize the exact target in the same server session.
+         remoteCommand.current("finish_presentation",{}).catch(e=>setNotice("Remote visual completion: "+e.message));
+       }
+     },
    });
    api.current=controller;
    const removeHandler=remote.requested?controller.setCommandHandler((action,input)=>remoteCommand.current(action,input)):()=>{};
@@ -59,7 +75,10 @@ export default function RegularPolygonsLab(){
      version:"1.0",getState:()=>controller.getState(),getCapabilities:()=>controller.getCapabilities(),
      configure:p=>controller.configure(p),play:()=>controller.play(),pause:()=>controller.pause(),
      reset:()=>controller.reset(),setCamera:p=>controller.setCamera(p),fitCamera:()=>controller.fitCamera(),
-     stepOnce:()=>controller.stepOnce(),startVideo:options=>controller.startVideo(options),
+     stepOnce:()=>controller.stepOnce(),
+     startPresentation:options=>controller.startPresentation(options),
+     stopPresentation:()=>controller.stopPresentation(),
+     startVideo:options=>controller.startVideo(options),
      stopVideo:()=>controller.stopVideo(),getVideoStatus:()=>controller.getVideoStatus(),downloadVideo:()=>controller.downloadVideo(),
    });
    window.esbikoRegularPolygonsV1=sdk;
@@ -79,6 +98,8 @@ export default function RegularPolygonsLab(){
  },[]);
  const patch=values=>invoke(runtime=>runtime.configure(values));
  const params=state?.parameters||POLYGON_DEFAULTS;
+ const presentation=state?.physics?.presentation;
+ const illustrating=presentation?.status==="playing";
  const g=state?.physics?.geometry;
  const vid=state?.recording||{status:"idle"};
  const supported=typeof window!=="undefined"&&typeof window.MediaRecorder==="function"&&
@@ -103,8 +124,12 @@ export default function RegularPolygonsLab(){
    <div className="rp-layout">
     <section className="rp-stage rp-card" aria-label="Live geometry diagram">
      <div className="rp-stage-heading"><h2>{g?(names[g.sides]||"Regular "+g.sides+"-gon"):"Regular polygon"}</h2>
+      <strong className={"rp-mode-label "+(illustrating?"rp-mode-visual":"rp-mode-exact")}>
+       {illustrating?"Visual presentation · illustrative":"Exact geometry"}
+      </strong>
       <div className="rp-legend"><span><b className="rp-inner"/>Inscribed</span><span><b className="rp-outer"/>Circumscribed</span><span><b className="rp-circle"/>Circle</span></div>
      </div>
+     {illustrating&&<p className="rp-illustrative-note" role="status">Illustrative transition: intermediate shapes are visual interpolations, not exact regular polygons. Measurements below use the current integer side count.</p>}
      <div className="rp-canvas-wrap"><canvas data-simulation-canvas ref={canvas} aria-label="A regular inscribed polygon, a regular circumscribed polygon and their shared circle" role="img"/></div>
      <div className="rp-stage-footer"><span>The circle's radius is R. Both polygons are regular and share the same center.</span>
        <button type="button" onClick={downloadPng}>Save PNG</button></div>
@@ -136,6 +161,41 @@ export default function RegularPolygonsLab(){
         <label key={key}><input type="checkbox" data-agent-param={key} checked={params[key]} onChange={e=>patch({[key]:e.target.checked})}/>{label}</label>)}
       </div>
       <ControlField parameter="animationSpeed" label="Sector sweep (rev/min)" min={0.1} max={5} step={0.1} value={params.animationSpeed} onChange={v=>patch({animationSpeed:v})}/>
+      <section className="rp-presentation" aria-label="Visual presentation controls">
+       <h3>Visual presentation</h3>
+       <label className="rp-presentation-row">Mode
+        <select aria-label="Presentation mode" value={presentationMode} onChange={e=>{
+         setPresentationMode(e.target.value);
+         if(e.target.value==="exact"&&illustrating)invoke(a=>a.stopPresentation());
+        }}>
+         <option value="exact">Exact geometry</option>
+         <option value="illustrative">Illustrative animation</option>
+        </select>
+       </label>
+       <p className="rp-hint">Morph frames are illustrative. Exact measurements retain integer side counts.</p>
+       <div className="rp-presentation-grid">
+        <label>Target sides<input aria-label="Target sides" type="number" min="3" max="100" step="1" value={targetSides}
+         onChange={e=>{const n=Number(e.target.value);if(Number.isInteger(n)&&n>=3&&n<=100)setTargetSides(n);}}/></label>
+        <label>Duration (seconds)<input aria-label="Presentation duration" type="number" min="0.5" max="60" step="0.5" value={presentationDuration}
+         onChange={e=>{const n=Number(e.target.value);if(n>=0.5&&n<=60)setPresentationDuration(n);}}/></label>
+       </div>
+       <label className="rp-presentation-row">Easing
+        <select aria-label="Presentation easing" value={presentationEasing} onChange={e=>setPresentationEasing(e.target.value)}>
+         <option value="easeInOut">Ease in / out</option><option value="linear">Linear</option>
+        </select>
+       </label>
+       <div className="rp-buttons">
+        <button type="button" className="rp-start-presentation" disabled={illustrating||presentationMode!=="illustrative"||targetSides===params.sides}
+         onClick={()=>invoke(a=>a.startPresentation({toSides:targetSides,durationSeconds:presentationDuration,easing:presentationEasing}))}>
+         Animate polygon
+        </button>
+        <button type="button" disabled={!illustrating} onClick={()=>invoke(a=>a.stopPresentation())}>Stop</button>
+       </div>
+       <progress className="rp-visual-progress" max="1" value={presentation?.progress||0} aria-label="Visual transition progress"/>
+       <p className="rp-hint" aria-live="polite">{illustrating?
+        "Illustrative transition: "+Math.round((presentation.progress||0)*100)+"%":
+        presentation?.status==="completed"?"Transition complete. Exact target geometry.":"Select Illustrative animation to begin."}</p>
+      </section>
       <div className="rp-buttons">
        <button type="button" onClick={()=>invoke(a=>a.play())} disabled={state?.running}>Play</button>
        <button type="button" onClick={()=>invoke(a=>a.pause())} disabled={!state?.running}>Pause</button>
@@ -145,7 +205,7 @@ export default function RegularPolygonsLab(){
       <div className="rp-buttons"><button type="button" onClick={()=>invoke(a=>a.setCamera({zoom:Math.min(8,(state?.camera.zoom||1)*1.2)}))}>Zoom +</button>
        <button type="button" onClick={()=>invoke(a=>a.setCamera({zoom:Math.max(.2,(state?.camera.zoom||1)/1.2)}))}>Zoom −</button>
        <button type="button" onClick={()=>invoke(a=>a.fitCamera())}>Fit view</button></div>
-      <p className="rp-hint">Playback animates a reference ray; it does not change polygon dimensions.</p>
+      <p className="rp-hint">Play/Pause animates the reference ray. Visual presentation is a separately labeled illustration timeline.</p>
       {notice&&<div className="rp-error" role="alert">{notice}</div>}
     </aside>
     <section className="rp-results">

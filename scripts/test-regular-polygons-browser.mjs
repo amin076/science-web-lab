@@ -40,6 +40,24 @@ try{
   });
   assert.equal(cmd.ok,true,"WebMCP configure must operate on canonical model");
   await page.waitForFunction(()=>window.esbikoRegularPolygonsV1.getState().physics.geometry.sides===5);
+  if(width===1280){
+    await page.getByLabel("Presentation mode").selectOption("illustrative");
+    await page.getByLabel("Target sides").fill("10");
+    await page.getByLabel("Presentation duration").fill("0.5");
+    await page.getByRole("button",{name:"Animate polygon"}).click();
+    await page.waitForFunction(()=>window.esbikoRegularPolygonsV1.getState().physics.presentation.status==="playing");
+    assert.match(await page.locator(".rp-illustrative-note").innerText(),/Illustrative transition/i);
+    await page.waitForFunction(()=>window.esbikoRegularPolygonsV1.getState().physics.presentation.status==="completed",{timeout:7000});
+    assert.equal(await page.evaluate(()=>window.esbikoRegularPolygonsV1.getState().physics.geometry.sides),10);
+    await page.evaluate(async()=>{
+      const tool=window.__polygonTools.esbiko_regular_polygons_start_visual_presentation;
+      if(!tool)throw new Error("Visual WebMCP tool missing");
+      const result=JSON.parse(await tool.execute({toSides:3,durationSeconds:0.5}));
+      if(!result.ok)throw new Error(JSON.stringify(result));
+    });
+    await page.waitForFunction(()=>window.esbikoRegularPolygonsV1.getState().physics.presentation.status==="completed",{timeout:7000});
+    assert.equal(await page.evaluate(()=>window.esbikoRegularPolygonsV1.getState().parameters.sides),3);
+  }
   if(width===360){
     const rect=await page.locator(".rp-lab canvas").boundingBox();
     await page.touchscreen.tap(rect.x+rect.width/2,rect.y+rect.height/2);

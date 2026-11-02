@@ -91,6 +91,11 @@ export function createHtmlSimulationRuntime({
   const status = () => onStatus(getState());
   function getState() {
     active();
+    // During an illustrative transition the scientific model advances through
+    // integer-sided states. Public/UI parameters must reflect that same model,
+    // never the integer value captured when the animation began.
+    if(typeof engine.startPresentation==="function" && typeof engine.getParameters==="function")
+      params=clone(engine.getParameters());
     let physics = null, snapshotError = null;
     try {
       physics = clone(engine.snapshot());
@@ -145,6 +150,9 @@ export function createHtmlSimulationRuntime({
         if (steps === 128) accumulator = 0; // no catch-up spiral after background tab
       }
       lastTimestamp = timestamp;
+      if (typeof engine.startPresentation==="function" && engine.snapshot().presentation?.status==="completed") {
+        running=false;lastTimestamp=null;render();return;
+      }
       render();
       frameId = raf(tick);
     } catch (e) {
@@ -184,12 +192,25 @@ export function createHtmlSimulationRuntime({
     camera = {...camera, ...input}; render(); return {...camera};
   }
   function fitCamera() { return setCamera({x:0,y:0,zoom:1}); }
+  function startPresentation(options) {
+    active();
+    if(typeof engine.startPresentation!=="function")throw new Error("VISUAL_PRESENTATION_UNSUPPORTED");
+    engine.startPresentation(options);
+    params=clone(engine.getParameters());
+    render();play();return getState();
+  }
+  function stopPresentation() {
+    active();
+    if(typeof engine.stopPresentation!=="function")throw new Error("VISUAL_PRESENTATION_UNSUPPORTED");
+    engine.stopPresentation();pause();render();return getState();
+  }
   function startVideo({mode="landscape"}={}) { active(); if (!recorder) throw new Error("VIDEO_UNSUPPORTED"); return recorder.start(mode); }
   function stopVideo() { active(); if (!recorder) throw new Error("VIDEO_UNSUPPORTED"); return recorder.stop(); }
   function getVideoStatus() { active(); return recorder?.getStatus() || {status:"unsupported"}; }
   function downloadVideo() { active(); if (!recorder) throw new Error("VIDEO_UNSUPPORTED"); return recorder.download(); }
 
-  function getCapabilities() { active(); return {simulationId:id,standardVersion:HTML_SIMULATION_STANDARD_VERSION, parameterSchema:clone(parameterSchema),commands:["getState","getCapabilities","configure","play","pause","reset","stepOnce","setCamera","fitCamera","getTrajectories","clearTrails","startVideo","stopVideo","getVideoStatus","downloadVideo"],video:!!recorder}; }
+  function getCapabilities() { active(); return {simulationId:id,standardVersion:HTML_SIMULATION_STANDARD_VERSION, parameterSchema:clone(parameterSchema),commands:["getState","getCapabilities","configure","play","pause","reset","stepOnce","setCamera","fitCamera","getTrajectories","clearTrails","startVideo","stopVideo","getVideoStatus","downloadVideo",...(typeof engine.startPresentation==="function"?["startPresentation","stopPresentation"]:[])],video:!!recorder,
+      visualPresentation:typeof engine.startPresentation==="function"?{standard:"esbiko-visual-presentation.v1",modes:["exact","illustrative"]}:null}; }
   function getTrajectories({paneIndex,rodIndex,limit=1200}={}) { active();if(typeof engine.trajectory!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");return {paneIndex:paneIndex??1,rodIndex,pointsM:engine.trajectory({paneIndex,rodIndex,limit})}; }
   function clearTrails({paneIndex}={}) { active();if(typeof engine.clearTrails!=="function")throw new Error("TRAJECTORY_UNSUPPORTED");const result=engine.clearTrails({paneIndex});render();return result; }
   function stepOnce() { active();if(running)throw new Error("Pause before stepping");engine.step(STEP);checkFiniteTree(engine.snapshot());elapsedSeconds+=STEP;render();return getState(); }
@@ -207,14 +228,20 @@ export function createHtmlSimulationRuntime({
     params=clone(engine.getParameters()); // hydrated state reflects actual configuration
     elapsedSeconds=engine.snapshot().timeSeconds;
     if(nextCamera)camera={...camera,...nextCamera};
-    running=serverRunning===true; // remote clock advances only via explicit API commands
-    render();return getState();
+    // Only opt-in presentation previews run against the local browser animation clock.
+    // Ordinary remote scientific sessions retain their explicit server time.
+    running=serverRunning===true;
+    render();
+    if(running)frameId=raf(tick);
+    return getState();
   }
   const remote=(action,input,run)=>commandHandler?commandHandler(action,input):run();
   const api = {getState,getCapabilities,
     getTrajectories,loadCheckpoint,setCommandHandler,
     clearTrails:input=>remote("clear_trails",input||{},()=>clearTrails(input||{})),
     stepOnce:()=>remote("step",{},()=>stepOnce()),
+    startPresentation:input=>remote("start_presentation",{presentation:input},()=>startPresentation(input)),
+    stopPresentation:()=>remote("stop_presentation",{},()=>stopPresentation()),
     configure:patch=>remote("configure",{parameters:patch},()=>configure(patch)),
     play:()=>remote("play",{},()=>play()),
     pause:()=>remote("pause",{},()=>pause()),
@@ -243,6 +270,14 @@ export function createHtmlSimulationRuntime({
       tool("configure",{...parameterSchema,additionalProperties:false},"configure"),
       tool("set_playback",{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},"setPlayback"),
       tool("reset",empty,"reset"),
+      ...(typeof engine.startPresentation==="function"?[
+        tool("start_visual_presentation",{type:"object",properties:{
+          toSides:{type:"integer",minimum:3,maximum:100},
+          durationSeconds:{type:"number",minimum:0.5,maximum:60},
+          easing:{type:"string",enum:["linear","easeInOut"]}
+        },required:["toSides"],additionalProperties:false},"startPresentation"),
+        tool("stop_visual_presentation",empty,"stopPresentation"),
+      ]:[]),
       tool("set_camera",{type:"object",properties:{x:{type:"number",minimum:-1e6,maximum:1e6},y:{type:"number",minimum:-1e6,maximum:1e6},zoom:{type:"number",minimum:0.2,maximum:8}},additionalProperties:false},"setCamera"),
     ];
     if (typeof engine.trajectory === "function") tools.push(

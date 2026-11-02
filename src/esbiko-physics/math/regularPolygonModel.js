@@ -1,3 +1,4 @@
+import {createVisualPresentationTimeline} from "../../platform/visual-presentation/createVisualPresentationTimeline.js";
 /**
  * Canonical, DOM-free Euclidean geometry for regular polygons sharing a circle.
  * Radius is an abstract length unit; measurements use R and R².
@@ -64,28 +65,47 @@ export function computeRegularPolygons(n, R) {
 export function createRegularPolygonModel(initial={}) {
   let parameters=validatePolygonParameters(initial);
   let elapsedSeconds=0;
+  const presentation=createVisualPresentationTimeline();
   const getParameters=()=>({...parameters});
   const snapshot=()=>({
     modelVersion:"esbiko-regular-polygons.v1",
     units:{length:"circle-radius units",area:"circle-radius squared",angle:"degrees",time:"seconds"},
     parameters:getParameters(),timeSeconds:elapsedSeconds,elapsedSeconds,
     phaseRadians:elapsedSeconds*parameters.animationSpeed*2*Math.PI/60,
+    presentation:presentation.snapshot(),
     geometry:computeRegularPolygons(parameters.sides,parameters.radius),
   });
   const reset=(patch)=>{if(patch!==undefined)parameters=validatePolygonParameters(patch);
-    elapsedSeconds=0;return snapshot();};
+    presentation.stop();elapsedSeconds=0;return snapshot();};
   const configure=(patch)=>{parameters=validatePolygonParameters({...parameters,...patch});
-    elapsedSeconds=0;return {reset:true,parameters:getParameters()};};
+    presentation.stop();elapsedSeconds=0;return {reset:true,parameters:getParameters()};};
+  const startPresentation=({toSides,durationSeconds=10,easing="easeInOut"}={})=>{
+    if(!Number.isSafeInteger(toSides)||toSides<3||toSides>100)throw new RangeError("Invalid target polygon sides");
+    presentation.start({from:parameters.sides,to:toSides,durationSeconds,easing});
+    return snapshot();
+  };
+  const stopPresentation=()=>{presentation.stop();return snapshot();};
+  const finishPresentation=()=>{
+    const current=presentation.finish();
+    if(current.status==="completed")parameters={...parameters,sides:current.to};
+    return snapshot();
+  };
   const step=(dt)=>{if(!Number.isFinite(dt)||dt<0||dt>2)throw new RangeError("Invalid time step");
-    elapsedSeconds+=dt;return snapshot();};
-  const checkpoint=()=>({parameters:getParameters(),timeSeconds:elapsedSeconds});
+    elapsedSeconds+=dt;
+    const visual=presentation.advance(dt);
+    if(visual.status==="playing"||visual.status==="completed")
+      parameters={...parameters,sides:Math.max(3,Math.min(100,Math.round(visual.value)))};
+    return snapshot();};
+  const checkpoint=()=>({parameters:getParameters(),timeSeconds:elapsedSeconds,presentation:presentation.checkpoint()});
   const restore=(saved)=>{
     if(!isPlain(saved)||typeof saved.timeSeconds!=="number"||
       !Number.isFinite(saved.timeSeconds)||saved.timeSeconds<0||saved.timeSeconds>120)
       throw new RangeError("Invalid polygon checkpoint");
     parameters=validatePolygonParameters(saved.parameters);elapsedSeconds=saved.timeSeconds;
+    presentation.restore(saved.presentation??null);
     return snapshot();
   };
   return {getParameters,snapshot,configure,reset,step,checkpoint,restore,
+    startPresentation,stopPresentation,finishPresentation,
     advance:step,trajectory:()=>[]};
 }

@@ -10,6 +10,10 @@ on:
       - "functions/control/**"
       - "src/esbiko-physics/**"
       - "src/platform/control/**"
+      - "src/platform/visual-presentation/**"
+      - "src/platform/html-simulation/**"
+      - "scripts/test-visual-presentation.mjs"
+      - "scripts/test-session-tools.mjs"
       - "scripts/test-session-bridges.mjs"
       - "scripts/test-model-sessions.mjs"
       - "scripts/test-control-storage.mjs"
@@ -69,8 +73,10 @@ jobs:
       - name: Verify shared camera tween contract
         run: node scripts/test-camera-session-transition.mjs
 
-      - name: Verify regular polygon geometry and parameter contract
-        run: node scripts/test-regular-polygons.mjs
+      - name: Verify visual presentation and regular polygon geometry contract
+        run: |
+          node scripts/test-visual-presentation.mjs
+          node scripts/test-regular-polygons.mjs
       - name: Verify shared Simulation Control API
         run: npm run test:control
       - name: Verify Wave Strings shared HTTP and MCP control

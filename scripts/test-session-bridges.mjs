@@ -84,7 +84,10 @@ try{
     const expected=adapter.expose(doc).state;
     if(kind==="pendulum")assert.ok(Math.abs(rendered.thetaRadians-expected.theta)<1e-10);
     if(kind==="solar"){
-      await until(s=>s.positions?.earth&&Math.abs(s.positions.earth[0]-expected.positions.earth[0])<1e-6);
+      // Wait for ALL celestial positions to hydrate, not only Earth's x-axis.
+      // Comparing the Moon in a half-hydrated frame is a false negative.
+      await until(s=>Object.entries(expected.positions).every(([name,position])=>
+        name==="sun" || (s.positions?.[name] && position.every((v,i)=>Math.abs(s.positions[name][i]-v)<1e-5))));
       for(const [name,position] of Object.entries(expected.positions)){
         if(name==="sun")continue;
         assert.ok(rendered.positions[name],"Missing rendered position: "+name);
@@ -104,6 +107,14 @@ try{
       await target.locator('.rp-presets button').filter({hasText:/^6$/}).click();
       for(let n=0;n<50&&adapter.expose(doc).parameters.sides!==6;n++)await new Promise(r=>setTimeout(r,100));
       assert.equal(adapter.expose(doc).parameters.sides,6,"Visible polygon control must update the SAME remote session");assert.ok(writes>0);
+      await target.evaluate(async()=>{
+        const tool=window.__testTools.esbiko_regular_polygons_start_visual_presentation;
+        const result=JSON.parse(await tool.execute({toSides:10,durationSeconds:0.5}));
+        if(!result.ok)throw new Error(JSON.stringify(result));
+      });
+      for(let n=0;n<100&&adapter.expose(doc).parameters.sides!==10;n++)await new Promise(r=>setTimeout(r,100));
+      assert.equal(adapter.expose(doc).parameters.sides,10,"Visual transition must finalize the SAME remote session");
+      assert.equal(adapter.expose(doc).state.presentation.status,"completed");
     }
     if(kind==="solar"){
       await target.evaluate(async()=>JSON.parse(await window.__testTools.configure_solar_system.execute({focusTarget:"jupiter"})));

@@ -1,3 +1,4 @@
+import {resampleClosedOutline,interpolateOutlines} from "../../../../../platform/visual-presentation/shapeMorph.js";
 import {computeRegularPolygons} from "../../../../../esbiko-physics/math/regularPolygonModel.js";
 
 const TAU=2*Math.PI;
@@ -11,14 +12,31 @@ export function drawPolygonCanvas(ctx,state,{width,height,camera}){
   const grid=30;ctx.strokeStyle="#e9eff7";ctx.lineWidth=1;
   for(let x=0;x<width;x+=grid){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke();}
   for(let y=0;y<height;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke();}
-  const margin=Math.min(40,Math.max(15,width*.05)),limit=Math.max(g.outer.circumradius/R,1);
+  // Fixed scale keeps the picture stationary while the illustrative outline morphs.
+  const margin=Math.min(40,Math.max(15,width*.05)),limit=2;
   const px=Math.min((width-2*margin)/(2*limit),(height-2*margin)/(2*limit))*.86*camera.zoom;
   ctx.save();ctx.translate(width/2+camera.x*width*.2,height/2+camera.y*height*.2);
   ctx.scale(px/R,px/R);
   // n odd: one vertex points up and the opposite edge is horizontal.
   // n even: horizontal top and bottom edges.
   const start=-Math.PI/2+(n%2===0?Math.PI/n:0);
-  const inner=regularVertices(n,R,start),outer=regularVertices(n,g.outer.circumradius,start);
+  const visual=state.physics?.presentation;
+  const morphing=visual?.status==="playing";
+  function shape(sides,radius) {
+    const angle=-Math.PI/2+(sides%2===0?Math.PI/sides:0);
+    return regularVertices(sides,radius,angle);
+  }
+  function morph(kind){
+    const value=Math.max(3,Math.min(100,visual.value));
+    const lo=Math.floor(value),hi=Math.min(100,lo+1),t=value-lo;
+    const radiusAt=k=>kind==="inner"?R:R/Math.cos(Math.PI/k);
+    const a=resampleClosedOutline(shape(lo,radiusAt(lo)),240);
+    if(hi===lo||t===0)return a;
+    const b=resampleClosedOutline(shape(hi,radiusAt(hi)),240);
+    return interpolateOutlines(a,b,t);
+  }
+  const inner=morphing?morph("inner"):regularVertices(n,R,start);
+  const outer=morphing?morph("outer"):regularVertices(n,g.outer.circumradius,start);
   ctx.lineJoin="round";ctx.lineCap="round";
   poly(ctx,outer);ctx.fillStyle="rgba(236,153,56,.16)";ctx.fill();
   ctx.strokeStyle="#db8425";ctx.lineWidth=2.8*R/px;ctx.stroke();
@@ -54,4 +72,9 @@ export function drawPolygonCanvas(ctx,state,{width,height,camera}){
   ctx.fillStyle="#1d3554";ctx.font="600 13px system-ui";ctx.fillText("R = "+fmt(R),14,22);
   ctx.font="12px system-ui";ctx.fillStyle="#526b84";
   ctx.fillText(n+" sides • "+fmt(g.interiorAngleDegrees)+"° interior angle",14,height-14);
+  if(morphing){
+    ctx.fillStyle="rgba(255,247,225,.95)";ctx.fillRect(8,32,Math.min(width-16,345),26);
+    ctx.font="bold 11px system-ui";ctx.fillStyle="#8a530e";
+    ctx.fillText("VISUAL PRESENTATION · ILLUSTRATIVE MORPH",14,49);
+  }
 }
