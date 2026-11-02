@@ -20,7 +20,9 @@ import {createThreeCameraSessionAdapter} from "./threeCameraSessionAdapter.mjs";
 import cameraIds from "./data/threeCameraIds.generated.json" with {type:"json"};
 import {createSimplePendulumModel,PENDULUM_SCHEMA,PENDULUM_DEFAULTS} from "../api/engine/simplePendulumModel.mjs";
 import {createSolarSessionModel,SOLAR_SCHEMA,SOLAR_DEFAULTS} from "../api/engine/solarSessionModel.mjs";
+import {createRegularPolygonModel,POLYGON_SCHEMA,POLYGON_DEFAULTS} from "../api/engine/regularPolygonModel.mjs";
 const modelAdapters=[
+ createModelSessionAdapter({id:"math.geometry.regular-polygons-circle",model:createRegularPolygonModel,schema:POLYGON_SCHEMA,defaults:POLYGON_DEFAULTS,units:"R, R², degrees, seconds"}),
  createModelSessionAdapter({id:"physics.mechanics.simple-pendulum",model:createSimplePendulumModel,schema:PENDULUM_SCHEMA,defaults:PENDULUM_DEFAULTS,units:"SI"}),
  createModelSessionAdapter({id:"astronomy.space.solar-system",model:createSolarSessionModel,schema:SOLAR_SCHEMA,defaults:SOLAR_DEFAULTS,units:"seconds; display scene units"}),
 ];
