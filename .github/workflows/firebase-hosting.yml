@@ -39,6 +39,30 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Set up Java for rules tests
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Verify classroom access rules
+        run: |
+          npm ci --prefix tests/security
+          tests/security/node_modules/.bin/firebase emulators:exec --only firestore,storage --project demo-esbiko-security --config firebase.emulators.json 'node tests/security/classroom-rules.mjs'
+
+      - name: Deploy classroom rules and indexes
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-classroom-account.json
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          npx firebase-tools@latest deploy --only firestore:rules,firestore:indexes,storage --project sience-web-app --non-interactive
+
+      - name: Wait for classroom query index
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-classroom-account.json
+        run: node tests/security/wait-classroom-index.mjs sience-web-app
+
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:

@@ -1,3 +1,4 @@
+import {validateClassUpload} from "@/services/classUpload";
 import { useState } from "react";
 import {
   Dialog,
@@ -48,6 +49,7 @@ export default function AddAttachmentModal({
         }
 
         if (file) {
+          validateClassUpload(file);
           const fileRef = ref(
             storage,
             `attachments/${classId}/${experimentId}/${file.name}`

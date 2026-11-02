@@ -11,8 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import { collection, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import {listStudentClasses,joinPublicClass} from "@/services/classMembership";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 
@@ -35,25 +34,9 @@ export default function StudentDashboard() {
     setLoading(true);
     setErr("");
     try {
-      const allSnap = await getDocs(collection(db, "classes"));
-      const all = allSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-
-      // ✅ Check which classes the student is in
-      const results = await Promise.all(
-        all.map(async (cls) => {
-          const myRef = doc(db, "classes", cls.id, "students", user.uid);
-          const mySnap = await getDoc(myRef);
-          return { cls, isMember: mySnap.exists() };
-        })
-      );
-
-      const joinedClasses = results.filter((r) => r.isMember).map((r) => r.cls);
-      const availableClasses = results
-        .filter((r) => !r.isMember)
-        .map((r) => r.cls);
-
-      setJoined(joinedClasses);
-      setAvailable(availableClasses);
+      const result = await listStudentClasses(user.uid);
+      setJoined(result.joined);
+      setAvailable(result.available);
     } catch (e) {
       console.error("❌ loadClasses error:", e);
       setErr("Failed to load classes.");
@@ -73,17 +56,7 @@ export default function StudentDashboard() {
   const handleJoin = async (classId) => {
     try {
       if (!user) return alert("Please login first.");
-      const studentRef = doc(db, "classes", classId, "students", user.uid);
-      const existing = await getDoc(studentRef);
-      if (existing.exists()) {
-        alert("You are already in this class.");
-        return;
-      }
-      await setDoc(studentRef, {
-        uid: user.uid,
-        email: user.email,
-        joinedAt: new Date(),
-      });
+      await joinPublicClass(classId,user);
       alert("✅ Joined successfully!");
       await loadClasses(); // refresh
     } catch (e) {

@@ -12,6 +12,7 @@ const quota=db.collection("simulationControlHourlyLimitsV1");
 const SESSION_MINUTES=30;
 const MAX_CREATES_PER_HOUR=40;
 const MAX_MODIFICATIONS_PER_HOUR=1200;
+const MAX_SESSION_MODIFICATIONS_PER_HOUR=300;
 
 const failure=(status,code,message)=>Object.assign(new Error(message),{status,code});
 const hash=token=>createHash("sha256").update(token).digest();
@@ -71,8 +72,9 @@ export async function commandControlSession({sessionId,token,request,expectedRev
  const ref=collection.doc(sessionId);
  const windowId=new Date().toISOString().slice(0,13).replace(/[^0-9]/g,"");
  const actionLimitRef=quota.doc("action-"+windowId);
+ const sessionLimitRef=quota.doc("session-"+sessionId+"-"+windowId);
  return db.runTransaction(async tx=>{
-  const [snapshot,actionLimit]=await Promise.all([tx.get(ref),tx.get(actionLimitRef)]);
+  const [snapshot,actionLimit,sessionLimit]=await Promise.all([tx.get(ref),tx.get(actionLimitRef),tx.get(sessionLimitRef)]);
   if(!snapshot.exists)throw failure(404,"SESSION_NOT_FOUND","Session not found");
   let data=snapshot.data();
   if(!validToken(data.tokenHash,token))throw failure(403,"INVALID_SESSION_TOKEN","Invalid session token");
@@ -82,9 +84,14 @@ export async function commandControlSession({sessionId,token,request,expectedRev
    throw failure(409,"REVISION_CONFLICT","Session revision changed; read state and retry");
   const {document:next,result,mutation}=requireSimulationControlAdapter(data.simulationId).execute(data,request);
   if(mutation){
+   const sessionSpent=sessionLimit.exists?sessionLimit.data()?.count||0:0;
+   if(sessionSpent>=MAX_SESSION_MODIFICATIONS_PER_HOUR)
+     throw failure(429,"SESSION_CONTROL_LIMIT","Hourly session command budget exhausted; retry later");
    const spent=actionLimit.exists?actionLimit.data()?.count||0:0;
    if(spent>=MAX_MODIFICATIONS_PER_HOUR)
      throw failure(429,"GLOBAL_CONTROL_LIMIT","Hourly control command budget exhausted");
+   tx.set(sessionLimitRef,{count:sessionSpent+1,
+     expiresAt:admin.firestore.Timestamp.fromMillis(Date.now()+7200e3)});
    tx.set(actionLimitRef,{count:spent+1,
      expiresAt:admin.firestore.Timestamp.fromMillis(Date.now()+7200e3)});
    const newExpiry=admin.firestore.Timestamp.fromMillis(Date.now()+SESSION_MINUTES*60000);

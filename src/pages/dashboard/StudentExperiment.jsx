@@ -1,3 +1,4 @@
+import {validateClassUpload} from "@/services/classUpload";
 // ✅ src/pages/dashboard/StudentExperiment.jsx
 import { useState, useEffect } from "react";
 import {
@@ -107,6 +108,7 @@ export default function StudentExperiment() {
       let fileName = "";
 
       if (file) {
+        validateClassUpload(file);
         const fileRef = ref(
           storage,
           `submissions/${classId}/${expId}/${user.uid}/${Date.now()}-${file.name}`,

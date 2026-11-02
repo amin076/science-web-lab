@@ -1,7 +1,6 @@
 // ✅ src/pages/dashboard/JoinClass.jsx
 import { useEffect, useState } from "react";
-import { collection, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import {listStudentClasses,joinPublicClass} from "@/services/classMembership";
 import { useAuth } from "@/hooks/useAuth";
 import {
   Box,
@@ -23,32 +22,29 @@ export default function JoinClass() {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "classes"));
-        const fetched = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setClasses(fetched);
+        if(!user)return;
+        const result = await listStudentClasses(user.uid);
+        setClasses(result.available);
       } catch (err) {
         console.error("Error fetching classes:", err);
+        setMessage("Unable to load classes. Please try again.");
       } finally {
         setLoading(false);
       }
     };
     fetchClasses();
-  }, []);
+  }, [user]);
 
   // ✉️ ارسال درخواست عضویت
   const handleJoinRequest = async (classId) => {
     try {
-      const classRef = doc(db, "classes", classId);
-      await updateDoc(classRef, {
-        pendingStudents: arrayUnion(user.uid),
-      });
-      setMessage("✅ Join request sent successfully!");
+      if(!user)throw new Error('Please sign in first.');
+      await joinPublicClass(classId,user);
+      setClasses(previous=>previous.filter(c=>c.id!==classId));
+      setMessage("✅ Joined successfully!");
     } catch (err) {
       console.error("Error sending join request:", err);
-      setMessage("❌ Failed to send join request.");
+      setMessage("❌ Failed to join class. Please try again.");
     }
   };
 
@@ -68,7 +64,7 @@ export default function JoinClass() {
         🧑‍🏫 Join a Class
       </Typography>
       <Typography color="text.secondary" sx={{ mb: 3 }}>
-        Browse the available classes and send a join request to your teacher.
+        Browse public classes and join to access their learning activities.
       </Typography>
 
       {message && (
@@ -118,7 +114,7 @@ export default function JoinClass() {
                   sx={{ mt: 3 }}
                   onClick={() => handleJoinRequest(cls.id)}
                 >
-                  Request to Join
+                  Join Class
                 </Button>
               </Paper>
             </Grid>
