@@ -1,4 +1,4 @@
-export function createModelSessionAdapter({id,model,schema,defaults,units}){
+export function createModelSessionAdapter({id,model,schema,defaults,units,cameraBounds=null}){
   const presentationSupported=typeof model().startPresentation==="function";
   const descriptor={id,schema,defaults,units,adapterVersion:"esbiko-model-session.v1",clock:"explicit-simulation-time",
     commands:["get_state","get_capabilities","configure","advance","step","play","pause","reset","set_camera","get_trajectory",...(presentationSupported?["start_presentation","stop_presentation","finish_presentation"]:[])],
@@ -32,7 +32,7 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
           const patch=request.camera;
           if(!patch || typeof patch!=="object" || Array.isArray(patch)) throw failure("Camera patch required");
           for(const [key,val] of Object.entries(patch)){
-            const range={x:[-1,1],y:[-1,1],zoom:[0.2,8],yawDegrees:[-360,360],pitchDegrees:[-89,89],durationSeconds:[0,30]}[key];
+            const range=(cameraBounds?.[key] || {x:[-1,1],y:[-1,1],zoom:[0.2,8],yawDegrees:[-360,360],pitchDegrees:[-89,89],durationSeconds:[0,30]}[key]);
             if(key==="easing" && (val==="linear" || val==="easeInOut")) continue;
             if(!range || typeof val!=="number" || !Number.isFinite(val) || val<range[0] || val>range[1])
               throw failure("Invalid camera "+key);

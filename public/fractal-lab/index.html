@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Esbiko | آزمایشگاه هندسهٔ فراکتالی دوبعدی</title>
+<style>
+:root {color-scheme:dark;--bg:#06111e;--panel:#0f2030;--border:#294155;--subtle:#9eb4c4;--highlight:#58dfc9;--white:#ecf6fa;font-family:Tahoma,'Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(ellipse at 20% 0%,#183a50 0%,#081623 46%,#050f19 100%);color:var(--white);min-height:100vh}button,select,input{font:inherit}button,select{cursor:pointer}
+button{border:1px solid #37556a;background:#183347;color:#edf7fb;border-radius:10px;padding:10px 13px;transition:background .2s,border-color .2s}button:hover:not(:disabled){background:#26526a;border-color:#70b4b4}button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #65f2d4;outline-offset:2px}button:disabled{opacity:.42;cursor:not-allowed}
+.page{max-width:1570px;margin:auto;padding:20px 22px 28px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:11px}.brand-icon{display:grid;place-items:center;background:linear-gradient(145deg,#6ff3d6,#428bbb);color:#062a37;font-weight:bold;width:42px;height:42px;border-radius:13px;font-size:23px}.brand b{display:block;font-size:17px;letter-spacing:.2px}.brand small{display:block;color:#a8c1d0;font-size:11px;letter-spacing:1.8px;margin-top:3px}.top-meta{font-size:12px;color:#a6c9d6;border:1px solid #31546b;border-radius:30px;padding:7px 12px;background:#0c2535}
+h1{font-size:clamp(23px,2.6vw,31px);margin:0 0 7px;letter-spacing:-.5px}.subtitle{margin:0 0 18px;color:#aac1d0;font-size:13px;line-height:1.85}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}.viewer-card{min-width:0;border:1px solid #28475c;border-radius:18px;overflow:hidden;background:#091a29;box-shadow:0 20px 50px #0003}.viewer-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 16px;background:#102438;border-bottom:1px solid #264459;flex-wrap:wrap}.viewer-title{font-size:14px;font-weight:700}.viewer-sub{font-size:11px;color:#83d8d5}.camera-controls{display:flex;gap:6px;align-items:center;direction:ltr}.camera-controls button{padding:7px 11px;font-weight:bold}.camera-controls button.small{font-size:12px;font-weight:500;direction:rtl}.zoom-label{font-size:12px;color:#9ecbd2;min-width:61px;text-align:center}
+.stage{height:clamp(370px,62vh,760px);min-height:340px;position:relative;overflow:hidden;touch-action:none}canvas{display:block;width:100%;height:100%;touch-action:none;cursor:grab}canvas:active{cursor:grabbing}.stage-hint{position:absolute;right:14px;bottom:15px;background:#10293dbb;backdrop-filter:blur(7px);color:#c2d8e3;padding:7px 10px;border:1px solid #31546a;border-radius:8px;font-size:11px;pointer-events:none}.stage-index{position:absolute;left:15px;top:14px;color:#b8d9e7;background:#10293dba;padding:7px 10px;font-size:11px;border-radius:8px;pointer-events:none}
+.viewer-footer{display:flex;gap:8px;align-items:center;padding:12px 14px;flex-wrap:wrap;border-top:1px solid #27445b;background:#0c2030}.viewer-footer button{flex:1;min-width:118px}.accent-btn{background:#0e816f;border-color:#27b8a2;color:white;font-weight:700}.accent-btn:hover:not(:disabled){background:#159884}.warn-btn{border-color:#92576a;color:#ffc7cf}.status-line{font-size:11px;line-height:1.65;color:#8aa8b8;padding:0px 14px 13px;background:#0c2030}
+.sidebar{background:#0d2131;border:1px solid #2a485c;border-radius:17px;padding:17px;box-shadow:0 16px 40px #0002}.sidebar h2{font-size:14px;margin:0 0 15px;display:flex;align-items:center;gap:8px}.section{border-bottom:1px solid #2d4758;padding:0 0 16px;margin:0 0 16px}.section:last-child{border:0;margin:0;padding:0}.field{display:block;margin-bottom:13px}.field:last-child{margin-bottom:0}.field-header{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:12px;margin-bottom:8px}.val{font-family:Consolas,monospace;font-size:12px;color:#6ce3d3;direction:ltr}.field select{width:100%;background:#142e41;color:#eaf4f8;border:1px solid #36566b;border-radius:9px;padding:11px 9px;font-size:13px}.field input[type=range]{width:100%;accent-color:#52e1c6;cursor:pointer;height:18px;margin:1px 0}.step-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.play{width:100%;background:#126f73;border-color:#339b99;font-weight:700;margin-top:8px}.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;padding:6px 0}.toggle-row input{accent-color:#5ae6d3;width:16px;height:16px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stat{background:#132b3d;border:1px solid #29495d;border-radius:10px;padding:11px 10px}.stat span{display:block;color:#8da9b9;font-size:10px;margin-bottom:6px}.stat strong{font-size:18px;color:#e9f8fa;direction:ltr;unicode-bidi:isolate;display:block;text-align:right}.math{padding:12px;background:#0b1c2c;border:1px dashed #3b596d;border-radius:10px;margin-top:10px;color:#9edbcc;font-family:Consolas,monospace;font-size:12px;direction:ltr;text-align:center}.explain{color:#a4bac9;font-size:11px;line-height:1.8;margin:10px 0 0}.warning{padding:10px;margin:9px 0 0;color:#ffd1a3;border:1px solid #7d5836;border-radius:10px;background:#3b2b21;font-size:11px;line-height:1.7}
+.export-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.export-row button{font-size:12px;padding:10px 6px}.notice{min-height:17px;font-size:11px;color:#8be5d5;line-height:1.6}.kbd{color:#9bc4ce;font-size:11px;line-height:1.85;margin:10px 0 0}.foot{text-align:center;color:#7a9aaa;font-size:11px;margin:16px 0 0}.hidden,[hidden]{display:none!important}
+@media (max-width:1050px){.layout{grid-template-columns:minmax(0,1fr) 310px}.page{padding:15px}}
+@media (max-width:820px){.layout{grid-template-columns:1fr}.viewer-card{order:0}.sidebar{order:1}.stage{height:clamp(350px,53vh,650px)}.sidebar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.sidebar h2{grid-column:1/-1;margin-bottom:0}.section{border-bottom:0;margin:0;padding:0}.section:nth-child(2n){border-left:1px solid #29465a;padding-left:13px}}
+@media (max-width:560px){.page{padding:12px}.sidebar{display:block}.section{border-bottom:1px solid #29465a;margin-bottom:16px;padding-bottom:16px!important;border-left:0!important}.viewer-head{padding:10px}.camera-controls button{padding:6px 9px}.stage{height:50vh;min-height:340px}.viewer-footer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.viewer-footer button{min-width:0}.stage-hint{right:7px;bottom:8px;font-size:9px}.top-meta{font-size:10px}.viewer-title{font-size:12px}}
+
+.art-controls{background:linear-gradient(140deg,#142a42,#102236);border:1px solid #315077;border-radius:12px;padding:12px;margin:13px 0 9px}.art-heading{font-size:12px;color:#fbd8f6;font-weight:700;margin-bottom:8px}.art-controls .field{margin-bottom:10px}.swatches{display:flex;gap:4px;margin-top:10px}.swatches span{height:8px;border-radius:5px;flex:1;box-shadow:0 0 9px #9b6df133}.stage{background:radial-gradient(circle at center,#172447,#060b19)}.top-meta{box-shadow:0 0 15px #885bd722}.viewer-card{box-shadow:0 20px 70px #0006,0 0 30px #7c5dd10c}.viewer-sub{color:#b4c6ff}.accent-btn{background:linear-gradient(110deg,#159c9c,#7764cf)}.accent-btn:hover:not(:disabled){background:linear-gradient(110deg,#20b6b3,#9779e9)}
+</style>
+</head><body>
+<div class="page">
+ <header class="topbar"><div class="brand"><div class="brand-icon">△</div><div><b>آزمایشگاه هندسهٔ فراکتالی</b><small>ESBIKO · MATHEMATICS LAB</small></div></div><div class="top-meta">نمونهٔ آزمایشی مستقل · نسخهٔ ۰٫۲ · ۱۹ فراکتال</div></header>
+ <h1>هندسه، رنگ و بی‌نهایت جزئیات</h1><p class="subtitle">۱۹ خانوادهٔ فراکتال را آزمایش کنید؛ هندسهٔ بازگشتی، فراکتال‌های مختلط، نورپردازی گرادیانی و رنگ‌های درخشان را کشف کنید.</p>
+ <main class="layout">
+  <section class="viewer-card">
+   <div class="viewer-head"><div><div class="viewer-title" id="mathTitle">مثلث سیرپینسکی</div><div class="viewer-sub">نمایش پیوسته با جابه‌جایی و بزرگ‌نمایی آزاد</div></div>
+    <div class="camera-controls"><button id="zoomOut" title="کوچک‌نمایی">−</button><span id="zoomValue" class="zoom-label">1×</span><button id="zoomIn" title="بزرگ‌نمایی">+</button><button class="small" id="fit">جاگذاری</button></div>
+   </div>
+   <div id="stage" class="stage"><canvas id="fractalCanvas" aria-label="نقشهٔ تعاملی هندسهٔ فراکتالی"></canvas><div class="stage-index">هندسهٔ ۲بعدی · بزرگ‌نمایی پویا</div><div class="stage-hint">کشیدن: جابه‌جایی · چرخ ماوس / دو انگشت: زوم</div></div>
+   <div class="viewer-footer"><button class="accent-btn" id="exportPng">⇩ ذخیرهٔ تصویر</button><button id="exportJson">⇩ ذخیرهٔ داده‌ها</button><button id="recordBtn">● شروع ضبط</button><button id="downloadVideo" disabled>⇩ دریافت ویدئو</button></div>
+   <div class="status-line"><span id="renderMessage">جزئیات در حال آماده‌سازی‌اند.</span> <span id="notice" class="notice"></span></div>
+  </section>
+  <aside class="sidebar"><h2>⚙ کنترل آزمایش</h2>
+   <section class="section">
+     <label class="field"><div class="field-header"><span>خانوادهٔ فراکتال</span></div><select id="type">
+  <optgroup label="شکل‌های هندسی"><option value="triangle">مثلث سیرپینسکی</option><option value="carpet">فرش سیرپینسکی</option><option value="dust">غبار کانتور</option><option value="vicsek">ویچک ـ صلیبی</option><option value="vicsek_x">ویچک ـ قطری</option><option value="pentagon">پنج‌ضلعی سیرپینسکی</option><option value="hexaflake">برف‌وارهٔ شش‌ضلعی</option></optgroup>
+  <optgroup label="منحنی و شاخه‌ها"><option value="koch">دانه‌برف کخ</option><option value="minkowski">منحنی مینکوفسکی</option><option value="levy">منحنی C لِوی</option><option value="dragon">منحنی اژدهای های‌وی</option><option value="hilbert">منحنی هیلبرت</option><option value="tree">درخت دودویی</option><option value="pythagoras">درخت فیثاغورث</option><option value="fern">سرخس بارنزلی</option></optgroup>
+  <optgroup label="فراکتال‌های مختلط"><option value="mandelbrot">مجموعهٔ ماندلبرو</option><option value="julia">مجموعهٔ ژولیا</option><option value="burning_ship">کشتی سوزان</option><option value="tricorn">مجموعهٔ سه‌شاخ</option></optgroup>
+ </select></label>
+     <label class="field"><div class="field-header"><span>مرحلهٔ تکثیر</span><span class="val" id="levelValue">۵ / ۱۶</span></div><input id="level" type="range" min="0" max="16" step="1" value="5"></label>
+     <div class="step-row"><button id="stepBack">− مرحلهٔ قبل</button><button id="stepForward">+ مرحلهٔ بعد</button></div><button class="play" id="playBtn">▶ پخش مراحل</button>
+     <label class="field" style="margin-top:13px"><div class="field-header"><span>سرعت پخش</span><span id="speedValue" class="val">۱×</span></div><input id="speed" type="range" min="0.25" max="4" step="0.25" value="1"></label>
+   </section>
+   <section class="section">
+     <label class="field" id="ratioParam"><div class="field-header"><span>نسبت کوچک‌شدن نسخه‌ها</span><span class="val" id="ratioValue">۰٫۵</span></div><input id="ratio" type="range" min="0.2" max="0.65" step="0.01" value="0.5"></label>
+     <label class="field" id="gridParam" hidden><div class="field-header"><span>تعداد بخش‌های هر ضلع</span><span class="val" id="gridValue">۳</span></div><input id="gridSize" type="range" min="3" max="6" step="1" value="3"></label>
+     <label class="field" id="angleParam" hidden><div class="field-header"><span>زاویهٔ انشعاب / برجستگی</span><span class="val" id="angleValue">۶۰°</span></div><input id="angle" type="range" min="20" max="80" step="1" value="60"></label>
+     <p id="overlapWarning" class="warning" hidden></p>
+     <label class="field"><div class="field-header"><span>رنگ‌بندی</span></div><select id="palette"><option value="nebula">سحابی رنگین</option><option value="aurora">شفق قطبی</option><option value="prism">منشور رنگین‌کمانی</option><option value="sunset">غروب شعله‌ور</option><option value="electric">آبی الکتریکی</option><option value="amethyst">بنفش آمیتیست</option><option value="ocean">اقیانوس عمیق</option><option value="forest">زمردی جنگلی</option><option value="gold">طلایی درخشان</option><option value="mono">نقره‌ای تک‌رنگ</option></select></label>
+     <div class="art-controls">
+       <div class="art-heading">✦ استودیوی رنگ و نور</div>
+       <label class="toggle-row">گرادیان چندرنگ<input id="gradientCheck" type="checkbox" checked></label>
+       <label class="field"><div class="field-header"><span>درخشندگی / هالهٔ نور</span><span id="glowValue" class="val">۴۸٪</span></div><input id="glow" type="range" min="0" max="100" step="1" value="48"></label>
+       <label class="field"><div class="field-header"><span>تغییر طیف رنگ</span><span id="hueShiftValue" class="val">۰°</span></div><input id="hueShift" type="range" min="0" max="360" step="1" value="0"></label>
+       <label class="field"><div class="field-header"><span>جهت تابش نور</span><span id="lightAngleValue" class="val">۴۵°</span></div><input id="lightAngle" type="range" min="0" max="360" step="5" value="45"></label>
+       <label class="field" id="detailParam" hidden><div class="field-header"><span>کیفیت تصویر مختلط</span><span id="detailValue" class="val">۱×</span></div><input id="detail" type="range" min="0.5" max="1.5" step="0.25" value="1"></label>
+       <div id="juliaParams" hidden>
+        <label class="field"><div class="field-header"><span>ثابت ژولیا ـ بخش حقیقی</span><span id="juliaRealValue" class="val">−۰٫۷۴۵</span></div><input id="juliaReal" type="range" min="-1.5" max="1.5" step="0.005" value="-0.74543"></label>
+        <label class="field"><div class="field-header"><span>ثابت ژولیا ـ بخش موهومی</span><span id="juliaImagValue" class="val">۰٫۱۱۳</span></div><input id="juliaImag" type="range" min="-1.5" max="1.5" step="0.005" value="0.11301"></label>
+       </div>
+       <div id="paletteSwatches" class="swatches" aria-hidden="true"></div>
+     </div>
+     <label class="toggle-row">نمایش شبکه<input id="gridCheck" type="checkbox" checked></label><label class="toggle-row">نمایش خط دور شکل<input id="outlineCheck" type="checkbox"></label>
+   </section>
+   <section class="section"><h2>◈ ویژگی‌های ریاضی</h2><div class="stats-grid">
+      <div class="stat"><span id="elementLabel">تعداد قطعه در این مرحله</span><strong id="elementCount">—</strong></div>
+      <div class="stat"><span>ضریب تکثیر</span><strong id="factorCount">—</strong></div>
+      <div class="stat"><span id="dimensionTag">بُعد فراکتالی</span><strong id="dimension">—</strong></div>
+      <div class="stat"><span>قطعهٔ رسم‌شده / بهینه‌سازی‌شده</span><strong id="paintedCount">—</strong></div>
+     </div><div class="math" id="formula">D = log(3) / log(2)</div><p class="explain" id="detail">یک شکل در هر مرحله به سه نسخهٔ کوچک‌تر تبدیل می‌شود.</p>
+   </section>
+   <section class="section"><button style="width:100%" id="reset">↻ بازنشانی کامل</button><p class="kbd">میانبرها: کلیدهای چپ و راست برای تغییر مرحله، فاصله برای پخش، و + / − برای بزرگ‌نمایی.</p></section>
+  </aside>
+ </main>
+ <p class="foot">Esbiko Fractal Geometry 2D · نسخهٔ ۰٫۲ · نمایش مستقل، آفلاین و مناسب موبایل · نمای ۳بعدی در فاز بعد</p>
+</div>
+<script type="module">
+/* Esbiko Fractal Geometry v0.2 — pure math, no DOM dependency. */
+const TYPES=Object.freeze({
+ triangle:{label:'Sierpinski Triangle',fa:'مثلث سیرپینسکی',max:16,initial:5},
+ carpet:{label:'Sierpinski Carpet',fa:'فرش سیرپینسکی',max:9,initial:4},
+ dust:{label:'Cantor Dust',fa:'غبار کانتور',max:11,initial:5},
+ koch:{label:'Koch Snowflake',fa:'دانه‌برف کخ',max:9,initial:4},
+ tree:{label:'Binary Fractal Tree',fa:'درخت دودویی',max:15,initial:9},
+ vicsek:{label:'Vicsek Cross',fa:'فراکتال ویچک ـ صلیبی',max:9,initial:5},
+ vicsek_x:{label:'Vicsek X',fa:'فراکتال ویچک ـ قطری',max:9,initial:5},
+ pentagon:{label:'Sierpinski Pentagon',fa:'پنج‌ضلعی سیرپینسکی',max:9,initial:5},
+ hexaflake:{label:'Hexaflake',fa:'برف‌وارهٔ شش‌ضلعی',max:8,initial:4},
+ levy:{label:'Levy C Curve',fa:'منحنی C لِوی',max:17,initial:11},
+ dragon:{label:'Heighway Dragon',fa:'اژدهای های‌وی',max:18,initial:13},
+ hilbert:{label:'Hilbert Curve',fa:'منحنی هیلبرت',max:7,initial:5},
+ pythagoras:{label:'Pythagoras Tree',fa:'درخت فیثاغورث',max:13,initial:9},
+ minkowski:{label:'Minkowski Sausage',fa:'منحنی مینکوفسکی',max:6,initial:4},
+ fern:{label:'Barnsley Fern',fa:'سرخس بارنزلی',max:10,initial:7},
+ mandelbrot:{label:'Mandelbrot Set',fa:'مجموعهٔ ماندلبرو',max:12,initial:6},
+ julia:{label:'Julia Set',fa:'مجموعهٔ ژولیا',max:12,initial:6},
+ burning_ship:{label:'Burning Ship',fa:'کشتی سوزان',max:12,initial:6},
+ tricorn:{label:'Tricorn / Mandelbar',fa:'مجموعهٔ سه‌شاخ',max:12,initial:6}
+});
+const PALETTES=['aurora','nebula','prism','sunset','electric','amethyst','ocean','forest','gold','mono'];
+const DEFAULTS=Object.freeze({type:'triangle',level:5,ratio:.5,gridSize:3,angle:60,speed:1,palette:'nebula',showGrid:false,outlines:false,gradient:true,glow:48,hueShift:0,lightAngle:45,detail:1,juliaReal:-.74543,juliaImag:.11301});
+const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
+const ESCAPE_TYPES=['mandelbrot','julia','burning_ship','tricorn'];
+function normalise(previous,patch={}){
+ if(!patch||typeof patch!=='object'||Array.isArray(patch)||Object.keys(patch).some(k=>!Object.hasOwn(DEFAULTS,k)))throw new TypeError('Unknown fractal parameter');
+ const p={...previous,...patch};if(!Object.hasOwn(TYPES,p.type))throw new RangeError('Invalid fractal type');
+ for(const k of ['level','ratio','gridSize','angle','speed','glow','hueShift','lightAngle','detail','juliaReal','juliaImag'])if(typeof p[k]!=='number'||!Number.isFinite(p[k]))throw new TypeError('Invalid '+k);
+ if(!Number.isInteger(p.level)||p.level<0||p.level>TYPES[p.type].max)throw new RangeError('Invalid level');
+ if(p.ratio<.2||p.ratio>.65)throw new RangeError('Ratio must be between .2 and .65');
+ if(!Number.isInteger(p.gridSize)||p.gridSize<3||p.gridSize>6)throw new RangeError('Invalid grid size');
+ if(p.angle<20||p.angle>80)throw new RangeError('Invalid angle');
+ if(p.speed<.25||p.speed>4)throw new RangeError('Invalid speed');
+ if(p.glow<0||p.glow>100||p.hueShift<0||p.hueShift>360||p.lightAngle<0||p.lightAngle>360||p.detail<.5||p.detail>1.5)throw new RangeError('Invalid artistic parameter');
+ if(Math.abs(p.juliaReal)>2||Math.abs(p.juliaImag)>2)throw new RangeError('Invalid Julia coordinate');
+ if(!PALETTES.includes(p.palette))throw new RangeError('Invalid palette');
+ for(const k of ['showGrid','outlines','gradient'])if(typeof p[k]!=='boolean')throw new TypeError('Invalid '+k);
+ return p;
+}
+function carpetCells(n){const cells=[],m=(n-1)/2;for(let row=0;row<n;row++)for(let col=0;col<n;col++)if(!(Math.abs(row-m)<.51&&Math.abs(col-m)<.51))cells.push([col,row]);return cells;}
+const FERN_SAMPLES=[1,250,750,2000,5000,11000,23000,44000,75000,105000,145000];
+function stats(p){
+ let childCount=null,shrink=null,similarityDimension=null,isDimensionExact=false,description='',theoreticalElements=null;
+ switch(p.type){
+ case 'triangle':childCount=3;shrink=p.ratio;isDimensionExact=p.ratio<=.5;description='سه کپی رأس‌محور؛ کپی‌های بزرگ‌تر از نصف هم‌پوشانی دارند.';break;
+ case 'dust':childCount=4;shrink=p.ratio;isDimensionExact=p.ratio<=.5;description='چهار کپی در گوشه‌های مربع.';break;
+ case 'carpet':childCount=carpetCells(p.gridSize).length;shrink=1/p.gridSize;isDimensionExact=true;description='حذف خانه یا بلوک مرکزی شبکه.';break;
+ case 'koch':childCount=4;shrink=1/(2+2*Math.cos(p.angle*Math.PI/180));isDimensionExact=p.angle===60;description='جایگزینی هر ضلع با چهار پاره‌خط؛ زاویهٔ استاندارد ۶۰ درجه.';break;
+ case 'tree':childCount=2;shrink=.69;description='دو شاخه با زاویهٔ قابل تغییر؛ بُعد واقعی از شمارش شاخه‌ها به دست نمی‌آید.';break;
+ case 'vicsek':case 'vicsek_x':childCount=5;shrink=1/3;isDimensionExact=true;description='پنج خانه از شبکهٔ ۳×۳ باقی می‌مانند.';break;
+ case 'pentagon':childCount=5;shrink=(3-Math.sqrt(5))/2;isDimensionExact=true;description='پنج پنج‌ضلعی کوچک در پنج رأس.';break;
+ case 'hexaflake':childCount=7;shrink=1/3;isDimensionExact=true;description='هفت شش‌ضلعی در یک الگوی تکراری.';break;
+ case 'levy':case 'dragon':childCount=2;shrink=1/Math.sqrt(2);isDimensionExact=true;description='هر پاره‌خط به دو قسمت با چرخش ۹۰ درجه تقسیم می‌شود.';break;
+ case 'hilbert':childCount=4;shrink=.5;isDimensionExact=true;description='منحنی پیوستهٔ پرکنندهٔ صفحه در حد تکرارهای بی‌نهایت.';break;
+ case 'pythagoras':childCount=2;shrink=null;description='درخت مربعی بر پایهٔ قضیهٔ فیثاغورث؛ نسبت دو فرزند برابر نیست.';break;
+ case 'minkowski':childCount=8;shrink=.25;isDimensionExact=true;description='ژنراتور هشت‌قسمتی مینکوفسکی با مقیاس یک‌چهارم.';break;
+ case 'fern':description='سرخس با سیستم توابع تکرارشونده و نمونه‌گیری تصادفیِ بازتولیدپذیر.';theoreticalElements=FERN_SAMPLES[p.level];break;
+ default:description='فراکتال مختلط با الگوریتم زمان خروج؛ بُعد با فرمول خودتشابه به‌دست نمی‌آید.';theoreticalElements=(60+36*p.level);break;
+ }
+ if(shrink!==null&&childCount!==null)similarityDimension=Math.log(childCount)/Math.log(1/shrink);
+ if(theoreticalElements===null){
+  if(p.type==='tree'||p.type==='pythagoras')theoreticalElements=2**(p.level+1)-1;
+  else if(p.type==='hilbert')theoreticalElements=4**p.level;
+  else theoreticalElements=(['koch','minkowski'].includes(p.type)?(p.type==='koch'?3:4):1)*childCount**p.level;
+ }
+ return {type:p.type,level:p.level,childCount,shrink,similarityDimension,isDimensionExact,theoreticalElements,description};
+}
+const lerp=(a,b,t)=>[a[0]+t*(b[0]-a[0]),a[1]+t*(b[1]-a[1])];
+function intersects(points,rect,pad=0){if(!rect)return true;let a=Infinity,b=-Infinity,c=Infinity,d=-Infinity;for(const p of points){a=Math.min(a,p[0]);b=Math.max(b,p[0]);c=Math.min(c,p[1]);d=Math.max(d,p[1]);}return !(b+pad<rect.x0||a-pad>rect.x1||d+pad<rect.y0||c-pad>rect.y1);}
+function regularPolygon(cx,cy,r,n,rotation=-Math.PI/2){return Array.from({length:n},(_,i)=>[cx+r*Math.cos(rotation+2*Math.PI*i/n),cy+r*Math.sin(rotation+2*Math.PI*i/n)]);}
+function hilbertXY(n,i){let x=0,y=0,t=i;for(let s=1;s<n;s*=2){const rx=1&(t/2),ry=1&(t^rx);if(ry===0){if(rx===1){x=s-1-x;y=s-1-y;}const z=x;x=y;y=z;}x+=s*rx;y+=s*ry;t=Math.floor(t/4);}return[x,y];}
+/** Geometry visitor; pixel-level culling avoids exponential paint work on deep zooms. */
+function walkFractal(p,{viewport=null,scale=400,minPixels=.7,maxNodes=240000,triangle=()=>{},square=()=>{},polygon=()=>{},segment=()=>{},branch=()=>{},dot=()=>{}}={}){
+ let visited=0,painted=0,approximate=0,limited=false;
+ const visit=()=>{if(++visited>maxNodes){limited=true;return false;}return true;};
+ const emitPolygon=(poly,d)=>{polygon(poly,d);painted++;};
+ if(p.type==='triangle'){
+  const stack=[[[0,-.84],[-.96,.82],[.96,.82],0]];
+  while(stack.length){if(!visit())break;const[a,b,c,d]=stack.pop();if(!intersects([a,b,c],viewport))continue;
+   const sz=Math.max(Math.hypot(a[0]-b[0],a[1]-b[1]),Math.hypot(a[0]-c[0],a[1]-c[1]));
+   if(d===p.level||sz*scale<minPixels){triangle([a,b,c],d);painted++;if(d<p.level)approximate++;continue;}
+   const r=p.ratio;stack.push([c,lerp(c,a,r),lerp(c,b,r),d+1],[b,lerp(b,c,r),lerp(b,a,r),d+1],[a,lerp(a,b,r),lerp(a,c,r),d+1]);
+  }
+ }else if(['carpet','dust','vicsek','vicsek_x'].includes(p.type)){
+  const stack=[[-.84,-.84,1.68,0]],cells=p.type==='carpet'?carpetCells(p.gridSize):null;
+  while(stack.length){if(!visit())break;const[x,y,s,d]=stack.pop();if(!intersects([[x,y],[x+s,y+s]],viewport))continue;
+   if(d===p.level||s*scale<minPixels){square(x,y,s,d);painted++;if(d<p.level)approximate++;continue;}
+   if(p.type==='carpet'||p.type.startsWith('vicsek')){
+    const n=p.type==='carpet'?p.gridSize:3,u=s/n;
+    const coords=p.type==='carpet'?cells:p.type==='vicsek'?[[1,1],[0,1],[2,1],[1,0],[1,2]]:[[1,1],[0,0],[0,2],[2,0],[2,2]];
+    for(let j=coords.length-1;j>=0;j--){const[c,r]=coords[j];stack.push([x+c*u,y+r*u,u,d+1]);}
+   }else{const u=s*p.ratio;stack.push([x,y,u,d+1],[x+s-u,y,u,d+1],[x,y+s-u,u,d+1],[x+s-u,y+s-u,u,d+1]);}
+  }
+ }else if(p.type==='pentagon'||p.type==='hexaflake'){
+  const n=p.type==='pentagon'?5:6,r=p.type==='pentagon'?(3-Math.sqrt(5))/2:1/3;
+  const stack=[[0,0,.82,0]];
+  while(stack.length){if(!visit())break;const[cx,cy,R,d]=stack.pop();if(!intersects([[cx-R,cy-R],[cx+R,cy+R]],viewport))continue;
+   if(d===p.level||2*R*scale<minPixels){emitPolygon(regularPolygon(cx,cy,R,n,p.type==='pentagon'?-Math.PI/2:0),d);if(d<p.level)approximate++;continue;}
+   if(p.type==='hexaflake')stack.push([cx,cy,R*r,d+1]);
+   for(let j=0;j<n;j++){const a=-Math.PI/2+2*Math.PI*j/n;const offset=R*(1-r);stack.push([cx+offset*Math.cos(a),cy+offset*Math.sin(a),R*r,d+1]);}
+  }
+ }else if(['koch','levy','dragon','minkowski'].includes(p.type)){
+  const stack=[];
+  if(p.type==='koch'){const tri=[[0,-.72],[-.7,.52],[.7,.52]];for(let i=0;i<3;i++)stack.push([tri[i],tri[(i+1)%3],0,1]);}
+  else if(p.type==='minkowski'){const s=[[-.58,-.58],[.58,-.58],[.58,.58],[-.58,.58]];for(let i=0;i<4;i++)stack.push([s[i],s[(i+1)%4],0,1]);}
+  else stack.push([[-.77,.2],[.77,.2],0,1]);
+  const angle=p.angle*Math.PI/180,cs=Math.cos(angle),sn=Math.sin(angle),r=1/(2+2*cs);
+  while(stack.length){if(!visit())break;const[a,b,d,sgn]=stack.pop(),dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);
+   if(!intersects([a,b],viewport,len*.8))continue;
+   if(d===p.level||len*scale<minPixels){segment(a,b,d);painted++;if(d<p.level)approximate++;continue;}
+   if(p.type==='koch'){
+    const q=[a,[a[0]+dx*r,a[1]+dy*r],null,[b[0]-dx*r,b[1]-dy*r],b];q[2]=[q[1][0]+r*(cs*dx-sn*dy),q[1][1]+r*(sn*dx+cs*dy)];
+    for(let i=3;i>=0;i--)stack.push([q[i],q[i+1],d+1,1]);
+   }else if(p.type==='levy'||p.type==='dragon'){
+    const flip=p.type==='levy'?1:sgn,center=[(a[0]+b[0]-flip*dy)/2,(a[1]+b[1]+flip*dx)/2];
+    stack.push([center,b,d+1,-flip],[a,center,d+1,flip]);
+   }else{
+    const pts=[[0,0],[.25,0],[.25,.25],[.5,.25],[.5,0],[.5,-.25],[.75,-.25],[.75,0],[1,0]];
+    const q=pts.map(([u,v])=>[a[0]+u*dx-v*dy,a[1]+u*dy+v*dx]);
+    for(let i=q.length-2;i>=0;i--)stack.push([q[i],q[i+1],d+1,1]);
+   }
+  }
+ }else if(p.type==='hilbert'){
+  const n=2**p.level,N=n*n;if(N>maxNodes)limited=true;let prev=null;
+  if(N===1){dot(0,0,0);painted++;return {visited:1,painted,approximate,limited};}
+  for(let i=0;i<Math.min(N,maxNodes);i++){if(!visit())break;const [x,y]=hilbertXY(n,i),here=[-0.83+1.66*(x+.5)/n,-.83+1.66*(y+.5)/n];if(prev&&intersects([prev,here],viewport)){segment(prev,here,p.level);painted++;}prev=here;}
+ }else if(p.type==='tree'){
+  const stack=[[[0,.87],[0,.2],0,.115]],angle=p.angle*Math.PI/180;
+  while(stack.length){if(!visit())break;const[a,b,d,w]=stack.pop(),dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy);if(!intersects([a,b],viewport,2*len))continue;
+   branch(a,b,d,w);painted++;if(d===p.level||len*scale<minPixels){if(d<p.level)approximate++;continue;}
+   for(const sgn of [1,-1]){const a2=angle*sgn,c=Math.cos(a2),s=Math.sin(a2),R=.69;stack.push([b,[b[0]+R*(dx*c-dy*s),b[1]+R*(dx*s+dy*c)],d+1,w*.73]);}
+  }
+ }else if(p.type==='pythagoras'){
+  const stack=[[[ -.22,.79],[.22,.79],0]];const th=p.angle*Math.PI/180,co=Math.cos(th),si=Math.sin(th);
+  while(stack.length){if(!visit())break;const[a,b,d]=stack.pop(),dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy),v=[dy,-dx],tl=[a[0]+v[0],a[1]+v[1]],tr=[b[0]+v[0],b[1]+v[1]];
+   if(!intersects([a,b,tr,tl],viewport,len*1.5))continue;
+   emitPolygon([a,b,tr,tl],d);if(d===p.level||len*scale<minPixels){if(d<p.level)approximate++;continue;}
+   const apex=[tl[0]+co*co*dx+si*co*v[0],tl[1]+co*co*dy+si*co*v[1]];
+   stack.push([apex,tr,d+1],[tl,apex,d+1]);
+  }
+ }else if(p.type==='fern'){
+  let x=0,y=0,seed=1137757;const samples=FERN_SAMPLES[p.level],tot=Math.min(samples,maxNodes);
+  for(let i=0;i<tot+20;i++){
+   if(!visit())break;seed=(1664525*seed+1013904223)>>>0;const r=seed/4294967296;let nx,ny;
+   if(r<.01){nx=0;ny=.16*y;}
+   else if(r<.86){nx=.85*x+.04*y;ny=-.04*x+.85*y+1.6;}
+   else if(r<.93){nx=.2*x-.26*y;ny=.23*x+.22*y+1.6;}
+   else {nx=-.15*x+.28*y;ny=.26*x+.24*y+.44;}
+   x=nx;y=ny;
+   if(i<20)continue;const X=x*.31,Y=.83-y*.16;if(!viewport||(X>=viewport.x0&&X<=viewport.x1&&Y>=viewport.y0&&Y<=viewport.y1)){dot(X,Y,i/samples);painted++;}
+  }
+  if(samples>maxNodes)limited=true;
+ }
+ return {visited,painted,approximate,limited};
+}
+/** Complex quadratic maps: normalized world-coordinates, smooth iteration count. */
+function escapePoint(kind,cx,cy,maxIter,juliaReal=-.74543,juliaImag=.11301){
+ let zx,zy,cr,ci;
+ if(kind==='julia'){zx=cx;zy=cy;cr=juliaReal;ci=juliaImag;}else{zx=0;zy=0;cr=cx;ci=cy;}
+ for(let i=0;i<maxIter;i++){
+  const ax=kind==='burning_ship'?Math.abs(zx):zx,ay=kind==='burning_ship'?Math.abs(zy):zy;
+  const nextX=ax*ax-ay*ay+cr,nextY=(kind==='tricorn'?-2:2)*ax*ay+ci;
+  zx=nextX;zy=nextY;const radius=zx*zx+zy*zy;
+  if(radius>256){const m=Math.sqrt(radius),smooth=i+1-Math.log2(Math.max(1,Math.log2(m)));return {inside:false,value:Math.max(0,smooth),iterations:i+1};}
+ }
+ return {inside:true,value:0,iterations:maxIter};
+}
+
+// Esbiko Fractal Lab — standalone HTML Canvas UI + local control API.
+const el=(id)=>document.getElementById(id);
+const canvas=el('fractalCanvas');
+const ctx=canvas.getContext('2d',{alpha:false});
+const root=el('stage');
+const notice=el('notice');
+const formatter=new Intl.NumberFormat('fa-IR',{maximumFractionDigits:2});
+const state={parameters:{...DEFAULTS},camera:{x:0,y:0,zoom:1},playing:false,recording:false,recordingReady:false};
+let W=900,H=600,DPR=1,lastFrame=0,stepAccum=0,recorder=null,recordChunks=[],recordBlob=null,recordUrl=null,frameHandle=0,needsPaint=true;
+let drawStats={visited:0,painted:0,approximate:0,limited:false};
+const colors={
+ aurora:{stops:[[178,96,72],[156,91,56],[203,94,68],[270,96,74]],bg:['#080f27','#152b40']},
+ nebula:{stops:[[270,96,72],[308,96,69],[185,94,64],[42,99,75]],bg:['#110d2f','#131c43']},
+ prism:{stops:[[350,98,63],[46,99,67],[150,92,59],[204,95,63],[273,98,73]],bg:['#0d1027','#112039']},
+ sunset:{stops:[[342,98,64],[11,100,65],[37,100,71],[308,96,69]],bg:['#230c25','#351b34']},
+ electric:{stops:[[228,96,66],[191,99,69],[179,100,78],[242,99,77]],bg:['#071332','#0b2850']},
+ amethyst:{stops:[[288,90,62],[309,98,75],[257,99,77],[195,95,71]],bg:['#180b31','#291946']},
+ ocean:{stops:[[221,92,60],[195,97,68],[165,91,69],[215,94,80]],bg:['#07192d','#0a3647']},
+ forest:{stops:[[144,83,53],[160,94,66],[78,87,68],[185,91,73]],bg:['#0b201b','#163b32']},
+ gold:{stops:[[26,97,61],[43,100,73],[52,99,82],[16,96,68]],bg:['#201521','#32221b']},
+ mono:{stops:[[208,0,69],[208,0,95],[208,0,70],[208,0,84]],bg:['#0b1420','#253243']}
+};
+const colorAt=(h,s,l,alpha=1)=>`hsla(${((h%360)+360)%360} ${s}% ${l}% / ${alpha})`;
+const colorStops=p=>colors[p.palette].stops.map(([h,s,l])=>[h+p.hueShift,s,l]);
+const colorGradient=(p)=>{
+ const stops=colorStops(p),a=p.lightAngle*Math.PI/180,dx=Math.cos(a)*1.5,dy=Math.sin(a)*1.5;
+ const g=ctx.createLinearGradient(-dx,-dy,dx,dy),arr=p.gradient?stops:[stops[Math.floor(stops.length/2)]];
+ if(arr.length===1){g.addColorStop(0,colorAt(...arr[0]));g.addColorStop(1,colorAt(...arr[0]));}
+ else arr.forEach((s,i)=>g.addColorStop(i/(arr.length-1),colorAt(...s)));
+ return g;
+};
+const monoColor=p=>colorAt(...colorStops(p)[1]);
+const complexColorLUT=(p)=>{
+ const stops=colorStops(p),out=new Uint8ClampedArray(1024*3);
+ for(let i=0;i<1024;i++){
+  const t=(i/1024)*stops.length,k=Math.floor(t),f=t-k,a=stops[k%stops.length],b=stops[(k+1)%stops.length];
+  const h=a[0]+(b[0]-a[0])*f,s=(a[1]+(b[1]-a[1])*f)/100,l=(a[2]+(b[2]-a[2])*f)/100;
+  const c=(1-Math.abs(2*l-1))*s,hp=((h%360)+360)%360/60,x=c*(1-Math.abs(hp%2-1));
+  let rgb=hp<1?[c,x,0]:hp<2?[x,c,0]:hp<3?[0,c,x]:hp<4?[0,x,c]:hp<5?[x,0,c]:[c,0,x];
+  rgb=rgb.map(v=>Math.round(255*(v+l-c/2)));
+  out[i*3]=rgb[0];out[i*3+1]=rgb[1];out[i*3+2]=rgb[2];
+ }
+ return out;
+};
+let complexToken=0,escapeFrame=0;
+function drawStars(){let seed=73166;for(let i=0;i<58;i++){seed=(1664525*seed+1013904223)>>>0;const x=seed/4294967296*W;seed=(1664525*seed+1013904223)>>>0;const y=seed/4294967296*H;ctx.fillStyle=`rgba(219,233,255,${.08+i%5*.025})`;ctx.beginPath();ctx.arc(x,y,i%9===0?1.4:.65,0,Math.PI*2);ctx.fill();}}
+function drawBackdrop(p){
+ const col=colors[p.palette],bg=ctx.createLinearGradient(0,0,W,H);
+ bg.addColorStop(0,col.bg[0]);bg.addColorStop(1,col.bg[1]);ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ const rg=ctx.createRadialGradient(W*.48,H*.38,10,W*.48,H*.38,Math.max(W,H)*.8);
+ rg.addColorStop(0,colorAt(colorStops(p)[0][0],80,32,.25));rg.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+ if(!ESCAPE_TYPES.includes(p.type))drawStars();
+}
+function drawEscape(p,scale,token){
+ const rw=Math.max(150,Math.min(960,Math.round(W*.85*p.detail)));
+ const rh=Math.max(120,Math.min(660,Math.round(H*.85*p.detail)));
+ const off=document.createElement('canvas');off.width=rw;off.height=rh;const oc=off.getContext('2d');
+ const image=oc.createImageData(rw,rh),d=image.data,lut=complexColorLUT(p),maxIter=60+36*p.level;
+ const center=state.camera, cameraX=center.x,cameraY=center.y;
+ let y=0;
+ function tile(){
+  if(token!==complexToken)return;
+  const end=Math.min(rh,y+Math.max(5,Math.round(11000/rw)));
+  for(let j=y;j<end;j++)for(let i=0;i<rw;i++){
+   const x=cameraX+((i+.5)/rw-.5)*W/scale;
+   const yy=cameraY+((j+.5)/rh-.5)*H/scale;
+   const e=escapePoint(p.type,x,yy,maxIter,p.juliaReal,p.juliaImag);
+   const idx=(j*rw+i)*4;
+   if(e.inside){d[idx]=7;d[idx+1]=8;d[idx+2]=22;}
+   else{
+    const t=p.gradient?((e.value*.025+.0015*e.value*e.value+.14)%1):(.55+.0008*e.value)%1;
+    const at=(Math.floor(t*1024)%1024)*3;const light=Math.min(1, .42 + .55*(1-Math.exp(-e.value*.047)) + p.glow*.001);
+    d[idx]=lut[at]*light;d[idx+1]=lut[at+1]*light;d[idx+2]=lut[at+2]*light;
+   }
+   d[idx+3]=255;
+  }
+  y=end;
+  if(y<rh){escapeFrame=requestAnimationFrame(tile);return;}
+  if(token!==complexToken)return;
+  oc.putImageData(image,0,0);
+  ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);ctx.imageSmoothingEnabled=true;ctx.drawImage(off,0,0,W,H);
+  // Screen tint and subtle bloom, drawn as a translucent second pass.
+  if(p.glow>0){ctx.globalAlpha=p.glow*.0013;ctx.globalCompositeOperation='screen';ctx.filter=`blur(${(p.glow/8).toFixed(1)}px)`;ctx.drawImage(off,0,0,W,H);}
+  ctx.restore();
+  drawStats={visited:rw*rh,painted:rw*rh,approximate:rw<W||rh<H?1:0,limited:false};
+  el('paintedCount').textContent=(rw*rh).toLocaleString('fa-IR');
+  el('renderMessage').textContent=`محاسبهٔ ${rw}×${rh} نقطه با حداکثر ${maxIter.toLocaleString('fa-IR')} تکرار انجام شد.`;
+ }
+ tile();
+}
+const clampZoom=(v)=>clamp(v,.2,50000);
+function parameters(){return state.parameters;}
+function camera(){return state.camera;}
+function currentScale(){return Math.min(W,H)/2.45*state.camera.zoom;}
+function setNotice(message){notice.textContent=message;}
+function stopPlay(){state.playing=false;state.lastPlayEnded=true;el('playBtn').textContent='▶ پخش مراحل';}
+function setPlaying(playing){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:playing?"play":"pause"},location.origin);return getState();}
+ if(playing&&parameters().level===TYPES[parameters().type].max)state.parameters={...parameters(),level:0};
+ state.playing=Boolean(playing);stepAccum=0;lastFrame=0;
+ el('playBtn').textContent=state.playing?'⏸ مکث':'▶ پخش مراحل';updateLabels();needsPaint=true;return getState();
+}
+function updateLabels(){
+ const p=parameters(),s=stats(p),isComplex=ESCAPE_TYPES.includes(p.type);
+ el('type').value=p.type;el('level').max=TYPES[p.type].max;el('level').value=p.level;
+ el('levelValue').textContent=`${formatter.format(p.level)} / ${formatter.format(TYPES[p.type].max)}`;
+ for(const key of ['ratio','gridSize','angle','speed','glow','hueShift','lightAngle','detail','juliaReal','juliaImag']){
+  el(key).value=p[key];el(key==='gridSize'?'gridValue':key+'Value').textContent=formatter.format(p[key])+(key==='angle'||key==='hueShift'||key==='lightAngle'?'°':key==='speed'||key==='detail'?'×':key==='glow'?'٪':'');
+ }
+ el('palette').value=p.palette;el('gridCheck').checked=p.showGrid;el('outlineCheck').checked=p.outlines;el('gradientCheck').checked=p.gradient;
+ el('ratioParam').hidden=!['triangle','dust'].includes(p.type);
+ el('gridParam').hidden=p.type!=='carpet';el('angleParam').hidden=!['koch','tree','pythagoras'].includes(p.type);
+ el('detailParam').hidden=!isComplex;el('juliaParams').hidden=p.type!=='julia';
+ el('mathTitle').textContent=TYPES[p.type].fa;
+ el('elementLabel').textContent=isComplex?'حداکثر تکرار الگوریتم':p.type==='fern'?'تعداد نمونه‌های سرخس':p.type==='hilbert'?'تعداد رأس‌های مسیر':'تعداد قطعه در این مرحله';
+ el('elementCount').textContent=s.theoreticalElements.toLocaleString('fa-IR');
+ el('factorCount').textContent=s.childCount===null?'—':formatter.format(s.childCount);
+ el('dimension').textContent=s.similarityDimension===null?'—':formatter.format(Number(s.similarityDimension.toFixed(5)));
+ el('dimensionTag').textContent=s.similarityDimension===null?'بُعد نامحاسبه‌شده':s.isDimensionExact?'بُعد فراکتالی':'بُعد تشابه / تقریبی';
+ el('formula').textContent=s.similarityDimension===null?'برای این خانواده، فرمول بُعد تشابه به کار نمی‌رود.':`D = log(${s.childCount}) / log(${(1/s.shrink).toFixed(4)})`;
+ el('zoomValue').textContent=state.camera.zoom>=100?formatter.format(Math.round(state.camera.zoom))+'×':formatter.format(Number(state.camera.zoom.toFixed(2)))+'×';
+ el('stepBack').disabled=p.level===0;el('stepForward').disabled=p.level===TYPES[p.type].max;
+ el('overlapWarning').hidden=!(p.ratio>.5&&['triangle','dust'].includes(p.type));
+ el('overlapWarning').textContent='نسبت بیشتر از ۰٫۵ موجب هم‌پوشانی نسخه‌ها می‌شود؛ فرمول بُعد تشابه لزوماً بُعد واقعی را نشان نمی‌دهد.';
+ el('detail').textContent=s.description;
+ el('playBtn').textContent=state.playing?'⏸ مکث':'▶ پخش مراحل';
+ const pal=colorStops(p);el('paletteSwatches').innerHTML='';for(const [h,ss,l] of pal){const sw=document.createElement('span');sw.style.background=colorAt(h,ss,l);el('paletteSwatches').appendChild(sw);}
+ window.__esbikoRemoteSyncCamera?.();
+}
+function setParameters(patch){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:"configure",...{parameters:patch}},location.origin);return getState();}
+ const typeChange=patch.type && patch.type!==parameters().type;
+ let merged={...patch};
+ if(typeChange&&!Object.hasOwn(merged,'level'))merged.level=TYPES[patch.type].initial;
+ state.parameters=normalise(parameters(),merged);
+ updateLabels();needsPaint=true;return getState();
+}
+function setCamera(patch){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:"set_camera",...{camera:patch}},location.origin);return getState();}
+ const c={...state.camera,...patch};
+ if(['x','y','zoom'].some(k=>typeof c[k]!=='number'||!Number.isFinite(c[k])))throw new TypeError('Camera must be finite');
+ if(c.zoom<.2||c.zoom>50000)throw new RangeError('Camera zoom outside range');
+ state.camera=c;updateLabels();needsPaint=true;return getState();
+}
+function worldFromScreen(sx,sy){const scale=currentScale();return {x:state.camera.x+(sx-W/2)/scale,y:state.camera.y+(sy-H/2)/scale};}
+function zoomAt(mult,sx=W/2,sy=H/2){const before=worldFromScreen(sx,sy),z=clampZoom(state.camera.zoom*mult);state.camera.zoom=z;const after=worldFromScreen(sx,sy);state.camera.x+=before.x-after.x;state.camera.y+=before.y-after.y;updateLabels();needsPaint=true;window.__esbikoRemoteSyncCamera?.();}
+function fit(){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:"set_camera",...{camera:{x:0,y:0,zoom:1}}},location.origin);return getState();}const p=parameters();const init=p.type==='mandelbrot'?{x:-.65,y:0}:p.type==='burning_ship'?{x:-.45,y:-.45}:{x:0,y:0};state.camera={...init,zoom:1};updateLabels();needsPaint=true;return getState();}
+function reset(){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:"reset",...{}},location.origin);return getState();}stopPlay();state.parameters={...DEFAULTS};fit();updateLabels();needsPaint=true;return getState();}
+function nextStep(delta=1){if(window.__esbikoRemoteAttached&&!window.__esbikoApplyingRemote){window.parent.postMessage({type:"esbiko-fractal-command-v1",action:"configure",...{parameters:{level:clamp(parameters().level+delta,0,TYPES[parameters().type].max)}}},location.origin);return getState();}stopPlay();setParameters({level:clamp(parameters().level+delta,0,TYPES[parameters().type].max)});return getState();}
+function getState(){return {simulationId:'math.geometry.fractals-2d',phase:'esbiko-html-v1',parameters:{...parameters()},camera:{...camera()},playing:state.playing,recording:state.recording,metrics:stats(parameters()),render:{...drawStats}};}
+function drawGrid(scale,color){
+ if(!parameters().showGrid)return;
+ let unit=.2;while(unit*scale<37)unit*=2;while(unit*scale>150)unit/=2;
+ const xmin=camera().x-W/(2*scale),xmax=camera().x+W/(2*scale),ymin=camera().y-H/(2*scale),ymax=camera().y+H/(2*scale);
+ ctx.strokeStyle=color.grid;ctx.lineWidth=1;
+ ctx.beginPath();
+ let n=0;for(let x=Math.ceil(xmin/unit)*unit;x<xmax&&n++<250;x+=unit){const u=W/2+(x-camera().x)*scale;ctx.moveTo(u,0);ctx.lineTo(u,H);}
+ n=0;for(let y=Math.ceil(ymin/unit)*unit;y<ymax&&n++<250;y+=unit){const v=H/2+(y-camera().y)*scale;ctx.moveTo(0,v);ctx.lineTo(W,v);}
+ ctx.stroke();
+ ctx.strokeStyle='rgba(167,207,224,.18)';ctx.beginPath();
+ const ox=W/2-camera().x*scale,oy=H/2-camera().y*scale;
+ if(ox>=0&&ox<=W){ctx.moveTo(ox,0);ctx.lineTo(ox,H);}
+ if(oy>=0&&oy<=H){ctx.moveTo(0,oy);ctx.lineTo(W,oy);}
+ ctx.stroke();
+}
+function render(){
+ needsPaint=false;const token=++complexToken;
+ const p=parameters(),scale=currentScale();ctx.setTransform(DPR,0,0,DPR,0,0);
+ drawBackdrop(p);
+ if(ESCAPE_TYPES.includes(p.type)){
+  drawStats={visited:0,painted:0,approximate:0,limited:false};
+  el('renderMessage').textContent='در حال محاسبهٔ نقشهٔ مختلط…';drawEscape(p,scale,token);return;
+ }
+ drawGrid(scale,{grid:'rgba(173,192,245,.085)'});
+ ctx.save();ctx.translate(W/2-camera().x*scale,H/2-camera().y*scale);ctx.scale(scale,scale);
+ const pathGradient=colorGradient(p),oneColor=monoColor(p),viewport={x0:camera().x-W/(2*scale),x1:camera().x+W/(2*scale),y0:camera().y-H/(2*scale),y1:camera().y+H/(2*scale)};
+ const lineTypes=['koch','levy','dragon','hilbert','minkowski'];const isLine=lineTypes.includes(p.type);
+ const isTree=p.type==='tree',isFern=p.type==='fern'||(p.type==='hilbert'&&p.level===0),s=stats(p),glow=p.glow;
+ const nodeBudget=240000;
+ const maxGlowing=s.theoreticalElements<8000;
+ ctx.lineJoin='round';ctx.lineCap='round';
+ ctx.shadowColor=colorAt(colorStops(p)[1][0],90,68,.6);
+ ctx.shadowBlur=maxGlowing?glow*.22:glow*.055;
+ ctx.fillStyle=p.gradient?pathGradient:oneColor;
+ ctx.strokeStyle=p.gradient?pathGradient:oneColor;
+ ctx.beginPath();
+ const poly=(pts)=>{if(!pts.length)return;ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();};
+ const onTriangle=(pts)=>poly(pts);
+ const onSquare=(x,y,ss)=>ctx.rect(x,y,ss,ss);
+ const onPolygon=(pts)=>poly(pts);
+ const onSegment=(a,b)=>{ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);};
+ let branchCount=0;
+ const onBranch=(a,b,d,width)=>{
+  ctx.lineWidth=Math.max(1.1/scale,width);
+  const cs=colorStops(p),t=(d/Math.max(1,p.level))*(cs.length-1),base=cs[Math.floor(t)%cs.length];
+  ctx.strokeStyle=colorAt(base[0]+(p.gradient?d*3:0),base[1],Math.min(96,base[2]+8*d/Math.max(1,p.level)));
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();branchCount++;
+ };
+ const dots=Array.from({length:8},()=>[]);
+ const onDot=(x,y)=>{const band=clamp(Math.floor((.9-y)*4),0,7);dots[band].push([x,y]);};
+ drawStats=walkFractal(p,{scale,viewport,minPixels:.85,maxNodes:nodeBudget,triangle:onTriangle,square:onSquare,polygon:onPolygon,segment:onSegment,branch:onBranch,dot:onDot});
+ if(isFern){
+  const size=Math.max(1.1/scale,.0016);ctx.shadowBlur=glow*.05;
+  for(let j=0;j<dots.length;j++){
+   const col=colorStops(p)[Math.floor(j/8*colorStops(p).length)%colorStops(p).length];
+   ctx.fillStyle=colorAt(...col,.85);ctx.beginPath();
+   for(const [x,y] of dots[j])ctx.rect(x,y,size,size);
+   ctx.fill();
+  }
+ }else if(!isTree){
+  if(isLine){ctx.lineWidth=Math.max(1.2/scale,p.type==='koch'?.005:.0038);ctx.stroke();}
+  else {ctx.fill();if(p.outlines && drawStats.painted<85000){ctx.shadowBlur=0;ctx.strokeStyle=colorAt(colorStops(p)[1][0],100,94,.60);ctx.lineWidth=.95/scale;ctx.stroke();}}
+ }
+ ctx.restore();
+ el('paintedCount').textContent=drawStats.painted.toLocaleString('fa-IR');
+ el('renderMessage').textContent=drawStats.limited?'حد ایمنی پردازش فعال شد؛ برای جزئیات بیشتر روی بخشی از شکل زوم کنید.':drawStats.approximate>0?'ریزساختارهای کوچک‌تر از پیکسل برای سرعت نمایش بهینه شده‌اند.':'تمام جزئیات قابل مشاهدهٔ این مرحله رسم شدند.';
+}
+function resize(){
+ const r=root.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);DPR=Math.min(2,window.devicePixelRatio||1);
+ canvas.width=Math.round(W*DPR);canvas.height=Math.round(H*DPR);
+ canvas.style.width='100%';canvas.style.height='100%';needsPaint=true;
+}
+function frame(ts){
+ if(state.playing){
+   if(lastFrame){stepAccum+=Math.min(.12,(ts-lastFrame)/1000)*parameters().speed;
+     if(stepAccum>=.7){stepAccum-=.7;const max=TYPES[parameters().type].max;
+       if(parameters().level>=max){stopPlay();}else setParameters({level:parameters().level+1});}}
+   lastFrame=ts;
+ }else lastFrame=0;
+ if(needsPaint)render();
+ frameHandle=window.requestAnimationFrame(frame);
+}
+// Pointer events allow mouse drag, single-finger pan, and two-finger pinch zoom.
+const pointers=new Map();let pinchState=null;
+function point(ev){const r=canvas.getBoundingClientRect();return {x:ev.clientX-r.left,y:ev.clientY-r.top};}
+function twoPointers(){const a=[...pointers.values()];return {cx:(a[0].x+a[1].x)/2,cy:(a[0].y+a[1].y)/2,d:Math.hypot(a[1].x-a[0].x,a[1].y-a[0].y)};}
+canvas.addEventListener('pointerdown',ev=>{ev.preventDefault();canvas.setPointerCapture(ev.pointerId);pointers.set(ev.pointerId,point(ev));pinchState=pointers.size>=2?twoPointers():null;});
+canvas.addEventListener('pointermove',ev=>{
+ if(!pointers.has(ev.pointerId))return;ev.preventDefault();const old=pointers.get(ev.pointerId),now=point(ev);pointers.set(ev.pointerId,now);
+ if(pointers.size===1){const s=currentScale();state.camera.x-=(now.x-old.x)/s;state.camera.y-=(now.y-old.y)/s;updateLabels();needsPaint=true;}
+ else if(pointers.size===2){const next=twoPointers();if(pinchState&&pinchState.d>0){
+  const anchor=worldFromScreen(pinchState.cx,pinchState.cy);
+  state.camera.zoom=clampZoom(state.camera.zoom*(next.d/pinchState.d));
+  const after=worldFromScreen(next.cx,next.cy);
+  state.camera.x+=anchor.x-after.x;state.camera.y+=anchor.y-after.y;updateLabels();needsPaint=true;}
+  pinchState=next;
+ }
+});
+function endPointer(ev){pointers.delete(ev.pointerId);pinchState=pointers.size>=2?twoPointers():null;}
+canvas.addEventListener('pointerup',endPointer);canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('wheel',ev=>{ev.preventDefault();const q=point(ev);zoomAt(Math.exp(-ev.deltaY*.0014),q.x,q.y);},{passive:false});
+canvas.addEventListener('dblclick',ev=>{const q=point(ev);zoomAt(1.8,q.x,q.y);});
+el('type').addEventListener('change',ev=>{stopPlay();setParameters({type:ev.target.value});fit();});
+el('level').addEventListener('input',ev=>{stopPlay();setParameters({level:Number(ev.target.value)});});
+el('ratio').addEventListener('input',ev=>setParameters({ratio:Number(ev.target.value)}));
+el('gridSize').addEventListener('input',ev=>setParameters({gridSize:Number(ev.target.value)}));
+el('angle').addEventListener('input',ev=>setParameters({angle:Number(ev.target.value)}));
+el('speed').addEventListener('input',ev=>setParameters({speed:Number(ev.target.value)}));
+el('palette').addEventListener('change',ev=>setParameters({palette:ev.target.value}));
+for(const key of ['glow','hueShift','lightAngle','detail','juliaReal','juliaImag'])el(key).addEventListener('input',ev=>setParameters({[key]:Number(ev.target.value)}));
+el('gradientCheck').addEventListener('change',ev=>setParameters({gradient:ev.target.checked}));
+el('gridCheck').addEventListener('change',ev=>setParameters({showGrid:ev.target.checked}));
+el('outlineCheck').addEventListener('change',ev=>setParameters({outlines:ev.target.checked}));
+el('stepBack').addEventListener('click',()=>nextStep(-1));el('stepForward').addEventListener('click',()=>nextStep(1));
+el('playBtn').addEventListener('click',()=>setPlaying(!state.playing));
+el('zoomIn').addEventListener('click',()=>zoomAt(1.8));el('zoomOut').addEventListener('click',()=>zoomAt(1/1.8));el('fit').addEventListener('click',fit);
+el('reset').addEventListener('click',reset);
+function saveBlob(blob,name){const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download=name;document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(href),5000);}
+function exportPNG(){if(needsPaint)render();canvas.toBlob(blob=>{if(blob)saveBlob(blob,`esbiko-fractal-${parameters().type}-L${parameters().level}.png`);},'image/png');}
+function exportJSON(){saveBlob(new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'}),`esbiko-fractal-${parameters().type}.json`);}
+el('exportPng').addEventListener('click',exportPNG);el('exportJson').addEventListener('click',exportJSON);
+function startRecording(){
+ if(!window.MediaRecorder||!canvas.captureStream){setNotice('این مرورگر از ضبط ویدئو پشتیبانی نمی‌کند.');return {status:'unsupported'};}
+ const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!mime){setNotice('فرمت ویدئوی WebM در این مرورگر در دسترس نیست.');return {status:'unsupported'};}
+ if(recordUrl){URL.revokeObjectURL(recordUrl);recordUrl=null;}
+ recordBlob=null;recordChunks=[];
+ try{
+   const stream=canvas.captureStream(30);recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});
+   recorder.ondataavailable=ev=>{if(ev.data?.size)recordChunks.push(ev.data);};
+   recorder.onstop=()=>{recordBlob=new Blob(recordChunks,{type:mime});stream.getTracks().forEach(t=>t.stop());state.recording=false;
+     if(recordBlob.size){state.recordingReady=true;el('downloadVideo').disabled=false;setNotice('ویدئو آماده است. روی «دریافت ویدئو» بزنید.');}
+     else setNotice('ویدئو خالی بود؛ یک بار دیگر امتحان کنید.');
+     el('recordBtn').textContent='● شروع ضبط';};
+   recorder.onerror=()=>{setNotice('خطا در ضبط ویدئو.');stream.getTracks().forEach(t=>t.stop());state.recording=false;};
+   recorder.start();state.recording=true;state.recordingReady=false;el('recordBtn').textContent='■ پایان ضبط';el('downloadVideo').disabled=true;
+   setNotice('ضبط شروع شد؛ تغییر مراحل و جابه‌جایی دوربین ثبت می‌شود.');return {status:'recording'};
+ }catch(err){setNotice('ضبط در این مرورگر ممکن نشد: '+err.message);return {status:'failed'};}
+}
+function stopRecording(){if(!recorder||recorder.state!=='recording')return {status:'idle'};recorder.stop();setNotice('در حال آماده‌سازی فایل ویدئویی…');return {status:'processing'};}
+function downloadRecording(){if(!recordBlob)throw new Error('Video not ready');saveBlob(recordBlob,`esbiko-fractal-${parameters().type}.webm`);return {bytes:recordBlob.size};}
+el('recordBtn').addEventListener('click',()=>state.recording?stopRecording():startRecording());el('downloadVideo').addEventListener('click',downloadRecording);
+// Public, JSON-friendly local API. Browser WebMCP/remote MCP integration is reserved for deploy phase.
+window.EsbikoFractalLab=Object.freeze({getState,configure:setParameters,setCamera,fitCamera:fit,play:()=>setPlaying(true),pause:()=>setPlaying(false),step:nextStep,reset,exportPNG,exportJSON,startRecording,stopRecording,downloadRecording});
+window.addEventListener('keydown',ev=>{
+ if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)||ev.ctrlKey||ev.metaKey||ev.altKey)return;
+ if(ev.key==='ArrowRight')nextStep(1);if(ev.key==='ArrowLeft')nextStep(-1);
+ if(ev.key==='+'||ev.key==='=')zoomAt(1.4);if(ev.key==='-')zoomAt(1/1.4);
+ if(ev.key===' '){ev.preventDefault();setPlaying(!state.playing);}
+});
+new ResizeObserver(resize).observe(root);
+resize();updateLabels();render();frameHandle=requestAnimationFrame(frame);
+
+</script>
+
+<script type="module">
+/* Same-origin bridge: private session credentials stay in the outer Esbiko host. */
+(function(){
+ const api=window.EsbikoFractalLab;
+ let pendingCamera=null;
+ window.__esbikoRemoteSyncCamera=()=>{
+  if(!window.__esbikoRemoteAttached||window.__esbikoApplyingRemote)return;
+  clearTimeout(pendingCamera);pendingCamera=setTimeout(()=>window.parent.postMessage(
+   {type:"esbiko-fractal-command-v1",action:"set_camera",camera:api.getState().camera},location.origin),160);
+ };
+ window.addEventListener("message",e=>{
+  if(e.source!==window.parent||e.origin!==location.origin)return;
+  if(e.data?.type==="esbiko-fractal-remote-attached-v1")window.__esbikoRemoteAttached=true;
+  if(e.data?.type!=="esbiko-fractal-snapshot-v1")return;
+  window.__esbikoApplyingRemote=true;
+  try{const cp=e.data.checkpoint;if(cp?.parameters)api.configure(cp.parameters);
+    if(e.data.camera)api.setCamera(e.data.camera);api.pause();
+  }finally{window.__esbikoApplyingRemote=false;}
+ });
+ window.parent.postMessage({type:"esbiko-fractal-ready-v1"},location.origin);
+ const modelContext=document.modelContext;
+ if(!modelContext?.registerTool)return;
+ const empty={type:"object",properties:{},additionalProperties:false};
+ const num=(min,max)=>({type:"number",minimum:min,maximum:max});
+ const controls={type:{type:"string",enum:["triangle","carpet","dust","koch","tree","vicsek","vicsek_x","pentagon","hexaflake","levy","dragon","hilbert","pythagoras","minkowski","fern","mandelbrot","julia","burning_ship","tricorn"]},
+ level:{type:"integer",minimum:0,maximum:18},ratio:num(.2,.65),gridSize:{type:"integer",minimum:3,maximum:6},angle:num(20,80),speed:num(.25,4),
+ palette:{type:"string",enum:["aurora","nebula","prism","sunset","electric","amethyst","ocean","forest","gold","mono"]},
+ showGrid:{type:"boolean"},outlines:{type:"boolean"},gradient:{type:"boolean"},glow:num(0,100),hueShift:num(0,360),lightAngle:num(0,360),detail:num(.5,1.5),juliaReal:num(-2,2),juliaImag:num(-2,2)};
+ const defs=[
+ ["get_state",empty,true,()=>api.getState()],
+ ["get_capabilities",empty,true,()=>({id:"math.geometry.fractals-2d",families:19,zoom:[.2,50000],video:true,controller:"esbiko-html-fractal.v1"})],
+ ["configure",{type:"object",properties:controls,additionalProperties:false},false,a=>api.configure(a)],
+ ["set_camera",{type:"object",properties:{x:num(-1e6,1e6),y:num(-1e6,1e6),zoom:num(.2,50000)},additionalProperties:false},false,a=>api.setCamera(a)],
+ ["set_playback",{type:"object",properties:{running:{type:"boolean"}},required:["running"],additionalProperties:false},false,a=>a.running?api.play():api.pause()],
+ ["step",{type:"object",properties:{delta:{type:"integer",minimum:-1,maximum:1}},additionalProperties:false},false,a=>api.step(a.delta??1)],
+ ["reset",empty,false,()=>api.reset()]
+ ];
+ for(const [name,inputSchema,readOnly,run] of defs){
+  modelContext.registerTool({name:"esbiko_fractals_"+name,description:"Esbiko Fractal Geometry: "+name,
+  inputSchema,annotations:{readOnlyHint:readOnly,destructiveHint:false,openWorldHint:false,untrustedContentHint:false},
+  execute:async input=>{try{return JSON.stringify({ok:true,data:run(input||{})});}catch(error){return JSON.stringify({ok:false,error:{code:"FRACTAL_TOOL_ERROR",message:error.message}});}}}
+  ).catch(()=>{});
+ }
+})();
+</script>
+</body></html>

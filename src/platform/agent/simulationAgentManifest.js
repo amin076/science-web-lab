@@ -3,7 +3,14 @@ import { instrumentParameters } from '../../simulations/subjects/physics/optics/
 import { projectileParameters } from '../../simulations/subjects/physics/mechanics/simple-projectile/simpleProjectileModel.js';
 import {COMPARISON_PARAMETER_SCHEMA} from "../../simulations/subjects/physics/mechanics/compound-pendulum/comparisonModel.js";
 import {POLYGON_SCHEMA} from "../../esbiko-physics/math/regularPolygonModel.js";
+import {FRACTAL_SCHEMA} from "../../esbiko-physics/math/fractalModel.js";
 export const simulationAgentManifest = Object.freeze({
+ "math.geometry.fractals-2d": Object.freeze({
+  adapterVersion:"esbiko-fractal-html.v1",actions:["open","configure","readState","play","pause","reset","record","export"],
+  tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"],
+  video:true,exportable:true,parameterSchema:FRACTAL_SCHEMA,
+  stateSchema:{type:"object",properties:{simulationId:{type:"string"},parameters:{type:"object"},metrics:{type:"object"},elapsedSeconds:{type:"number"},stepPhase:{type:"number"}}},
+ }),
  "math.geometry.regular-polygons-circle": Object.freeze({
   adapterVersion:"esbiko-regular-polygons.v1",actions:["open","configure","readState","play","pause","reset","record","export"],
   tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"],
