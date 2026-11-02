@@ -16,6 +16,8 @@ on:
       - "scripts/test-session-tools.mjs"
       - "scripts/test-session-bridges.mjs"
       - "scripts/test-model-sessions.mjs"
+      - "scripts/test-fractals-standard.mjs"
+      - "scripts/test-fractals-browser.mjs"
       - "scripts/test-control-storage.mjs"
       - "src/simulations/subjects/physics/mechanics/pendulum/**"
       - "src/simulations/subjects/physics/waves/coupled-pendulums-cord/**"
@@ -91,14 +93,17 @@ jobs:
       - name: Verify individual MCP operations and review annotations
         run: node scripts/test-session-tools.mjs
 
-      - name: Verify new model sessions
-        run: node scripts/test-model-sessions.mjs
+      - name: Verify new model sessions and fractal science
+        run: |
+          node scripts/test-model-sessions.mjs
+          node scripts/test-fractals-standard.mjs
 
       - name: Verify six rendered session bridges
         run: |
           npx playwright install --with-deps chromium
           node scripts/test-session-bridges.mjs
           node scripts/test-regular-polygons-browser.mjs
+          node scripts/test-fractals-browser.mjs
 
       - name: Write Firebase service account
         env:
