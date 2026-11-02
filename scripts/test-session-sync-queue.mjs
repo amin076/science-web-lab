@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {createSessionSyncQueue,sessionRetryDelay} from '../src/platform/control/sessionSyncQueue.js';
+const queue=createSessionSyncQueue(),events=[];
+let release;
+const first=queue.run(async()=>{events.push('read');await new Promise(r=>release=r);events.push('read complete');});
+const command=queue.run(()=>events.push('command'));
+await new Promise(r=>setTimeout(r,0));
+assert.deepEqual(events,['read']);release();await Promise.all([first,command]);
+assert.deepEqual(events,['read','read complete','command']);
+await assert.rejects(queue.run(()=>{throw new Error('network');}),/network/);
+assert.equal(await queue.run(()=>42),42);
+queue.close();await assert.rejects(queue.run(()=>99),/closed/);
+assert.deepEqual([0,1,2,3,4,5,20].map(sessionRetryDelay),[1000,2000,4000,8000,16000,30000,30000]);
+console.log('Session queue ordering, failure recovery, disposal and bounded backoff PASS');
