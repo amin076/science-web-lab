@@ -34,7 +34,7 @@ assert.deepEqual(adapter.expose(clone),adapter.expose(doc),"checkpoint must roun
 doc=adapter.execute(doc,{action:"configure",parameters:{gradient:false,glow:0}}).document;
 assert.equal(adapter.expose(doc).state.parameters.gradient,false);
 const html=readFileSync(new URL("../public/fractal-lab/index.html",import.meta.url),"utf8");
-assert.match(html,/esbiko_fractals_get_state/);
+assert.match(html,/name:"esbiko_fractals_"\+name/);
 assert.match(html,/esbiko-fractal-snapshot-v1/);
 assert.match(html,/pointermove/);
 assert.match(html,/MediaRecorder/);
