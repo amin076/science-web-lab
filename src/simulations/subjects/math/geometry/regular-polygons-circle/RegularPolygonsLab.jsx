@@ -22,12 +22,12 @@ function metrics(g){
   [symbol(g.coefficients.innerHeight),symbol(g.coefficients.outerHeight),g.inner.height,g.outer.height],
  ];
 }
-function ControlField({label,value,onChange,min,max,step,disabled}){
+function ControlField({label,value,onChange,min,max,step,disabled,parameter,inputMax=max}){
  return <label className="rp-field"><span>{label}</span>
   <div className="rp-field-values">
-   <input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} disabled={disabled}/>
-   <input aria-label={label+" numeric value"} type="number" min={min} max={max} step={step} value={value}
-    onChange={e=>{const v=Number(e.target.value);if(e.target.value!=="" && Number.isFinite(v)&&v>=min&&v<=max)onChange(v);}}
+   <input type="range" data-agent-param={parameter} min={min} max={max} step={step} value={Math.min(value,max)} onChange={e=>onChange(Number(e.target.value))} disabled={disabled}/>
+   <input aria-label={label+" numeric value"} data-agent-param={parameter} type="number" min={min} max={inputMax} step={step} value={value}
+    onChange={e=>{const v=Number(e.target.value);if(e.target.value!=="" && Number.isFinite(v)&&v>=min&&v<=inputMax)onChange(v);}}
     disabled={disabled}/>
   </div></label>;
 }
@@ -126,16 +126,16 @@ export default function RegularPolygonsLab(){
     </section>
     <aside className="rp-controls rp-card">
       <h2>Experiment controls</h2>
-      <ControlField label="Number of sides" min={3} max={100} step={1} value={params.sides} onChange={v=>patch({sides:v})}/>
+      <ControlField parameter="sides" label="Number of sides" min={3} max={100} step={1} value={params.sides} onChange={v=>patch({sides:v})}/>
       <div className="rp-presets" aria-label="Quick side-count presets">{presets.map(n=><button key={n}
        type="button" aria-pressed={params.sides===n} onClick={()=>patch({sides:n})}>{n}</button>)}</div>
-      <ControlField label="Circle radius R" min={0.1} max={10} step={0.1} value={params.radius} onChange={v=>patch({radius:v})}/>
+      <ControlField parameter="radius" label="Circle radius R" inputMax={10000} min={0.1} max={10} step={0.1} value={params.radius} onChange={v=>patch({radius:v})}/>
       <p className="rp-hint">The circle stays fixed as both polygons change. Lengths scale with R; areas scale with R².</p>
       <div className="rp-options">
        {[[ "showGuides","Radii & apothems"],["showTangencies","Points of tangency"],["showAngles","Central-angle sector"]].map(([key,label])=>
-        <label key={key}><input type="checkbox" checked={params[key]} onChange={e=>patch({[key]:e.target.checked})}/>{label}</label>)}
+        <label key={key}><input type="checkbox" data-agent-param={key} checked={params[key]} onChange={e=>patch({[key]:e.target.checked})}/>{label}</label>)}
       </div>
-      <ControlField label="Sector sweep (rev/min)" min={0.1} max={5} step={0.1} value={params.animationSpeed} onChange={v=>patch({animationSpeed:v})}/>
+      <ControlField parameter="animationSpeed" label="Sector sweep (rev/min)" min={0.1} max={5} step={0.1} value={params.animationSpeed} onChange={v=>patch({animationSpeed:v})}/>
       <div className="rp-buttons">
        <button type="button" onClick={()=>invoke(a=>a.play())} disabled={state?.running}>Play</button>
        <button type="button" onClick={()=>invoke(a=>a.pause())} disabled={!state?.running}>Pause</button>
