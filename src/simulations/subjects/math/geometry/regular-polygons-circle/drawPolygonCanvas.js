@@ -1,4 +1,4 @@
-import {computeRegularPolygons} from "../../../../esbiko-physics/math/regularPolygonModel.js";
+import {computeRegularPolygons} from "../../../../../esbiko-physics/math/regularPolygonModel.js";
 
 const TAU=2*Math.PI;
 const fmt=(value)=>Number(value.toPrecision(5)).toString();
