@@ -33,6 +33,6 @@ buildSync({entryPoints:[path.join(root,"src/esbiko-physics/waves/coupledPendulum
  outfile:path.join(out,"coupledPendulumCordModel.mjs")});
 console.log("Packed Coupled Pendulum Cord canonical engine.");
 
-for(const [entry,name] of [["src/esbiko-physics/mechanics/simplePendulumModel.js","simplePendulumModel"],["src/esbiko-physics/astronomy/solarSessionModel.js","solarSessionModel"],["src/esbiko-physics/math/regularPolygonModel.js","regularPolygonModel"]]){
+for(const [entry,name] of [["src/esbiko-physics/mechanics/simplePendulumModel.js","simplePendulumModel"],["src/esbiko-physics/astronomy/solarSessionModel.js","solarSessionModel"],["src/esbiko-physics/math/regularPolygonModel.js","regularPolygonModel"],["src/esbiko-physics/math/fractalModel.js","fractalModel"]]){
  buildSync({entryPoints:[path.join(root,entry)],bundle:true,format:"esm",platform:"node",target:"node22",outfile:path.join(out,name+".mjs")});
 }
