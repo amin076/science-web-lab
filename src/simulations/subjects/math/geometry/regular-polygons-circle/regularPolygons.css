@@ -1,0 +1,85 @@
+.rp-lab{--rp-ink:#1c2d49;--rp-muted:#5f738e;--rp-line:#dfe7f0;--rp-bg:#f3f7fc;
+ color:var(--rp-ink);background:var(--rp-bg);width:100%;height:100%;min-height:0;
+ overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;font-family:Inter,system-ui,-apple-system,sans-serif;
+ padding:clamp(12px,2vw,24px);padding-bottom:max(24px,env(safe-area-inset-bottom));box-sizing:border-box}
+.rp-lab *{box-sizing:border-box}
+.rp-lab button,.rp-lab input,.rp-lab select{font:inherit}
+.rp-lab button{cursor:pointer;background:#fff;border:1px solid #bfcfe1;border-radius:9px;padding:9px 12px;color:#164b78;font-weight:700;min-height:44px}
+.rp-lab button:disabled{opacity:.43;cursor:not-allowed}
+.rp-lab button:focus-visible,.rp-lab input:focus-visible,.rp-lab select:focus-visible{outline:3px solid #35b5ff;outline-offset:2px}
+.rp-lab h1,.rp-lab h2,.rp-lab h3,.rp-lab p{margin-top:0}
+.rp-header{display:flex;flex-wrap:wrap;align-items:start;justify-content:space-between;gap:12px;margin:0 auto 17px;max-width:1280px}
+.rp-header h1{font-weight:850;letter-spacing:-.025em;font-size:clamp(23px,2.4vw,31px);margin:3px 0 7px;line-height:1.24}
+.rp-header p{margin:0;font-size:13px;line-height:1.45;color:var(--rp-muted);max-width:800px}
+.rp-kicker{font-weight:800;font-size:11px;letter-spacing:.09em;color:#21866c}
+.rp-session{border-radius:100px;background:#e6f5ed;color:#177357;border:1px solid #b8d7c7;padding:7px 11px;font-size:11px;max-width:290px;overflow-wrap:anywhere}
+.rp-layout{max-width:1280px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.rp-card{background:#fff;border:1px solid var(--rp-line);border-radius:16px;box-shadow:0 3px 16px rgba(20,48,82,.035);min-width:0}
+.rp-stage{padding:16px;grid-column:1}
+.rp-stage-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.rp-stage-heading h2{margin:0;font-size:17px}
+.rp-legend{display:flex;flex-wrap:wrap;gap:11px;font-size:11px;color:var(--rp-muted)}
+.rp-legend span{display:inline-flex;gap:5px;align-items:center}
+.rp-legend b{width:10px;height:10px;border-radius:50%;display:inline-block}
+.rp-inner{background:#2774c9}.rp-outer{background:#db8425}.rp-circle{background:#19856f}
+.rp-canvas-wrap{height:clamp(280px,45vh,560px);min-width:0;margin:9px 0;position:relative}
+.rp-canvas-wrap canvas{display:block;width:100%;height:100%;border-radius:12px;touch-action:pan-y}
+.rp-stage-footer{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;font-size:11px;color:var(--rp-muted)}
+.rp-stage-footer button{min-height:36px}
+.rp-record{margin-top:12px;padding-top:12px;border-top:1px solid var(--rp-line)}
+.rp-record h3{font-size:13px;margin:0 0 8px}
+.rp-buttons{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin:9px 0}
+.rp-buttons .rp-danger{color:#b91c1c;border-color:#fecaca}
+.rp-video-select{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.rp-video-select select{border:1px solid #bfcfe1;border-radius:9px;padding:9px;min-height:44px;max-width:180px;background:#fff}
+.rp-hint{font-size:11px;line-height:1.5;color:var(--rp-muted);margin:7px 0}
+.rp-controls{grid-column:2;grid-row:1;padding:19px;position:sticky;top:0}
+.rp-controls h2{font-size:16px;margin:0 0 17px}
+.rp-field{display:block;margin:17px 0;font-size:12px;font-weight:700}
+.rp-field>span{display:block;margin-bottom:8px}
+.rp-field-values{display:grid;grid-template-columns:minmax(0,1fr) 74px;align-items:center;gap:10px}
+.rp-field-values input[type=range]{width:100%;accent-color:#167db5}
+.rp-field-values input[type=number]{min-width:0;width:74px;height:40px;border:1px solid var(--rp-line);border-radius:9px;padding:6px;text-align:center;color:var(--rp-ink)}
+.rp-presets{display:flex;flex-wrap:wrap;gap:5px}
+.rp-presets button{min-height:36px;min-width:39px;padding:4px 7px;font-size:12px}
+.rp-presets button[aria-pressed=true]{background:#176cb5;color:white;border-color:#176cb5}
+.rp-options{display:grid;gap:9px;border-block:1px solid var(--rp-line);padding:14px 0;margin:14px 0}
+.rp-options label{display:flex;align-items:center;gap:9px;line-height:1.35;font-size:12px}
+.rp-options input{height:19px;width:19px;accent-color:#176cb5}
+.rp-results{grid-column:1/-1;min-width:0;display:grid;gap:13px}
+.rp-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.rp-stat{padding:13px}
+.rp-stat span,.rp-stat small{display:block;color:var(--rp-muted);font-size:11px}
+.rp-stat strong{display:block;font-size:clamp(18px,2vw,23px);font-weight:850;margin:6px 0;overflow-wrap:anywhere}
+.rp-comparison,.rp-formulas{padding:17px}
+.rp-comparison h2,.rp-formulas h2{font-size:17px;margin:0 0 6px}
+.rp-comparison p,.rp-formulas p{font-size:12px;color:var(--rp-muted);line-height:1.55}
+.rp-table-wrap{width:100%;overflow-x:auto}
+.rp-comparison table{border-collapse:collapse;width:100%;font-size:12px;min-width:460px}
+.rp-comparison th,.rp-comparison td{border-bottom:1px solid #ecf1f6;text-align:left;vertical-align:top;padding:12px 9px}
+.rp-comparison thead th{background:#f5f8fc;color:#4a617a}
+.rp-comparison tbody th{font-weight:650;width:32%}
+.rp-comparison td strong{display:block;overflow-wrap:anywhere}
+.rp-comparison td small{display:block;color:var(--rp-muted);margin-top:4px;font-size:11px}
+.rp-formula-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.rp-formula-grid>div{background:#f7faff;border:1px solid var(--rp-line);border-radius:10px;padding:12px;font-size:12px;min-width:0}
+.rp-formula-grid strong{display:block;margin-top:5px;font-size:14px;overflow-wrap:anywhere}
+.rp-formulas p{margin:13px 0 0}
+.rp-error{color:#9f1239;background:#fff1f2;border-radius:8px;padding:11px;font-size:12px}
+@media(max-width:850px){
+ .rp-layout{grid-template-columns:minmax(0,1fr)}
+ .rp-stage,.rp-controls,.rp-results{grid-column:1;grid-row:auto}
+ .rp-controls{position:static}
+ .rp-canvas-wrap{height:clamp(300px,49vh,500px)}
+}
+@media(max-width:560px){
+ .rp-lab{padding:10px;padding-bottom:max(26px,env(safe-area-inset-bottom))}
+ .rp-header h1{font-size:21px}.rp-stage,.rp-controls,.rp-comparison,.rp-formulas{padding:12px}
+ .rp-canvas-wrap{height:360px}
+ .rp-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .rp-formula-grid{grid-template-columns:1fr}
+ .rp-legend{gap:6px}
+ .rp-buttons button{flex:1 0 auto}
+ .rp-video-select{width:100%;justify-content:space-between}
+}
+@media(prefers-reduced-motion:reduce){.rp-lab *{scroll-behavior:auto!important}}
