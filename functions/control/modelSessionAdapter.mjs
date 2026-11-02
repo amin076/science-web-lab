@@ -1,6 +1,7 @@
 export function createModelSessionAdapter({id,model,schema,defaults,units}){
+  const presentationSupported=typeof model().startPresentation==="function";
   const descriptor={id,schema,defaults,units,adapterVersion:"esbiko-model-session.v1",clock:"explicit-simulation-time",
-    commands:["get_state","get_capabilities","configure","advance","step","play","pause","reset","set_camera","get_trajectory"],
+    commands:["get_state","get_capabilities","configure","advance","step","play","pause","reset","set_camera","get_trajectory",...(presentationSupported?["start_presentation","stop_presentation","finish_presentation"]:[])],
     transport:["http","mcp"],supportedMedia:{browserCanvasWebM:true,serverVideoCapture:false},
     limits:{maxSimulationSeconds:120,maxAdvanceSeconds:2,maxCommands:80}};
   const failure=message=>Object.assign(new Error(message),{status:400,code:"INVALID_CONTROL_INPUT"});
@@ -21,6 +22,12 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
       if(doc.commandCount>=80)throw failure("Session command limit reached");
       switch(request.action){
         case "configure":m.configure(request.parameters);next.running=false;break;
+        case "start_presentation":
+          m.startPresentation(request.presentation);next.running=true;break;
+        case "stop_presentation":
+          m.stopPresentation();next.running=false;break;
+        case "finish_presentation":
+          m.finishPresentation();next.running=false;break;
         case "set_camera": {
           const patch=request.camera;
           if(!patch || typeof patch!=="object" || Array.isArray(patch)) throw failure("Camera patch required");
@@ -35,7 +42,9 @@ export function createModelSessionAdapter({id,model,schema,defaults,units}){
         case "advance":case "step":{
           const seconds=request.action==="step"?1/240:request.seconds;
           if(!Number.isFinite(seconds)||seconds<=0||seconds>2||m.snapshot().elapsedSeconds+seconds>120)throw failure("Invalid simulation duration");
-          m.advance(seconds);break;
+          m.advance(seconds);
+          if(m.snapshot().presentation?.status==="completed")next.running=false;
+          break;
         }
         case "reset":m.reset();next.running=false;break;
         case "play":next.running=true;break;
