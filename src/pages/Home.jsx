@@ -1,5 +1,5 @@
 // ✅ src/pages/Home.jsx
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Box,
   Typography,
@@ -105,6 +105,12 @@ const GlassCard = ({ children, sx, hoverEffect = true }) => (
 
 export default function Home() {
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const submitSearch = (event) => {
+    event.preventDefault();
+    const query = search.trim();
+    navigate(query ? `/experiments?q=${encodeURIComponent(query)}` : "/experiments");
+  };
 
   const featuredLabs = useMemo(
     () => [
@@ -306,11 +312,13 @@ export default function Home() {
           </Typography>
 
           <Stack spacing={3} alignItems="center" sx={{ width: "100%" }}>
-            <Box sx={{ width: "100%", maxWidth: 520 }}>
+            <Box component="form" role="search" onSubmit={submitSearch} sx={{ width: "100%", maxWidth: 520 }}>
               <TextField
                 fullWidth
                 placeholder="Search simulations: gravity, optics, waves, space..."
-                onFocus={() => navigate("/experiments")}
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                inputProps={{ "aria-label": "Search simulations" }}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: 999,
@@ -331,7 +339,7 @@ export default function Home() {
                     <Button
                       variant="contained"
                       aria-label="Search simulations"
-                      onClick={() => navigate("/experiments")}
+                      type="submit"
                       sx={{
                         minWidth: 40,
                         width: 40,

@@ -39,10 +39,15 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
       overflow: hidden;
       border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
       border-radius: 14px;
-      min-height: 520px;
+      min-height: 320px;
       background: #020617;
     }
     iframe { display: block; width: 100%; height: 620px; border: 0; background: #020617; }
+    @media (max-width: 600px) {
+      .app { padding: 4px; }
+      iframe { height: min(620px, 75dvh); min-height: 320px; }
+      .header { flex-wrap: wrap; }
+    }
     .status { font-size: 12px; opacity: .72; }
   </style>
 </head>
@@ -53,7 +58,7 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
         <div id="name" class="name">Esbiko Science Lab</div>
         <div id="description" class="meta">Waiting for simulation…</div>
       </div>
-      <div id="level" class="badge">universal</div>
+      <div id="level" class="badge">Interactive lab</div>
     </section>
     <div id="status" class="status">Preparing interactive simulation…</div>
     <section class="frame-shell">
@@ -77,11 +82,8 @@ export const GENERIC_SIMULATION_WIDGET_HTML = `<!doctype html>
       $("name").textContent = simulation.name || simulation.id || "Esbiko Science Lab";
       $("description").textContent =
         simulation.description || "Interactive scientific simulation powered by Esbiko.";
-      $("level").textContent = simulation.integrationLevel || "universal";
-      $("status").textContent =
-        simulation.integrationLevel === "adapted"
-          ? "This simulation has an Esbiko agent adapter."
-          : "Interactive mode is available. Deeper agent controls can be added through the reusable adapter contract.";
+      $("level").textContent = "Interactive lab";
+      $("status").textContent = "Explore the lab below. Change a variable and compare what happens.";
 
       const frame = $("simulation-frame");
       const url = new URL(simulation.runUrl);

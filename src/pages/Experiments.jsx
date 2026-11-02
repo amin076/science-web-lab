@@ -24,7 +24,7 @@ import ExpandLessRoundedIcon from "@mui/icons-material/ExpandLessRounded";
 import ExpandMoreRoundedIcon from "@mui/icons-material/ExpandMoreRounded";
 
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { MobileDrawer, ResponsiveContainer } from "@/components/mobile";
 import ExperimentCard from "@/components/experiments/ExperimentCard";
@@ -44,7 +44,14 @@ function makeAnchor(domain, topic) {
 export default function Experiments() {
   const navigate = useNavigate();
 
-  const [q, setQ] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const q = searchParams.get("q") || "";
+  const setQ = (value) => setSearchParams((previous) => {
+    const next = new URLSearchParams(previous);
+    if (value) next.set("q", value);
+    else next.delete("q");
+    return next;
+  }, { replace: true });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeDomain, setActiveDomain] = useState("physics");
 
@@ -225,10 +232,11 @@ export default function Experiments() {
         />
       </Helmet>
 
-      <Box sx={{ py: 6 }}>
+      <Box sx={{ py: { xs: 3, md: 5 } }}>
         {/* Header */}
         <ResponsiveContainer maxWidth={1200} sx={{ px: { xs: 2, md: 2 } }}>
           <Typography
+            component="h1"
             variant="h4"
             gutterBottom
             fontWeight={800}
@@ -240,7 +248,7 @@ export default function Experiments() {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Experiments Library
+            Explore science labs
           </Typography>
 
           <Typography
@@ -248,31 +256,9 @@ export default function Experiments() {
             color="text.secondary"
             sx={{ mb: 3, textAlign: "center" }}
           >
-            Browse by domain & topic. Jump fast, find quickly, and start
-            learning.
+            Choose a topic, change a variable, and discover what happens.
           </Typography>
 
-          {/* ================= SEO INTRO ================= */}
-          <Box sx={{ maxWidth: 900, mx: "auto", mb: 5, textAlign: "center" }}>
-            <Typography variant="h2" fontWeight={800} sx={{ mb: 2 }}>
-              Interactive Science Simulations and Virtual Experiments
-            </Typography>
-
-            <Typography
-              sx={{
-                color: "text.secondary",
-                fontSize: "1.1rem",
-                lineHeight: 1.8,
-              }}
-            >
-              Explore a growing collection of interactive science simulations
-              and virtual experiments across physics, astronomy, earth science,
-              mechanical engineering, and STEM education. Esbiko helps students
-              and teachers learn scientific concepts by adjusting variables,
-              observing results, and building intuition through browser-based
-              virtual labs.
-            </Typography>
-          </Box>
           {/* Search + Nav Drawer button */}
           <Box
             sx={{
@@ -286,6 +272,7 @@ export default function Experiments() {
           >
             <TextField
               value={q}
+              inputProps={{ "aria-label": "Search experiments" }}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search experiments (e.g. pendulum, optics, orbit...)"
               size="small"
@@ -308,6 +295,8 @@ export default function Experiments() {
 
             <Tooltip title={drawerOpen ? "Close index" : "Open index"}>
               <IconButton
+                aria-label={drawerOpen ? "Close subject index" : "Open subject index"}
+                aria-expanded={drawerOpen}
                 onClick={() => setDrawerOpen((v) => !v)}
                 sx={{
                   width: 44,
@@ -324,6 +313,11 @@ export default function Experiments() {
             </Tooltip>
           </Box>
 
+          <Typography role="status" aria-live="polite" sx={{ textAlign: "center", mb: 2, color: "text.secondary" }}>
+            {filtered.length === 0
+              ? "No simulations found. Try a different topic or clear your search."
+              : `${filtered.length} simulations${q ? ` matching “${q}”` : " available"}`}
+          </Typography>
           {/* Domain chips (quick filter + jump) */}
           <Stack
             direction="row"
