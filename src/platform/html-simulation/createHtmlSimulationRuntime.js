@@ -91,6 +91,11 @@ export function createHtmlSimulationRuntime({
   const status = () => onStatus(getState());
   function getState() {
     active();
+    // During an illustrative transition the scientific model advances through
+    // integer-sided states. Public/UI parameters must reflect that same model,
+    // never the integer value captured when the animation began.
+    if(typeof engine.startPresentation==="function" && typeof engine.getParameters==="function")
+      params=clone(engine.getParameters());
     let physics = null, snapshotError = null;
     try {
       physics = clone(engine.snapshot());
