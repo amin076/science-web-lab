@@ -15,6 +15,7 @@ await vite.listen();
 const base="http://127.0.0.1:4173";
 const browser=await chromium.launch({headless:true,args:["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader","--ignore-gpu-blocklist"]});
 const cases=[
+  ["math.geometry.regular-polygons-circle",{sides:3,radius:2},{sides:5},"polygon"],
   ["physics.waves.string-wave-lab",{visibleCount:2,s1_freq:2,s1_rightEnd:"free"},{s1_freq:3},"wave"],
   ["physics.waves.coupled-pendulums-cord",{count:3},{tension:60},"coupled"],
   ["physics.mechanics.compound-pendulum",{paneCount:2,p1_rodCount:2,p2_rodCount:2},{p2_initialAngleDeg1:155.2},"compound"],
@@ -98,6 +99,11 @@ try{
     }else if(kind==="pendulum"){
       await target.evaluate(async()=>JSON.parse(await window.__testTools.esbiko_pendulum_configure.execute({massKg:3})));
       assert.equal(adapter.expose(doc).parameters.massKg,3);assert.ok(writes>0);
+    }
+    if(kind==="polygon"){
+      await target.locator('.rp-presets button').filter({hasText:/^6$/}).click();
+      for(let n=0;n<50&&adapter.expose(doc).parameters.sides!==6;n++)await new Promise(r=>setTimeout(r,100));
+      assert.equal(adapter.expose(doc).parameters.sides,6,"Visible polygon control must update the SAME remote session");assert.ok(writes>0);
     }
     if(kind==="solar"){
       await target.evaluate(async()=>JSON.parse(await window.__testTools.configure_solar_system.execute({focusTarget:"jupiter"})));
