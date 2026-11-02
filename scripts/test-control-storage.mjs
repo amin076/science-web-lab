@@ -104,3 +104,19 @@ for(const {id,commands} of listSimulationControlAdapters()){
 }
 assert.equal(reproduced,3,"Reproduce all three original nested-array persistence failures");
 console.log("All persistent adapters, legacy sessions and token/revision checks PASS");
+
+// Independent session budgets must leave other sessions usable and reject atomically.
+const a=await service.createControlSession(),b=await service.createControlSession();
+const hour=new Date().toISOString().slice(0,13).replace(/[^0-9]/g,"");
+const keyA="simulationControlHourlyLimitsV1/session-"+a.sessionId+"-"+hour;
+documents.set(keyA,{count:300});
+const request={action:"advance",seconds:0.1};
+const beforeQuota=await service.readControlSession(a);
+await assert.rejects(service.commandControlSession({...a,request}),{code:"SESSION_CONTROL_LIMIT"});
+assert.deepEqual(await service.readControlSession(a),beforeQuota);
+await service.commandControlSession({...b,request});
+await assert.rejects(service.commandControlSession({...a,token:"0".repeat(64),request}),{code:"INVALID_SESSION_TOKEN"});
+documents.set("simulationControlHourlyLimitsV1/action-"+hour,{count:1200});
+await assert.rejects(service.commandControlSession({...b,request}),{code:"GLOBAL_CONTROL_LIMIT"});
+assert.equal((await service.readControlSession(b)).revision,1);
+console.log("Independent session quotas, global ceiling and atomic rejection PASS");

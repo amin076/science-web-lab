@@ -45,7 +45,7 @@ export default function StudentClassDetail() {
         const studentRef = doc(db, "classes", id, "students", user.uid);
         const studentSnap = await getDoc(studentRef);
 
-        if (!studentSnap.exists()) {
+        if (!studentSnap.exists() && !classSnap.data().approvedStudents?.includes(user.uid)) {
           setAccessDenied(true);
           return;
         }

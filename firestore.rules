@@ -3,9 +3,51 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ✅ USER PROFILES
+    // Profile: uid/name/email/role/createdAt. Teacher self-signup is supported.
+    // Class: teacherId/teacherEmail/name/description/isPublic/createdAt.
+    // Membership: uid/joinedAt, optional email. Legacy approvals remain readable.
+    function signedIn() { return request.auth != null; }
+    function owner(uid) { return signedIn() && request.auth.uid == uid; }
+    function text(value, max) { return value is string && value.size() <= max; }
+    function validUser(d) {
+      return d.keys().hasAll(['uid','name','email','role','createdAt']) &&
+        d.keys().hasOnly(['uid','name','email','role','createdAt']) &&
+        text(d.uid,128) && text(d.name,120) && d.name.size() > 0 &&
+        text(d.email,320) && d.role in ['student','teacher','general','admin'] &&
+        d.createdAt is timestamp;
+    }
+    function classData(id) { return get(/databases/$(database)/documents/classes/$(id)).data; }
+    function teacher(id) { return signedIn() && classData(id).teacherId == request.auth.uid; }
+    function member(id) {
+      return signedIn() && exists(/databases/$(database)/documents/classes/$(id)) && (
+        exists(/databases/$(database)/documents/classes/$(id)/students/$(request.auth.uid)) ||
+        request.auth.uid in classData(id).get('approvedStudents', []));
+    }
+    function validClass(d) {
+      return d.keys().hasAll(['teacherId','name','description','isPublic','createdAt']) &&
+        d.keys().hasOnly(['teacherId','teacherEmail','teacherName','name','description','isPublic','createdAt','pendingStudents','approvedStudents']) &&
+        text(d.teacherId,128) && text(d.get('teacherEmail',''),320) && text(d.get('teacherName',''),120) &&
+        text(d.name,200) && d.name.size()>0 && text(d.description,4000) &&
+        d.isPublic is bool && d.createdAt is timestamp &&
+        d.get('pendingStudents',[]) is list && d.get('approvedStudents',[]) is list;
+    }
+    function validMembership(d, uid) {
+      return d.keys().hasAll(['uid','joinedAt']) && d.keys().hasOnly(['uid','email','joinedAt']) &&
+        d.uid == uid && text(d.uid,128) && text(d.get('email',''),320) && d.joinedAt is timestamp;
+    }
     match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if owner(userId);
+      allow create: if owner(userId) && validUser(request.resource.data) &&
+        request.resource.data.uid == userId &&
+        request.resource.data.role in ['student','teacher','general'] &&
+        request.resource.data.email == request.auth.token.email && request.resource.data.createdAt == request.time;
+      allow update: if owner(userId) && validUser(request.resource.data) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name']);
+      allow delete: if false;
+    }
+    // Query only one's own memberships; parent class data is fetched separately.
+    match /{parent=**}/students/{studentId} {
+      allow list: if signedIn() && resource.data.uid == request.auth.uid;
     }
 
     // ✅ PUBLIC EXPERIMENT STATS
@@ -38,34 +80,33 @@ service cloud.firestore {
     // ✅ CLASSES
     match /classes/{classId} {
 
-      allow list: if request.auth != null;
+
 
       allow read: if request.auth != null && (
         resource.data.isPublic == true ||
         request.auth.uid == resource.data.teacherId ||
-        exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+        request.auth.uid in resource.data.get('approvedStudents',[]) || member(classId)
       );
 
-      allow create: if request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "teacher";
+      allow create: if signedIn() && validClass(request.resource.data) &&
+        request.resource.data.teacherId == request.auth.uid &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "teacher" &&
+        request.resource.data.createdAt == request.time &&
+        !request.resource.data.keys().hasAny(['pendingStudents','approvedStudents']);
+      allow update: if teacher(classId) && validClass(request.resource.data) &&
+        request.resource.data.teacherId == resource.data.teacherId &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.get('approvedStudents',[]) == resource.data.get('approvedStudents',[]) &&
+        request.resource.data.get('pendingStudents',[]).toSet().difference(resource.data.get('pendingStudents',[]).toSet()).size() == 0;
+      allow delete: if teacher(classId);
 
-      allow update, delete: if request.auth != null &&
-        request.auth.uid == resource.data.teacherId;
-
-      // ✅ STUDENTS SUBCOLLECTION
       match /students/{studentId} {
-        allow create: if request.auth != null && (
-          (request.auth.uid == studentId &&
-            get(/databases/$(database)/documents/classes/$(classId)).data.isPublic == true) ||
-          (request.auth.uid ==
-            get(/databases/$(database)/documents/classes/$(classId)).data.teacherId)
-        );
-
-        allow read: if request.auth != null && (
-          request.auth.uid == studentId ||
-          request.auth.uid ==
-            get(/databases/$(database)/documents/classes/$(classId)).data.teacherId
-        );
+        allow create: if signedIn() && validMembership(request.resource.data, studentId) &&
+          request.resource.data.joinedAt == request.time &&
+          (teacher(classId) || (owner(studentId) && classData(classId).isPublic == true));
+        allow read: if owner(studentId) || teacher(classId);
+        allow update: if false;
+        allow delete: if teacher(classId);
       }
 
       // ✅ EXPERIMENTS SUBCOLLECTION
@@ -73,7 +114,7 @@ service cloud.firestore {
         allow read: if request.auth != null && (
           request.auth.uid ==
             get(/databases/$(database)/documents/classes/$(classId)).data.teacherId ||
-          exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+          member(classId)
         );
 
         allow create, update, delete: if request.auth != null &&
@@ -86,14 +127,14 @@ service cloud.firestore {
 
           allow read: if request.auth != null && (
             request.auth.uid == get(/databases/$(database)/documents/classes/$(classId)).data.teacherId ||
-            exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid))
+            member(classId)
           );
         }
 
         // ✅ SUBMISSIONS SUBCOLLECTION
         match /submissions/{submissionId} {
           allow create: if request.auth != null &&
-            exists(/databases/$(database)/documents/classes/$(classId)/students/$(request.auth.uid)) &&
+            member(classId) &&
             request.resource.data.uid == request.auth.uid;
 
           allow read: if request.auth != null && (

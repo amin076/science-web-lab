@@ -5,12 +5,8 @@ import {
   query,
   where,
   getDocs,
-  doc,
-  updateDoc,
-  arrayRemove,
-  arrayUnion,
-  getDoc,
 } from "firebase/firestore";
+import {resolveLegacyJoinRequest} from "@/services/classMembership";
 import { db } from "@/firebaseConfig";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -52,11 +48,8 @@ export default function PendingRequests() {
   // 🧾 تأیید دانش‌آموز
   const handleAccept = async (classId, studentUid) => {
     try {
-      const classRef = doc(db, "classes", classId);
-      await updateDoc(classRef, {
-        pendingStudents: arrayRemove(studentUid),
-        approvedStudents: arrayUnion(studentUid),
-      });
+      await resolveLegacyJoinRequest(classId,studentUid,true);
+      setClasses(previous=>previous.map(c=>c.id===classId?{...c,pendingStudents:c.pendingStudents.filter(uid=>uid!==studentUid)}:c));
       setMessage("✅ Student approved successfully!");
     } catch (err) {
       console.error("Error approving student:", err);
@@ -67,10 +60,8 @@ export default function PendingRequests() {
   // ❌ رد درخواست
   const handleReject = async (classId, studentUid) => {
     try {
-      const classRef = doc(db, "classes", classId);
-      await updateDoc(classRef, {
-        pendingStudents: arrayRemove(studentUid),
-      });
+      await resolveLegacyJoinRequest(classId,studentUid,false);
+      setClasses(previous=>previous.map(c=>c.id===classId?{...c,pendingStudents:c.pendingStudents.filter(uid=>uid!==studentUid)}:c));
       setMessage("⚠️ Student request rejected.");
     } catch (err) {
       console.error("Error rejecting student:", err);
@@ -160,57 +151,11 @@ export default function PendingRequests() {
 
 // 🔹 زیرکامپوننت برای نمایش اطلاعات دانش‌آموز
 function StudentCard({ studentUid, classId, onAccept, onReject }) {
-  const [student, setStudent] = useState(null);
-
-  useEffect(() => {
-    const fetchStudent = async () => {
-      try {
-        const docRef = doc(db, "users", studentUid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) setStudent(docSnap.data());
-      } catch (err) {
-        console.error("Error loading student data:", err);
-      }
-    };
-    fetchStudent();
-  }, [studentUid]);
-
-  if (!student)
-    return (
-      <Paper sx={{ p: 2, textAlign: "center" }}>
-        <CircularProgress size={20} />
-      </Paper>
-    );
-
-  return (
-    <Paper
-      sx={{
-        p: 2,
-        borderRadius: 2,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-      }}
-    >
-      <Typography fontWeight={600}>{student.email}</Typography>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
-        <Button
-          size="small"
-          color="success"
-          variant="contained"
-          onClick={() => onAccept(classId, studentUid)}
-        >
-          Accept
-        </Button>
-        <Button
-          size="small"
-          color="error"
-          variant="outlined"
-          onClick={() => onReject(classId, studentUid)}
-        >
-          Reject
-        </Button>
-      </Box>
-    </Paper>
-  );
+  return <Paper sx={{p:2}}>
+    <Typography sx={{overflowWrap:"anywhere"}}>Student: {studentUid}</Typography>
+    <Box sx={{display:"flex",gap:2,mt:2}}>
+      <Button onClick={()=>onAccept(classId,studentUid)}>Accept</Button>
+      <Button color="error" onClick={()=>onReject(classId,studentUid)}>Reject</Button>
+    </Box>
+  </Paper>;
 }
