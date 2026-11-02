@@ -23,6 +23,7 @@ export const DOMAIN_LABELS = {
   "earth-science": "Earth Science",
   creative: "Creative",
   biology: "Biology",
+  math: "Mathematics",
 };
 
 export const TOPIC_LABELS = {
@@ -36,6 +37,7 @@ export const TOPIC_LABELS = {
   space: "Space",
   geology: "Geology",
   patterns: "Patterns",
+  geometry: "Geometry",
 };
 
 // 3) Helpers

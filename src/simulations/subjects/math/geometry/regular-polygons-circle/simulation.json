@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "esbiko-simulation-registration.v1",
+  "id": "math.geometry.regular-polygons-circle",
+  "domain": "math",
+  "topic": "geometry",
+  "name": "Inscribed and Circumscribed Regular Polygons",
+  "desc": "Compare regular polygons inscribed in and circumscribed about a circle. Explore exact side lengths, perimeter, area, apothem, height, interior and central angles, and their convergence as the number of sides increases.",
+  "shortDesc": "Explore 3–100 sided regular polygons, exact circle geometry and animated comparisons.",
+  "engine": "canvas2d",
+  "uiStandard": "2d-v0.1",
+  "scientificEngine": "domain-specific",
+  "entry": "index.jsx",
+  "visibility": "public",
+  "gradient": "linear-gradient(135deg,#0e7490,#2563eb)",
+  "demo": true,
+  "tags": [
+    "mathematics",
+    "geometry",
+    "regular polygon",
+    "inscribed",
+    "circumscribed",
+    "tangent",
+    "apothem",
+    "area",
+    "limit"
+  ],
+  "difficulty": "Intermediate",
+  "yearLevel": "Years 7–12 Mathematics",
+  "estimatedTime": "10–20 mins",
+  "estimatedDurationMinutes": 15,
+  "supportedDevices": "Desktop / Tablet / Mobile",
+  "learningObjectives": [
+    "Derive side length, perimeter and area from R and n",
+    "Compare inscribed and circumscribed polygons with the same circle",
+    "Identify interior, exterior and central angles",
+    "Investigate convergence to the circumference and area of a circle"
+  ],
+  "curriculumLinks": [
+    "Geometry",
+    "Trigonometry",
+    "Area and perimeter",
+    "Limits and approximation"
+  ],
+  "modelAssumptions": [
+    "Ideal Euclidean geometry with perfectly regular polygons",
+    "A fixed shared circle centered at the origin",
+    "The circumcircle of the inner polygon and incircle of the outer polygon are identical",
+    "Height is measured vertically from the horizontal bottom edge in canonical orientation"
+  ]
+}

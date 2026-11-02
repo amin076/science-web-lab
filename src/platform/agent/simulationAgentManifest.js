@@ -2,7 +2,14 @@ import {COUPLED_SCHEMA} from "../../esbiko-physics/waves/coupledPendulumCordMode
 import { instrumentParameters } from '../../simulations/subjects/physics/optics/microscope-telescope/instrumentModel.js';
 import { projectileParameters } from '../../simulations/subjects/physics/mechanics/simple-projectile/simpleProjectileModel.js';
 import {COMPARISON_PARAMETER_SCHEMA} from "../../simulations/subjects/physics/mechanics/compound-pendulum/comparisonModel.js";
+import {POLYGON_SCHEMA} from "../../esbiko-physics/math/regularPolygonModel.js";
 export const simulationAgentManifest = Object.freeze({
+ "math.geometry.regular-polygons-circle": Object.freeze({
+  adapterVersion:"esbiko-regular-polygons.v1",actions:["open","configure","readState","play","pause","reset","record","export"],
+  tools:["open_science_simulation","get_simulation_control_schema","create_simulation_session","control_simulation_session","read_simulation_session","close_simulation_session"],
+  video:true,exportable:true,parameterSchema:POLYGON_SCHEMA,
+  stateSchema:{type:"object",properties:{parameters:{type:"object"},geometry:{type:"object"},timeSeconds:{type:"number"}}},
+ }),
   "physics.waves.coupled-pendulums-cord": Object.freeze({
     adapterVersion:"coupled-pendulums-cord.v1",
     actions:["open","configure","readState","play","pause","reset","record","export"],
