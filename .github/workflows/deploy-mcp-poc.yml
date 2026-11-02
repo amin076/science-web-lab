@@ -92,6 +92,7 @@ jobs:
         run: |
           npx playwright install --with-deps chromium
           node scripts/test-session-bridges.mjs
+          node scripts/test-regular-polygons-browser.mjs
 
       - name: Write Firebase service account
         env:
