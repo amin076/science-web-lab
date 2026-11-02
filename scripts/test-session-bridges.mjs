@@ -84,7 +84,10 @@ try{
     const expected=adapter.expose(doc).state;
     if(kind==="pendulum")assert.ok(Math.abs(rendered.thetaRadians-expected.theta)<1e-10);
     if(kind==="solar"){
-      await until(s=>s.positions?.earth&&Math.abs(s.positions.earth[0]-expected.positions.earth[0])<1e-6);
+      // Wait for ALL celestial positions to hydrate, not only Earth's x-axis.
+      // Comparing the Moon in a half-hydrated frame is a false negative.
+      await until(s=>Object.entries(expected.positions).every(([name,position])=>
+        name==="sun" || (s.positions?.[name] && position.every((v,i)=>Math.abs(s.positions[name][i]-v)<1e-5))));
       for(const [name,position] of Object.entries(expected.positions)){
         if(name==="sun")continue;
         assert.ok(rendered.positions[name],"Missing rendered position: "+name);
