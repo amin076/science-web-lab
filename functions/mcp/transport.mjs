@@ -64,6 +64,22 @@ export function createServer(controlService) {
     }),
   );
 
+  // Diagnostic-only resource: zero inline or external JavaScript.
+  // Its outcome separates MCP App resource rendering from script hydration.
+  server.registerResource(
+    "esbiko-static-frame-diagnostic",
+    "ui://esbiko/static-frame-diagnostic-v1.html",
+    {},
+    async () => ({
+      contents: [{
+        uri: "ui://esbiko/static-frame-diagnostic-v1.html",
+        mimeType: "text/html;profile=mcp-app",
+        text: '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Esbiko MCP diagnostic</title></head><body style="font:14px system-ui;margin:12px"><h2>Esbiko static MCP App test</h2><p>Static HTML loaded. No JavaScript is used by this app shell.</p><iframe title="Esbiko pendulum" src="https://www.esbiko.com/experiments/physics.mechanics.pendulum/run?embed=mcp-app" style="width:100%;height:560px;border:1px solid #aaa;border-radius:8px" allow="fullscreen"></iframe></body></html>',
+        _meta: {ui: {prefersBorder: true, csp: {frameDomains: ["https://www.esbiko.com"], resourceDomains: ["https://www.esbiko.com"]}}, "openai/ui": {availableDisplayModes: ["inline", "fullscreen"]}},
+      }],
+    }),
+  );
+
   server.registerResource(
     "esbiko-doppler-widget",
     DOPPLER_WIDGET_URI,
@@ -88,6 +104,21 @@ export function createServer(controlService) {
           },
         },
       ],
+    }),
+  );
+
+  server.registerTool(
+    "open_static_frame_diagnostic",
+    {
+      title: "Open static Esbiko MCP App diagnostic",
+      description: "Diagnostic-only static HTML with a fixed pendulum iframe, no JavaScript in the MCP App shell. Use to isolate CSP/script bootstrap issues; it does not alter the production simulation shell.",
+      inputSchema: z.object({}).strict(),
+      annotations: {readOnlyHint: true, destructiveHint: false, openWorldHint: false},
+      _meta: {ui: {resourceUri: "ui://esbiko/static-frame-diagnostic-v1.html"}, "openai/outputTemplate": "ui://esbiko/static-frame-diagnostic-v1.html"},
+    },
+    async () => ({
+      structuredContent: {diagnostic: "static-frame-v1", usesInlineScript: false, target: "physics.mechanics.pendulum"},
+      content: [{type: "text", text: "Opened the static Esbiko MCP App diagnostic (no JavaScript in the app shell). Check whether the static heading and pendulum iframe appear."}],
     }),
   );
 
