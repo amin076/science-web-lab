@@ -42,7 +42,8 @@ async function call(name,args){
 }
 try{
   const {result:{tools}}=await rpc("tools/list");
-  assert.equal(tools.length,22);
+  assert.equal(tools.length,23);
+  assert.ok(tools.some(tool=>tool.name==="open_static_frame_diagnostic"),"Static diagnostic MCP tool must be registered");
   assert.ok(!tools.some(tool=>tool.name==="control_simulation_session"));
   for(const tool of tools){
     for(const key of ["readOnlyHint","destructiveHint","openWorldHint"])
@@ -82,5 +83,5 @@ try{
   const before=document.revision;
   await call("read_simulation_session",credentials);assert.equal(document.revision,before);
   await call("close_simulation_session",credentials);assert.equal(deleted,true);
-  console.log("22 public MCP tools: explicit annotations, independent operations, fixed dispatch, read-only lookups and input rejection PASS");
+  console.log("23 public MCP tools: explicit annotations, independent operations, fixed dispatch, read-only lookups and input rejection PASS");
 }finally{await handler.close();}
