@@ -15,6 +15,7 @@ on:
       - "scripts/test-visual-presentation.mjs"
       - "scripts/test-session-tools.mjs"
       - "scripts/test-session-bridges.mjs"
+      - "scripts/test-session-tools.mjs"
       - "scripts/test-model-sessions.mjs"
       - "scripts/test-fractals-standard.mjs"
       - "scripts/test-fractals-browser.mjs"
