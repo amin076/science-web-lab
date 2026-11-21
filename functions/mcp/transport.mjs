@@ -74,7 +74,7 @@ export function createServer(controlService) {
       contents: [{
         uri: "ui://esbiko/static-frame-diagnostic-v1.html",
         mimeType: "text/html;profile=mcp-app",
-        text: '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Esbiko MCP diagnostic</title></head><body style="font:14px system-ui;margin:12px"><h2>Esbiko static MCP App test</h2><p>Static HTML loaded. No JavaScript is used by this app shell.</p><iframe title="Esbiko pendulum" src="https://www.esbiko.com/experiments/physics.mechanics.pendulum/run?embed=mcp-app" style="width:100%;height:560px;border:1px solid #aaa;border-radius:8px" allow="fullscreen"></iframe></body></html>',
+        text: '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Esbiko bootstrap isolation</title></head><body><h1>Esbiko MCP resource loaded</h1><p>No scripts, iframe, network requests, or site dependencies.</p></body></html>',
         _meta: {ui: {prefersBorder: true, csp: {frameDomains: ["https://www.esbiko.com"], resourceDomains: ["https://www.esbiko.com"]}}, "openai/ui": {availableDisplayModes: ["inline", "fullscreen"]}},
       }],
     }),
