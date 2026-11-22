@@ -46,6 +46,14 @@ try{
   const resourceList=await rpc("resources/list");
   assert.ok(Array.isArray(resourceList.result?.resources));
   assert.ok(resourceList.result.resources.some(r=>r.uri==="ui://esbiko/static-frame-diagnostic-v1.html" && r.mimeType==="text/html;profile=mcp-app"));
+  const appUri="ui://esbiko/static-frame-diagnostic-v1.html";
+  const resourceRead=await rpc("resources/read",{uri:appUri});
+  assert.ok(!resourceRead.error,JSON.stringify(resourceRead));
+  const html=resourceRead.result?.contents?.find(item=>item.uri===appUri);
+  assert.equal(html?.mimeType,"text/html;profile=mcp-app");
+  assert.match(html?.text||"",/Esbiko MCP resource loaded/);
+  assert.doesNotMatch(html.text,/<script|<iframe/i);
+  console.log("MCP App resources/list and resources/read static bootstrap PASS");
   assert.ok(tools.some(tool=>tool.name==="open_static_frame_diagnostic"),"Static diagnostic MCP tool must be registered");
   assert.ok(!tools.some(tool=>tool.name==="control_simulation_session"));
   for(const tool of tools){
