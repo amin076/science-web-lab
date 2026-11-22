@@ -40,7 +40,7 @@ export function createServer(controlService) {
   server.registerResource(
     "esbiko-simulation-shell",
     GENERIC_SIMULATION_WIDGET_URI,
-    {},
+    {mimeType: "text/html;profile=mcp-app"},
     async () => ({
       contents: [
         {
@@ -69,7 +69,7 @@ export function createServer(controlService) {
   server.registerResource(
     "esbiko-static-frame-diagnostic",
     "ui://esbiko/static-frame-diagnostic-v1.html",
-    {},
+    {mimeType: "text/html;profile=mcp-app"},
     async () => ({
       contents: [{
         uri: "ui://esbiko/static-frame-diagnostic-v1.html",
@@ -83,7 +83,7 @@ export function createServer(controlService) {
   server.registerResource(
     "esbiko-doppler-widget",
     DOPPLER_WIDGET_URI,
-    {},
+    {mimeType: "text/html;profile=mcp-app"},
     async () => ({
       contents: [
         {
