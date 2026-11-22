@@ -43,6 +43,9 @@ async function call(name,args){
 try{
   const {result:{tools}}=await rpc("tools/list");
   assert.equal(tools.length,23);
+  const resourceList=await rpc("resources/list");
+  assert.ok(Array.isArray(resourceList.result?.resources));
+  assert.ok(resourceList.result.resources.some(r=>r.uri==="ui://esbiko/static-frame-diagnostic-v1.html" && r.mimeType==="text/html;profile=mcp-app"));
   assert.ok(tools.some(tool=>tool.name==="open_static_frame_diagnostic"),"Static diagnostic MCP tool must be registered");
   assert.ok(!tools.some(tool=>tool.name==="control_simulation_session"));
   for(const tool of tools){
