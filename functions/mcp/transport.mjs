@@ -2,6 +2,7 @@
 // Official MCP SDK v2 Streamable HTTP transport for ChatGPT.
 
 import {createMcpHandler, McpServer} from "@modelcontextprotocol/server";
+import {readFileSync} from "node:fs";
 import {toNodeHandler} from "@modelcontextprotocol/node";
 import * as z from "zod/v4";
 import legacyServer from "./server.js";
@@ -64,18 +65,18 @@ export function createServer(controlService) {
     }),
   );
 
-  // Diagnostic-only resource: zero inline or external JavaScript.
-  // Its outcome separates MCP App resource rendering from script hydration.
+  // SDK-based handshake diagnostic; HTML and JS built into one isolated resource.
+  const diagnosticUri = "ui://esbiko/sdk-bootstrap-v2.html";
   server.registerResource(
-    "esbiko-static-frame-diagnostic",
-    "ui://esbiko/static-frame-diagnostic-v1.html",
+    "esbiko-sdk-bootstrap-diagnostic",
+    diagnosticUri,
     {mimeType: "text/html;profile=mcp-app"},
     async () => ({
       contents: [{
-        uri: "ui://esbiko/static-frame-diagnostic-v1.html",
+        uri: diagnosticUri,
         mimeType: "text/html;profile=mcp-app",
-        text: '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Esbiko bootstrap isolation</title></head><body><h1>Esbiko MCP resource loaded</h1><p>No scripts, iframe, network requests, or site dependencies.</p></body></html>',
-        _meta: {ui: {prefersBorder: true, csp: {frameDomains: ["https://www.esbiko.com"], resourceDomains: ["https://www.esbiko.com"]}}, "openai/ui": {availableDisplayModes: ["inline", "fullscreen"]}},
+        text: readFileSync(new URL("./sdkDiagnostic.generated.html", import.meta.url), "utf8"),
+        _meta: {ui: {prefersBorder: true}},
       }],
     }),
   );
@@ -111,14 +112,14 @@ export function createServer(controlService) {
     "open_static_frame_diagnostic",
     {
       title: "Open static Esbiko MCP App diagnostic",
-      description: "Diagnostic-only static HTML with a fixed pendulum iframe, no JavaScript in the MCP App shell. Use to isolate CSP/script bootstrap issues; it does not alter the production simulation shell.",
+      description: "SDK-based standalone MCP App handshake diagnostic. It calls App.connect() and displays the resulting connection state without loading any simulations.",
       inputSchema: z.object({}).strict(),
       annotations: {readOnlyHint: true, destructiveHint: false, openWorldHint: false},
-      _meta: {ui: {resourceUri: "ui://esbiko/static-frame-diagnostic-v1.html"}, "openai/outputTemplate": "ui://esbiko/static-frame-diagnostic-v1.html"},
+      _meta: {ui: {resourceUri: "ui://esbiko/sdk-bootstrap-v2.html"}, "openai/outputTemplate": "ui://esbiko/sdk-bootstrap-v2.html"},
     },
     async () => ({
-      structuredContent: {diagnostic: "static-frame-v1", usesInlineScript: false, target: "physics.mechanics.pendulum"},
-      content: [{type: "text", text: "Opened the static Esbiko MCP App diagnostic (no JavaScript in the app shell). Check whether the static heading and pendulum iframe appear."}],
+      structuredContent: {diagnostic: "sdk-bootstrap-v2", sdkHandshake: true, target: "host-connection"},
+      content: [{type: "text", text: "Opened the SDK handshake diagnostic; check whether it shows Connected to MCP host."}],
     }),
   );
 

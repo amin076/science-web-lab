@@ -94,6 +94,11 @@ jobs:
       - name: Install Functions dependencies
         run: npm ci --prefix functions
 
+      - name: Build SDK MCP App diagnostic (bundled single-file HTML)
+        run: |
+          npm install --no-save --package-lock=false --prefix functions @modelcontextprotocol/ext-apps@1.1.2 esbuild@0.25.12
+          node scripts/build-mcp-sdk-diagnostic.mjs
+
       - name: Verify regenerated MCP discovery catalog
         run: node scripts/test-mcp-runtime.mjs
 
